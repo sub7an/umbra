@@ -2,7 +2,7 @@
 
 An interactive 3D physics visualizer covering special relativity, quantum mechanics, and frontier physics. Each module lets you manipulate parameters and watch the physics respond in real time — Lorentz-contracted rods, collapsing wavefunctions, galaxy rotation curves that refuse to follow Kepler. Built in React Three Fiber with a dark oscilloscope aesthetic.
 
-**Live demo:** https://physics-sandbox-eosin.vercel.app
+**Live demo:** https://umbrasandbox.com
 
 ---
 
