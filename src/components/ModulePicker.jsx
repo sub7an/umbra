@@ -137,7 +137,7 @@ export default function ModulePicker() {
           </span>
         </div>
         <h1 className="font-display text-5xl font-bold text-text-primary glow-cyan leading-tight tracking-tight">
-          Physics Sandbox
+          Umbra
         </h1>
         <p className="font-mono-data text-sm text-text-dim mt-3 max-w-lg leading-relaxed">
           Interactive relativistic and quantum phenomena. Select a module to begin measurement.
@@ -163,7 +163,7 @@ export default function ModulePicker() {
       <footer className="w-full max-w-4xl mt-auto pt-10">
         <div className="h-px w-full bg-border-subtle mb-4" />
         <p className="font-mono-data text-[10px] text-text-dim tracking-wider">
-          PHYSICS SANDBOX · NATURAL UNITS · c = 1
+          UMBRA · NATURAL UNITS · c = 1
         </p>
       </footer>
     </div>

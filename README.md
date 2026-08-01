@@ -1,4 +1,4 @@
-# Physics Sandbox
+# Umbra
 
 An interactive 3D physics visualizer covering special relativity, quantum mechanics, and frontier physics. Each module lets you manipulate parameters and watch the physics respond in real time — Lorentz-contracted rods, collapsing wavefunctions, galaxy rotation curves that refuse to follow Kepler. Built in React Three Fiber with a dark oscilloscope aesthetic.
 
@@ -54,7 +54,7 @@ Two scenes built around what's actually observed versus what's inferred. The rot
 ## Getting started
 
 ```bash
-git clone https://github.com/subhanrao/physics-sandbox.git
+git clone https://github.com/sub7an/umbra.git
 cd physics-sandbox
 npm install
 npm run dev
