@@ -46,17 +46,44 @@ What's established: cosmic expansion via galaxy redshifts and Cepheid/Type Ia su
   }
 }
 
-function buildFormula(view, fpRadius, hubble) {
+function buildEquations(view, fpRadius, hubble, vo, vk) {
   switch (view) {
-    case 'rotationcurve': {
-      const vo = observedRotationVelocity(fpRadius)
-      const vk = keplerianVelocity(fpRadius)
-      return `v_obs(${fpRadius.toFixed(2)}) = ${vo.toFixed(3)}   v_kep = ${vk.toFixed(3)}`
+    case 'rotationcurve':
+      return {
+        domain: 'GALACTIC KINEMATICS · MISSING MASS',
+        primaryEq: `\\textcolor{#00e5c4}{v_{\\mathrm{obs}}} \\gg \\textcolor{#f59e0b}{v_{\\mathrm{kep}}}`,
+        derivedEqs: [
+          {
+            label: 'Keplerian (visible mass)',
+            eq: `\\textcolor{#f59e0b}{v_{\\mathrm{kep}}} = \\sqrt{\\dfrac{GM(r)}{r}}`,
+          },
+          {
+            label: `r = ${fpRadius.toFixed(2)}`,
+            eq: `\\textcolor{#00e5c4}{v_{\\mathrm{obs}}} = ${vo.toFixed(3)},\\;\\textcolor{#f59e0b}{v_{\\mathrm{kep}}} = ${vk.toFixed(3)}`,
+          },
+        ],
+      }
+
+    case 'expansion': {
+      const H_km = toHubbleUnits(hubble)
+      return {
+        domain: 'COSMOLOGY · HUBBLE FLOW',
+        primaryEq: `v = \\textcolor{#f59e0b}{H_0}\\,\\textcolor{#e040fb}{d}`,
+        derivedEqs: [
+          {
+            label: 'Current H₀',
+            eq: `\\textcolor{#f59e0b}{H_0} = ${hubble.toFixed(2)} \\approx ${H_km}\\text{ km/s/Mpc}`,
+          },
+          {
+            label: 'Hubble tension',
+            eq: `|\\Delta H_0| \\approx 5\\sigma\\;\\text{(unresolved)}`,
+          },
+        ],
+      }
     }
-    case 'expansion':
-      return `v = H₀ · d  =  ${hubble.toFixed(2)} × d`
+
     default:
-      return ''
+      return { domain: '', primaryEq: '', derivedEqs: [] }
   }
 }
 
@@ -103,8 +130,8 @@ export default function FrontierModule() {
     ],
   }
 
-  const formula = buildFormula(activeView, fpRadius, hubble)
   const explanation = buildExplanation(activeView, fpRadius, hubble)
+  const { domain, primaryEq, derivedEqs } = buildEquations(activeView, fpRadius, hubble, vo, vk)
   const camPos = CAMERA_POSITIONS[activeView]
 
   return (
@@ -122,7 +149,6 @@ export default function FrontierModule() {
           <h1 className="font-display text-base font-semibold text-text-primary tracking-wide">
             Frontier Physics
           </h1>
-          {/* Persistent epistemic tag */}
           <span className="font-mono-data text-[9px] tracking-wider uppercase px-2 py-0.5 border border-amber-glow/30 text-amber-glow/60 rounded bg-amber-glow/5">
             Evidence-based · mechanism unconfirmed
           </span>
@@ -157,10 +183,12 @@ export default function FrontierModule() {
 
       {/* Main layout */}
       <div className="flex flex-1 overflow-hidden" style={{ minHeight: 0 }}>
-        <div className="w-56 shrink-0 flex flex-col overflow-hidden">
+        <div className="w-72 shrink-0 flex flex-col overflow-hidden">
           <InfoPanel
             title="Analysis"
-            formula={formula}
+            domain={domain}
+            primaryEq={primaryEq}
+            derivedEqs={derivedEqs}
             explanation={explanation}
             metrics={metricsByView[activeView]}
             footer="FRONTIER PHYSICS · OBSERVED ≠ EXPLAINED"
@@ -181,11 +209,7 @@ export default function FrontierModule() {
         </main>
 
         <div className="w-52 shrink-0 flex flex-col overflow-hidden">
-          <ControlPanel
-            title="Parameters"
-            controls={controlsByView[activeView]}
-            onReset={resetFp}
-          />
+          <ControlPanel title="Parameters" controls={controlsByView[activeView]} onReset={resetFp} />
         </div>
       </div>
     </div>
