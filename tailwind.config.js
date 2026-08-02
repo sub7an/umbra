@@ -39,6 +39,8 @@ export default {
         'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
         'flicker': 'flicker 4s linear infinite',
         'fade-up': 'fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) forwards',
+        'float': 'float 2.8s ease-in-out infinite',
+        'fade-in': 'fadeIn 1s cubic-bezier(0.16,1,0.3,1) forwards',
       },
       keyframes: {
         pulseGlow: {
@@ -56,6 +58,14 @@ export default {
         fadeUp: {
           '0%': { opacity: '0', transform: 'translateY(6px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(5px)' },
+        },
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
         },
       },
     },

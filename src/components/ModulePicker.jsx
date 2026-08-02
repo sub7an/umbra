@@ -1,4 +1,6 @@
+import { useCallback } from 'react'
 import useModuleStore from '../store/useModuleStore'
+import Hero from './Hero'
 
 const MODULES = [
   {
@@ -76,24 +78,23 @@ function ModuleCard({ module, onClick }) {
         'transition-all duration-300',
         'bg-panel',
         cc.border,
-        isActive ? `cursor-pointer ${cc.hover} focus:outline-none focus-visible:ring-1 focus-visible:ring-cyan-glow` : 'cursor-not-allowed opacity-40',
+        isActive
+          ? `cursor-pointer ${cc.hover} focus:outline-none focus-visible:ring-1 focus-visible:ring-cyan-glow`
+          : 'cursor-not-allowed opacity-40',
         isActive ? cc.glow : '',
       ].join(' ')}
       aria-label={isActive ? `Enter ${module.name}` : `${module.name} — coming soon`}
     >
-      {/* Coming soon badge */}
       {!isActive && (
         <span className="absolute top-4 right-4 font-mono-data text-[9px] tracking-widest uppercase px-2 py-0.5 border border-border-subtle text-text-dim rounded">
           SOON
         </span>
       )}
 
-      {/* Module abbr — large display letterform */}
       <div className={`font-display text-5xl font-bold mb-3 leading-none ${cc.abbr}`}>
         {module.abbr}
       </div>
 
-      {/* Name + tagline */}
       <div className="mb-3">
         <h2 className="font-display text-base font-semibold text-text-primary mb-1 leading-tight">
           {module.name}
@@ -103,17 +104,14 @@ function ModuleCard({ module, onClick }) {
         </p>
       </div>
 
-      {/* Description */}
       <p className="font-body text-xs text-text-dim leading-relaxed mb-4 flex-1">
         {module.description}
       </p>
 
-      {/* Formula chip */}
       <div className={`self-start font-mono-data text-[11px] px-2 py-1 rounded border ${cc.tag}`}>
         {module.formula}
       </div>
 
-      {/* Active: enter affordance */}
       {isActive && (
         <div className="absolute bottom-4 right-5 font-mono-data text-[10px] tracking-widest uppercase text-cyan-glow opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           ENTER →
@@ -125,47 +123,58 @@ function ModuleCard({ module, onClick }) {
 
 export default function ModulePicker() {
   const setActiveModule = useModuleStore((s) => s.setActiveModule)
+  const scrollToModules = useCallback(() => {
+    const container = document.querySelector('[data-scroll-root]')
+    const modules = document.querySelector('[data-modules-section]')
+    if (!container || !modules) return
+    const top =
+      container.scrollTop +
+      modules.getBoundingClientRect().top -
+      container.getBoundingClientRect().top
+    container.scrollTo({ top })
+  }, [])
 
   return (
-    <div className="flex flex-col items-center justify-start w-full h-full bg-ground px-8 py-10 overflow-y-auto thin-scroll">
-      {/* Header */}
-      <header className="w-full max-w-4xl mb-12">
-        <div className="flex items-center gap-3 mb-2">
-          <span className="w-2 h-2 rounded-full bg-cyan-glow shadow-glow-cyan animate-pulse-glow" />
-          <span className="font-mono-data text-[11px] tracking-[0.22em] uppercase text-text-dim">
-            Instrument Array · Online
-          </span>
-        </div>
-        <h1 className="font-display text-5xl font-bold text-text-primary glow-cyan leading-tight tracking-tight">
-          Umbra
-        </h1>
-        <p className="font-mono-data text-sm text-text-dim mt-3 max-w-lg leading-relaxed">
-          Interactive relativistic and quantum phenomena. Select a module to begin measurement.
-        </p>
-        {/* Oscilloscope divider */}
-        <div className="mt-6 h-px w-full bg-gradient-to-r from-cyan-glow/40 via-cyan-glow/10 to-transparent" />
-      </header>
+    <div data-scroll-root className="w-full h-full bg-ground overflow-y-auto thin-scroll" style={{ scrollBehavior: 'smooth' }}>
+      <Hero onScrollDown={scrollToModules} />
 
-      {/* Module grid */}
-      <main className="w-full max-w-4xl">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {MODULES.map((mod) => (
-            <ModuleCard
-              key={mod.id}
-              module={mod}
-              onClick={() => setActiveModule(mod.id)}
-            />
-          ))}
+      {/* Modules section */}
+      <div
+        data-modules-section
+        className="flex flex-col items-center px-6 sm:px-8 pb-12"
+      >
+        {/* Section separator */}
+        <div className="w-full max-w-4xl pt-10 pb-8">
+          <div className="flex items-center gap-4">
+            <div className="flex-1 h-px bg-border-subtle" />
+            <span className="font-mono-data text-[10px] tracking-[0.3em] uppercase text-text-dim px-2">
+              Modules
+            </span>
+            <div className="flex-1 h-px bg-border-subtle" />
+          </div>
         </div>
-      </main>
 
-      {/* Footer */}
-      <footer className="w-full max-w-4xl mt-auto pt-10">
-        <div className="h-px w-full bg-border-subtle mb-4" />
-        <p className="font-mono-data text-[10px] text-text-dim tracking-wider">
-          UMBRA · NATURAL UNITS · c = 1
-        </p>
-      </footer>
+        {/* Module grid */}
+        <main className="w-full max-w-4xl">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {MODULES.map((mod) => (
+              <ModuleCard
+                key={mod.id}
+                module={mod}
+                onClick={() => setActiveModule(mod.id)}
+              />
+            ))}
+          </div>
+        </main>
+
+        {/* Footer */}
+        <footer className="w-full max-w-4xl mt-12">
+          <div className="h-px w-full bg-border-subtle mb-4" />
+          <p className="font-mono-data text-[10px] text-text-dim tracking-wider">
+            UMBRA · NATURAL UNITS · c = 1
+          </p>
+        </footer>
+      </div>
     </div>
   )
 }
