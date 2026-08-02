@@ -47,6 +47,65 @@ function buildExplanation(view, velocity, gamma, eventX, eventT) {
   }
 }
 
+function buildEquations(view, velocity, gamma, Lc) {
+  const b = velocity.toFixed(4)
+  const g = gamma.toFixed(4)
+  const l = Lc.toFixed(3)
+
+  switch (view) {
+    case 'lightcone':
+      return {
+        domain: 'MINKOWSKI SPACETIME · CAUSALITY',
+        primaryEq: `ds^2 = -(c\\,dt)^2 + dx^2 + dy^2 + dz^2`,
+        derivedEqs: [
+          {
+            label: 'Lorentz factor',
+            eq: `\\textcolor{#00e5c4}{\\gamma} = \\dfrac{1}{\\sqrt{1-\\textcolor{#f59e0b}{\\beta}^2}}`,
+          },
+          {
+            label: 'Current',
+            eq: `\\textcolor{#f59e0b}{\\beta} = ${b},\\;\\textcolor{#00e5c4}{\\gamma} = ${g}`,
+          },
+        ],
+      }
+
+    case 'timedilation':
+      return {
+        domain: 'LORENTZ TRANSFORM · TIME DILATION',
+        primaryEq: `\\textcolor{#f59e0b}{t'} = \\textcolor{#00e5c4}{\\gamma}\\,t_0`,
+        derivedEqs: [
+          {
+            label: 'Lorentz factor',
+            eq: `\\textcolor{#00e5c4}{\\gamma} = \\dfrac{1}{\\sqrt{1-\\textcolor{#f59e0b}{\\beta}^2}}`,
+          },
+          {
+            label: 'Live values',
+            eq: `\\textcolor{#f59e0b}{\\beta}=${b},\\;\\textcolor{#00e5c4}{\\gamma}=${g}`,
+          },
+        ],
+      }
+
+    case 'lengthcontraction':
+      return {
+        domain: 'LORENTZ TRANSFORM · LENGTH CONTRACTION',
+        primaryEq: `\\textcolor{#e040fb}{L'} = \\dfrac{L_0}{\\textcolor{#00e5c4}{\\gamma}}`,
+        derivedEqs: [
+          {
+            label: 'Proper length',
+            eq: `L_0 = 3.000\\text{ u}`,
+          },
+          {
+            label: 'Contracted',
+            eq: `\\textcolor{#e040fb}{L'} = ${l}\\text{ u}`,
+          },
+        ],
+      }
+
+    default:
+      return { domain: '', primaryEq: '', derivedEqs: [] }
+  }
+}
+
 export default function SRModule() {
   const [activeView, setActiveView] = useState('lightcone')
 
@@ -86,6 +145,7 @@ export default function SRModule() {
   ]
 
   const explanation = buildExplanation(activeView, velocity, gamma, eventX, eventT)
+  const { domain, primaryEq, derivedEqs } = buildEquations(activeView, velocity, gamma, Lc)
   const camPos = CAMERA_POSITIONS[activeView]
 
   return (
@@ -135,9 +195,12 @@ export default function SRModule() {
 
       {/* ── Main layout: Info | Scene | Controls ── */}
       <div className="flex flex-1 overflow-hidden" style={{ minHeight: 0 }}>
-        <div className="w-56 shrink-0 flex flex-col overflow-hidden">
+        <div className="w-72 shrink-0 flex flex-col overflow-hidden">
           <InfoPanel
             title="Analysis"
+            domain={domain}
+            primaryEq={primaryEq}
+            derivedEqs={derivedEqs}
             explanation={explanation}
             metrics={metrics}
           />

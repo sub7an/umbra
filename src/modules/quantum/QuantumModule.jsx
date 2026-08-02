@@ -47,30 +47,70 @@ function buildExplanation(view, theta, phi, n, lambda, measured) {
   }
 }
 
-function buildFormula(view, theta, phi, n, lambda, measured) {
+function buildEquations(view, theta, phi, n, lambda, measured) {
   const p0 = prob0(theta)
   const p1 = prob1(theta)
+  const En = particleInBoxEnergy(n)
 
   switch (view) {
     case 'blochsphere':
-      return `|ψ⟩ = ${Math.cos(theta / 2).toFixed(3)}|0⟩ + e^(i·${phi.toFixed(3)})·${Math.sin(theta / 2).toFixed(3)}|1⟩`
+      return {
+        domain: 'QUANTUM STATE SPACE · BLOCH SPHERE',
+        primaryEq: `|\\psi\\rangle = \\cos\\tfrac{\\theta}{2}|0\\rangle + e^{i\\phi}\\sin\\tfrac{\\theta}{2}|1\\rangle`,
+        derivedEqs: [
+          {
+            label: 'Born rule',
+            eq: `P(|0\\rangle) = \\cos^2\\!\\tfrac{\\textcolor{#f59e0b}{\\theta}}{2} = ${(p0 * 100).toFixed(1)}\\%`,
+          },
+          {
+            label: '',
+            eq: `P(|1\\rangle) = \\sin^2\\!\\tfrac{\\textcolor{#f59e0b}{\\theta}}{2} = ${(p1 * 100).toFixed(1)}\\%`,
+          },
+        ],
+      }
 
-    case 'particleinbox': {
-      const En = particleInBoxEnergy(n)
-      return `ψ_${n}(x) = √(2/L)·sin(${n}πx/L)   E_${n} = ${n}²π²ℏ²/2mL²`
-    }
+    case 'particleinbox':
+      return {
+        domain: 'SCHRÖDINGER EQ · PARTICLE IN BOX',
+        primaryEq: `\\psi_{\\textcolor{#f59e0b}{n}}(x) = \\sqrt{\\tfrac{2}{L}}\\sin\\tfrac{\\textcolor{#f59e0b}{n}\\pi x}{L}`,
+        derivedEqs: [
+          {
+            label: 'Energy eigenvalue',
+            eq: `E_{\\textcolor{#f59e0b}{n}} = \\dfrac{\\textcolor{#f59e0b}{n}^2\\pi^2\\hbar^2}{2mL^2}`,
+          },
+          {
+            label: `n = ${n}`,
+            eq: `E_{${n}} = ${En.toFixed(2)}\\,E_1,\\;\\text{nodes: }${n - 1}`,
+          },
+        ],
+      }
 
     case 'doubleslit':
-      return measured
-        ? `|ψ|² = |ψ₁|² + |ψ₂|²  (no interference)`
-        : `I(y) = cos²(πd·y/λD)   λ=${lambda.toFixed(2)}`
+      return {
+        domain: measured ? 'WHICH-PATH · DECOHERENCE' : 'WAVE–PARTICLE DUALITY · INTERFERENCE',
+        primaryEq: measured
+          ? `|\\psi|^2 = |\\psi_1|^2 + |\\psi_2|^2`
+          : `I(y) = \\cos^2\\!\\left(\\dfrac{\\pi\\,d\\,y}{\\textcolor{#f59e0b}{\\lambda}\\,D}\\right)`,
+        derivedEqs: measured
+          ? [
+              {
+                label: 'Cross-term (interference)',
+                eq: `2\\,\\mathrm{Re}[\\psi_1^\\ast\\psi_2] = 0`,
+              },
+            ]
+          : [
+              {
+                label: 'Fringe spacing',
+                eq: `\\Delta y = \\dfrac{\\textcolor{#f59e0b}{\\lambda}\\,D}{d} = ${(lambda * SCREEN_X / 1.0).toFixed(3)}\\text{ u}`,
+              },
+            ],
+      }
 
     default:
-      return ''
+      return { domain: '', primaryEq: '', derivedEqs: [] }
   }
 }
 
-// Shared definition for which-path toggle inline with header
 function MeasureToggle({ active, onToggle }) {
   return (
     <button
@@ -145,8 +185,8 @@ export default function QuantumModule() {
     ],
   }
 
-  const formula = buildFormula(activeView, theta, phi, n, lambda, measured)
   const explanation = buildExplanation(activeView, theta, phi, n, lambda, measured)
+  const { domain, primaryEq, derivedEqs } = buildEquations(activeView, theta, phi, n, lambda, measured)
   const camPos = CAMERA_POSITIONS[activeView]
 
   return (
@@ -188,10 +228,7 @@ export default function QuantumModule() {
           })}
 
           {activeView === 'doubleslit' && (
-            <MeasureToggle
-              active={measured}
-              onToggle={() => setSlitMeasured(!measured)}
-            />
+            <MeasureToggle active={measured} onToggle={() => setSlitMeasured(!measured)} />
           )}
         </nav>
 
@@ -202,13 +239,16 @@ export default function QuantumModule() {
 
       {/* Main layout */}
       <div className="flex flex-1 overflow-hidden" style={{ minHeight: 0 }}>
-        <div className="w-56 shrink-0 flex flex-col overflow-hidden">
+        <div className="w-72 shrink-0 flex flex-col overflow-hidden">
           <InfoPanel
             title="Analysis"
-            formula={formula}
+            domain={domain}
+            primaryEq={primaryEq}
+            derivedEqs={derivedEqs}
             explanation={explanation}
             metrics={metricsByView[activeView]}
             footer="QUANTUM MECHANICS · QM MODULE"
+            accentColor="rose"
           />
         </div>
 
@@ -227,11 +267,7 @@ export default function QuantumModule() {
         </main>
 
         <div className="w-52 shrink-0 flex flex-col overflow-hidden">
-          <ControlPanel
-            title="Parameters"
-            controls={controlsByView[activeView]}
-            onReset={resetQm}
-          />
+          <ControlPanel title="Parameters" controls={controlsByView[activeView]} onReset={resetQm} />
         </div>
       </div>
     </div>
