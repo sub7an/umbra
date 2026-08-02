@@ -6,21 +6,73 @@ import BlochSphere from './BlochSphere'
 import ParticleInBox from './ParticleInBox'
 import DoubleSlit from './DoubleSlit'
 import useModuleStore from '../../store/useModuleStore'
-import { blochCoordinates, prob0, prob1, particleInBoxEnergy, particleInBoxWavefunction, interferenceIntensity } from './qmMath'
+import { blochCoordinates, prob0, prob1, particleInBoxEnergy, interferenceIntensity } from './qmMath'
 
-const SCREEN_X = 3.8  // must match DoubleSlit.jsx SCREEN_X
+const SCREEN_X = 3.8
 
 const VIEWS = [
-  { id: 'blochsphere', label: 'Bloch Sphere' },
+  { id: 'blochsphere',   label: 'Bloch Sphere' },
   { id: 'particleinbox', label: 'Particle in Box' },
-  { id: 'doubleslit', label: 'Double Slit' },
+  { id: 'doubleslit',    label: 'Double Slit' },
 ]
 
 const CAMERA_POSITIONS = {
-  blochsphere: [1.8, 1.5, 3.8],
+  blochsphere:   [1.8, 1.5, 3.8],
   particleinbox: [0, 0.8, 7],
-  doubleslit: [0, 3.5, 9],
+  doubleslit:    [0, 3.5, 9],
 }
+
+// ── Viz mode toggle ───────────────────────────────────────────────────────────
+
+const VIZ_MODES = [
+  { id: 'prob', label: '|ψ|²' },
+  { id: 'real', label: 'Re(ψ)' },
+  { id: 'imag', label: 'Im(ψ)' },
+]
+
+function VizModeToggle({ mode, onChange }) {
+  return (
+    <div className="flex gap-1" role="group" aria-label="Visualization mode">
+      {VIZ_MODES.map((m) => {
+        const active = mode === m.id
+        return (
+          <button
+            key={m.id}
+            onClick={() => onChange(m.id)}
+            className={[
+              'font-mono-data text-[10px] tracking-wider uppercase px-2.5 py-1 rounded border transition-all duration-200',
+              active
+                ? 'border-rose-glow text-rose-glow bg-rose-glow/5 shadow-glow-rose'
+                : 'border-border-subtle text-text-dim hover:border-rose-mid hover:text-text-primary',
+            ].join(' ')}
+          >
+            {m.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+// ── Measurement toggle (DoubleSlit) ───────────────────────────────────────────
+
+function MeasureToggle({ active, onToggle }) {
+  return (
+    <button
+      onClick={onToggle}
+      className={[
+        'font-mono-data text-[11px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
+        active
+          ? 'border-amber-glow text-amber-glow shadow-glow-amber bg-amber-glow/5'
+          : 'border-border-subtle text-text-dim hover:border-amber-mid hover:text-text-primary',
+      ].join(' ')}
+    >
+      {active ? '⊙ MEASURED' : '◎ UNMEASURED'}
+    </button>
+  )
+}
+
+// ── Explanations ──────────────────────────────────────────────────────────────
 
 function buildExplanation(view, theta, phi, n, lambda, measured) {
   const p0 = prob0(theta)
@@ -33,7 +85,7 @@ function buildExplanation(view, theta, phi, n, lambda, measured) {
       return `Every pure qubit state maps to a unique point on the surface of the Bloch sphere. The north pole is |0⟩, the south pole is |1⟩ — but unlike a classical bit, the sphere's interior isn't empty. Any point on the surface is a valid quantum state, a superposition. Right now P(|0⟩) = ${(p0 * 100).toFixed(1)}% and P(|1⟩) = ${(p1 * 100).toFixed(1)}%. The azimuthal angle φ sets the relative phase between |0⟩ and |1⟩ — that phase is invisible to a single measurement, but it becomes physical when you interfere two qubits. The equator (θ=π/2) is the |+⟩/|−⟩/|+i⟩/|−i⟩ belt — here neither outcome is preferred. A projective measurement collapses this to a pole.`
 
     case 'particleinbox':
-      return `The particle is confined between infinite walls, so ψ must vanish there — this forces the wavefunction into standing waves with exactly n half-wavelengths fitting in [0, L]. That quantisation condition is what gives you discrete energies. E_${n} = ${En.toFixed(2)} in units of E₁ = ${E1.toFixed(2)} (so it's ${(En / E1).toFixed(0)}× the ground state). The cyan curve oscillates as Re[ψ]·cos(E_n·t); the amber curve is |ψ|², which doesn't oscillate for energy eigenstates — the probability density is static in time. Bump n and watch the nodes: n always has n-1 nodes inside the box. That's a direct consequence of orthogonality.`
+      return `The particle is confined between infinite walls, so ψ must vanish there — this forces the wavefunction into standing waves with exactly n half-wavelengths fitting in [0, L]. That quantisation condition is what gives you discrete energies. E_${n} = ${En.toFixed(2)} in units of E₁ = ${E1.toFixed(2)} (so it's ${(En / E1).toFixed(0)}× the ground state). Each dot is a Monte Carlo sample from |ψ_n(x)|². The cloud shape directly encodes the probability density — dense lobes at antinodes, empty at nodes. Switch to Re(ψ) or Im(ψ) to watch the time-phase animate.`
 
     case 'doubleslit': {
       const fringe = (lambda * (SCREEN_X - 0) / 1.0).toFixed(2)
@@ -46,6 +98,8 @@ function buildExplanation(view, theta, phi, n, lambda, measured) {
       return ''
   }
 }
+
+// ── KaTeX equations ───────────────────────────────────────────────────────────
 
 function buildEquations(view, theta, phi, n, lambda, measured) {
   const p0 = prob0(theta)
@@ -92,18 +146,8 @@ function buildEquations(view, theta, phi, n, lambda, measured) {
           ? `|\\psi|^2 = |\\psi_1|^2 + |\\psi_2|^2`
           : `I(y) = \\cos^2\\!\\left(\\dfrac{\\pi\\,d\\,y}{\\textcolor{#f59e0b}{\\lambda}\\,D}\\right)`,
         derivedEqs: measured
-          ? [
-              {
-                label: 'Cross-term (interference)',
-                eq: `2\\,\\mathrm{Re}[\\psi_1^\\ast\\psi_2] = 0`,
-              },
-            ]
-          : [
-              {
-                label: 'Fringe spacing',
-                eq: `\\Delta y = \\dfrac{\\textcolor{#f59e0b}{\\lambda}\\,D}{d} = ${(lambda * SCREEN_X / 1.0).toFixed(3)}\\text{ u}`,
-              },
-            ],
+          ? [{ label: 'Cross-term (interference)', eq: `2\\,\\mathrm{Re}[\\psi_1^\\ast\\psi_2] = 0` }]
+          : [{ label: 'Fringe spacing', eq: `\\Delta y = \\dfrac{\\textcolor{#f59e0b}{\\lambda}\\,D}{d} = ${(lambda * SCREEN_X / 1.0).toFixed(3)}\\text{ u}` }],
       }
 
     default:
@@ -111,77 +155,71 @@ function buildEquations(view, theta, phi, n, lambda, measured) {
   }
 }
 
-function MeasureToggle({ active, onToggle }) {
-  return (
-    <button
-      onClick={onToggle}
-      className={[
-        'font-mono-data text-[11px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
-        active
-          ? 'border-amber-glow text-amber-glow shadow-glow-amber bg-amber-glow/5'
-          : 'border-border-subtle text-text-dim hover:border-amber-mid hover:text-text-primary',
-      ].join(' ')}
-    >
-      {active ? '⊙ MEASURED' : '◎ UNMEASURED'}
-    </button>
-  )
-}
+// ── Main module ───────────────────────────────────────────────────────────────
 
 export default function QuantumModule() {
   const [activeView, setActiveView] = useState('blochsphere')
 
-  const theta = useModuleStore((s) => s.qm.blochTheta)
-  const phi = useModuleStore((s) => s.qm.blochPhi)
-  const n = useModuleStore((s) => s.qm.boxN)
-  const lambda = useModuleStore((s) => s.qm.slitWavelength)
-  const measured = useModuleStore((s) => s.qm.slitMeasured)
+  const theta   = useModuleStore((s) => s.qm.blochTheta)
+  const phi     = useModuleStore((s) => s.qm.blochPhi)
+  const n       = useModuleStore((s) => s.qm.boxN)
+  const lambda  = useModuleStore((s) => s.qm.slitWavelength)
+  const measured= useModuleStore((s) => s.qm.slitMeasured)
+  const particleCount   = useModuleStore((s) => s.qm.particleCount)
+  const boxVizMode      = useModuleStore((s) => s.qm.boxVizMode)
+  const blochVizMode    = useModuleStore((s) => s.qm.blochVizMode)
 
-  const setBlochTheta = useModuleStore((s) => s.setBlochTheta)
-  const setBlochPhi = useModuleStore((s) => s.setBlochPhi)
-  const setBoxN = useModuleStore((s) => s.setBoxN)
+  const setBlochTheta   = useModuleStore((s) => s.setBlochTheta)
+  const setBlochPhi     = useModuleStore((s) => s.setBlochPhi)
+  const setBoxN         = useModuleStore((s) => s.setBoxN)
   const setSlitWavelength = useModuleStore((s) => s.setSlitWavelength)
   const setSlitMeasured = useModuleStore((s) => s.setSlitMeasured)
-  const resetQm = useModuleStore((s) => s.resetQm)
+  const setParticleCount= useModuleStore((s) => s.setParticleCount)
+  const setBoxVizMode   = useModuleStore((s) => s.setBoxVizMode)
+  const setBlochVizMode = useModuleStore((s) => s.setBlochVizMode)
+  const resetQm         = useModuleStore((s) => s.resetQm)
   const setActiveModule = useModuleStore((s) => s.setActiveModule)
 
   const bloch = blochCoordinates(theta, phi)
 
   const controlsByView = {
     blochsphere: [
-      { label: 'Polar θ', min: 0, max: Math.PI, step: 0.01, value: theta, onChange: setBlochTheta, unit: ' rad' },
-      { label: 'Azimuthal φ', min: 0, max: 2 * Math.PI, step: 0.01, value: phi, onChange: setBlochPhi, unit: ' rad' },
+      { label: 'Polar θ',       min: 0, max: Math.PI,      step: 0.01, value: theta,  onChange: setBlochTheta,    unit: ' rad' },
+      { label: 'Azimuthal φ',   min: 0, max: 2 * Math.PI,  step: 0.01, value: phi,    onChange: setBlochPhi,      unit: ' rad' },
+      { label: 'Particles',     min: 1, max: 100,           step: 1,    value: particleCount / 1000, onChange: (v) => setParticleCount(Math.round(v) * 1000), unit: 'k' },
     ],
     particleinbox: [
-      { label: 'Quantum n', min: 1, max: 6, step: 1, value: n, onChange: setBoxN, unit: '' },
+      { label: 'Quantum n',     min: 1, max: 6,             step: 1,    value: n,      onChange: setBoxN,          unit: '' },
+      { label: 'Particles',     min: 1, max: 100,           step: 1,    value: particleCount / 1000, onChange: (v) => setParticleCount(Math.round(v) * 1000), unit: 'k' },
     ],
     doubleslit: [
-      { label: 'Wavelength λ', min: 0.3, max: 1.2, step: 0.01, value: lambda, onChange: setSlitWavelength, unit: ' λ' },
+      { label: 'Wavelength λ',  min: 0.3, max: 1.2,         step: 0.01, value: lambda, onChange: setSlitWavelength, unit: ' λ' },
     ],
   }
 
   const metricsByView = {
     blochsphere: [
-      { label: 'θ  (polar)', value: theta.toFixed(4), unit: ' rad', color: 'cyan' },
-      { label: 'φ  (azimuth)', value: phi.toFixed(4), unit: ' rad', color: 'amber' },
-      { label: 'P(|0⟩)', value: (prob0(theta) * 100).toFixed(2), unit: '%', color: 'cyan' },
-      { label: 'P(|1⟩)', value: (prob1(theta) * 100).toFixed(2), unit: '%', color: 'rose' },
-      { label: 'Bloch x', value: bloch.x.toFixed(3), color: 'amber' },
-      { label: 'Bloch y', value: bloch.y.toFixed(3), color: 'rose' },
-      { label: 'Bloch z', value: bloch.z.toFixed(3), color: 'cyan' },
+      { label: 'θ  (polar)',    value: theta.toFixed(4),            unit: ' rad', color: 'cyan' },
+      { label: 'φ  (azimuth)', value: phi.toFixed(4),              unit: ' rad', color: 'amber' },
+      { label: 'P(|0⟩)',       value: (prob0(theta) * 100).toFixed(2), unit: '%', color: 'cyan' },
+      { label: 'P(|1⟩)',       value: (prob1(theta) * 100).toFixed(2), unit: '%', color: 'rose' },
+      { label: 'Bloch x',      value: bloch.x.toFixed(3),          color: 'amber' },
+      { label: 'Bloch y',      value: bloch.y.toFixed(3),          color: 'rose' },
+      { label: 'Bloch z',      value: bloch.z.toFixed(3),          color: 'cyan' },
     ],
     particleinbox: [
-      { label: 'Quantum n', value: String(n), color: 'cyan' },
-      { label: 'E_n', value: particleInBoxEnergy(n).toFixed(3), unit: ' E₁', color: 'amber' },
-      { label: 'E_n / E₁', value: (n * n).toFixed(0), unit: '×', color: 'rose' },
-      { label: 'Nodes inside', value: String(n - 1), color: 'dim' },
-      { label: 'λ_n = 2L/n', value: (2 / n).toFixed(3), unit: ' L', color: 'cyan' },
+      { label: 'Quantum n',    value: String(n),                               color: 'cyan' },
+      { label: 'E_n',          value: particleInBoxEnergy(n).toFixed(3),       unit: ' E₁',  color: 'amber' },
+      { label: 'E_n / E₁',    value: (n * n).toFixed(0),                      unit: '×',    color: 'rose' },
+      { label: 'Nodes inside', value: String(n - 1),                                         color: 'dim' },
+      { label: 'λ_n = 2L/n',  value: (2 / n).toFixed(3),                      unit: ' L',   color: 'cyan' },
     ],
     doubleslit: [
-      { label: 'λ (wavelength)', value: lambda.toFixed(3), color: 'cyan' },
-      { label: 'Slit sep. d', value: '1.000', color: 'dim' },
-      { label: 'Screen dist D', value: '3.800', color: 'dim' },
-      { label: 'Fringe Δy', value: (lambda * 3.8 / 1.0).toFixed(3), unit: ' u', color: 'amber' },
-      { label: 'Mode', value: measured ? 'MEASURED' : 'QUANTUM', color: measured ? 'amber' : 'cyan' },
+      { label: 'λ (wavelength)', value: lambda.toFixed(3),          color: 'cyan' },
+      { label: 'Slit sep. d',   value: '1.000',                     color: 'dim' },
+      { label: 'Screen dist D', value: '3.800',                     color: 'dim' },
+      { label: 'Fringe Δy',     value: (lambda * 3.8 / 1.0).toFixed(3), unit: ' u', color: 'amber' },
+      { label: 'Mode',          value: measured ? 'MEASURED' : 'QUANTUM', color: measured ? 'amber' : 'cyan' },
     ],
   }
 
@@ -189,9 +227,13 @@ export default function QuantumModule() {
   const { domain, primaryEq, derivedEqs } = buildEquations(activeView, theta, phi, n, lambda, measured)
   const camPos = CAMERA_POSITIONS[activeView]
 
+  const activeVizMode  = activeView === 'blochsphere' ? blochVizMode : boxVizMode
+  const setActiveVizMode = activeView === 'blochsphere' ? setBlochVizMode : setBoxVizMode
+  const showVizToggle  = activeView === 'blochsphere' || activeView === 'particleinbox'
+
   return (
     <div className="flex flex-col w-full h-full bg-ground">
-      {/* Top bar */}
+      {/* ── Top bar ── */}
       <header className="flex items-center justify-between px-5 py-2 bg-panel border-b border-border-subtle shrink-0">
         <div className="flex items-center gap-4">
           <button
@@ -206,7 +248,8 @@ export default function QuantumModule() {
           </h1>
         </div>
 
-        <nav className="flex gap-1 items-center" role="tablist" aria-label="Scene views">
+        <nav className="flex gap-1 items-center flex-wrap justify-center" role="tablist" aria-label="Scene views">
+          {/* View tabs */}
           {VIEWS.map((v) => {
             const isActive = activeView === v.id
             return (
@@ -227,6 +270,15 @@ export default function QuantumModule() {
             )
           })}
 
+          {/* Divider */}
+          {showVizToggle && <div className="w-px h-5 bg-border-subtle mx-1" />}
+
+          {/* Viz mode toggles (Bloch + PIB only) */}
+          {showVizToggle && (
+            <VizModeToggle mode={activeVizMode} onChange={setActiveVizMode} />
+          )}
+
+          {/* DoubleSlit measure toggle */}
           {activeView === 'doubleslit' && (
             <MeasureToggle active={measured} onToggle={() => setSlitMeasured(!measured)} />
           )}
@@ -237,7 +289,7 @@ export default function QuantumModule() {
         </div>
       </header>
 
-      {/* Main layout */}
+      {/* ── Main layout ── */}
       <div className="flex flex-1 overflow-hidden" style={{ minHeight: 0 }}>
         <div className="w-72 shrink-0 flex flex-col overflow-hidden">
           <InfoPanel
@@ -254,9 +306,9 @@ export default function QuantumModule() {
 
         <main className="flex-1 relative overflow-hidden" style={{ minHeight: 0 }}>
           <SceneWrapper cameraPosition={camPos}>
-            {activeView === 'blochsphere' && <BlochSphere />}
+            {activeView === 'blochsphere'   && <BlochSphere />}
             {activeView === 'particleinbox' && <ParticleInBox />}
-            {activeView === 'doubleslit' && <DoubleSlit />}
+            {activeView === 'doubleslit'    && <DoubleSlit />}
           </SceneWrapper>
 
           <div className="absolute top-3 left-4 pointer-events-none">
