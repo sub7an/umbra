@@ -35,6 +35,9 @@ const useModuleStore = create((set) => ({
     boxN: 2,                   // quantum number n ∈ [1, 6]
     slitWavelength: 0.6,       // effective wavelength for interference
     slitMeasured: false,       // whether which-path measurement is active
+    particleCount: 20000,      // Monte Carlo sample count for PIB and Bloch
+    boxVizMode: 'prob',        // 'prob' | 'real' | 'imag'
+    blochVizMode: 'prob',      // 'prob' | 'real' | 'imag'
   },
 
   setBlochTheta: (v) =>
@@ -62,6 +65,17 @@ const useModuleStore = create((set) => ({
       qm: { ...state.qm, slitMeasured: v },
     })),
 
+  setParticleCount: (v) =>
+    set((state) => ({
+      qm: { ...state.qm, particleCount: Math.round(Math.max(1000, Math.min(100000, v))) },
+    })),
+
+  setBoxVizMode: (v) =>
+    set((state) => ({ qm: { ...state.qm, boxVizMode: v } })),
+
+  setBlochVizMode: (v) =>
+    set((state) => ({ qm: { ...state.qm, blochVizMode: v } })),
+
   resetQm: () =>
     set({
       qm: {
@@ -70,6 +84,9 @@ const useModuleStore = create((set) => ({
         boxN: 2,
         slitWavelength: 0.6,
         slitMeasured: false,
+        particleCount: 20000,
+        boxVizMode: 'prob',
+        blochVizMode: 'prob',
       },
     }),
 
