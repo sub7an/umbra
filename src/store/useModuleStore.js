@@ -90,6 +90,17 @@ const useModuleStore = create((set) => ({
       },
     }),
 
+  // Electromagnetism state
+  em: {
+    magnetType: 'dipole', // 'dipole' | 'bar' | 'solenoid' | 'halbach'
+  },
+
+  setEmMagnetType: (v) =>
+    set((state) => ({ em: { ...state.em, magnetType: v } })),
+
+  resetEm: () =>
+    set({ em: { magnetType: 'dipole' } }),
+
   // Frontier Physics state
   fp: {
     fpRadius: 3.0,  // orbital radius for rotation curve slider ∈ [0.2, 6.5]

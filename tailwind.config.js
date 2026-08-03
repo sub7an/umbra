@@ -19,6 +19,9 @@ export default {
         'amber-mid': '#d97706',
         'rose-glow': '#e040fb',
         'rose-mid': '#c026d3',
+        'violet-glow': '#a855f7',
+        'violet-mid': '#9333ea',
+        'violet-dim': '#6d28d9',
         timelike: '#00e5c4',
         spacelike: '#e040fb',
         'grid-line': '#0f1f28',
@@ -33,6 +36,7 @@ export default {
         'glow-cyan-strong': '0 0 16px 4px rgba(0,229,196,0.5)',
         'glow-amber': '0 0 8px 2px rgba(245,158,11,0.4)',
         'glow-rose': '0 0 8px 2px rgba(224,64,251,0.4)',
+        'glow-violet': '0 0 8px 2px rgba(168,85,247,0.4)',
         'panel-inset': 'inset 0 1px 0 rgba(0,229,196,0.08)',
       },
       animation: {
