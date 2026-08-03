@@ -4,7 +4,7 @@ import ControlPanel from '../../components/ControlPanel'
 import InfoPanel from '../../components/InfoPanel'
 import RotationCurve from './RotationCurve'
 import ExpansionSim from './ExpansionSim'
-import BlackHole from './BlackHole'
+import BlackHole, { isMobile } from './BlackHole'
 import useModuleStore from '../../store/useModuleStore'
 import {
   keplerianVelocity,
@@ -32,9 +32,9 @@ function buildExplanation(view, fpRadius, hubble, bhMass) {
     case 'blackhole': {
       const Rs    = (bhMass * 0.5).toFixed(3)
       const bCrit = (bhMass * 0.5 * 2.598).toFixed(3)
-      return `This is a screen-space gravitational lensing approximation — not a full general-relativistic geodesic integrator. Background starlight is deflected by angle α ≈ 4GM/c²b (leading-order Schwarzschild) enhanced near the photon sphere, where real photons can orbit the black hole.
+      return `The shader deflects each background ray by δ ≈ 4·b_crit²/b², a 1/b² falloff chosen because it diverges sharply near the photon sphere and tapers naturally at large distances — producing a convincing ring without needing to solve geodesic equations. This is not the real Schwarzschild formula (which is α = 2Rs/b, a 1/b law). The 1/b² version exaggerates strong-field bending for visual impact while getting the qualitative structure right: a shadow, a photon ring, and weak lensing of distant stars.
 
-The dark region (shadow) has radius b_crit = ${bCrit} — larger than the event horizon at R_s = ${Rs}. This is the critical impact parameter: rays with b < b_crit are captured. The bright ring at the shadow edge is the photon ring, formed by rays that almost complete an orbit before escaping. A real GR renderer would integrate null geodesics through the full Kerr or Schwarzschild metric; this visualization captures the qualitative structure at real-time framerates. The accretion disk rotates with Keplerian angular velocity ω ∝ r⁻³/².`
+What the shader does get right: the shadow boundary at b_crit = ${bCrit} (the photon capture radius, not the event horizon), the bright ring caused by rays that nearly orbit before escaping, and the sense of background stars bending around the mass. What it does not do: solve the Schwarzschild or Kerr geodesic equations per ray. A real GR renderer traces null geodesics through curved spacetime — this does not. The accretion disk uses Keplerian rotation (ω ∝ r⁻³/²) and rotates faster at the inner edge.`
     }
 
     case 'rotationcurve': {
@@ -65,12 +65,16 @@ function buildEquations(view, fpRadius, hubble, vo, vk, bhMass) {
       const rPh   = (bhMass * 0.5 * 1.5).toFixed(3)
       return {
         domain: 'GENERAL RELATIVITY · GRAVITATIONAL LENSING',
-        primaryEq: `\\alpha = \\dfrac{4GM}{c^2 b} = \\dfrac{2R_s}{b}`,
+        // Show the actual shader formula, not the true Schwarzschild formula
+        primaryEq: `\\delta \\approx \\dfrac{4\\,b_{\\rm crit}^2}{b^2}\\quad\\textcolor{#f59e0b}{(\\text{approx.})}`,
         derivedEqs: [
-          { label: 'Schwarzschild radius', eq: `R_s = ${Rs} \\text{ u} \\;(= 2GM/c^2)` },
-          { label: 'Shadow radius', eq: `b_{\\rm crit} = \\dfrac{3\\sqrt{3}}{2}\\,R_s = ${bCrit} \\text{ u}` },
-          { label: 'Photon sphere', eq: `r_{\\rm ph} = \\tfrac{3}{2}\\,R_s = ${rPh} \\text{ u}` },
-          { label: 'Approx. level', eq: `\\text{Screen-space 1st-order Schwarzschild}` },
+          {
+            label: 'True Schwarzschild α',
+            eq: `\\textcolor{#4a7a74}{\\alpha_{\\rm true} = \\dfrac{2R_s}{b} \\;\\text{(not used)}}`,
+          },
+          { label: 'Shadow radius', eq: `b_{\\rm crit} = \\dfrac{3\\sqrt{3}}{2}R_s = ${bCrit}\\text{ u}` },
+          { label: 'Photon sphere', eq: `r_{\\rm ph} = \\tfrac{3}{2}R_s = ${rPh}\\text{ u}` },
+          { label: 'Event horizon', eq: `R_s = ${Rs}\\text{ u} = 2GM/c^2` },
         ],
       }
     }
@@ -116,6 +120,7 @@ function buildEquations(view, fpRadius, hubble, vo, vk, bhMass) {
 
 export default function FrontierModule() {
   const [activeView, setActiveView] = useState('rotationcurve')
+  const [bhHiRes, setBhHiRes] = useState(!isMobile)
 
   const fpRadius = useModuleStore((s) => s.fp.fpRadius)
   const hubble   = useModuleStore((s) => s.fp.hubble)
@@ -241,7 +246,7 @@ export default function FrontierModule() {
           <SceneWrapper cameraPosition={camPos} showGrid={!isBlackHole} minDist={isBlackHole ? 2.5 : 2}>
             {activeView === 'rotationcurve' && <RotationCurve />}
             {activeView === 'expansion' && <ExpansionSim />}
-            {isBlackHole && <BlackHole />}
+            {isBlackHole && <BlackHole hiRes={bhHiRes} />}
           </SceneWrapper>
 
           <div className="absolute top-3 left-4 pointer-events-none">
@@ -249,6 +254,23 @@ export default function FrontierModule() {
               {VIEWS.find((v) => v.id === activeView)?.label}
             </span>
           </div>
+
+          {isBlackHole && (
+            <div className="absolute bottom-3 right-3 pointer-events-auto">
+              <button
+                onClick={() => setBhHiRes((v) => !v)}
+                className={[
+                  'font-mono-data text-[10px] tracking-[0.12em] uppercase px-2.5 py-1 rounded border transition-all duration-200',
+                  bhHiRes
+                    ? 'border-cyan-glow/50 text-cyan-glow bg-cyan-glow/5'
+                    : 'border-border-subtle text-text-dim hover:border-amber-glow/40 hover:text-text-primary',
+                ].join(' ')}
+                title={bhHiRes ? 'Switch to low-res (mobile / low-end GPU)' : 'Switch to hi-res (3 star scales + nebula)'}
+              >
+                {bhHiRes ? '◉ HI-RES' : '◎ LO-RES'}
+              </button>
+            </div>
+          )}
         </main>
 
         <div className="w-52 shrink-0 flex flex-col overflow-hidden">
