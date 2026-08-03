@@ -9,8 +9,9 @@ const BOX_LEFT  = -2.5
 const BOX_RIGHT =  2.5
 const BOX_W     = BOX_RIGHT - BOX_LEFT
 const WALL_H    = 2.8
-const Y_SPREAD  = 0.55   // max y/z amplitude at an antinode
-const Z_SPREAD  = 0.50   // max z depth of cloud
+const Y_SPREAD  = 0.55
+const Z_SPREAD  = 0.50
+const WAVE_AMP  = 1.0    // visual amplitude of the drawn wavefunction curve
 
 // ── Shaders ───────────────────────────────────────────────────────────────────
 
@@ -148,6 +149,84 @@ function ParticleCloud({ n, vizMode, En }) {
   return <points ref={matRef} geometry={geo} material={mat} />
 }
 
+// ── Animated wavefunction curve (Re(ψ) oscillating with time) ────────────────
+const CURVE_SEGS = 128
+
+function WaveCurve({ n, En, vizMode }) {
+  const posArr = useRef(new Float32Array((CURVE_SEGS + 1) * 3))
+  const geo = useMemo(() => {
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.BufferAttribute(posArr.current, 3))
+    return g
+  }, [])
+  const mat = useMemo(() => new THREE.LineBasicMaterial({
+    color: new THREE.Color('#00e5c4'),
+    transparent: true,
+    opacity: 0.7,
+  }), [])
+  useEffect(() => () => { geo.dispose(); mat.dispose() }, [geo, mat])
+
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime()
+    const cosEt = Math.cos(En * t * 0.9)
+    const sinEt = Math.sin(En * t * 0.9)
+    for (let i = 0; i <= CURVE_SEGS; i++) {
+      const xi = i / CURVE_SEGS
+      const psi = particleInBoxWavefunction(n, xi, 1)
+      let y
+      if (vizMode === 'prob') {
+        y = psi * psi * WAVE_AMP * 0.55
+      } else if (vizMode === 'real') {
+        y = psi * cosEt * WAVE_AMP
+      } else {
+        y = psi * sinEt * WAVE_AMP
+      }
+      posArr.current[i * 3]     = BOX_LEFT + xi * BOX_W
+      posArr.current[i * 3 + 1] = y
+      posArr.current[i * 3 + 2] = 0
+    }
+    geo.attributes.position.needsUpdate = true
+    // Color: |ψ|²=amber, Re=cyan, Im=rose
+    if (vizMode === 'prob')  mat.color.set('#f59e0b')
+    else if (vizMode === 'real') mat.color.set('#00e5c4')
+    else mat.color.set('#e040fb')
+  })
+
+  return <line geometry={geo} material={mat} />
+}
+
+// ── Node markers (zero-crossing points of ψ_n) ───────────────────────────────
+function NodeMarkers({ n }) {
+  const nodes = useMemo(() => {
+    const pts = []
+    for (let k = 1; k < n; k++) {
+      pts.push(BOX_LEFT + (k / n) * BOX_W)
+    }
+    return pts
+  }, [n])
+
+  return (
+    <>
+      {nodes.map((x, i) => (
+        <mesh key={i} position={[x, 0, 0]}>
+          <sphereGeometry args={[0.055, 8, 8]} />
+          <meshStandardMaterial color="#162229" emissive="#00e5c4" emissiveIntensity={0.6} />
+        </mesh>
+      ))}
+    </>
+  )
+}
+
+// ── Wall glow planes ──────────────────────────────────────────────────────────
+function WallGlow({ x }) {
+  return (
+    <mesh position={[x, 0, -0.15]}>
+      <planeGeometry args={[0.25, WALL_H * 1.05]} />
+      <meshBasicMaterial color={new THREE.Color('#00e5c4')} transparent opacity={0.06} blending={THREE.AdditiveBlending} depthWrite={false} />
+    </mesh>
+  )
+}
+
 // ── Energy ladder ─────────────────────────────────────────────────────────────
 
 function EnergyLadder({ n }) {
@@ -198,17 +277,23 @@ export default function ParticleInBox() {
 
   return (
     <group position={[0, 0.2, 0]}>
-      {/* Box walls */}
+      {/* ── Potential wall glows ── */}
+      <WallGlow x={BOX_LEFT} />
+      <WallGlow x={BOX_RIGHT} />
+
+      {/* ── Box walls ── */}
       <mesh position={[BOX_LEFT, 0, 0]}>
-        <boxGeometry args={[0.04, WALL_H, 0.04]} />
-        <meshStandardMaterial color="#00e5c4" emissive="#00e5c4" emissiveIntensity={0.4} />
+        <boxGeometry args={[0.05, WALL_H, 0.05]} />
+        <meshStandardMaterial color="#00e5c4" emissive="#00e5c4" emissiveIntensity={0.7} roughness={0.3} />
       </mesh>
       <mesh position={[BOX_RIGHT, 0, 0]}>
-        <boxGeometry args={[0.04, WALL_H, 0.04]} />
-        <meshStandardMaterial color="#00e5c4" emissive="#00e5c4" emissiveIntensity={0.4} />
+        <boxGeometry args={[0.05, WALL_H, 0.05]} />
+        <meshStandardMaterial color="#00e5c4" emissive="#00e5c4" emissiveIntensity={0.7} roughness={0.3} />
       </mesh>
+      <pointLight position={[BOX_LEFT, 0, 0.3]} color="#00e5c4" intensity={0.5} distance={1.5} />
+      <pointLight position={[BOX_RIGHT, 0, 0.3]} color="#00e5c4" intensity={0.5} distance={1.5} />
 
-      {/* Floor */}
+      {/* ── Floor ── */}
       <Line
         points={[[BOX_LEFT, -WALL_H / 2, 0], [BOX_RIGHT, -WALL_H / 2, 0]]}
         color="#162229"
@@ -217,7 +302,7 @@ export default function ParticleInBox() {
         opacity={0.6}
       />
 
-      {/* Zero axis */}
+      {/* ── Zero axis ── */}
       <Line
         points={[[BOX_LEFT, 0, 0], [BOX_RIGHT, 0, 0]]}
         color="#162229"
@@ -229,13 +314,19 @@ export default function ParticleInBox() {
         gapSize={0.1}
       />
 
-      {/* Monte Carlo particle cloud */}
+      {/* ── Oscillating wavefunction curve ── */}
+      <WaveCurve n={n} En={En} vizMode={vizMode} />
+
+      {/* ── Node zero-crossing markers ── */}
+      <NodeMarkers n={n} />
+
+      {/* ── Monte Carlo particle cloud ── */}
       <ParticleCloud n={n} vizMode={vizMode} En={En} />
 
-      {/* Energy ladder */}
+      {/* ── Energy ladder ── */}
       <EnergyLadder n={n} />
 
-      {/* Labels */}
+      {/* ── Labels ── */}
       <Html position={[BOX_LEFT - 0.15, WALL_H / 2 + 0.2, 0]} center style={{ pointerEvents: 'none' }}>
         <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#4a7a74', whiteSpace: 'nowrap' }}>V=∞</span>
       </Html>
