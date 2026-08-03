@@ -1,12 +1,13 @@
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Html, Line } from '@react-three/drei'
+import * as THREE from 'three'
 import useModuleStore from '../../store/useModuleStore'
 import { keplerianVelocity, observedRotationVelocity } from './frontierMath'
 
-const GALAXY_CENTER = [-0.8, 0, 0]  // world position of galaxy center
-const R_MAX = 6.5                    // max slider radius (scene units)
-const GRAPH_POS = [4.0, 0.8, 0]     // world position of graph Html panel
+const GALAXY_CENTER = [-0.8, 0, 0]
+const R_MAX = 6.5
+const GRAPH_POS = [4.0, 0.8, 0]
 
 // ── Spiral galaxy particle cloud ─────────────────────────────────────────────
 
@@ -14,7 +15,6 @@ function buildGalaxyPositions(nStars = 2800) {
   const pos = new Float32Array(nStars * 3)
   const N_ARMS = 3
 
-  // Central bulge: ~22% of stars
   const bulge = Math.floor(nStars * 0.22)
   for (let i = 0; i < bulge; i++) {
     const r = Math.pow(Math.random(), 2.2) * 0.7
@@ -25,18 +25,15 @@ function buildGalaxyPositions(nStars = 2800) {
     pos[i * 3 + 2] = r * Math.sin(theta)
   }
 
-  // Spiral arms
   for (let i = bulge; i < nStars; i++) {
     const arm = i % N_ARMS
     const r = 0.35 + Math.pow(Math.random(), 0.55) * 3.6
     const spiral = (arm / N_ARMS) * 2 * Math.PI + r * 1.35
     const scatter = (Math.random() - 0.5) * Math.min(r * 0.18, 0.4)
-
     pos[i * 3]     = r * Math.cos(spiral) + scatter
     pos[i * 3 + 1] = (Math.random() - 0.5) * 0.14
     pos[i * 3 + 2] = r * Math.sin(spiral) + scatter
   }
-
   return pos
 }
 
@@ -45,9 +42,7 @@ function Galaxy() {
   const groupRef = useRef()
 
   useFrame((_, delta) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += delta * 0.028
-    }
+    if (groupRef.current) groupRef.current.rotation.y += delta * 0.028
   })
 
   return (
@@ -61,15 +56,8 @@ function Galaxy() {
             itemSize={3}
           />
         </bufferGeometry>
-        <pointsMaterial
-          color="#7af0df"
-          size={0.038}
-          transparent
-          opacity={0.72}
-          sizeAttenuation
-        />
+        <pointsMaterial color="#7af0df" size={0.038} transparent opacity={0.72} sizeAttenuation />
       </points>
-      {/* Central core glow */}
       <pointLight color="#00e5c4" intensity={0.6} distance={1.8} />
       <mesh>
         <sphereGeometry args={[0.15, 12, 12]} />
@@ -79,7 +67,37 @@ function Galaxy() {
   )
 }
 
-// ── Orbital probe (ring + glowing marker) ────────────────────────────────────
+// ── Dark matter halo (translucent nested shells) ──────────────────────────────
+
+function DarkMatterHalo() {
+  const radii  = [2.6, 4.0, 5.5]
+  const opacities = [0.055, 0.038, 0.025]
+
+  return (
+    <group position={GALAXY_CENTER}>
+      {radii.map((r, i) => (
+        <mesh key={i}>
+          <sphereGeometry args={[r, 20, 16]} />
+          <meshBasicMaterial
+            color="#7030c8"
+            transparent
+            opacity={opacities[i]}
+            side={THREE.BackSide}
+            depthWrite={false}
+            blending={THREE.AdditiveBlending}
+          />
+        </mesh>
+      ))}
+      <Html position={[0, 5.7, 0]} center style={{ pointerEvents: 'none' }}>
+        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: 'rgba(130,60,220,0.75)', letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>
+          DARK MATTER HALO
+        </span>
+      </Html>
+    </group>
+  )
+}
+
+// ── Orbital probe — animated marker + tangential velocity arrow ───────────────
 
 function buildRingPoints(cx, cz, r, n = 80) {
   const pts = []
@@ -96,32 +114,64 @@ function OrbitalProbe({ radius }) {
     [radius],
   )
 
-  const probeX = GALAXY_CENTER[0] + radius
-  const probePos = [probeX, 0, GALAXY_CENTER[2]]
+  const angleRef  = useRef(0)
+  const markerRef = useRef()
+
+  const arrowPosArr = useMemo(() => new Float32Array(6), [])
+  const arrowGeo = useMemo(() => {
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.BufferAttribute(arrowPosArr, 3))
+    return g
+  }, [arrowPosArr])
+  useEffect(() => () => arrowGeo.dispose(), [arrowGeo])
+
+  useFrame((_, delta) => {
+    const vObs = observedRotationVelocity(radius)
+    angleRef.current += delta * vObs * 0.45
+
+    const a  = angleRef.current
+    const cx = GALAXY_CENTER[0]
+    const cz = GALAXY_CENTER[2]
+    const x  = cx + radius * Math.cos(a)
+    const z  = cz + radius * Math.sin(a)
+
+    if (markerRef.current) markerRef.current.position.set(x, 0, z)
+
+    // Tangential direction: (-sin a, 0, cos a)
+    const arrowLen = vObs * 1.5
+    arrowPosArr[0] = x
+    arrowPosArr[1] = 0
+    arrowPosArr[2] = z
+    arrowPosArr[3] = x + (-Math.sin(a)) * arrowLen
+    arrowPosArr[4] = 0
+    arrowPosArr[5] = z + Math.cos(a) * arrowLen
+    arrowGeo.attributes.position.needsUpdate = true
+  })
 
   return (
-    <group>
+    <>
       {/* Orbital ring */}
-      <Line
-        points={ringPts}
-        color="#f59e0b"
-        lineWidth={1}
-        transparent
-        opacity={0.4}
-      />
-      {/* Probe marker */}
-      <mesh position={probePos}>
-        <sphereGeometry args={[0.1, 12, 12]} />
-        <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={1.2} />
-      </mesh>
-      <pointLight position={probePos} color="#f59e0b" intensity={0.8} distance={1.5} />
-      {/* Probe label */}
-      <Html position={[probePos[0], probePos[1] + 0.32, probePos[2]]} center style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#f59e0b', whiteSpace: 'nowrap', textShadow: '0 0 6px rgba(245,158,11,0.7)' }}>
-          r = {radius.toFixed(2)}
-        </span>
-      </Html>
-    </group>
+      <Line points={ringPts} color="#f59e0b" lineWidth={1} transparent opacity={0.35} />
+
+      {/* Animated marker */}
+      <group ref={markerRef} position={[GALAXY_CENTER[0] + radius, 0, GALAXY_CENTER[2]]}>
+        <mesh>
+          <sphereGeometry args={[0.1, 12, 12]} />
+          <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={1.4} />
+        </mesh>
+        <pointLight color="#f59e0b" intensity={1.0} distance={1.8} />
+        <Html position={[0, 0.35, 0]} center style={{ pointerEvents: 'none' }}>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#f59e0b', whiteSpace: 'nowrap', textShadow: '0 0 6px rgba(245,158,11,0.7)' }}>
+            r = {radius.toFixed(2)}
+          </span>
+        </Html>
+      </group>
+
+      {/* Tangential velocity arrow */}
+      <lineSegments geometry={arrowGeo}>
+        <lineBasicMaterial color="#00e5c4" transparent opacity={0.85} depthWrite={false} />
+      </lineSegments>
+    </>
   )
 }
 
@@ -153,99 +203,63 @@ function VelocityGraph({ radius }) {
 
   const vKep = keplerianVelocity(radius)
   const vObs = observedRotationVelocity(radius)
-  const disc = vObs - vKep
+  const disc  = vObs - vKep
 
   const rx = toX(radius)
   const ky = toY(vKep)
   const oy = toY(vObs)
 
   return (
-    <div style={{
-      width: G_W,
-      background: 'rgba(5,9,12,0.95)',
-      border: '1px solid rgba(245,158,11,0.28)',
-      borderRadius: 6,
-      overflow: 'hidden',
-      userSelect: 'none',
-    }}>
-      {/* Header */}
+    <div style={{ width: G_W, background: 'rgba(5,9,12,0.95)', border: '1px solid rgba(245,158,11,0.28)', borderRadius: 6, overflow: 'hidden', userSelect: 'none' }}>
       <div style={{ padding: '6px 10px 3px', fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#f59e0b', letterSpacing: '0.12em', opacity: 0.9 }}>
         ROTATION CURVES
       </div>
 
       <svg width={G_W} height={G_H}>
-        {/* Plot background */}
         <rect x={PAD.l} y={PAD.t} width={pw} height={ph} fill="rgba(10,18,24,0.6)" />
 
-        {/* Horizontal grid */}
         {[0.25, 0.5, 0.75, 1.0].map(v => (
-          <line key={v}
-            x1={PAD.l} y1={toY(v)}
-            x2={PAD.l + pw} y2={toY(v)}
-            stroke="rgba(20,32,40,0.9)" strokeWidth={1}
-          />
+          <line key={v} x1={PAD.l} y1={toY(v)} x2={PAD.l + pw} y2={toY(v)} stroke="rgba(20,32,40,0.9)" strokeWidth={1} />
         ))}
-
-        {/* Vertical grid every 2 units */}
         {[2, 4, 6].map(r => (
-          <line key={r}
-            x1={toX(r)} y1={PAD.t}
-            x2={toX(r)} y2={PAD.t + ph}
-            stroke="rgba(20,32,40,0.9)" strokeWidth={1}
-          />
+          <line key={r} x1={toX(r)} y1={PAD.t} x2={toX(r)} y2={PAD.t + ph} stroke="rgba(20,32,40,0.9)" strokeWidth={1} />
         ))}
 
-        {/* Current r marker */}
-        <line
-          x1={rx} y1={PAD.t}
-          x2={rx} y2={PAD.t + ph}
-          stroke="rgba(255,255,255,0.12)" strokeWidth={1} strokeDasharray="3,3"
-        />
+        <line x1={rx} y1={PAD.t} x2={rx} y2={PAD.t + ph} stroke="rgba(255,255,255,0.12)" strokeWidth={1} strokeDasharray="3,3" />
 
-        {/* Keplerian curve (amber — predicted from visible matter) */}
-        <path d={kepPath} fill="none" stroke="#f59e0b" strokeWidth={1.5} opacity={0.82} />
-
-        {/* Observed curve (cyan — what we actually measure) */}
-        <path d={obsPath} fill="none" stroke="#00e5c4" strokeWidth={2} />
-
-        {/* Discrepancy bar */}
+        {/* Dark matter discrepancy fill */}
         {disc > 0.005 && (
-          <line x1={rx} y1={ky} x2={rx} y2={oy} stroke="rgba(255,255,255,0.35)" strokeWidth={1.5} />
+          <line x1={rx} y1={ky} x2={rx} y2={oy} stroke="rgba(112,48,200,0.5)" strokeWidth={2} />
         )}
 
-        {/* Marker dots */}
+        <path d={kepPath} fill="none" stroke="#f59e0b" strokeWidth={1.5} opacity={0.82} />
+        <path d={obsPath} fill="none" stroke="#00e5c4" strokeWidth={2} />
+
         <circle cx={rx} cy={ky} r={4.5} fill="#f59e0b" opacity={0.9} />
         <circle cx={rx} cy={oy} r={4.5} fill="#00e5c4" />
 
-        {/* Axes */}
         <line x1={PAD.l} y1={PAD.t} x2={PAD.l} y2={PAD.t + ph} stroke="#1a2e3c" strokeWidth={1} />
         <line x1={PAD.l} y1={PAD.t + ph} x2={PAD.l + pw} y2={PAD.t + ph} stroke="#1a2e3c" strokeWidth={1} />
 
-        {/* X-axis ticks */}
         {[2, 4, 6].map(r => (
           <text key={r} x={toX(r)} y={PAD.t + ph + 11} textAnchor="middle" fill="#2a4a5a" fontSize={8} fontFamily="JetBrains Mono, monospace">{r}</text>
         ))}
 
-        {/* Axis labels */}
         <text x={PAD.l + pw / 2} y={G_H - 4} textAnchor="middle" fill="#2a4a5a" fontSize={8} fontFamily="JetBrains Mono, monospace">r (orbital radius)</text>
         <text x={10} y={PAD.t + ph / 2} textAnchor="middle" fill="#2a4a5a" fontSize={8} fontFamily="JetBrains Mono, monospace" transform={`rotate(-90,10,${PAD.t + ph / 2})`}>v</text>
 
-        {/* Legend */}
         <line x1={PAD.l + 4} y1={PAD.t + 8} x2={PAD.l + 18} y2={PAD.t + 8} stroke="#00e5c4" strokeWidth={2} />
         <text x={PAD.l + 22} y={PAD.t + 11} fill="#00e5c4" fontSize={8} fontFamily="JetBrains Mono, monospace">measured</text>
         <line x1={PAD.l + 4} y1={PAD.t + 19} x2={PAD.l + 18} y2={PAD.t + 19} stroke="#f59e0b" strokeWidth={1.5} opacity={0.85} />
         <text x={PAD.l + 22} y={PAD.t + 22} fill="#f59e0b" fontSize={8} fontFamily="JetBrains Mono, monospace" opacity={0.85}>keplerian</text>
+        <line x1={PAD.l + 4} y1={PAD.t + 30} x2={PAD.l + 18} y2={PAD.t + 30} stroke="rgba(112,48,200,0.7)" strokeWidth={2} />
+        <text x={PAD.l + 22} y={PAD.t + 33} fill="rgba(130,60,220,0.8)" fontSize={8} fontFamily="JetBrains Mono, monospace">dark matter</text>
       </svg>
 
-      {/* Readout row */}
-      <div style={{
-        display: 'flex', justifyContent: 'space-between',
-        padding: '3px 10px 7px',
-        fontFamily: 'JetBrains Mono, monospace', fontSize: 9,
-      }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 10px 7px', fontFamily: 'JetBrains Mono, monospace', fontSize: 9 }}>
         <span style={{ color: '#00e5c4' }}>v_obs {vObs.toFixed(3)}</span>
         <span style={{ color: '#f59e0b', opacity: 0.85 }}>v_kep {vKep.toFixed(3)}</span>
-        <span style={{ color: 'rgba(255,255,255,0.38)' }}>Δv +{Math.max(0, disc).toFixed(3)}</span>
+        <span style={{ color: 'rgba(130,60,220,0.85)' }}>Δv +{Math.max(0, disc).toFixed(3)}</span>
       </div>
     </div>
   )
@@ -258,9 +272,11 @@ export default function RotationCurve() {
 
   return (
     <group>
-      {/* Ambient + directional lighting */}
       <ambientLight intensity={0.4} />
       <directionalLight position={[5, 8, 5]} intensity={0.3} color="#d4f0ff" />
+
+      {/* Dark matter halo (renders behind galaxy) */}
+      <DarkMatterHalo />
 
       {/* Galaxy */}
       <Galaxy />
@@ -268,12 +284,11 @@ export default function RotationCurve() {
       {/* Orbital radius probe */}
       <OrbitalProbe radius={radius} />
 
-      {/* Velocity graph panel — floats to the right of the galaxy */}
+      {/* Velocity graph */}
       <Html position={GRAPH_POS} center={false} occlude={false} style={{ pointerEvents: 'none' }}>
         <VelocityGraph radius={radius} />
       </Html>
 
-      {/* Scene label */}
       <Html position={[-0.8, 3.2, 0]} center style={{ pointerEvents: 'none' }}>
         <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#2a4a5a', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>
           SPIRAL GALAXY · FACE-ON VIEW
