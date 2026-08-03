@@ -6,23 +6,22 @@ import useModuleStore from '../../store/useModuleStore'
 import { interferenceIntensity, sampleInterference, sampleMeasured } from './qmMath'
 
 const MAX_PARTICLES = 2000
-const EMIT_RATE = 30          // particles per second
+const EMIT_RATE = 30
 const SCREEN_X = 3.8
 const BARRIER_X = 0
 const SOURCE_X = -4.2
 const SCREEN_HALF_H = 3.2
-const SLIT_SEP = 1.0          // slit centre-to-centre (scene units)
-const SLIT_H = 0.38           // half-height of each slit opening
-const SCREEN_DIST = SCREEN_X - BARRIER_X  // 3.8
+const SLIT_SEP = 1.0
+const SLIT_H = 0.38
+const SCREEN_DIST = SCREEN_X - BARRIER_X
 
-// Intensity curve points for the screen overlay
+// Intensity curve on the screen
 function buildIntensityCurve(lambda, measured, n = 80) {
   const pts = []
   for (let i = 0; i <= n; i++) {
     const y = -SCREEN_HALF_H + (i / n) * 2 * SCREEN_HALF_H
     let intensity
     if (measured) {
-      // Two Gaussians, one per slit
       const sigma = 0.9
       const g1 = Math.exp(-((y - SLIT_SEP / 2) ** 2) / (2 * sigma ** 2))
       const g2 = Math.exp(-((y + SLIT_SEP / 2) ** 2) / (2 * sigma ** 2))
@@ -35,6 +34,154 @@ function buildIntensityCurve(lambda, measured, n = 80) {
   return pts
 }
 
+// ── Expanding circular wave rings from source ─────────────────────────────────
+const WAVE_N = 5
+const SRC_MAX_R = Math.abs(SOURCE_X) + 0.5  // slightly past barrier
+
+function SourceWaves() {
+  const SEGS = 48
+  const geos = useMemo(() => Array.from({ length: WAVE_N }, () => {
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array((SEGS + 1) * 3), 3))
+    return g
+  }), [])
+  const mats = useMemo(() => Array.from({ length: WAVE_N }, () =>
+    new THREE.LineBasicMaterial({ color: new THREE.Color('#00e5c4'), transparent: true, opacity: 0 })
+  ), [])
+  const phases = useRef(Array.from({ length: WAVE_N }, (_, i) => i / WAVE_N))
+
+  useEffect(() => () => { geos.forEach((g) => g.dispose()); mats.forEach((m) => m.dispose()) }, [geos, mats])
+
+  useFrame((_, delta) => {
+    for (let i = 0; i < WAVE_N; i++) {
+      phases.current[i] = (phases.current[i] + delta * 0.55 / SRC_MAX_R) % 1
+      const p = phases.current[i]
+      const r = p * SRC_MAX_R
+      const arr = geos[i].attributes.position.array
+      for (let s = 0; s <= SEGS; s++) {
+        const a = (s / SEGS) * Math.PI * 2
+        arr[s * 3] = SOURCE_X + Math.cos(a) * r
+        arr[s * 3 + 1] = Math.sin(a) * r
+        arr[s * 3 + 2] = 0
+      }
+      geos[i].attributes.position.needsUpdate = true
+      const fadeIn = Math.min(p * 6, 1)
+      const fadeOut = Math.pow(1 - p, 2.2)
+      mats[i].opacity = fadeIn * fadeOut * 0.38
+    }
+  })
+
+  return (
+    <>
+      {geos.map((g, i) => (
+        <line key={i} geometry={g} material={mats[i]} />
+      ))}
+    </>
+  )
+}
+
+// ── Right-facing semicircular waves from each slit ────────────────────────────
+const SLIT_WAVE_N = 4
+const SLIT_MAX_R = SCREEN_DIST + 1.2
+
+function SlitWaves({ measured }) {
+  const SEGS = 36
+  const color = measured ? '#f59e0b' : '#00e5c4'
+
+  // Two sets of rings (top slit + bottom slit), SLIT_WAVE_N each
+  const total = SLIT_WAVE_N * 2
+  const geos = useMemo(() => Array.from({ length: total }, () => {
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array((SEGS + 1) * 3), 3))
+    return g
+  }), [total])
+  const mats = useMemo(() => Array.from({ length: total }, () =>
+    new THREE.LineBasicMaterial({ color: new THREE.Color(color), transparent: true, opacity: 0 })
+  ), [color, total])
+  const phases = useRef(Array.from({ length: total }, (_, i) => (i % SLIT_WAVE_N) / SLIT_WAVE_N))
+
+  useEffect(() => () => { geos.forEach((g) => g.dispose()); mats.forEach((m) => m.dispose()) }, [geos, mats])
+
+  useFrame((_, delta) => {
+    for (let i = 0; i < total; i++) {
+      phases.current[i] = (phases.current[i] + delta * 0.6 / SLIT_MAX_R) % 1
+      const p = phases.current[i]
+      const r = p * SLIT_MAX_R
+      const slitY = i < SLIT_WAVE_N ? SLIT_SEP / 2 : -SLIT_SEP / 2
+      const arr = geos[i].attributes.position.array
+      for (let s = 0; s <= SEGS; s++) {
+        const a = -Math.PI / 2 + (s / SEGS) * Math.PI  // right-facing semicircle
+        arr[s * 3] = BARRIER_X + Math.cos(a) * r
+        arr[s * 3 + 1] = slitY + Math.sin(a) * r
+        arr[s * 3 + 2] = 0
+      }
+      geos[i].attributes.position.needsUpdate = true
+      const fadeIn = Math.min(p * 5, 1)
+      const fadeOut = Math.pow(1 - p, 1.8)
+      mats[i].opacity = fadeIn * fadeOut * 0.45
+    }
+  })
+
+  return (
+    <>
+      {geos.map((g, i) => (
+        <line key={i} geometry={g} material={mats[i]} />
+      ))}
+    </>
+  )
+}
+
+// ── Interference amplitude field between barrier and screen ───────────────────
+function InterferenceField({ lambda, measured }) {
+  const geoRef = useRef(null)
+
+  const geo = useMemo(() => {
+    if (geoRef.current) geoRef.current.dispose()
+    if (measured) {
+      geoRef.current = null
+      return null
+    }
+    const NX = 16, NY = 52
+    const positions = []
+    const colors = []
+    for (let ix = 0; ix < NX; ix++) {
+      for (let iy = 0; iy < NY; iy++) {
+        const x = BARRIER_X + 0.3 + (ix / (NX - 1)) * (SCREEN_X - BARRIER_X - 0.4)
+        const y = -SCREEN_HALF_H * 0.96 + (iy / (NY - 1)) * SCREEN_HALF_H * 1.92
+        const D = Math.max(0.25, x - BARRIER_X)
+        const I = interferenceIntensity(SLIT_SEP, lambda, y, D)
+        const nearFade = Math.min((x - BARRIER_X) / 0.5, 1)
+        const v = I * nearFade
+        positions.push(x, y, 0)
+        colors.push(0, v * 0.898, v * 0.769)
+      }
+    }
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+    g.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
+    geoRef.current = g
+    return g
+  }, [lambda, measured])
+
+  useEffect(() => () => { if (geoRef.current) geoRef.current.dispose() }, [])
+
+  if (!geo) return null
+
+  return (
+    <points geometry={geo}>
+      <pointsMaterial
+        size={0.10}
+        vertexColors
+        transparent
+        opacity={0.28}
+        blending={THREE.AdditiveBlending}
+        depthWrite={false}
+        sizeAttenuation
+      />
+    </points>
+  )
+}
+
 function Barrier({ measured }) {
   const gapY = SLIT_SEP / 2
   const barrierColor = '#0e2235'
@@ -43,27 +190,22 @@ function Barrier({ measured }) {
 
   return (
     <group position={[BARRIER_X, 0, 0]}>
-      {/* Top block */}
       <mesh position={[0, SCREEN_HALF_H / 2 + gapY + SLIT_H + (SCREEN_HALF_H - gapY - SLIT_H) / 2, 0]}>
         <boxGeometry args={[0.18, SCREEN_HALF_H - gapY - SLIT_H, 0.4]} />
         <meshStandardMaterial color={barrierColor} emissive="#0a1e30" emissiveIntensity={0.4} />
       </mesh>
-      {/* Middle block */}
       <mesh position={[0, 0, 0]}>
         <boxGeometry args={[0.18, SLIT_SEP - SLIT_H * 2, 0.4]} />
         <meshStandardMaterial color={barrierColor} emissive="#0a1e30" emissiveIntensity={0.4} />
       </mesh>
-      {/* Bottom block */}
       <mesh position={[0, -(SCREEN_HALF_H / 2 + gapY + SLIT_H + (SCREEN_HALF_H - gapY - SLIT_H) / 2), 0]}>
         <boxGeometry args={[0.18, SCREEN_HALF_H - gapY - SLIT_H, 0.4]} />
         <meshStandardMaterial color={barrierColor} emissive="#0a1e30" emissiveIntensity={0.4} />
       </mesh>
 
-      {/* Edge highlight lines */}
       <Line points={[[-0.09, -SCREEN_HALF_H, 0], [-0.09, SCREEN_HALF_H, 0]]} color={edgeColor} lineWidth={1} />
       <Line points={[[0.09, -SCREEN_HALF_H, 0], [0.09, SCREEN_HALF_H, 0]]} color={edgeColor} lineWidth={1} />
 
-      {/* Slit glow — shows detector if measured */}
       <pointLight position={[0, gapY, 0]} color={slitGlowColor} intensity={measured ? 1.2 : 0.4} distance={1.5} />
       <pointLight position={[0, -gapY, 0]} color={slitGlowColor} intensity={measured ? 1.2 : 0.4} distance={1.5} />
 
@@ -109,7 +251,6 @@ function ParticleCloud({ measured, lambda }) {
   const countRef = useRef(0)
   const accumRef = useRef(0)
 
-  // Reset when mode or wavelength changes
   useEffect(() => {
     countRef.current = 0
     accumRef.current = 0
@@ -162,14 +303,23 @@ export default function DoubleSlit() {
 
   return (
     <group>
-      {/* Source */}
+      {/* ── Wave propagation from source ── */}
+      <SourceWaves />
+
+      {/* ── Wave propagation from slits ── */}
+      <SlitWaves measured={measured} />
+
+      {/* ── Interference amplitude field ── */}
+      <InterferenceField lambda={lambda} measured={measured} />
+
+      {/* ── Source ── */}
       <mesh position={[SOURCE_X, 0, 0]}>
         <sphereGeometry args={[0.12, 12, 12]} />
         <meshStandardMaterial color="#00e5c4" emissive="#00e5c4" emissiveIntensity={1.5} />
       </mesh>
       <pointLight position={[SOURCE_X, 0, 0]} color="#00e5c4" intensity={0.8} distance={2} />
 
-      {/* Beam lines from source to slits */}
+      {/* ── Beam lines from source to slits ── */}
       <Line
         points={[[SOURCE_X, 0, 0], [BARRIER_X - 0.1, SLIT_SEP / 2, 0]]}
         color="#00e5c4"
@@ -190,7 +340,7 @@ export default function DoubleSlit() {
       <IntensityCurve lambda={lambda} measured={measured} />
       <ParticleCloud measured={measured} lambda={lambda} />
 
-      {/* Labels */}
+      {/* ── Labels ── */}
       <Html position={[SOURCE_X, -0.55, 0]} center style={{ pointerEvents: 'none' }}>
         <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#4a7a74', whiteSpace: 'nowrap' }}>SOURCE</span>
       </Html>
@@ -201,7 +351,6 @@ export default function DoubleSlit() {
         <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#4a7a74', whiteSpace: 'nowrap' }}>DETECTOR</span>
       </Html>
 
-      {/* Pattern label */}
       <Html position={[SCREEN_X + 1.0, 0, 0]} center style={{ pointerEvents: 'none', textAlign: 'center' }}>
         <div style={{
           fontFamily: 'JetBrains Mono, monospace',

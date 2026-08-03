@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import * as THREE from 'three'
@@ -6,47 +6,103 @@ import useModuleStore from '../../store/useModuleStore'
 import { hubbleExpansion, toHubbleUnits } from './frontierMath'
 
 const GRID_N = 5
-const SPACING = 1.1         // initial comoving separation (scene units)
-const T_CYCLE = 7           // seconds for one expansion half-cycle
-const EXPAND_RATE = 0.09    // scale factor growth rate multiplier
+const SPACING = 1.1
+const T_CYCLE = 7
+const EXPAND_RATE = 0.09
 
-// Build initial galaxy positions: 5×5 grid with center excluded (= reference).
+// Varied galaxy appearances (color, scale)
+const GALAXY_PALETTE = [
+  '#fff4d6', '#ffe0c4', '#d4eeff', '#ffcfcf', '#ccedee',
+  '#fffde0', '#d0d8ff', '#f0ffe0', '#ffd6f0', '#e0fff8',
+  '#fff0e0', '#dde8ff',
+]
+const GALAXY_SCALES = [0.80, 1.10, 1.25, 0.90, 1.05, 0.95, 1.30, 0.78, 1.00, 1.18, 0.88, 1.12]
+
 function buildGrid() {
   const positions = []
   for (let i = 0; i < GRID_N; i++) {
     for (let j = 0; j < GRID_N; j++) {
       const x = (i - 2) * SPACING
       const z = (j - 2) * SPACING
-      if (i === 2 && j === 2) continue  // center is the reference galaxy
+      if (i === 2 && j === 2) continue
       positions.push([x, 0, z])
     }
   }
-  return positions  // 24 non-reference galaxies
+  return positions
 }
 
-// Four selected galaxies where we show velocity labels.
-// Using exact grid positions so they track their instance correctly.
 const LABELED_GALAXIES = [
-  { pos: [SPACING, 0, 0],         d: SPACING },
-  { pos: [-SPACING, 0, 0],        d: SPACING },
-  { pos: [0, 0, SPACING],         d: SPACING },
-  { pos: [2 * SPACING, 0, 0],     d: 2 * SPACING },
+  { pos: [SPACING, 0, 0],     d: SPACING },
+  { pos: [-SPACING, 0, 0],    d: SPACING },
+  { pos: [0, 0, SPACING],     d: SPACING },
+  { pos: [2 * SPACING, 0, 0], d: 2 * SPACING },
 ]
+
+// ── Hubble velocity arrows on all galaxies ─────────────────────────────────
+function VelocityArrows({ gridPositions, hubble, scaleRef }) {
+  const N = gridPositions.length
+  const posArr = useMemo(() => new Float32Array(N * 6), [N])
+
+  const geo = useMemo(() => {
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.BufferAttribute(posArr, 3))
+    return g
+  }, [posArr])
+
+  useEffect(() => () => geo.dispose(), [geo])
+
+  useFrame(() => {
+    const a = scaleRef.current
+    let idx = 0
+    for (let i = 0; i < N; i++) {
+      const [x0, , z0] = gridPositions[i]
+      const wx = x0 * a
+      const wz = z0 * a
+      const len = Math.sqrt(wx * wx + wz * wz)
+      const d = len                       // proper distance in scene units
+      const arrowLen = hubble * d * 0.2   // v = H₀d, scaled to scene
+      const nx = len > 0 ? wx / len : 0
+      const nz = len > 0 ? wz / len : 0
+      posArr[idx++] = wx
+      posArr[idx++] = 0
+      posArr[idx++] = wz
+      posArr[idx++] = wx + nx * arrowLen
+      posArr[idx++] = 0
+      posArr[idx++] = wz + nz * arrowLen
+    }
+    geo.attributes.position.needsUpdate = true
+  })
+
+  return (
+    <lineSegments geometry={geo}>
+      <lineBasicMaterial color="#f59e0b" transparent opacity={0.7} />
+    </lineSegments>
+  )
+}
 
 export default function ExpansionSim() {
   const hubble = useModuleStore((s) => s.fp.hubble)
 
   const gridPositions = useMemo(() => buildGrid(), [])
-  const N = gridPositions.length  // 24
+  const N = gridPositions.length
 
   const instancedRef = useRef()
   const dummy = useMemo(() => new THREE.Object3D(), [])
   const timeRef = useRef(0)
   const scaleRef = useRef(1)
 
+  // Apply varied colors per galaxy instance
+  useEffect(() => {
+    if (!instancedRef.current) return
+    for (let i = 0; i < N; i++) {
+      const color = new THREE.Color(GALAXY_PALETTE[i % GALAXY_PALETTE.length])
+      instancedRef.current.setColorAt(i, color)
+    }
+    instancedRef.current.instanceColor.needsUpdate = true
+  }, [N])
+
   useFrame((_, delta) => {
     timeRef.current += delta * 0.22
-    // Ping-pong: expand → contract → repeat (no discontinuous snap)
     const phase = timeRef.current % (2 * T_CYCLE)
     const t = phase < T_CYCLE ? phase : 2 * T_CYCLE - phase
     const a = 1 + hubble * t * EXPAND_RATE
@@ -57,7 +113,8 @@ export default function ExpansionSim() {
     for (let i = 0; i < N; i++) {
       const [x0, y0, z0] = gridPositions[i]
       dummy.position.set(x0 * a, y0 * a, z0 * a)
-      dummy.scale.setScalar(1)
+      const instScale = GALAXY_SCALES[i % GALAXY_SCALES.length]
+      dummy.scale.setScalar(instScale)
       dummy.updateMatrix()
       instancedRef.current.setMatrixAt(i, dummy.matrix)
     }
@@ -88,13 +145,16 @@ export default function ExpansionSim() {
         </div>
       </Html>
 
-      {/* Expanding galaxies */}
+      {/* Expanding galaxies — white material so instanceColor shows through */}
       <instancedMesh ref={instancedRef} args={[null, null, N]}>
         <sphereGeometry args={[0.1, 8, 8]} />
-        <meshStandardMaterial color="#00e5c4" emissive="#00e5c4" emissiveIntensity={0.55} />
+        <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={0.5} />
       </instancedMesh>
 
-      {/* Velocity labels on four selected galaxies */}
+      {/* Hubble velocity arrows on all galaxies */}
+      <VelocityArrows gridPositions={gridPositions} hubble={hubble} scaleRef={scaleRef} />
+
+      {/* Velocity labels on selected galaxies */}
       {LABELED_GALAXIES.map(({ pos, d }, idx) => (
         <GalaxyLabel
           key={idx}
@@ -105,13 +165,11 @@ export default function ExpansionSim() {
         />
       ))}
 
-      {/* Faint reference grid */}
       <GridLines />
     </group>
   )
 }
 
-// Label that tracks a galaxy as it expands by updating a group's position each frame.
 function GalaxyLabel({ initialPos, comoving, hubble, scaleRef }) {
   const groupRef = useRef()
   const [ix, , iz] = initialPos
@@ -129,21 +187,20 @@ function GalaxyLabel({ initialPos, comoving, hubble, scaleRef }) {
         <div style={{
           fontFamily: 'JetBrains Mono, monospace',
           fontSize: 8,
-          color: 'rgba(0,229,196,0.75)',
+          color: 'rgba(245,158,11,0.85)',
           background: 'rgba(5,9,12,0.75)',
           padding: '1px 4px',
           borderRadius: 2,
           whiteSpace: 'nowrap',
-          border: '1px solid rgba(0,229,196,0.2)',
+          border: '1px solid rgba(245,158,11,0.25)',
         }}>
-          d={comoving.toFixed(1)} · v={vRec.toFixed(2)}
+          v={vRec.toFixed(2)} H₀d
         </div>
       </Html>
     </group>
   )
 }
 
-// Faint grid plane for spatial reference.
 function GridLines() {
   const extent = GRID_N * SPACING * 1.45
   const step = SPACING
