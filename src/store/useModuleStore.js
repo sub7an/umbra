@@ -94,6 +94,7 @@ const useModuleStore = create((set) => ({
   fp: {
     fpRadius: 3.0,  // orbital radius for rotation curve slider ∈ [0.2, 6.5]
     hubble: 1.0,    // normalized Hubble constant (1.0 ≈ 70 km/s/Mpc) ∈ [0.2, 2.5]
+    bhMass: 1.0,    // black hole mass scaling ∈ [0.3, 1.5]; Rs = bhMass * 0.5
   },
 
   setFpRadius: (v) =>
@@ -106,8 +107,13 @@ const useModuleStore = create((set) => ({
       fp: { ...state.fp, hubble: Math.max(0.2, Math.min(2.5, v)) },
     })),
 
+  setFpBhMass: (v) =>
+    set((state) => ({
+      fp: { ...state.fp, bhMass: Math.max(0.3, Math.min(1.5, v)) },
+    })),
+
   resetFp: () =>
-    set({ fp: { fpRadius: 3.0, hubble: 1.0 } }),
+    set({ fp: { fpRadius: 3.0, hubble: 1.0, bhMass: 1.0 } }),
 }))
 
 export default useModuleStore
