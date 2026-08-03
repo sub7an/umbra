@@ -36,6 +36,17 @@ const MODULES = [
     color: 'rose',
     formula: 'v_obs ≫ v_kep  |  v = H₀·d',
   },
+  {
+    id: 'electromagnetism',
+    name: 'Electromagnetism',
+    abbr: 'EM',
+    tagline: '3D field lines · Biot-Savart · Halbach arrays',
+    description:
+      'Real Biot-Savart field computation in 3D. RK4-traced magnetic field lines for dipole, bar magnet, solenoid, and Halbach array. Heatmap cross-sections and animated particle streams.',
+    status: 'active',
+    color: 'violet',
+    formula: 'B = μ₀/4π ∮ (I dℓ × r̂) / r²',
+  },
 ]
 
 const colorConfig = {
@@ -62,6 +73,14 @@ const colorConfig = {
     tag: 'bg-rose-glow/10 text-rose-glow border-rose-glow/30',
     formula: 'text-rose-glow',
     hover: 'hover:border-rose-glow hover:shadow-glow-rose',
+  },
+  violet: {
+    border: 'border-violet-glow/40',
+    glow: 'shadow-glow-violet',
+    abbr: 'text-violet-glow glow-violet',
+    tag: 'bg-violet-glow/10 text-violet-glow border-violet-glow/30',
+    formula: 'text-violet-glow',
+    hover: 'hover:border-violet-glow hover:shadow-glow-violet',
   },
 }
 

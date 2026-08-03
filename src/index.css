@@ -54,6 +54,9 @@ html, body, #root {
 .glow-rose {
   text-shadow: 0 0 6px rgba(224,64,251,0.7), 0 0 14px rgba(224,64,251,0.3);
 }
+.glow-violet {
+  text-shadow: 0 0 6px rgba(168,85,247,0.7), 0 0 14px rgba(168,85,247,0.3);
+}
 
 /* CRT scanline overlay */
 .scanlines::after {
