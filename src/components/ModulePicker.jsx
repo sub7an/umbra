@@ -37,6 +37,17 @@ const MODULES = [
     formula: 'v_obs ≫ v_kep  |  v = H₀·d',
   },
   {
+    id: 'dynamical-systems',
+    name: 'Dynamical Systems',
+    abbr: 'DS',
+    tagline: 'Strange attractors · Chaos · Phase space',
+    description:
+      '1,800 RK4-integrated particles tracing Lorenz, Rössler, Thomas, and Aizawa attractors in real time. Adjust σ, ρ, β live and watch chaos emerge as ρ crosses the Hopf bifurcation threshold at 24.74.',
+    status: 'active',
+    color: 'emerald',
+    formula: 'dX/dt = F(X)',
+  },
+  {
     id: 'electromagnetism',
     name: 'Electromagnetism',
     abbr: 'EM',
@@ -81,6 +92,14 @@ const colorConfig = {
     tag: 'bg-violet-glow/10 text-violet-glow border-violet-glow/30',
     formula: 'text-violet-glow',
     hover: 'hover:border-violet-glow hover:shadow-glow-violet',
+  },
+  emerald: {
+    border: 'border-emerald-glow/40',
+    glow: 'shadow-glow-emerald',
+    abbr: 'text-emerald-glow glow-emerald',
+    tag: 'bg-emerald-glow/10 text-emerald-glow border-emerald-glow/30',
+    formula: 'text-emerald-glow',
+    hover: 'hover:border-emerald-glow hover:shadow-glow-emerald',
   },
 }
 
