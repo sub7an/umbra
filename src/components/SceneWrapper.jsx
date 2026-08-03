@@ -53,7 +53,7 @@ function CameraRig({ position }) {
   return null
 }
 
-export default function SceneWrapper({ children, cameraPosition }) {
+export default function SceneWrapper({ children, cameraPosition, showGrid = true, minDist = 2, maxDist = 20 }) {
   return (
     <div className="relative w-full h-full scanlines" style={{ minHeight: 0 }}>
       <Canvas
@@ -64,14 +64,14 @@ export default function SceneWrapper({ children, cameraPosition }) {
       >
         <CameraRig position={cameraPosition || [4, 3, 7]} />
         <DefaultLighting />
-        <SceneGrid />
+        {showGrid && <SceneGrid />}
         {children}
         <OrbitControls
           enablePan={false}
           enableDamping
           dampingFactor={0.08}
-          minDistance={2}
-          maxDistance={20}
+          minDistance={minDist}
+          maxDistance={maxDist}
           maxPolarAngle={Math.PI * 0.85}
         />
         <GizmoHelper alignment="bottom-right" margin={[60, 60]}>

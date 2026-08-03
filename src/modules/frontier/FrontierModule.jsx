@@ -4,6 +4,7 @@ import ControlPanel from '../../components/ControlPanel'
 import InfoPanel from '../../components/InfoPanel'
 import RotationCurve from './RotationCurve'
 import ExpansionSim from './ExpansionSim'
+import BlackHole from './BlackHole'
 import useModuleStore from '../../store/useModuleStore'
 import {
   keplerianVelocity,
@@ -17,15 +18,25 @@ import {
 const VIEWS = [
   { id: 'rotationcurve', label: 'Rotation Curves' },
   { id: 'expansion', label: 'Hubble Expansion' },
+  { id: 'blackhole', label: 'Black Hole' },
 ]
 
 const CAMERA_POSITIONS = {
   rotationcurve: [0, 4.5, 9],
   expansion: [0, 8, 12],
+  blackhole: [0, 2.5, 6],
 }
 
-function buildExplanation(view, fpRadius, hubble) {
+function buildExplanation(view, fpRadius, hubble, bhMass) {
   switch (view) {
+    case 'blackhole': {
+      const Rs    = (bhMass * 0.5).toFixed(3)
+      const bCrit = (bhMass * 0.5 * 2.598).toFixed(3)
+      return `This is a screen-space gravitational lensing approximation — not a full general-relativistic geodesic integrator. Background starlight is deflected by angle α ≈ 4GM/c²b (leading-order Schwarzschild) enhanced near the photon sphere, where real photons can orbit the black hole.
+
+The dark region (shadow) has radius b_crit = ${bCrit} — larger than the event horizon at R_s = ${Rs}. This is the critical impact parameter: rays with b < b_crit are captured. The bright ring at the shadow edge is the photon ring, formed by rays that almost complete an orbit before escaping. A real GR renderer would integrate null geodesics through the full Kerr or Schwarzschild metric; this visualization captures the qualitative structure at real-time framerates. The accretion disk rotates with Keplerian angular velocity ω ∝ r⁻³/².`
+    }
+
     case 'rotationcurve': {
       const disc = rotationDiscrepancy(fpRadius)
       const dmf = darkMatterFraction(fpRadius) * 100
@@ -46,8 +57,24 @@ What's established: cosmic expansion via galaxy redshifts and Cepheid/Type Ia su
   }
 }
 
-function buildEquations(view, fpRadius, hubble, vo, vk) {
+function buildEquations(view, fpRadius, hubble, vo, vk, bhMass) {
   switch (view) {
+    case 'blackhole': {
+      const Rs    = (bhMass * 0.5).toFixed(3)
+      const bCrit = (bhMass * 0.5 * 2.598).toFixed(3)
+      const rPh   = (bhMass * 0.5 * 1.5).toFixed(3)
+      return {
+        domain: 'GENERAL RELATIVITY · GRAVITATIONAL LENSING',
+        primaryEq: `\\alpha = \\dfrac{4GM}{c^2 b} = \\dfrac{2R_s}{b}`,
+        derivedEqs: [
+          { label: 'Schwarzschild radius', eq: `R_s = ${Rs} \\text{ u} \\;(= 2GM/c^2)` },
+          { label: 'Shadow radius', eq: `b_{\\rm crit} = \\dfrac{3\\sqrt{3}}{2}\\,R_s = ${bCrit} \\text{ u}` },
+          { label: 'Photon sphere', eq: `r_{\\rm ph} = \\tfrac{3}{2}\\,R_s = ${rPh} \\text{ u}` },
+          { label: 'Approx. level', eq: `\\text{Screen-space 1st-order Schwarzschild}` },
+        ],
+      }
+    }
+
     case 'rotationcurve':
       return {
         domain: 'GALACTIC KINEMATICS · MISSING MASS',
@@ -91,16 +118,19 @@ export default function FrontierModule() {
   const [activeView, setActiveView] = useState('rotationcurve')
 
   const fpRadius = useModuleStore((s) => s.fp.fpRadius)
-  const hubble = useModuleStore((s) => s.fp.hubble)
-  const setFpRadius = useModuleStore((s) => s.setFpRadius)
-  const setFpHubble = useModuleStore((s) => s.setFpHubble)
-  const resetFp = useModuleStore((s) => s.resetFp)
+  const hubble   = useModuleStore((s) => s.fp.hubble)
+  const bhMass   = useModuleStore((s) => s.fp.bhMass)
+  const setFpRadius  = useModuleStore((s) => s.setFpRadius)
+  const setFpHubble  = useModuleStore((s) => s.setFpHubble)
+  const setFpBhMass  = useModuleStore((s) => s.setFpBhMass)
+  const resetFp      = useModuleStore((s) => s.resetFp)
   const setActiveModule = useModuleStore((s) => s.setActiveModule)
 
-  const vo = observedRotationVelocity(fpRadius)
-  const vk = keplerianVelocity(fpRadius)
-  const disc = rotationDiscrepancy(fpRadius)
+  const vo     = observedRotationVelocity(fpRadius)
+  const vk     = keplerianVelocity(fpRadius)
+  const disc   = rotationDiscrepancy(fpRadius)
   const dmFrac = darkMatterFraction(fpRadius)
+  const Rs     = bhMass * 0.5
 
   const controlsByView = {
     rotationcurve: [
@@ -108,6 +138,9 @@ export default function FrontierModule() {
     ],
     expansion: [
       { label: 'H₀ (expansion rate)', min: 0.2, max: 2.5, step: 0.05, value: hubble, onChange: setFpHubble, unit: '×' },
+    ],
+    blackhole: [
+      { label: 'BH Mass', min: 0.3, max: 1.5, step: 0.05, value: bhMass, onChange: setFpBhMass, unit: ' M' },
     ],
   }
 
@@ -128,11 +161,20 @@ export default function FrontierModule() {
       { label: 'v @ d = 4.4', value: hubbleExpansion(4.4, hubble).toFixed(3), color: 'cyan' },
       { label: 'Hubble tension', value: '~5σ', color: 'rose' },
     ],
+    blackhole: [
+      { label: 'BH Mass', value: bhMass.toFixed(2), unit: ' M', color: 'amber' },
+      { label: 'R_s (event horizon)', value: Rs.toFixed(3), unit: ' u', color: 'amber' },
+      { label: 'Shadow b_crit', value: (Rs * 2.598).toFixed(3), unit: ' u', color: 'rose' },
+      { label: 'Photon sphere r_ph', value: (Rs * 1.5).toFixed(3), unit: ' u', color: 'cyan' },
+      { label: 'ISCO (disk inner)', value: (Rs * 3.0).toFixed(3), unit: ' u', color: 'cyan' },
+      { label: '* screen-space approx.', value: '~1st order', color: 'dim' },
+    ],
   }
 
-  const explanation = buildExplanation(activeView, fpRadius, hubble)
-  const { domain, primaryEq, derivedEqs } = buildEquations(activeView, fpRadius, hubble, vo, vk)
+  const explanation = buildExplanation(activeView, fpRadius, hubble, bhMass)
+  const { domain, primaryEq, derivedEqs } = buildEquations(activeView, fpRadius, hubble, vo, vk, bhMass)
   const camPos = CAMERA_POSITIONS[activeView]
+  const isBlackHole = activeView === 'blackhole'
 
   return (
     <div className="flex flex-col w-full h-full bg-ground">
@@ -177,7 +219,7 @@ export default function FrontierModule() {
         </nav>
 
         <div className="font-mono-data text-sm text-amber-glow tabular-nums" style={{ textShadow: '0 0 8px rgba(245,158,11,0.5)' }}>
-          v = H₀·d
+          {isBlackHole ? 'R_s = 2GM/c²' : 'v = H₀·d'}
         </div>
       </header>
 
@@ -196,9 +238,10 @@ export default function FrontierModule() {
         </div>
 
         <main className="flex-1 relative overflow-hidden" style={{ minHeight: 0 }}>
-          <SceneWrapper cameraPosition={camPos}>
+          <SceneWrapper cameraPosition={camPos} showGrid={!isBlackHole} minDist={isBlackHole ? 2.5 : 2}>
             {activeView === 'rotationcurve' && <RotationCurve />}
             {activeView === 'expansion' && <ExpansionSim />}
+            {isBlackHole && <BlackHole />}
           </SceneWrapper>
 
           <div className="absolute top-3 left-4 pointer-events-none">
