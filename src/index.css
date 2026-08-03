@@ -57,6 +57,9 @@ html, body, #root {
 .glow-violet {
   text-shadow: 0 0 6px rgba(168,85,247,0.7), 0 0 14px rgba(168,85,247,0.3);
 }
+.glow-emerald {
+  text-shadow: 0 0 6px rgba(16,185,129,0.7), 0 0 14px rgba(16,185,129,0.3);
+}
 
 /* CRT scanline overlay */
 .scanlines::after {

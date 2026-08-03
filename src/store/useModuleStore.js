@@ -90,6 +90,16 @@ const useModuleStore = create((set) => ({
       },
     }),
 
+  // Dynamical Systems state
+  ds: {
+    attractorType: 'lorenz',
+  },
+
+  setDsAttractorType: (v) =>
+    set((state) => ({ ds: { ...state.ds, attractorType: v } })),
+
+  resetDs: () => set({ ds: { attractorType: 'lorenz' } }),
+
   // Electromagnetism state
   em: {
     magnetType: 'dipole', // 'dipole' | 'bar' | 'solenoid' | 'halbach'
