@@ -1,7 +1,8 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import useModuleStore from '../store/useModuleStore'
 import PhysicsBg from './PhysicsBg'
+import { useGesture } from '../context/GestureContext'
 
 const MODULES = [
   {
@@ -98,7 +99,7 @@ const ACCENT_HEX = {
   teal:    '#2dd4bf',
 }
 
-function ModuleCard({ module, onEnter, onHoverIn, onHoverOut }) {
+function ModuleCard({ module, onEnter, onHoverIn, onHoverOut, cardRef }) {
   const hex    = ACCENT_HEX[module.color]
   const hexRgb = parseInt(hex.slice(1), 16)
   const r = (hexRgb >> 16) & 0xff
@@ -107,6 +108,7 @@ function ModuleCard({ module, onEnter, onHoverIn, onHoverOut }) {
 
   return (
     <button
+      ref={cardRef}
       onClick={onEnter}
       onMouseEnter={onHoverIn}
       onMouseLeave={onHoverOut}
@@ -173,9 +175,10 @@ function ModuleCard({ module, onEnter, onHoverIn, onHoverOut }) {
   )
 }
 
-function SabrinaCard({ onEnter, onHoverIn, onHoverOut }) {
+function SabrinaCard({ onEnter, onHoverIn, onHoverOut, cardRef }) {
   return (
     <button
+      ref={cardRef}
       onClick={onEnter}
       onMouseEnter={onHoverIn}
       onMouseLeave={onHoverOut}
@@ -226,7 +229,9 @@ function SabrinaCard({ onEnter, onHoverIn, onHoverOut }) {
 export default function ModulePicker() {
   const setActiveModule    = useModuleStore((s) => s.setActiveModule)
   const [hoveredModule, setHoveredModule] = useState(null)
-  const mouseRef = useRef({ x: 0, y: 0 })
+  const mouseRef  = useRef({ x: 0, y: 0 })
+  const cardRefs  = useRef({})   // { [moduleId]: buttonElement }
+  const gesture   = useGesture()
 
   const handleMouseMove = useCallback((e) => {
     const rect = e.currentTarget.getBoundingClientRect()
@@ -235,6 +240,41 @@ export default function ModulePicker() {
       y: -((e.clientY - rect.top)  / rect.height * 2 - 1),
     }
   }, [])
+
+  // Gesture: sync pointer → mouseRef + hoveredModule, pinch → enter
+  useEffect(() => {
+    if (!gesture.enabled) return
+    let rafId
+    const tick = () => {
+      const ptr = gesture.pointerRef.current
+      if (ptr) {
+        // Drive particle background
+        mouseRef.current = ptr
+
+        // Hit-test cards
+        const sx = ((ptr.x + 1) / 2) * window.innerWidth
+        const sy = ((1 - ptr.y) / 2) * window.innerHeight
+        let hit = null
+        for (const [id, el] of Object.entries(cardRefs.current)) {
+          if (!el) continue
+          const r = el.getBoundingClientRect()
+          if (sx >= r.left && sx <= r.right && sy >= r.top && sy <= r.bottom) {
+            hit = id; break
+          }
+        }
+        setHoveredModule(hit)
+
+        // Pinch → enter
+        if (gesture.justPinchedRef.current && hit) {
+          setActiveModule(hit)
+          gesture.justPinchedRef.current = false
+        }
+      }
+      rafId = requestAnimationFrame(tick)
+    }
+    rafId = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(rafId)
+  }, [gesture.enabled, gesture.pointerRef, gesture.justPinchedRef, setActiveModule])
 
   return (
     <div
@@ -299,12 +339,14 @@ export default function ModulePicker() {
               <ModuleCard
                 key={mod.id}
                 module={mod}
+                cardRef={(el) => { cardRefs.current[mod.id] = el }}
                 onEnter={() => setActiveModule(mod.id)}
                 onHoverIn={() => setHoveredModule(mod.id)}
                 onHoverOut={() => setHoveredModule(null)}
               />
             ))}
             <SabrinaCard
+              cardRef={(el) => { cardRefs.current['sabrina'] = el }}
               onEnter={() => setActiveModule('sabrina')}
               onHoverIn={() => setHoveredModule('sabrina')}
               onHoverOut={() => setHoveredModule(null)}
