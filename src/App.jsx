@@ -12,10 +12,12 @@ import SabrinaModule from './modules/sabrina/SabrinaModule'
 import GRModule from './modules/general-relativity/GRModule'
 import ThermoModule from './modules/thermodynamics/ThermoModule'
 import FluidModule from './modules/fluid-dynamics/FluidModule'
+import SandboxModule from './modules/physics-sandbox/SandboxModule'
 
 function AppInner() {
   const activeModule = useModuleStore((s) => s.activeModule)
 
+  if (activeModule === 'physics-sandbox')      return <SandboxModule />
   if (activeModule === 'special-relativity')  return <SRModule />
   if (activeModule === 'quantum-mechanics')   return <QuantumModule />
   if (activeModule === 'frontier-physics')    return <FrontierModule />
