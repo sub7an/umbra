@@ -2,14 +2,16 @@ import { useState, useMemo } from 'react'
 import SceneWrapper from '../../components/SceneWrapper'
 import InfoPanel from '../../components/InfoPanel'
 import AttractorViz from './AttractorViz'
+import PhaseSpace from './PhaseSpace'
 import useModuleStore from '../../store/useModuleStore'
 import { ATTRACTOR_DEFS } from './attractorMath'
 
 const ATTRACTORS = [
-  { id: 'lorenz',  abbr: 'LOR', label: 'Lorenz',  desc: 'Butterfly chaos — atmosphere' },
-  { id: 'rossler', abbr: 'ROS', label: 'Rössler', desc: 'Scroll band — simplest chaos' },
-  { id: 'thomas',  abbr: 'THO', label: 'Thomas',  desc: 'Labyrinth — cyclic symmetry' },
-  { id: 'aizawa',  abbr: 'AIZ', label: 'Aizawa',  desc: 'Toroidal — driven oscillator' },
+  { id: 'lorenz',      abbr: 'LOR', label: 'Lorenz',      desc: 'Butterfly chaos — atmosphere' },
+  { id: 'rossler',     abbr: 'ROS', label: 'Rössler',     desc: 'Scroll band — simplest chaos' },
+  { id: 'thomas',      abbr: 'THO', label: 'Thomas',      desc: 'Labyrinth — cyclic symmetry' },
+  { id: 'aizawa',      abbr: 'AIZ', label: 'Aizawa',      desc: 'Toroidal — driven oscillator' },
+  { id: 'phasespace',  abbr: 'PHS', label: 'Phase Space', desc: 'Van der Pol portrait', separator: true },
 ]
 
 function buildEquations(type) {
@@ -54,6 +56,15 @@ function buildEquations(type) {
           { label: 'Default', eq: `a=0.95,\\,b=0.7,\\,d=3.5` },
         ],
       }
+    case 'phasespace':
+      return {
+        domain: 'NONLINEAR DYNAMICS · VAN DER POL',
+        primaryEq: `\\ddot{x} - \\textcolor{#f59e0b}{\\mu}(1-x^2)\\dot{x} + x = 0`,
+        derivedEqs: [
+          { label: 'Phase plane form', eq: `\\dot{x} = v,\\;\\dot{v} = \\textcolor{#f59e0b}{\\mu}(1-x^2)v - x` },
+          { label: 'Limit cycle exists for', eq: `\\textcolor{#f59e0b}{\\mu} > 0` },
+        ],
+      }
     default:
       return { domain: '', primaryEq: '', derivedEqs: [] }
   }
@@ -62,13 +73,15 @@ function buildEquations(type) {
 function buildExplanation(type) {
   switch (type) {
     case 'lorenz':
-      return `E.N. Lorenz (1963) discovered this system while modeling atmospheric convection. Simplified from 12 variables to 3, it was the first mathematical proof of sensitive dependence on initial conditions — two trajectories differing by 10⁻¹⁵ become uncorrelated within ~50 steps. The butterfly shape is not a trajectory but the attractor: the invariant set the system approaches regardless of starting point. At ρ ≈ 24.74 a subcritical Hopf bifurcation destroys the two stable fixed points and the strange attractor appears. Drag ρ below 24.74 to watch all 1,800 particles spiral inward and collapse to a fixed point.`
+      return `Lorenz found this while modeling weather in 1963, trimmed from 12 variables down to 3. It was the first hard proof that deterministic systems can be unpredictable: two trajectories just 10⁻¹⁵ apart become totally uncorrelated within about 50 steps. The butterfly shape is the attractor itself, not a single path. Every starting point eventually lands on it. Pull ρ below 24.74 and all 1,800 particles collapse to a fixed point; the chaos disappears.`
     case 'rossler':
-      return `Otto Rössler (1976) designed this as the simplest continuous-time chaotic system — a single-scroll attractor that folds into itself. Only one equation contains a nonlinear term (z·x), making it more analytically tractable than Lorenz. Chaos emerges via period-doubling: as c increases, the orbit bifurcates 1→2→4→8→∞ before becoming fully chaotic. The projection onto the XY plane reveals a spiral disk with a characteristic hook — the Rössler band. Varying a changes the shape and density of the scroll.`
+      return `Rössler designed this in 1976 as the minimal continuous-time chaotic system. Only one nonlinear term (z·x) appears in the whole set of equations. Chaos enters through period-doubling: as c grows, the orbit splits 1→2→4→8→∞ cycles before going fully chaotic. The XY projection shows a flat spiral with a hook on one side, called the Rössler band. Adjust a to change how tight or spread out the scroll becomes.`
     case 'thomas':
-      return `René Thomas (1999) proposed this system to study diffuse chaos from sine-coupling between three oscillators. The b parameter sets dissipation: at b = 0.19 the system enters a labyrinth regime — particles wander indefinitely through an infinite corridor without repeating. The attractor has discrete 3-fold rotational symmetry (invariant under 120° cyclic permutations of x,y,z). As b decreases toward 0, chaos expands to fill space; above b ≈ 0.21 trajectories collapse to limit cycles. Unlike Lorenz, the Thomas system has no fixed points in the chaotic regime.`
+      return `René Thomas built this in 1999 to study chaos from three sine-coupled oscillators. The parameter b controls dissipation. At b = 0.19, particles enter a labyrinth: they wander through an infinite corridor and never repeat. The attractor is 3-fold symmetric under 120° permutations of x, y, z. Lower b toward 0 and chaos fills more of space. Push b above 0.21 and trajectories settle into limit cycles. No fixed points exist in the chaotic regime.`
     case 'aizawa':
-      return `The Aizawa attractor produces a distinctive toroidal shape — a strange attractor that wraps around a torus-like surface with an inner void. The system resembles a parametric oscillator near resonance: the z-axis drives a circular oscillator in the xy-plane. Varying a near 0.95 morphs the torus geometry; reducing b closes the inner hole. The outer ring and inner tube are swept by chaotic trajectories with Lyapunov exponents much smaller than Lorenz, giving a more "structured" chaos — the butterfly pattern is replaced by a quiet, elegant doughnut that endlessly rearranges itself.`
+      return `Aizawa's system wraps chaos around a torus-like surface with a hollow center. The z-axis acts as a driver for a circular oscillator in the xy-plane. Adjust a near 0.95 to stretch or compress the torus; lower b to close the inner void. Lyapunov exponents here are much smaller than Lorenz, so the chaos feels more structured and geometric. Instead of a butterfly, you get a quiet doughnut that rearranges endlessly without quite repeating.`
+    case 'phasespace':
+      return `The Van der Pol oscillator was built in 1927 to model oscillations in vacuum tube circuits. At μ = 0 it's a perfect harmonic oscillator, circular in phase space. As μ increases, the limit cycle distorts. By μ = 3 the oscillator snaps into relaxation mode, with slow drift and fast jumps. The fixed point at the origin is an unstable focus for all μ > 0, so every trajectory eventually settles onto the limit cycle. Each particle in the scene is an independent initial condition converging toward it.`
     default:
       return ''
   }
@@ -110,6 +123,13 @@ function buildMetrics(type, p) {
         { label: 'Shape',  value: 'Toroidal',       color: 'dim'   },
         { label: 'Regime', value: 'CHAOTIC',        color: 'rose'  },
       ]
+    case 'phasespace':
+      return [
+        { label: 'μ  (nonlinearity)', value: p.mu?.toFixed(2) ?? '1.00', color: 'amber' },
+        { label: 'Limit cycle',       value: (p.mu ?? 1) > 0 ? 'EXISTS' : 'ABSENT', color: (p.mu ?? 1) > 0 ? 'cyan' : 'dim' },
+        { label: 'Fixed point',       value: (p.mu ?? 1) > 0 ? 'UNSTABLE' : 'STABLE', color: (p.mu ?? 1) > 0 ? 'rose' : 'cyan' },
+        { label: 'Type',              value: (p.mu ?? 1) > 2.5 ? 'RELAXATION' : 'SOFT', color: 'dim' },
+      ]
     default:
       return []
   }
@@ -141,9 +161,11 @@ function Slider({ label, value, min, max, step, decimals, onChange }) {
 }
 
 export default function DynamicalModule() {
-  const attractorType   = useModuleStore((s) => s.ds.attractorType)
+  const attractorType    = useModuleStore((s) => s.ds.attractorType)
+  const phaseMu          = useModuleStore((s) => s.ds.phaseMu)
   const setAttractorType = useModuleStore((s) => s.setDsAttractorType)
-  const setActiveModule = useModuleStore((s) => s.setActiveModule)
+  const setPhaseMu       = useModuleStore((s) => s.setDsPhaseMu)
+  const setActiveModule  = useModuleStore((s) => s.setActiveModule)
 
   // Lorenz params
   const [sigma, setSigma] = useState(10)
@@ -166,19 +188,21 @@ export default function DynamicalModule() {
 
   const params = useMemo(() => {
     switch (attractorType) {
-      case 'lorenz':  return { sigma, rho, beta }
-      case 'rossler': return { a: rossA, b: 0.2, c: rossC }
-      case 'thomas':  return { b: thomB }
-      case 'aizawa':  return { a: aizA, b: aizB, c: 0.6, d: 3.5, e: 0.25, f: 0.1 }
-      default:        return {}
+      case 'lorenz':      return { sigma, rho, beta }
+      case 'rossler':     return { a: rossA, b: 0.2, c: rossC }
+      case 'thomas':      return { b: thomB }
+      case 'aizawa':      return { a: aizA, b: aizB, c: 0.6, d: 3.5, e: 0.25, f: 0.1 }
+      case 'phasespace':  return { mu: phaseMu }
+      default:            return {}
     }
-  }, [attractorType, sigma, rho, beta, rossA, rossC, thomB, aizA, aizB])
+  }, [attractorType, sigma, rho, beta, rossA, rossC, thomB, aizA, aizB, phaseMu])
 
   const { domain, primaryEq, derivedEqs } = buildEquations(attractorType)
   const explanation = buildExplanation(attractorType)
   const metrics     = buildMetrics(attractorType, params)
 
-  const def = ATTRACTOR_DEFS[attractorType]
+  const isPhaseSpace = attractorType === 'phasespace'
+  const def = ATTRACTOR_DEFS[attractorType] ?? { name: 'Phase Space', dt: 0.012 }
 
   function resetParams() {
     setSigma(10); setRho(28); setBeta(2.667)
@@ -186,6 +210,7 @@ export default function DynamicalModule() {
     setThomB(0.19)
     setAizA(0.95); setAizB(0.7)
     setSpeed(1.0)
+    setPhaseMu(1.0)
   }
 
   function paramSliders() {
@@ -227,6 +252,10 @@ export default function DynamicalModule() {
             <Slider label="a" value={aizA} min={0.5} max={1.2} step={0.05} decimals={2} onChange={setAizA} />
             <Slider label="b" value={aizB} min={0.4} max={1.0} step={0.05} decimals={2} onChange={setAizB} />
           </>
+        )
+      case 'phasespace':
+        return (
+          <Slider label="μ  nonlinearity" value={phaseMu} min={0} max={3} step={0.05} decimals={2} onChange={setPhaseMu} />
         )
       default:
         return null
@@ -279,7 +308,7 @@ export default function DynamicalModule() {
           className="font-mono-data text-sm tabular-nums"
           style={{ color: '#10b981', textShadow: '0 0 8px rgba(16,185,129,0.5)' }}
         >
-          {def.name} · 1,800 particles
+          {isPhaseSpace ? `Van der Pol · μ = ${phaseMu.toFixed(2)}` : `${def.name} · 1,800 particles`}
         </div>
       </header>
 
@@ -302,22 +331,25 @@ export default function DynamicalModule() {
         {/* 3D scene */}
         <main className="flex-1 relative overflow-hidden" style={{ minHeight: 0 }}>
           <SceneWrapper
-            cameraPosition={[0, 3, 8]}
+            cameraPosition={isPhaseSpace ? [0, 0, 9] : [0, 3, 8]}
             showGrid={false}
             minDist={2}
             maxDist={20}
           >
-            <AttractorViz
-              key={attractorType}
-              attractorType={attractorType}
-              params={params}
-              speedMultiplier={speed}
-            />
+            {!isPhaseSpace && (
+              <AttractorViz
+                key={attractorType}
+                attractorType={attractorType}
+                params={params}
+                speedMultiplier={speed}
+              />
+            )}
+            {isPhaseSpace && <PhaseSpace key="phasespace" />}
           </SceneWrapper>
 
           <div className="absolute top-3 left-4 pointer-events-none">
             <span className="font-display text-[10px] tracking-[0.2em] uppercase text-text-dim">
-              {def.name} Attractor · RK4 · dt = {def.dt}
+              {isPhaseSpace ? `Van der Pol · Phase Portrait · RK4 · dt = ${def.dt}` : `${def.name} Attractor · RK4 · dt = ${def.dt}`}
             </span>
           </div>
         </main>
@@ -350,21 +382,23 @@ export default function DynamicalModule() {
               </p>
               <div className="flex flex-col gap-1.5">
                 {ATTRACTORS.map((a) => (
-                  <button
-                    key={a.id}
-                    onClick={() => setAttractorType(a.id)}
-                    className={[
-                      'w-full flex flex-col items-start px-3 py-2 rounded border font-mono-data text-left transition-all duration-200',
-                      attractorType === a.id
-                        ? 'border-emerald-glow/50 bg-emerald-glow/5'
-                        : 'border-border-subtle text-text-dim hover:border-emerald-glow/30',
-                    ].join(' ')}
-                  >
-                    <span className={`text-[11px] tracking-wider uppercase ${attractorType === a.id ? 'text-emerald-glow' : ''}`}>
-                      {a.label}
-                    </span>
-                    <span className="text-[9px] text-text-dim mt-0.5 leading-tight">{a.desc}</span>
-                  </button>
+                  <div key={a.id}>
+                    {a.separator && <div className="h-px bg-border-subtle my-1" />}
+                    <button
+                      onClick={() => setAttractorType(a.id)}
+                      className={[
+                        'w-full flex flex-col items-start px-3 py-2 rounded border font-mono-data text-left transition-all duration-200',
+                        attractorType === a.id
+                          ? 'border-emerald-glow/50 bg-emerald-glow/5'
+                          : 'border-border-subtle text-text-dim hover:border-emerald-glow/30',
+                      ].join(' ')}
+                    >
+                      <span className={`text-[11px] tracking-wider uppercase ${attractorType === a.id ? 'text-emerald-glow' : ''}`}>
+                        {a.label}
+                      </span>
+                      <span className="text-[9px] text-text-dim mt-0.5 leading-tight">{a.desc}</span>
+                    </button>
+                  </div>
                 ))}
               </div>
             </div>
@@ -381,28 +415,30 @@ export default function DynamicalModule() {
               </div>
             </div>
 
-            <div className="h-px bg-border-subtle" />
+            {!isPhaseSpace && <div className="h-px bg-border-subtle" />}
 
             {/* Speed */}
-            <div>
-              <p className="font-mono-data text-[9px] tracking-[0.22em] uppercase text-text-dim mb-3">
-                Simulation Speed
-              </p>
-              <Slider
-                label="Speed"
-                value={speed}
-                min={0.25}
-                max={3.0}
-                step={0.25}
-                decimals={2}
-                onChange={setSpeed}
-              />
-            </div>
+            {!isPhaseSpace && (
+              <div>
+                <p className="font-mono-data text-[9px] tracking-[0.22em] uppercase text-text-dim mb-3">
+                  Simulation Speed
+                </p>
+                <Slider
+                  label="Speed"
+                  value={speed}
+                  min={0.25}
+                  max={3.0}
+                  step={0.25}
+                  decimals={2}
+                  onChange={setSpeed}
+                />
+              </div>
+            )}
           </div>
 
           <div className="px-4 py-3 border-t border-border-subtle">
             <p className="font-mono-data text-[10px] text-text-dim leading-relaxed">
-              DS · 1,800 PARTICLES · TRAIL 72
+              {isPhaseSpace ? 'DS · VAN DER POL · RK4' : 'DS · 1,800 PARTICLES · TRAIL 72'}
             </p>
           </div>
         </aside>

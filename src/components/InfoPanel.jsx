@@ -55,7 +55,7 @@ export default function InfoPanel({
     ?? 'bg-amber-glow shadow-glow-amber'
 
   return (
-    <aside className="flex flex-col flex-1 bg-panel osc-grid border-r border-border-subtle">
+    <aside className="flex flex-col flex-1 min-h-0 bg-panel osc-grid border-r border-border-subtle">
       {/* Header / collapse toggle */}
       <button
         onClick={() => setIsOpen((o) => !o)}

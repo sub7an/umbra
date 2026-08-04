@@ -28,19 +28,19 @@ function buildExplanation(view, velocity, gamma, eventX, eventT) {
 
   switch (view) {
     case 'lightcone':
-      return `The light cone divides spacetime into three regions. Your event (the glowing octahedron) is currently ${
+      return `The light cone divides spacetime into three regions. Your event is currently ${
         region === 'timelike'
-          ? 'inside the cone — a timelike interval. A signal slower than light could connect these events, so causality is preserved.'
+          ? 'inside the cone: a timelike interval. A signal slower than light can reach this event, so causality holds.'
           : region === 'spacelike'
-          ? 'outside the cone — a spacelike interval. No signal can travel fast enough to connect these events; they cannot be causally related.'
-          : 'exactly on the cone surface — a lightlike interval. Only a photon could connect these events.'
-      } Drag the event to explore the three regions.`
+          ? 'outside the cone: a spacelike interval. No signal can bridge these events; they share no causal connection.'
+          : 'on the cone surface: a lightlike interval. Only a photon traveling at exactly c can connect them.'
+      } Drag the octahedron to explore all three regions.`
 
     case 'timedilation':
-      return `At β = ${velocity.toFixed(3)} (${(velocity * 100).toFixed(1)}% of c), the Lorentz factor γ = ${gamma.toFixed(4)}. The moving clock runs ${pct}% slower than the stationary lab clock. After ${gamma.toFixed(2)} seconds in the lab frame, the moving clock has ticked only 1 second. This is not a trick of signal travel time — the moving clock genuinely measures less elapsed time.`
+      return `At β = ${velocity.toFixed(3)}, the moving clock runs ${pct}% slower than the lab clock. After ${gamma.toFixed(2)} lab seconds, the moving clock has ticked just 1 second. This is a real physical effect, not a signaling delay. If you brought both clocks together afterward, the moving one would show less elapsed time.`
 
     case 'lengthcontraction':
-      return `The rod at rest has proper length L₀ = 3.0 units. Moving at β = ${velocity.toFixed(3)}, it contracts to L′ = ${Lc.toFixed(3)} units — a ${contractionPct}% compression along the axis of motion. The rod itself is physically shorter in the lab frame; this is not a perspective effect. Perpendicular dimensions are unchanged.`
+      return `The rest-frame rod is L₀ = 3.0 units long. At β = ${velocity.toFixed(3)}, it shrinks to L′ = ${Lc.toFixed(3)} units: ${contractionPct}% shorter along the direction of motion. This is a genuine physical contraction, not an optical effect. Only the travel axis is affected; width and height stay the same.`
 
     default:
       return ''
