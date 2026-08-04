@@ -1,5 +1,7 @@
 import useModuleStore from './store/useModuleStore'
 import ModulePicker from './components/ModulePicker'
+import GestureHUD from './components/GestureHUD'
+import { GestureProvider } from './context/GestureContext'
 import SRModule from './modules/special-relativity/SRModule'
 import QuantumModule from './modules/quantum/QuantumModule'
 import FrontierModule from './modules/frontier/FrontierModule'
@@ -10,7 +12,7 @@ import GRModule from './modules/general-relativity/GRModule'
 import ThermoModule from './modules/thermodynamics/ThermoModule'
 import FluidModule from './modules/fluid-dynamics/FluidModule'
 
-export default function App() {
+function AppInner() {
   const activeModule = useModuleStore((s) => s.activeModule)
 
   if (activeModule === 'special-relativity')  return <SRModule />
@@ -24,4 +26,13 @@ export default function App() {
   if (activeModule === 'fluid-dynamics')      return <FluidModule />
 
   return <ModulePicker />
+}
+
+export default function App() {
+  return (
+    <GestureProvider>
+      <AppInner />
+      <GestureHUD />
+    </GestureProvider>
+  )
 }
