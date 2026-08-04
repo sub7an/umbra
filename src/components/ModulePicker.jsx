@@ -202,6 +202,82 @@ export default function ModulePicker() {
                 onClick={() => setActiveModule(mod.id)}
               />
             ))}
+
+            {/* Sabrina card */}
+            <button
+              onClick={() => setActiveModule('sabrina')}
+              style={{
+                position: 'relative', display: 'flex', flexDirection: 'column',
+                textAlign: 'left', padding: 24, borderRadius: 6,
+                border: '1px solid rgba(255,105,180,0.5)',
+                background: '#0c1419',
+                boxShadow: '0 0 12px 3px rgba(255,20,147,0.22)',
+                cursor: 'pointer',
+                transition: 'box-shadow 0.3s, border-color 0.3s',
+                backgroundImage: 'linear-gradient(rgba(15,31,40,0.9) 1px, transparent 1px), linear-gradient(90deg, rgba(15,31,40,0.9) 1px, transparent 1px)',
+                backgroundSize: '24px 24px',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.boxShadow = '0 0 20px 6px rgba(255,20,147,0.45)'
+                e.currentTarget.style.borderColor = 'rgba(255,105,180,0.9)'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.boxShadow = '0 0 12px 3px rgba(255,20,147,0.22)'
+                e.currentTarget.style.borderColor = 'rgba(255,105,180,0.5)'
+              }}
+            >
+              <div style={{
+                fontFamily: 'Chakra Petch, sans-serif',
+                fontSize: 48, fontWeight: 700, lineHeight: 1,
+                color: '#ff69b4',
+                textShadow: '0 0 12px #ff1493, 0 0 30px #ff1493',
+                marginBottom: 12,
+              }}>♡</div>
+
+              <div style={{ marginBottom: 12 }}>
+                <h2 style={{
+                  fontFamily: 'Chakra Petch, sans-serif',
+                  fontSize: 16, fontWeight: 600, color: '#dff2ed',
+                  marginBottom: 4, lineHeight: 1.2,
+                }}>For Sabrina</h2>
+                <p style={{
+                  fontFamily: 'JetBrains Mono, monospace',
+                  fontSize: 11, color: '#ff69b4', opacity: 0.8,
+                  letterSpacing: '0.05em',
+                }}>a message · just for you</p>
+              </div>
+
+              <p style={{
+                fontFamily: 'system-ui, sans-serif',
+                fontSize: 12, color: '#6aada5', lineHeight: 1.6,
+                marginBottom: 16, flex: 1,
+              }}>
+                something made for you, because you deserve it.
+              </p>
+
+              <div style={{
+                alignSelf: 'flex-start',
+                fontFamily: 'JetBrains Mono, monospace',
+                fontSize: 11, padding: '4px 8px', borderRadius: 4,
+                border: '1px solid rgba(255,105,180,0.35)',
+                background: 'rgba(255,105,180,0.08)',
+                color: '#ff69b4',
+              }}>
+                mwah ♥
+              </div>
+
+              <div style={{
+                position: 'absolute', bottom: 16, right: 20,
+                fontFamily: 'JetBrains Mono, monospace',
+                fontSize: 10, letterSpacing: '0.15em',
+                color: '#ff69b4', opacity: 0, textTransform: 'uppercase',
+                transition: 'opacity 0.2s',
+              }}
+              className="enter-hint"
+              >
+                ENTER →
+              </div>
+            </button>
           </div>
         </main>
 
