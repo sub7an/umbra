@@ -3,6 +3,7 @@ import SceneWrapper from '../../components/SceneWrapper'
 import InfoPanel from '../../components/InfoPanel'
 import AttractorViz from './AttractorViz'
 import PhaseSpace from './PhaseSpace'
+import SabrinaAttractor from './SabrinaAttractor'
 import useModuleStore from '../../store/useModuleStore'
 import { ATTRACTOR_DEFS } from './attractorMath'
 
@@ -12,6 +13,7 @@ const ATTRACTORS = [
   { id: 'thomas',      abbr: 'THO', label: 'Thomas',      desc: 'Labyrinth — cyclic symmetry' },
   { id: 'aizawa',      abbr: 'AIZ', label: 'Aizawa',      desc: 'Toroidal — driven oscillator' },
   { id: 'phasespace',  abbr: 'PHS', label: 'Phase Space', desc: 'Van der Pol portrait', separator: true },
+  { id: 'sabrina',    abbr: '♡',   label: 'Sabrina',    desc: 'for her',              separator: false },
 ]
 
 function buildEquations(type) {
@@ -65,6 +67,15 @@ function buildEquations(type) {
           { label: 'Limit cycle exists for', eq: `\\textcolor{#f59e0b}{\\mu} > 0` },
         ],
       }
+    case 'sabrina':
+      return {
+        domain: 'DYNAMICAL SYSTEMS · SABRINA CURVE',
+        primaryEq: `\\gamma(t) \\in \\mathbb{R}^3,\\; t \\in [0,1]`,
+        derivedEqs: [
+          { label: 'Path', eq: `\\textcolor{#ff69b4}{\\text{S-A-B-R-I-N-A}}` },
+          { label: 'Particles', eq: `N = 700` },
+        ],
+      }
     default:
       return { domain: '', primaryEq: '', derivedEqs: [] }
   }
@@ -82,6 +93,8 @@ function buildExplanation(type) {
       return `Aizawa's system wraps chaos around a torus-like surface with a hollow center. The z-axis acts as a driver for a circular oscillator in the xy-plane. Adjust a near 0.95 to stretch or compress the torus; lower b to close the inner void. Lyapunov exponents here are much smaller than Lorenz, so the chaos feels more structured and geometric. Instead of a butterfly, you get a quiet doughnut that rearranges endlessly without quite repeating.`
     case 'phasespace':
       return `The Van der Pol oscillator was built in 1927 to model oscillations in vacuum tube circuits. At μ = 0 it's a perfect harmonic oscillator, circular in phase space. As μ increases, the limit cycle distorts. By μ = 3 the oscillator snaps into relaxation mode, with slow drift and fast jumps. The fixed point at the origin is an unstable focus for all μ > 0, so every trajectory eventually settles onto the limit cycle. Each particle in the scene is an independent initial condition converging toward it.`
+    case 'sabrina':
+      return `700 particles flow along a closed parametric curve in ℝ³ shaped like her name. Each particle traces the same path at a slightly different speed, so they never bunch up. The curve is a Catmull-Rom spline through waypoints that define each letter. Unlike a chaotic attractor, this one has a perfectly ordered trajectory — every particle knows exactly where it's going.`
     default:
       return ''
   }
@@ -129,6 +142,13 @@ function buildMetrics(type, p) {
         { label: 'Limit cycle',       value: (p.mu ?? 1) > 0 ? 'EXISTS' : 'ABSENT', color: (p.mu ?? 1) > 0 ? 'cyan' : 'dim' },
         { label: 'Fixed point',       value: (p.mu ?? 1) > 0 ? 'UNSTABLE' : 'STABLE', color: (p.mu ?? 1) > 0 ? 'rose' : 'cyan' },
         { label: 'Type',              value: (p.mu ?? 1) > 2.5 ? 'RELAXATION' : 'SOFT', color: 'dim' },
+      ]
+    case 'sabrina':
+      return [
+        { label: 'Particles',  value: '700',           color: 'rose'  },
+        { label: 'Curve type', value: 'Catmull-Rom',   color: 'dim'   },
+        { label: 'Topology',   value: 'Closed loop',   color: 'cyan'  },
+        { label: 'Chaos',      value: 'NONE ♥',        color: 'rose'  },
       ]
     default:
       return []
@@ -202,7 +222,8 @@ export default function DynamicalModule() {
   const metrics     = buildMetrics(attractorType, params)
 
   const isPhaseSpace = attractorType === 'phasespace'
-  const def = ATTRACTOR_DEFS[attractorType] ?? { name: 'Phase Space', dt: 0.012 }
+  const isSabrina    = attractorType === 'sabrina'
+  const def = ATTRACTOR_DEFS[attractorType] ?? { name: attractorType === 'sabrina' ? 'Sabrina' : 'Phase Space', dt: 0.012 }
 
   function resetParams() {
     setSigma(10); setRho(28); setBeta(2.667)
@@ -308,7 +329,7 @@ export default function DynamicalModule() {
           className="font-mono-data text-sm tabular-nums"
           style={{ color: '#10b981', textShadow: '0 0 8px rgba(16,185,129,0.5)' }}
         >
-          {isPhaseSpace ? `Van der Pol · μ = ${phaseMu.toFixed(2)}` : `${def.name} · 1,800 particles`}
+          {isSabrina ? `Sabrina · 700 particles ♡` : isPhaseSpace ? `Van der Pol · μ = ${phaseMu.toFixed(2)}` : `${def.name} · 1,800 particles`}
         </div>
       </header>
 
@@ -331,12 +352,12 @@ export default function DynamicalModule() {
         {/* 3D scene */}
         <main className="flex-1 relative overflow-hidden" style={{ minHeight: 0 }}>
           <SceneWrapper
-            cameraPosition={isPhaseSpace ? [0, 0, 9] : [0, 3, 8]}
+            cameraPosition={isSabrina ? [0, 0, 11] : isPhaseSpace ? [0, 0, 9] : [0, 3, 8]}
             showGrid={false}
             minDist={2}
-            maxDist={20}
+            maxDist={24}
           >
-            {!isPhaseSpace && (
+            {!isPhaseSpace && !isSabrina && (
               <AttractorViz
                 key={attractorType}
                 attractorType={attractorType}
@@ -345,11 +366,14 @@ export default function DynamicalModule() {
               />
             )}
             {isPhaseSpace && <PhaseSpace key="phasespace" />}
+            {isSabrina    && <SabrinaAttractor key="sabrina" />}
           </SceneWrapper>
 
           <div className="absolute top-3 left-4 pointer-events-none">
             <span className="font-display text-[10px] tracking-[0.2em] uppercase text-text-dim">
-              {isPhaseSpace ? `Van der Pol · Phase Portrait · RK4 · dt = ${def.dt}` : `${def.name} Attractor · RK4 · dt = ${def.dt}`}
+              {isSabrina    ? `Sabrina Curve · Catmull-Rom · 700 particles`
+               : isPhaseSpace ? `Van der Pol · Phase Portrait · RK4 · dt = ${def.dt}`
+               : `${def.name} Attractor · RK4 · dt = ${def.dt}`}
             </span>
           </div>
         </main>
