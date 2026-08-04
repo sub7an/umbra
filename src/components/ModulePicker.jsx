@@ -276,15 +276,35 @@ export default function ModulePicker() {
       typed = (typed + e.key.toLowerCase()).slice(-(SECRET_PHRASE.length * 2))
       if (!unlocked && typed.includes(SECRET_PHRASE)) {
         typed = ''
-        sessionStorage.setItem(STORE_KEY, '1')
-        setUnlocked(true)
-        setJustUnlocked(true)
-        setTimeout(() => setJustUnlocked(false), 1000)
+        doUnlock()
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [unlocked])
+  }, [unlocked]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const tapCountRef = useRef(0)
+  const tapTimerRef = useRef(null)
+
+  const doUnlock = useCallback(() => {
+    sessionStorage.setItem(STORE_KEY, '1')
+    setUnlocked(true)
+    setJustUnlocked(true)
+    setTimeout(() => setJustUnlocked(false), 1000)
+  }, [])
+
+  // 5-tap the UMBRA logo → unlock (iPad / touch)
+  const handleTitleTap = useCallback(() => {
+    if (unlocked) return
+    tapCountRef.current += 1
+    clearTimeout(tapTimerRef.current)
+    if (tapCountRef.current >= 5) {
+      tapCountRef.current = 0
+      doUnlock()
+    } else {
+      tapTimerRef.current = setTimeout(() => { tapCountRef.current = 0 }, 1800)
+    }
+  }, [unlocked, doUnlock])
 
   // Gesture: sync pointer → mouseRef + hoveredModule, pinch → enter
   useEffect(() => {
@@ -346,10 +366,12 @@ export default function ModulePicker() {
         <header className="shrink-0 px-8 pt-8 pb-6 flex items-start justify-between">
           <div>
             <h1
-              className="font-display text-[28px] font-bold tracking-[0.12em] uppercase leading-none mb-1"
+              onClick={handleTitleTap}
+              className="font-display text-[28px] font-bold tracking-[0.12em] uppercase leading-none mb-1 select-none"
               style={{
                 color: '#00e5c4',
                 textShadow: '0 0 30px rgba(0,229,196,0.4), 0 0 60px rgba(0,229,196,0.15)',
+                cursor: 'default',
               }}
             >
               UMBRA

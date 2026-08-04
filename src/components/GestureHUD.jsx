@@ -2,9 +2,23 @@ import { useEffect, useRef, useCallback } from 'react'
 import { useGesture } from '../context/GestureContext'
 import { HAND_CONNECTIONS } from '../hooks/useHandGesture'
 
-// Draw hand skeleton onto the preview canvas
-function drawSkeleton(ctx, landmarks, W, H, pinching) {
+// Draw video frame + hand skeleton onto the preview canvas
+function drawFrame(ctx, video, landmarks, W, H, pinching) {
   ctx.clearRect(0, 0, W, H)
+
+  // Mirror the video frame
+  if (video && video.readyState >= 2) {
+    ctx.save()
+    ctx.translate(W, 0)
+    ctx.scale(-1, 1)
+    ctx.globalAlpha = 0.6
+    ctx.drawImage(video, 0, 0, W, H)
+    ctx.restore()
+    ctx.globalAlpha = 1
+  }
+}
+
+function drawSkeleton(ctx, landmarks, W, H, pinching) {
 
   if (!landmarks.length) return
 
@@ -54,10 +68,11 @@ export default function GestureHUD() {
 
   // Update skeleton canvas + cursor position every frame
   const tick = useCallback(() => {
-    // Skeleton
+    // Video frame + skeleton
     const canvas = skeletonRef.current
     if (canvas && enabled) {
       const ctx = canvas.getContext('2d')
+      drawFrame(ctx, videoRef.current, landmarksRef.current, canvas.width, canvas.height, pinchingRef.current)
       drawSkeleton(ctx, landmarksRef.current, canvas.width, canvas.height, pinchingRef.current)
     }
 
@@ -91,6 +106,14 @@ export default function GestureHUD() {
 
   return (
     <>
+      {/* Video always in DOM so videoRef.current is available before enabled state updates */}
+      <video
+        ref={videoRef}
+        muted
+        playsInline
+        style={{ position: 'fixed', top: -9999, left: -9999, width: 1, height: 1, opacity: 0 }}
+      />
+
       {/* ── Full-screen gesture cursor ring ── */}
       <div
         ref={cursorRef}
@@ -126,7 +149,7 @@ export default function GestureHUD() {
           pointerEvents: 'none',
         }}
       >
-        {/* Webcam preview with skeleton overlay */}
+        {/* Preview canvas (video drawn into it in tick()) */}
         {enabled && (
           <div
             style={{
@@ -139,30 +162,11 @@ export default function GestureHUD() {
               background:   '#04090c',
             }}
           >
-            <video
-              ref={videoRef}
-              muted
-              playsInline
-              style={{
-                position:  'absolute',
-                inset:      0,
-                width:     '100%',
-                height:    '100%',
-                objectFit: 'cover',
-                transform: 'scaleX(-1)',
-                opacity:    0.65,
-              }}
-            />
             <canvas
               ref={skeletonRef}
               width={160}
               height={90}
-              style={{
-                position: 'absolute',
-                inset:     0,
-                width:    '100%',
-                height:   '100%',
-              }}
+              style={{ display: 'block', width: '100%', height: '100%' }}
             />
             {/* Status badge */}
             <div style={{
