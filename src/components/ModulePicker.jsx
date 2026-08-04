@@ -1,6 +1,7 @@
-import { useCallback } from 'react'
+import { useCallback, useRef, useState } from 'react'
+import { Canvas } from '@react-three/fiber'
 import useModuleStore from '../store/useModuleStore'
-import Hero from './Hero'
+import PhysicsBg from './PhysicsBg'
 
 const MODULES = [
   {
@@ -9,8 +10,7 @@ const MODULES = [
     abbr: 'SR',
     tagline: 'Light cones · Time dilation · Length contraction',
     description:
-      'Explore the Lorentz transform at relativistic velocities. Watch clocks slow and rods shrink as β → 1.',
-    status: 'active',
+      'Lorentz transform at relativistic velocities. Clocks slow, rods shrink as β → 1. Light cone geometry in Minkowski space.',
     color: 'cyan',
     formula: 'γ = 1/√(1−β²)',
   },
@@ -20,8 +20,7 @@ const MODULES = [
     abbr: 'QM',
     tagline: 'Wave functions · Uncertainty · Entanglement',
     description:
-      'Probability amplitudes, the Schrödinger equation, and quantum superposition visualized in Hilbert space.',
-    status: 'active',
+      'Probability amplitudes, the Schrödinger equation, and quantum superposition visualized in Hilbert space. Bloch sphere and double-slit.',
     color: 'amber',
     formula: 'iℏ ∂ψ/∂t = Ĥψ',
   },
@@ -31,10 +30,9 @@ const MODULES = [
     abbr: 'FP',
     tagline: 'Dark matter · Hubble expansion · Rotation curves',
     description:
-      'Galaxy kinematics vs. Keplerian predictions. Hubble expansion as direct measurement. What the data shows, what is inferred, and what remains unknown.',
-    status: 'active',
+      'Galaxy kinematics vs. Keplerian predictions. What the data shows, what is inferred, and what remains unknown.',
     color: 'rose',
-    formula: 'v_obs ≫ v_kep  |  v = H₀·d',
+    formula: 'v_obs ≫ v_kep',
   },
   {
     id: 'dynamical-systems',
@@ -42,8 +40,7 @@ const MODULES = [
     abbr: 'DS',
     tagline: 'Strange attractors · Chaos · Phase space',
     description:
-      '1,800 RK4-integrated particles tracing Lorenz, Rössler, Thomas, and Aizawa attractors in real time. Adjust σ, ρ, β live and watch chaos emerge as ρ crosses the Hopf bifurcation threshold at 24.74.',
-    status: 'active',
+      '1,800 RK4-integrated particles tracing Lorenz, Rössler, Thomas, and Aizawa attractors. Adjust σ, ρ, β live.',
     color: 'emerald',
     formula: 'dX/dt = F(X)',
   },
@@ -53,10 +50,9 @@ const MODULES = [
     abbr: 'EM',
     tagline: '3D field lines · Biot-Savart · Halbach arrays',
     description:
-      'Real Biot-Savart field computation in 3D. RK4-traced magnetic field lines for dipole, bar magnet, solenoid, and Halbach array. Heatmap cross-sections and animated particle streams.',
-    status: 'active',
+      'Real Biot-Savart field computation in 3D. RK4-traced field lines for dipole, bar magnet, solenoid, and Halbach array.',
     color: 'violet',
-    formula: 'B = μ₀/4π ∮ (I dℓ × r̂) / r²',
+    formula: 'B = μ₀/4π ∮ Idℓ×r̂/r²',
   },
   {
     id: 'general-relativity',
@@ -64,8 +60,7 @@ const MODULES = [
     abbr: 'GR',
     tagline: 'Spacetime curvature · Geodesics · Gravitational waves',
     description:
-      'Einstein\'s field equations visualized. Watch spacetime warp under mass, trace geodesics that bend light and precess orbits, and see gravitational waves radiate from a binary system.',
-    status: 'active',
+      'Einstein\'s field equations. Spacetime warp under mass, geodesic precession, and gravitational wave emission from a binary.',
     color: 'orange',
     formula: 'G_μν + Λg_μν = 8πT_μν',
   },
@@ -75,8 +70,7 @@ const MODULES = [
     abbr: 'TD',
     tagline: 'Maxwell-Boltzmann · Entropy · Heat engines',
     description:
-      'Statistical mechanics in motion. Gas particles colliding in real time with live speed distributions, entropy increasing as order dissolves, and Carnot cycles traced on a PV diagram.',
-    status: 'active',
+      'Statistical mechanics in motion. Gas particles colliding in real time, entropy increasing as order dissolves, Carnot cycles on a PV diagram.',
     color: 'sky',
     formula: 'S = k_B ln Ω',
   },
@@ -86,266 +80,256 @@ const MODULES = [
     abbr: 'FD',
     tagline: 'Streamlines · Vortex shedding · SPH',
     description:
-      'Three models of fluid flow: potential flow around a cylinder with live tracer particles, the Kármán vortex street from a discrete vortex method, and a smoothed particle hydrodynamics dam break.',
-    status: 'active',
+      'Potential flow, Kármán vortex street via discrete vortex method, and smoothed particle hydrodynamics dam break.',
     color: 'teal',
     formula: 'ρ(∂u/∂t + u·∇u) = −∇p + μ∇²u',
   },
 ]
 
-const colorConfig = {
-  cyan: {
-    border: 'border-cyan-glow',
-    glow: 'shadow-glow-cyan',
-    abbr: 'text-cyan-glow glow-cyan',
-    tag: 'bg-cyan-glow/10 text-cyan-glow border-cyan-glow/30',
-    formula: 'text-cyan-glow glow-cyan',
-    hover: 'hover:border-cyan-glow hover:shadow-glow-cyan',
-  },
-  amber: {
-    border: 'border-amber-glow/40',
-    glow: 'shadow-glow-amber',
-    abbr: 'text-amber-glow glow-amber',
-    tag: 'bg-amber-glow/10 text-amber-glow border-amber-glow/30',
-    formula: 'text-amber-glow',
-    hover: 'hover:border-amber-glow hover:shadow-glow-amber',
-  },
-  rose: {
-    border: 'border-rose-glow/40',
-    glow: 'shadow-glow-rose',
-    abbr: 'text-rose-glow',
-    tag: 'bg-rose-glow/10 text-rose-glow border-rose-glow/30',
-    formula: 'text-rose-glow',
-    hover: 'hover:border-rose-glow hover:shadow-glow-rose',
-  },
-  violet: {
-    border: 'border-violet-glow/40',
-    glow: 'shadow-glow-violet',
-    abbr: 'text-violet-glow glow-violet',
-    tag: 'bg-violet-glow/10 text-violet-glow border-violet-glow/30',
-    formula: 'text-violet-glow',
-    hover: 'hover:border-violet-glow hover:shadow-glow-violet',
-  },
-  emerald: {
-    border: 'border-emerald-glow/40',
-    glow: 'shadow-glow-emerald',
-    abbr: 'text-emerald-glow glow-emerald',
-    tag: 'bg-emerald-glow/10 text-emerald-glow border-emerald-glow/30',
-    formula: 'text-emerald-glow',
-    hover: 'hover:border-emerald-glow hover:shadow-glow-emerald',
-  },
-  orange: {
-    border: 'border-orange-glow/40',
-    glow: 'shadow-glow-orange',
-    abbr: 'text-orange-glow',
-    tag: 'bg-orange-glow/10 text-orange-glow border-orange-glow/30',
-    formula: 'text-orange-glow',
-    hover: 'hover:border-orange-glow hover:shadow-glow-orange',
-  },
-  sky: {
-    border: 'border-sky-glow/40',
-    glow: 'shadow-glow-sky',
-    abbr: 'text-sky-glow',
-    tag: 'bg-sky-glow/10 text-sky-glow border-sky-glow/30',
-    formula: 'text-sky-glow',
-    hover: 'hover:border-sky-glow hover:shadow-glow-sky',
-  },
-  teal: {
-    border: 'border-teal-glow/40',
-    glow: 'shadow-glow-teal',
-    abbr: 'text-teal-glow',
-    tag: 'bg-teal-glow/10 text-teal-glow border-teal-glow/30',
-    formula: 'text-teal-glow',
-    hover: 'hover:border-teal-glow hover:shadow-glow-teal',
-  },
+// Accent hex per color name (for inline styles only)
+const ACCENT_HEX = {
+  cyan:    '#00e5c4',
+  amber:   '#f59e0b',
+  rose:    '#e040fb',
+  emerald: '#10b981',
+  violet:  '#a855f7',
+  orange:  '#fb923c',
+  sky:     '#38bdf8',
+  teal:    '#2dd4bf',
 }
 
-function ModuleCard({ module, onClick }) {
-  const cc = colorConfig[module.color]
-  const isActive = module.status === 'active'
+function ModuleCard({ module, onEnter, onHoverIn, onHoverOut }) {
+  const hex    = ACCENT_HEX[module.color]
+  const hexRgb = parseInt(hex.slice(1), 16)
+  const r = (hexRgb >> 16) & 0xff
+  const g = (hexRgb >>  8) & 0xff
+  const b =  hexRgb        & 0xff
 
   return (
     <button
-      onClick={isActive ? onClick : undefined}
-      disabled={!isActive}
-      className={[
-        'relative group flex flex-col text-left p-6 rounded border osc-grid',
-        'transition-all duration-300',
-        'bg-panel',
-        cc.border,
-        isActive
-          ? `cursor-pointer ${cc.hover} focus:outline-none focus-visible:ring-1 focus-visible:ring-cyan-glow`
-          : 'cursor-not-allowed opacity-40',
-        isActive ? cc.glow : '',
-      ].join(' ')}
-      aria-label={isActive ? `Enter ${module.name}` : `${module.name} — coming soon`}
+      onClick={onEnter}
+      onMouseEnter={onHoverIn}
+      onMouseLeave={onHoverOut}
+      className="group relative flex flex-col text-left p-5 rounded-sm cursor-pointer focus:outline-none focus-visible:ring-1 transition-all duration-300"
+      style={{
+        background: `rgba(10, 18, 24, 0.72)`,
+        backdropFilter: 'blur(14px)',
+        WebkitBackdropFilter: 'blur(14px)',
+        border: `1px solid rgba(${r},${g},${b},0.18)`,
+      }}
+      onMouseMove={(e) => {
+        e.currentTarget.style.borderColor = `rgba(${r},${g},${b},0.7)`
+        e.currentTarget.style.boxShadow   = `0 0 18px 2px rgba(${r},${g},${b},0.15), inset 0 1px 0 rgba(${r},${g},${b},0.08)`
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = `rgba(${r},${g},${b},0.18)`
+        e.currentTarget.style.boxShadow   = 'none'
+        onHoverOut()
+      }}
     >
-      {!isActive && (
-        <span className="absolute top-4 right-4 font-mono-data text-[9px] tracking-widest uppercase px-2 py-0.5 border border-border-subtle text-text-dim rounded">
-          SOON
-        </span>
-      )}
-
-      <div className={`font-display text-5xl font-bold mb-3 leading-none ${cc.abbr}`}>
+      {/* Abbr */}
+      <div
+        className="font-display text-[42px] font-bold leading-none mb-3"
+        style={{ color: hex, textShadow: `0 0 20px rgba(${r},${g},${b},0.5)` }}
+      >
         {module.abbr}
       </div>
 
-      <div className="mb-3">
-        <h2 className="font-display text-base font-semibold text-text-primary mb-1 leading-tight">
+      {/* Name + tagline */}
+      <div className="mb-2.5">
+        <h2 className="font-display text-[13px] font-semibold text-text-primary mb-0.5 leading-tight tracking-wide">
           {module.name}
         </h2>
-        <p className="font-mono-data text-[11px] text-text-dim leading-relaxed">
+        <p className="font-mono-data text-[10px] leading-relaxed" style={{ color: `rgba(${r},${g},${b},0.75)` }}>
           {module.tagline}
         </p>
       </div>
 
-      <p className="font-body text-xs text-text-dim leading-relaxed mb-4 flex-1">
+      {/* Description */}
+      <p className="font-body text-[11px] text-text-dim leading-relaxed mb-4 flex-1">
         {module.description}
       </p>
 
-      <div className={`self-start font-mono-data text-[11px] px-2 py-1 rounded border ${cc.tag}`}>
+      {/* Formula tag */}
+      <div
+        className="self-start font-mono-data text-[10px] px-2 py-0.5 rounded border"
+        style={{
+          color: hex,
+          borderColor: `rgba(${r},${g},${b},0.3)`,
+          background: `rgba(${r},${g},${b},0.07)`,
+        }}
+      >
         {module.formula}
       </div>
 
-      {isActive && (
-        <div className="absolute bottom-4 right-5 font-mono-data text-[10px] tracking-widest uppercase text-cyan-glow opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          ENTER →
-        </div>
-      )}
+      {/* Enter hint */}
+      <div
+        className="absolute bottom-4 right-4 font-mono-data text-[9px] tracking-[0.18em] uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        style={{ color: hex }}
+      >
+        ENTER →
+      </div>
+    </button>
+  )
+}
+
+function SabrinaCard({ onEnter, onHoverIn, onHoverOut }) {
+  return (
+    <button
+      onClick={onEnter}
+      onMouseEnter={onHoverIn}
+      onMouseLeave={onHoverOut}
+      className="group relative flex flex-col text-left p-5 rounded-sm cursor-pointer focus:outline-none transition-all duration-300"
+      style={{
+        background: 'rgba(10, 18, 24, 0.72)',
+        backdropFilter: 'blur(14px)',
+        WebkitBackdropFilter: 'blur(14px)',
+        border: '1px solid rgba(255,105,180,0.18)',
+      }}
+      onMouseMove={(e) => {
+        e.currentTarget.style.borderColor = 'rgba(255,105,180,0.75)'
+        e.currentTarget.style.boxShadow = '0 0 18px 2px rgba(255,20,147,0.15), inset 0 1px 0 rgba(255,105,180,0.08)'
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = 'rgba(255,105,180,0.18)'
+        e.currentTarget.style.boxShadow = 'none'
+        onHoverOut()
+      }}
+    >
+      <div className="font-display text-[42px] font-bold leading-none mb-3"
+        style={{ color: '#ff69b4', textShadow: '0 0 20px rgba(255,20,147,0.5)' }}>
+        ♡
+      </div>
+      <div className="mb-2.5">
+        <h2 className="font-display text-[13px] font-semibold text-text-primary mb-0.5 leading-tight tracking-wide">
+          For Sabrina
+        </h2>
+        <p className="font-mono-data text-[10px]" style={{ color: 'rgba(255,105,180,0.75)' }}>
+          a message · just for you
+        </p>
+      </div>
+      <p className="font-body text-[11px] text-text-dim leading-relaxed mb-4 flex-1">
+        something made for you, because you deserve it.
+      </p>
+      <div className="self-start font-mono-data text-[10px] px-2 py-0.5 rounded border"
+        style={{ color: '#ff69b4', borderColor: 'rgba(255,105,180,0.3)', background: 'rgba(255,105,180,0.07)' }}>
+        mwah ♥
+      </div>
+      <div className="absolute bottom-4 right-4 font-mono-data text-[9px] tracking-[0.18em] uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        style={{ color: '#ff69b4' }}>
+        ENTER →
+      </div>
     </button>
   )
 }
 
 export default function ModulePicker() {
-  const setActiveModule = useModuleStore((s) => s.setActiveModule)
-  const scrollToModules = useCallback(() => {
-    const container = document.querySelector('[data-scroll-root]')
-    const modules = document.querySelector('[data-modules-section]')
-    if (!container || !modules) return
-    const top =
-      container.scrollTop +
-      modules.getBoundingClientRect().top -
-      container.getBoundingClientRect().top
-    container.scrollTo({ top })
+  const setActiveModule    = useModuleStore((s) => s.setActiveModule)
+  const [hoveredModule, setHoveredModule] = useState(null)
+  const mouseRef = useRef({ x: 0, y: 0 })
+
+  const handleMouseMove = useCallback((e) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    mouseRef.current = {
+      x:  (e.clientX - rect.left)  / rect.width  * 2 - 1,
+      y: -((e.clientY - rect.top)  / rect.height * 2 - 1),
+    }
   }, [])
 
   return (
-    <div data-scroll-root className="w-full h-full bg-ground overflow-y-auto thin-scroll" style={{ scrollBehavior: 'smooth' }}>
-      <Hero onScrollDown={scrollToModules} />
-
-      {/* Modules section */}
-      <div
-        data-modules-section
-        className="flex flex-col items-center px-6 sm:px-8 pb-12"
+    <div
+      className="relative w-full h-full overflow-hidden"
+      style={{ background: '#04090c' }}
+      onMouseMove={handleMouseMove}
+    >
+      {/* ── Live physics background ── */}
+      <Canvas
+        style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+        camera={{ position: [0, 0, 12], fov: 60 }}
+        gl={{ antialias: false, alpha: false }}
       >
-        {/* Section separator */}
-        <div className="w-full max-w-4xl pt-10 pb-8">
-          <div className="flex items-center gap-4">
-            <div className="flex-1 h-px bg-border-subtle" />
-            <span className="font-mono-data text-[10px] tracking-[0.3em] uppercase text-text-dim px-2">
-              Modules
-            </span>
-            <div className="flex-1 h-px bg-border-subtle" />
+        <color attach="background" args={['#04090c']} />
+        <PhysicsBg mouseRef={mouseRef} hoveredModule={hoveredModule} />
+      </Canvas>
+
+      {/* ── Content layer ── */}
+      <div
+        className="relative flex flex-col h-full overflow-y-auto thin-scroll"
+        style={{ zIndex: 10 }}
+      >
+        {/* Header */}
+        <header className="shrink-0 px-8 pt-8 pb-6 flex items-start justify-between">
+          <div>
+            <h1
+              className="font-display text-[28px] font-bold tracking-[0.12em] uppercase leading-none mb-1"
+              style={{
+                color: '#00e5c4',
+                textShadow: '0 0 30px rgba(0,229,196,0.4), 0 0 60px rgba(0,229,196,0.15)',
+              }}
+            >
+              UMBRA
+            </h1>
+            <p className="font-mono-data text-[10px] tracking-[0.3em] uppercase text-text-dim">
+              Physics Visualizer · Interactive 3D
+            </p>
           </div>
+
+          <div className="font-mono-data text-[9px] text-text-dim tracking-wider text-right space-y-0.5 pt-1">
+            <div>NATURAL UNITS · c = ℏ = G = 1</div>
+            <div className="flex items-center gap-1.5 justify-end">
+              <span className="w-1 h-1 rounded-full bg-cyan-glow animate-pulse-glow" />
+              <span>{MODULES.length + 1} MODULES ACTIVE</span>
+            </div>
+          </div>
+        </header>
+
+        {/* Divider */}
+        <div className="shrink-0 mx-8 flex items-center gap-4 mb-6">
+          <div className="flex-1 h-px" style={{ background: 'rgba(0,229,196,0.12)' }} />
+          <span className="font-mono-data text-[9px] tracking-[0.28em] uppercase text-text-dim px-1">
+            // SELECT MODULE
+          </span>
+          <div className="flex-1 h-px" style={{ background: 'rgba(0,229,196,0.12)' }} />
         </div>
 
         {/* Module grid */}
-        <main className="w-full max-w-4xl">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <main className="flex-1 px-8 pb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {MODULES.map((mod) => (
               <ModuleCard
                 key={mod.id}
                 module={mod}
-                onClick={() => setActiveModule(mod.id)}
+                onEnter={() => setActiveModule(mod.id)}
+                onHoverIn={() => setHoveredModule(mod.id)}
+                onHoverOut={() => setHoveredModule(null)}
               />
             ))}
-
-            {/* Sabrina card */}
-            <button
-              onClick={() => setActiveModule('sabrina')}
-              style={{
-                position: 'relative', display: 'flex', flexDirection: 'column',
-                textAlign: 'left', padding: 24, borderRadius: 6,
-                border: '1px solid rgba(255,105,180,0.5)',
-                background: '#0c1419',
-                boxShadow: '0 0 12px 3px rgba(255,20,147,0.22)',
-                cursor: 'pointer',
-                transition: 'box-shadow 0.3s, border-color 0.3s',
-                backgroundImage: 'linear-gradient(rgba(15,31,40,0.9) 1px, transparent 1px), linear-gradient(90deg, rgba(15,31,40,0.9) 1px, transparent 1px)',
-                backgroundSize: '24px 24px',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.boxShadow = '0 0 20px 6px rgba(255,20,147,0.45)'
-                e.currentTarget.style.borderColor = 'rgba(255,105,180,0.9)'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.boxShadow = '0 0 12px 3px rgba(255,20,147,0.22)'
-                e.currentTarget.style.borderColor = 'rgba(255,105,180,0.5)'
-              }}
-            >
-              <div style={{
-                fontFamily: 'Chakra Petch, sans-serif',
-                fontSize: 48, fontWeight: 700, lineHeight: 1,
-                color: '#ff69b4',
-                textShadow: '0 0 12px #ff1493, 0 0 30px #ff1493',
-                marginBottom: 12,
-              }}>♡</div>
-
-              <div style={{ marginBottom: 12 }}>
-                <h2 style={{
-                  fontFamily: 'Chakra Petch, sans-serif',
-                  fontSize: 16, fontWeight: 600, color: '#dff2ed',
-                  marginBottom: 4, lineHeight: 1.2,
-                }}>For Sabrina</h2>
-                <p style={{
-                  fontFamily: 'JetBrains Mono, monospace',
-                  fontSize: 11, color: '#ff69b4', opacity: 0.8,
-                  letterSpacing: '0.05em',
-                }}>a message · just for you</p>
-              </div>
-
-              <p style={{
-                fontFamily: 'system-ui, sans-serif',
-                fontSize: 12, color: '#6aada5', lineHeight: 1.6,
-                marginBottom: 16, flex: 1,
-              }}>
-                something made for you, because you deserve it.
-              </p>
-
-              <div style={{
-                alignSelf: 'flex-start',
-                fontFamily: 'JetBrains Mono, monospace',
-                fontSize: 11, padding: '4px 8px', borderRadius: 4,
-                border: '1px solid rgba(255,105,180,0.35)',
-                background: 'rgba(255,105,180,0.08)',
-                color: '#ff69b4',
-              }}>
-                mwah ♥
-              </div>
-
-              <div style={{
-                position: 'absolute', bottom: 16, right: 20,
-                fontFamily: 'JetBrains Mono, monospace',
-                fontSize: 10, letterSpacing: '0.15em',
-                color: '#ff69b4', opacity: 0, textTransform: 'uppercase',
-                transition: 'opacity 0.2s',
-              }}
-              className="enter-hint"
-              >
-                ENTER →
-              </div>
-            </button>
+            <SabrinaCard
+              onEnter={() => setActiveModule('sabrina')}
+              onHoverIn={() => setHoveredModule('sabrina')}
+              onHoverOut={() => setHoveredModule(null)}
+            />
           </div>
         </main>
 
         {/* Footer */}
-        <footer className="w-full max-w-4xl mt-12">
-          <div className="h-px w-full bg-border-subtle mb-4" />
-          <p className="font-mono-data text-[10px] text-text-dim tracking-wider">
-            UMBRA · NATURAL UNITS · c = 1
+        <footer className="shrink-0 px-8 pb-5">
+          <div className="h-px mb-3" style={{ background: 'rgba(0,229,196,0.08)' }} />
+          <p className="font-mono-data text-[9px] text-text-dim tracking-wider">
+            UMBRA · All visualizations run in your browser — no server, no data sent.
           </p>
         </footer>
       </div>
+
+      {/* Hovered module name — ambient overlay */}
+      {hoveredModule && (
+        <div
+          className="absolute bottom-5 right-8 font-mono-data text-[10px] tracking-[0.2em] uppercase text-text-dim pointer-events-none transition-opacity duration-200"
+          style={{ zIndex: 20 }}
+        >
+          {MODULES.find((m) => m.id === hoveredModule)?.name || 'For Sabrina'}
+        </div>
+      )}
     </div>
   )
 }
