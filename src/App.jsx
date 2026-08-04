@@ -1,6 +1,7 @@
 import useModuleStore from './store/useModuleStore'
 import ModulePicker from './components/ModulePicker'
 import GestureHUD from './components/GestureHUD'
+import GestureEventBridge from './components/GestureEventBridge'
 import { GestureProvider } from './context/GestureContext'
 import SRModule from './modules/special-relativity/SRModule'
 import QuantumModule from './modules/quantum/QuantumModule'
@@ -36,6 +37,7 @@ export default function App() {
     <GestureProvider>
       <AppInner />
       <GestureHUD />
+      <GestureEventBridge />
     </GestureProvider>
   )
 }
