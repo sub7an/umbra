@@ -20,7 +20,10 @@ function AppInner() {
   if (activeModule === 'frontier-physics')    return <FrontierModule />
   if (activeModule === 'electromagnetism')    return <ElectromagnetismModule />
   if (activeModule === 'dynamical-systems')   return <DynamicalModule />
-  if (activeModule === 'sabrina')             return <SabrinaModule />
+  if (activeModule === 'sabrina') {
+    if (sessionStorage.getItem('umbra_unlocked') !== '1') return null
+    return <SabrinaModule />
+  }
   if (activeModule === 'general-relativity')  return <GRModule />
   if (activeModule === 'thermodynamics')      return <ThermoModule />
   if (activeModule === 'fluid-dynamics')      return <FluidModule />

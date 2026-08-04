@@ -4,6 +4,19 @@ import useModuleStore from '../store/useModuleStore'
 import PhysicsBg from './PhysicsBg'
 import { useGesture } from '../context/GestureContext'
 
+const SECRET_PHRASE = 'sabrina'
+const STORE_KEY     = 'umbra_unlocked'
+
+function checkUnlocked() {
+  if (sessionStorage.getItem(STORE_KEY) === '1') return true
+  if (window.location.hash === '#sabrina') {
+    sessionStorage.setItem(STORE_KEY, '1')
+    history.replaceState(null, '', window.location.pathname + window.location.search)
+    return true
+  }
+  return false
+}
+
 const MODULES = [
   {
     id: 'special-relativity',
@@ -175,8 +188,18 @@ function ModuleCard({ module, onEnter, onHoverIn, onHoverOut, cardRef }) {
   )
 }
 
-function SabrinaCard({ onEnter, onHoverIn, onHoverOut, cardRef }) {
+function SabrinaCard({ onEnter, onHoverIn, onHoverOut, cardRef, bloomIn }) {
   return (
+    <>
+      {bloomIn && (
+        <style>{`
+          @keyframes sabrina-bloom {
+            0%   { opacity: 0; transform: scale(0.86); filter: brightness(4); }
+            55%  { opacity: 1; transform: scale(1.03); filter: brightness(1.6); }
+            100% { opacity: 1; transform: scale(1);    filter: brightness(1); }
+          }
+        `}</style>
+      )}
     <button
       ref={cardRef}
       onClick={onEnter}
@@ -188,6 +211,7 @@ function SabrinaCard({ onEnter, onHoverIn, onHoverOut, cardRef }) {
         backdropFilter: 'blur(14px)',
         WebkitBackdropFilter: 'blur(14px)',
         border: '1px solid rgba(255,105,180,0.18)',
+        animation: bloomIn ? 'sabrina-bloom 0.85s cubic-bezier(0.22,1,0.36,1) both' : undefined,
       }}
       onMouseMove={(e) => {
         e.currentTarget.style.borderColor = 'rgba(255,105,180,0.75)'
@@ -223,14 +247,17 @@ function SabrinaCard({ onEnter, onHoverIn, onHoverOut, cardRef }) {
         ENTER →
       </div>
     </button>
+    </>
   )
 }
 
 export default function ModulePicker() {
   const setActiveModule    = useModuleStore((s) => s.setActiveModule)
   const [hoveredModule, setHoveredModule] = useState(null)
+  const [unlocked,    setUnlocked]    = useState(checkUnlocked)
+  const [justUnlocked, setJustUnlocked] = useState(false)
   const mouseRef  = useRef({ x: 0, y: 0 })
-  const cardRefs  = useRef({})   // { [moduleId]: buttonElement }
+  const cardRefs  = useRef({})
   const gesture   = useGesture()
 
   const handleMouseMove = useCallback((e) => {
@@ -240,6 +267,24 @@ export default function ModulePicker() {
       y: -((e.clientY - rect.top)  / rect.height * 2 - 1),
     }
   }, [])
+
+  // Secret keyboard unlock — type "sabrina" anywhere
+  useEffect(() => {
+    let typed = ''
+    const onKey = (e) => {
+      if (e.key.length !== 1) return
+      typed = (typed + e.key.toLowerCase()).slice(-(SECRET_PHRASE.length * 2))
+      if (!unlocked && typed.includes(SECRET_PHRASE)) {
+        typed = ''
+        sessionStorage.setItem(STORE_KEY, '1')
+        setUnlocked(true)
+        setJustUnlocked(true)
+        setTimeout(() => setJustUnlocked(false), 1000)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [unlocked])
 
   // Gesture: sync pointer → mouseRef + hoveredModule, pinch → enter
   useEffect(() => {
@@ -318,7 +363,7 @@ export default function ModulePicker() {
             <div>NATURAL UNITS · c = ℏ = G = 1</div>
             <div className="flex items-center gap-1.5 justify-end">
               <span className="w-1 h-1 rounded-full bg-cyan-glow animate-pulse-glow" />
-              <span>{MODULES.length + 1} MODULES ACTIVE</span>
+              <span>{unlocked ? MODULES.length + 1 : MODULES.length} MODULES ACTIVE</span>
             </div>
           </div>
         </header>
@@ -345,12 +390,15 @@ export default function ModulePicker() {
                 onHoverOut={() => setHoveredModule(null)}
               />
             ))}
-            <SabrinaCard
-              cardRef={(el) => { cardRefs.current['sabrina'] = el }}
-              onEnter={() => setActiveModule('sabrina')}
-              onHoverIn={() => setHoveredModule('sabrina')}
-              onHoverOut={() => setHoveredModule(null)}
-            />
+            {unlocked && (
+              <SabrinaCard
+                cardRef={(el) => { cardRefs.current['sabrina'] = el }}
+                onEnter={() => setActiveModule('sabrina')}
+                onHoverIn={() => setHoveredModule('sabrina')}
+                onHoverOut={() => setHoveredModule(null)}
+                bloomIn={justUnlocked}
+              />
+            )}
           </div>
         </main>
 
