@@ -58,6 +58,28 @@ const MODULES = [
     color: 'violet',
     formula: 'B = μ₀/4π ∮ (I dℓ × r̂) / r²',
   },
+  {
+    id: 'general-relativity',
+    name: 'General Relativity',
+    abbr: 'GR',
+    tagline: 'Spacetime curvature · Geodesics · Gravitational waves',
+    description:
+      'Einstein\'s field equations visualized. Watch spacetime warp under mass, trace geodesics that bend light and precess orbits, and see gravitational waves radiate from a binary system.',
+    status: 'active',
+    color: 'orange',
+    formula: 'G_μν + Λg_μν = 8πT_μν',
+  },
+  {
+    id: 'thermodynamics',
+    name: 'Thermodynamics',
+    abbr: 'TD',
+    tagline: 'Maxwell-Boltzmann · Entropy · Heat engines',
+    description:
+      'Statistical mechanics in motion. Gas particles colliding in real time with live speed distributions, entropy increasing as order dissolves, and Carnot cycles traced on a PV diagram.',
+    status: 'active',
+    color: 'sky',
+    formula: 'S = k_B ln Ω',
+  },
 ]
 
 const colorConfig = {
@@ -100,6 +122,22 @@ const colorConfig = {
     tag: 'bg-emerald-glow/10 text-emerald-glow border-emerald-glow/30',
     formula: 'text-emerald-glow',
     hover: 'hover:border-emerald-glow hover:shadow-glow-emerald',
+  },
+  orange: {
+    border: 'border-orange-glow/40',
+    glow: 'shadow-glow-orange',
+    abbr: 'text-orange-glow',
+    tag: 'bg-orange-glow/10 text-orange-glow border-orange-glow/30',
+    formula: 'text-orange-glow',
+    hover: 'hover:border-orange-glow hover:shadow-glow-orange',
+  },
+  sky: {
+    border: 'border-sky-glow/40',
+    glow: 'shadow-glow-sky',
+    abbr: 'text-sky-glow',
+    tag: 'bg-sky-glow/10 text-sky-glow border-sky-glow/30',
+    formula: 'text-sky-glow',
+    hover: 'hover:border-sky-glow hover:shadow-glow-sky',
   },
 }
 
