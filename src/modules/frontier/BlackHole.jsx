@@ -1,5 +1,6 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from 'react'
 import { useFrame } from '@react-three/fiber'
+import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 import useModuleStore from '../../store/useModuleStore'
 import {
@@ -129,6 +130,20 @@ export default function BlackHole({ hiRes }) {
       <StarBackground Rs={Rs} hiRes={hiRes} />
       <PhotonSphere   Rs={Rs} />
       <AccretionDisk  Rs={Rs} />
+      <Html position={[0, 2.2, 0]} center style={{ pointerEvents: 'none', textAlign: 'center' }}>
+        <div style={{
+          fontFamily: 'Chakra Petch, sans-serif',
+          fontSize: 28,
+          fontWeight: 700,
+          color: '#ff69b4',
+          textShadow: '0 0 18px #ff69b4, 0 0 40px #ff1493, 0 0 60px #ff1493',
+          letterSpacing: '0.05em',
+          whiteSpace: 'nowrap',
+          lineHeight: 1.3,
+        }}>
+          i like you sabrina mwah ♥
+        </div>
+      </Html>
     </group>
   )
 }
