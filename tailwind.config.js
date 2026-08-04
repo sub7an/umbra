@@ -28,6 +28,8 @@ export default {
         'orange-mid': '#ea580c',
         'sky-glow': '#38bdf8',
         'sky-mid': '#0ea5e9',
+        'teal-glow': '#2dd4bf',
+        'teal-mid': '#14b8a6',
         timelike: '#00e5c4',
         spacelike: '#e040fb',
         'grid-line': '#0f1f28',
@@ -46,6 +48,7 @@ export default {
         'glow-emerald': '0 0 8px 2px rgba(16,185,129,0.4)',
         'glow-orange': '0 0 8px 2px rgba(251,146,60,0.4)',
         'glow-sky':    '0 0 8px 2px rgba(56,189,248,0.4)',
+        'glow-teal':   '0 0 8px 2px rgba(45,212,191,0.4)',
         'panel-inset': 'inset 0 1px 0 rgba(0,229,196,0.08)',
       },
       animation: {

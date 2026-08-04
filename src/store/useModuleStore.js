@@ -174,6 +174,20 @@ const useModuleStore = create((set) => ({
     set((state) => ({ thermo: { ...state.thermo, viewType: v } })),
 
   resetThermo: () => set({ thermo: { temperature: 1.0, viewType: 'gas' } }),
+
+  // Fluid Dynamics state
+  fluid: {
+    viewType: 'streamlines', // 'streamlines' | 'vortex' | 'sph'
+    reynolds: 1.0,           // flow speed/intensity ∈ [0.3, 2.5]
+  },
+
+  setFluidView: (v) =>
+    set((state) => ({ fluid: { ...state.fluid, viewType: v } })),
+
+  setFluidReynolds: (v) =>
+    set((state) => ({ fluid: { ...state.fluid, reynolds: Math.max(0.3, Math.min(2.5, v)) } })),
+
+  resetFluid: () => set({ fluid: { viewType: 'streamlines', reynolds: 1.0 } }),
 }))
 
 export default useModuleStore
