@@ -146,6 +146,34 @@ const useModuleStore = create((set) => ({
 
   resetFp: () =>
     set({ fp: { fpRadius: 3.0, hubble: 1.0, bhMass: 1.0 } }),
+
+  // General Relativity state
+  gr: {
+    mass: 2.0,       // central mass scale ∈ [0.5, 5]
+    viewType: 'curvature', // 'curvature' | 'geodesics' | 'waves'
+  },
+
+  setGrMass: (v) =>
+    set((state) => ({ gr: { ...state.gr, mass: Math.max(0.5, Math.min(5, v)) } })),
+
+  setGrView: (v) =>
+    set((state) => ({ gr: { ...state.gr, viewType: v } })),
+
+  resetGr: () => set({ gr: { mass: 2.0, viewType: 'curvature' } }),
+
+  // Thermodynamics state
+  thermo: {
+    temperature: 1.0,  // normalized temperature ∈ [0.2, 3.0]
+    viewType: 'gas',   // 'gas' | 'entropy' | 'engine'
+  },
+
+  setThermoTemp: (v) =>
+    set((state) => ({ thermo: { ...state.thermo, temperature: Math.max(0.2, Math.min(3.0, v)) } })),
+
+  setThermoView: (v) =>
+    set((state) => ({ thermo: { ...state.thermo, viewType: v } })),
+
+  resetThermo: () => set({ thermo: { temperature: 1.0, viewType: 'gas' } }),
 }))
 
 export default useModuleStore
