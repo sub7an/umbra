@@ -148,21 +148,45 @@ export default function SabrinaModule() {
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         gap: 10, zIndex: 10, pointerEvents: 'none',
       }}>
+        <style>{`
+          @keyframes heartbeat {
+            0%,100% { transform: scale(1); }
+            14%      { transform: scale(1.35); }
+            28%      { transform: scale(1); }
+            42%      { transform: scale(1.18); }
+            56%      { transform: scale(1); }
+          }
+          @keyframes fadein {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 0.75; transform: translateY(0); }
+          }
+        `}</style>
         <div style={{
           fontFamily: 'Chakra Petch, sans-serif',
           fontSize: 34, fontWeight: 700, color: PINK,
           textShadow: `0 0 18px ${DEEP}, 0 0 45px ${DEEP}, 0 0 70px ${DEEP}`,
           letterSpacing: '0.06em', whiteSpace: 'nowrap',
         }}>
-          for sabrina ♥
+          for sabrina{' '}
+          <span style={{ display: 'inline-block', animation: 'heartbeat 1.4s ease-in-out infinite' }}>♥</span>
         </div>
         <div style={{
           fontFamily: 'Chakra Petch, sans-serif',
           fontSize: 14, color: LIGHT,
           opacity: 0.75, letterSpacing: '0.16em',
           textTransform: 'uppercase',
+          animation: 'fadein 1.2s ease 0.4s both',
         }}>
           you make everything better
+        </div>
+        <div style={{
+          fontFamily: 'Chakra Petch, sans-serif',
+          fontSize: 11, color: PINK,
+          opacity: 0, letterSpacing: '0.22em',
+          textTransform: 'uppercase',
+          animation: 'fadein 1.2s ease 1.6s both',
+        }}>
+          thanks for existing ♡
         </div>
       </div>
     </div>
