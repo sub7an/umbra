@@ -8,6 +8,7 @@ import DynamicalModule from './modules/dynamical/DynamicalModule'
 import SabrinaModule from './modules/sabrina/SabrinaModule'
 import GRModule from './modules/general-relativity/GRModule'
 import ThermoModule from './modules/thermodynamics/ThermoModule'
+import FluidModule from './modules/fluid-dynamics/FluidModule'
 
 export default function App() {
   const activeModule = useModuleStore((s) => s.activeModule)
@@ -20,6 +21,7 @@ export default function App() {
   if (activeModule === 'sabrina')             return <SabrinaModule />
   if (activeModule === 'general-relativity')  return <GRModule />
   if (activeModule === 'thermodynamics')      return <ThermoModule />
+  if (activeModule === 'fluid-dynamics')      return <FluidModule />
 
   return <ModulePicker />
 }

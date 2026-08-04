@@ -80,6 +80,17 @@ const MODULES = [
     color: 'sky',
     formula: 'S = k_B ln Ω',
   },
+  {
+    id: 'fluid-dynamics',
+    name: 'Fluid Dynamics',
+    abbr: 'FD',
+    tagline: 'Streamlines · Vortex shedding · SPH',
+    description:
+      'Three models of fluid flow: potential flow around a cylinder with live tracer particles, the Kármán vortex street from a discrete vortex method, and a smoothed particle hydrodynamics dam break.',
+    status: 'active',
+    color: 'teal',
+    formula: 'ρ(∂u/∂t + u·∇u) = −∇p + μ∇²u',
+  },
 ]
 
 const colorConfig = {
@@ -138,6 +149,14 @@ const colorConfig = {
     tag: 'bg-sky-glow/10 text-sky-glow border-sky-glow/30',
     formula: 'text-sky-glow',
     hover: 'hover:border-sky-glow hover:shadow-glow-sky',
+  },
+  teal: {
+    border: 'border-teal-glow/40',
+    glow: 'shadow-glow-teal',
+    abbr: 'text-teal-glow',
+    tag: 'bg-teal-glow/10 text-teal-glow border-teal-glow/30',
+    formula: 'text-teal-glow',
+    hover: 'hover:border-teal-glow hover:shadow-glow-teal',
   },
 }
 
