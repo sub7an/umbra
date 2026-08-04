@@ -38,6 +38,7 @@ const useModuleStore = create((set) => ({
     particleCount: 20000,      // Monte Carlo sample count for PIB and Bloch
     boxVizMode: 'prob',        // 'prob' | 'real' | 'imag'
     blochVizMode: 'prob',      // 'prob' | 'real' | 'imag'
+    entangleAlpha: Math.PI / 8, // coupling angle α ∈ [0, π/4]; C = sin(2α)
   },
 
   setBlochTheta: (v) =>
@@ -76,6 +77,11 @@ const useModuleStore = create((set) => ({
   setBlochVizMode: (v) =>
     set((state) => ({ qm: { ...state.qm, blochVizMode: v } })),
 
+  setEntangleAlpha: (v) =>
+    set((state) => ({
+      qm: { ...state.qm, entangleAlpha: Math.max(0, Math.min(Math.PI / 4, v)) },
+    })),
+
   resetQm: () =>
     set({
       qm: {
@@ -87,18 +93,23 @@ const useModuleStore = create((set) => ({
         particleCount: 20000,
         boxVizMode: 'prob',
         blochVizMode: 'prob',
+        entangleAlpha: Math.PI / 8,
       },
     }),
 
   // Dynamical Systems state
   ds: {
     attractorType: 'lorenz',
+    phaseMu: 1.0,  // Van der Pol μ ∈ [0, 3]
   },
 
   setDsAttractorType: (v) =>
     set((state) => ({ ds: { ...state.ds, attractorType: v } })),
 
-  resetDs: () => set({ ds: { attractorType: 'lorenz' } }),
+  setDsPhaseMu: (v) =>
+    set((state) => ({ ds: { ...state.ds, phaseMu: Math.max(0, Math.min(3, v)) } })),
+
+  resetDs: () => set({ ds: { attractorType: 'lorenz', phaseMu: 1.0 } }),
 
   // Electromagnetism state
   em: {

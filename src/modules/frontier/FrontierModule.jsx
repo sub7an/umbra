@@ -32,24 +32,24 @@ function buildExplanation(view, fpRadius, hubble, bhMass) {
     case 'blackhole': {
       const Rs    = (bhMass * 0.5).toFixed(3)
       const bCrit = (bhMass * 0.5 * 2.598).toFixed(3)
-      return `The shader deflects each background ray by δ ≈ 4·b_crit²/b², a 1/b² falloff chosen because it diverges sharply near the photon sphere and tapers naturally at large distances — producing a convincing ring without needing to solve geodesic equations. This is not the real Schwarzschild formula (which is α = 2Rs/b, a 1/b law). The 1/b² version exaggerates strong-field bending for visual impact while getting the qualitative structure right: a shadow, a photon ring, and weak lensing of distant stars.
+      return `The shader bends each background ray by δ ≈ 4·b_crit²/b². That 1/b² falloff diverges sharply near the photon sphere and tapers at distance, giving a convincing ring without solving geodesic equations. The real Schwarzschild deflection goes as 1/b, so this exaggerates strong-field bending for visual effect while preserving the key structure: shadow, photon ring, and weak lensing.
 
-What the shader does get right: the shadow boundary at b_crit = ${bCrit} (the photon capture radius, not the event horizon), the bright ring caused by rays that nearly orbit before escaping, and the sense of background stars bending around the mass. What it does not do: solve the Schwarzschild or Kerr geodesic equations per ray. A real GR renderer traces null geodesics through curved spacetime — this does not. The accretion disk uses Keplerian rotation (ω ∝ r⁻³/²) and rotates faster at the inner edge.`
+Photon capture radius here is b_crit = ${bCrit}. Rays inside that threshold fall in; rays just outside escape after nearly orbiting once, forming the bright ring. The accretion disk uses Keplerian rotation (ω ∝ r⁻³/²), so the inner edge spins fastest. A real GR renderer would trace null geodesics through curved spacetime. This one does not.`
     }
 
     case 'rotationcurve': {
       const disc = rotationDiscrepancy(fpRadius)
       const dmf = darkMatterFraction(fpRadius) * 100
-      return `Observation: at r = ${fpRadius.toFixed(2)}, the measured orbital velocity is ${observedRotationVelocity(fpRadius).toFixed(3)} — but Newtonian mechanics predicts ${keplerianVelocity(fpRadius).toFixed(3)} from the visible mass alone. The discrepancy is ${disc.toFixed(3)}, implying ${dmf.toFixed(1)}% of the enclosed mass is unseen. This isn't a small correction — at large radii, unseen matter vastly dominates.
+      return `At r = ${fpRadius.toFixed(2)}, measured orbital velocity is ${observedRotationVelocity(fpRadius).toFixed(3)}, but gravity from visible mass alone predicts ${keplerianVelocity(fpRadius).toFixed(3)}. That gap of ${disc.toFixed(3)} means ${dmf.toFixed(1)}% of the enclosed mass is invisible. At large radii, the unseen mass dominates completely.
 
-What's established: the flat rotation curves are measured across hundreds of galaxies. Discrepancy with Keplerian predictions is real and reproducible. Inference: extra mass exists that doesn't emit light — labelled "dark matter" by convention. What's unknown: whether dark matter is a new particle, a modified gravity law (MOND, TeVeS), primordial black holes, or something else entirely. No direct detection of a dark matter particle has been confirmed as of 2024. The label "dark matter" names the gap, not its content.`
+Flat rotation curves are reproducible across hundreds of galaxies. The extra mass is real. Calling it "dark matter" is just a label for the shortfall. Whether it's a new particle, a tweak to gravity (MOND, TeVeS), primordial black holes, or something else is still open. No dark matter particle has been detected directly.`
     }
 
     case 'expansion': {
       const H_km = toHubbleUnits(hubble)
-      return `Observation: galaxies at distance d recede from us with velocity v = H₀·d. This holds in every direction. At H₀ = ${hubble.toFixed(2)} (≈ ${H_km} km/s/Mpc), a galaxy 1 Mpc away recedes at ${hubble.toFixed(2)} normalized units; a galaxy 2 Mpc away at twice that. The expansion is homogeneous — every observer sees the same recession law regardless of position.
+      return `Galaxies recede at v = H₀·d in every direction. At H₀ = ${hubble.toFixed(2)} (≈ ${H_km} km/s/Mpc), a galaxy 1 Mpc out moves away at ${hubble.toFixed(2)} units/s; at 2 Mpc, twice that. Every observer anywhere in the universe sees the same recession law.
 
-What's established: cosmic expansion via galaxy redshifts and Cepheid/Type Ia supernova distances. Acceleration of expansion since z ≈ 0.7, confirmed by Type Ia SNe in 1998. Inference: a "cosmological constant" Λ or "dark energy" drives the acceleration. What's unknown: the physical nature of Λ (vacuum energy? scalar field? modified GR?), why its measured value is ~120 orders of magnitude below naive QFT predictions, and — critically — the Hubble tension: local distance ladder gives H₀ ≈ 73, CMB gives ≈ 67.4 km/s/Mpc. That 5σ discrepancy has no agreed resolution.`
+Cosmic expansion is confirmed through redshifts, Cepheid distances, and Type Ia supernovae. Expansion has been accelerating since around z ≈ 0.7, confirmed in 1998. Something is driving it, labeled "dark energy" or the cosmological constant Λ. Its nature is unknown. There's also the Hubble tension: the local distance ladder gives H₀ ≈ 73 km/s/Mpc, while the CMB gives ≈ 67.4. That 5σ gap has no agreed resolution.`
     }
 
     default:

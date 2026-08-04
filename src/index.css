@@ -93,7 +93,7 @@ html, body, #root {
   background: transparent;
 }
 .thin-scroll::-webkit-scrollbar-thumb {
-  background: #162229;
+  background: #1e4a5a;
   border-radius: 2px;
 }
 .thin-scroll::-webkit-scrollbar-thumb:hover {

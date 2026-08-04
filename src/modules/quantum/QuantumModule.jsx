@@ -5,6 +5,7 @@ import InfoPanel from '../../components/InfoPanel'
 import BlochSphere from './BlochSphere'
 import ParticleInBox from './ParticleInBox'
 import DoubleSlit from './DoubleSlit'
+import Entanglement from './Entanglement'
 import useModuleStore from '../../store/useModuleStore'
 import { blochCoordinates, prob0, prob1, particleInBoxEnergy, interferenceIntensity } from './qmMath'
 
@@ -14,12 +15,14 @@ const VIEWS = [
   { id: 'blochsphere',   label: 'Bloch Sphere' },
   { id: 'particleinbox', label: 'Particle in Box' },
   { id: 'doubleslit',    label: 'Double Slit' },
+  { id: 'entanglement',  label: 'Entanglement' },
 ]
 
 const CAMERA_POSITIONS = {
   blochsphere:   [1.8, 1.5, 3.8],
   particleinbox: [0, 0.8, 7],
   doubleslit:    [0, 3.5, 9],
+  entanglement:  [0, 1.2, 9],
 }
 
 // ── Viz mode toggle ───────────────────────────────────────────────────────────
@@ -74,7 +77,7 @@ function MeasureToggle({ active, onToggle }) {
 
 // ── Explanations ──────────────────────────────────────────────────────────────
 
-function buildExplanation(view, theta, phi, n, lambda, measured) {
+function buildExplanation(view, theta, phi, n, lambda, measured, entAlpha = 0) {
   const p0 = prob0(theta)
   const p1 = prob1(theta)
   const En = particleInBoxEnergy(n)
@@ -82,16 +85,21 @@ function buildExplanation(view, theta, phi, n, lambda, measured) {
 
   switch (view) {
     case 'blochsphere':
-      return `Every pure qubit state maps to a unique point on the surface of the Bloch sphere. The north pole is |0⟩, the south pole is |1⟩ — but unlike a classical bit, the sphere's interior isn't empty. Any point on the surface is a valid quantum state, a superposition. Right now P(|0⟩) = ${(p0 * 100).toFixed(1)}% and P(|1⟩) = ${(p1 * 100).toFixed(1)}%. The azimuthal angle φ sets the relative phase between |0⟩ and |1⟩ — that phase is invisible to a single measurement, but it becomes physical when you interfere two qubits. The equator (θ=π/2) is the |+⟩/|−⟩/|+i⟩/|−i⟩ belt — here neither outcome is preferred. A projective measurement collapses this to a pole.`
+      return `Every pure qubit state sits at a unique point on this sphere. North pole is |0⟩, south is |1⟩. Any other surface point is a genuine superposition. Right now P(|0⟩) = ${(p0 * 100).toFixed(1)}% and P(|1⟩) = ${(p1 * 100).toFixed(1)}%. The angle φ sets the phase between |0⟩ and |1⟩. Phase is invisible in a single measurement, but it becomes real when two qubits interfere. The equator is the |+⟩/|−⟩ belt where neither outcome has an advantage. Measure any state on this sphere and it snaps to a pole.`
 
     case 'particleinbox':
-      return `The particle is confined between infinite walls, so ψ must vanish there — this forces the wavefunction into standing waves with exactly n half-wavelengths fitting in [0, L]. That quantisation condition is what gives you discrete energies. E_${n} = ${En.toFixed(2)} in units of E₁ = ${E1.toFixed(2)} (so it's ${(En / E1).toFixed(0)}× the ground state). Each dot is a Monte Carlo sample from |ψ_n(x)|². The cloud shape directly encodes the probability density — dense lobes at antinodes, empty at nodes. Switch to Re(ψ) or Im(ψ) to watch the time-phase animate.`
+      return `The walls force ψ to zero at both edges, so only standing waves with an exact number of half-wavelengths can fit. That's the origin of discrete energies. Right now E_${n} = ${En.toFixed(2)} E₁, which is ${(En / E1).toFixed(0)}× the ground state. Each dot is sampled from |ψ_n(x)|², so the cloud is denser where the particle is likely to be found. Nodes are the empty gaps where ψ = 0 and the particle can never appear. Switch to Re(ψ) or Im(ψ) to watch the wavefunction rotate in time.`
 
     case 'doubleslit': {
       const fringe = (lambda * (SCREEN_X - 0) / 1.0).toFixed(2)
       return measured
-        ? `Measurement collapsed it. Once you know which slit the particle went through, it's no longer in a superposition of "went through both." The interference term in |ψ₁+ψ₂|² requires the two paths to be indistinguishable. Tag the paths, the cross-term vanishes, and you get two classical blobs instead of fringes. This isn't about physical disturbance from the detector — even a perfectly gentle measurement destroys the pattern if it yields which-path information.`
-        : `Without measurement, the particle propagates as a superposition through both slits simultaneously. The two path amplitudes interfere: |ψ₁+ψ₂|² = |ψ₁|² + |ψ₂|² + 2·Re[ψ₁*ψ₂]. That cross-term is the interference. Fringe spacing ≈ λD/d ≈ ${fringe} (scene units). Increase λ and the fringes spread; the geometry is identical to classical wave optics — what's quantum is that each particle goes through both slits.`
+        ? `Which-path information was recorded, so interference collapses. The cross-term in |ψ₁+ψ₂|² only survives when the two paths are completely indistinguishable. Once you tag which slit the particle used, that term vanishes and you get two classical blobs. It doesn't matter how gentle the detector is. Any measurement that reveals path information is enough to kill the fringes.`
+        : `No measurement means the particle takes both slits as a superposition. The amplitudes interfere: |ψ₁+ψ₂|² = |ψ₁|² + |ψ₂|² + 2·Re[ψ₁*ψ₂]. That last term makes the fringes. Spacing ≈ λD/d ≈ ${fringe} scene units. Increase λ and the fringes spread. Each dot is a single particle, but the probability wave passes through both slits at once.`
+    }
+
+    case 'entanglement': {
+      const C = Math.sin(2 * entAlpha)
+      return `The state is |ψ⟩ = cos(α)|00⟩ + sin(α)|11⟩. Move α from 0 to π/4 and the state goes from a plain product to the Bell state |Φ⁺⟩. Right now concurrence C = ${C.toFixed(3)}. The Bloch vector for each qubit starts at the north pole and shrinks toward zero as entanglement grows, because a maximally entangled qubit has no definite local state. You cannot describe it as any single spin direction. The two qubits are perfectly correlated, but neither one has a state of its own.`
     }
 
     default:
@@ -101,7 +109,7 @@ function buildExplanation(view, theta, phi, n, lambda, measured) {
 
 // ── KaTeX equations ───────────────────────────────────────────────────────────
 
-function buildEquations(view, theta, phi, n, lambda, measured) {
+function buildEquations(view, theta, phi, n, lambda, measured, entAlpha = 0) {
   const p0 = prob0(theta)
   const p1 = prob1(theta)
   const En = particleInBoxEnergy(n)
@@ -150,6 +158,25 @@ function buildEquations(view, theta, phi, n, lambda, measured) {
           : [{ label: 'Fringe spacing', eq: `\\Delta y = \\dfrac{\\textcolor{#f59e0b}{\\lambda}\\,D}{d} = ${(lambda * SCREEN_X / 1.0).toFixed(3)}\\text{ u}` }],
       }
 
+    case 'entanglement': {
+      const C = Math.sin(2 * entAlpha).toFixed(4)
+      const r = Math.cos(2 * entAlpha).toFixed(4)
+      return {
+        domain: 'QUANTUM ENTANGLEMENT · BELL STATES',
+        primaryEq: `|\\psi\\rangle = \\cos\\textcolor{#f59e0b}{\\alpha}|00\\rangle + \\sin\\textcolor{#f59e0b}{\\alpha}|11\\rangle`,
+        derivedEqs: [
+          {
+            label: 'Concurrence (entanglement)',
+            eq: `C = \\sin(2\\textcolor{#f59e0b}{\\alpha}) = ${C}`,
+          },
+          {
+            label: 'Bloch vector length',
+            eq: `|\\mathbf{r}| = \\cos(2\\textcolor{#f59e0b}{\\alpha}) = ${r}`,
+          },
+        ],
+      }
+    }
+
     default:
       return { domain: '', primaryEq: '', derivedEqs: [] }
   }
@@ -168,6 +195,7 @@ export default function QuantumModule() {
   const particleCount   = useModuleStore((s) => s.qm.particleCount)
   const boxVizMode      = useModuleStore((s) => s.qm.boxVizMode)
   const blochVizMode    = useModuleStore((s) => s.qm.blochVizMode)
+  const entangleAlpha   = useModuleStore((s) => s.qm.entangleAlpha)
 
   const setBlochTheta   = useModuleStore((s) => s.setBlochTheta)
   const setBlochPhi     = useModuleStore((s) => s.setBlochPhi)
@@ -177,6 +205,7 @@ export default function QuantumModule() {
   const setParticleCount= useModuleStore((s) => s.setParticleCount)
   const setBoxVizMode   = useModuleStore((s) => s.setBoxVizMode)
   const setBlochVizMode = useModuleStore((s) => s.setBlochVizMode)
+  const setEntangleAlpha= useModuleStore((s) => s.setEntangleAlpha)
   const resetQm         = useModuleStore((s) => s.resetQm)
   const setActiveModule = useModuleStore((s) => s.setActiveModule)
 
@@ -195,7 +224,12 @@ export default function QuantumModule() {
     doubleslit: [
       { label: 'Wavelength λ',  min: 0.3, max: 1.2,         step: 0.01, value: lambda, onChange: setSlitWavelength, unit: ' λ' },
     ],
+    entanglement: [
+      { label: 'Coupling α', min: 0, max: Math.PI / 4, step: 0.005, value: entangleAlpha, onChange: setEntangleAlpha, unit: ' rad' },
+    ],
   }
+
+  const concurrence = Math.sin(2 * entangleAlpha)
 
   const metricsByView = {
     blochsphere: [
@@ -221,10 +255,18 @@ export default function QuantumModule() {
       { label: 'Fringe Δy',     value: (lambda * 3.8 / 1.0).toFixed(3), unit: ' u', color: 'amber' },
       { label: 'Mode',          value: measured ? 'MEASURED' : 'QUANTUM', color: measured ? 'amber' : 'cyan' },
     ],
+    entanglement: [
+      { label: 'α (coupling)',    value: entangleAlpha.toFixed(4), unit: ' rad', color: 'amber' },
+      { label: 'Concurrence C',  value: concurrence.toFixed(4), color: concurrence > 0.95 ? 'rose' : 'cyan' },
+      { label: 'Bloch |r|',      value: Math.cos(2 * entangleAlpha).toFixed(4), color: 'dim' },
+      { label: 'P(|00⟩)',        value: (Math.pow(Math.cos(entangleAlpha), 2) * 100).toFixed(1), unit: '%', color: 'cyan' },
+      { label: 'P(|11⟩)',        value: (Math.pow(Math.sin(entangleAlpha), 2) * 100).toFixed(1), unit: '%', color: 'rose' },
+      { label: 'State',          value: concurrence > 0.95 ? 'BELL |Φ⁺⟩' : concurrence < 0.05 ? 'PRODUCT' : 'PARTIAL', color: concurrence > 0.95 ? 'rose' : 'cyan' },
+    ],
   }
 
-  const explanation = buildExplanation(activeView, theta, phi, n, lambda, measured)
-  const { domain, primaryEq, derivedEqs } = buildEquations(activeView, theta, phi, n, lambda, measured)
+  const explanation = buildExplanation(activeView, theta, phi, n, lambda, measured, entangleAlpha)
+  const { domain, primaryEq, derivedEqs } = buildEquations(activeView, theta, phi, n, lambda, measured, entangleAlpha)
   const camPos = CAMERA_POSITIONS[activeView]
 
   const activeVizMode  = activeView === 'blochsphere' ? blochVizMode : boxVizMode
@@ -309,6 +351,7 @@ export default function QuantumModule() {
             {activeView === 'blochsphere'   && <BlochSphere />}
             {activeView === 'particleinbox' && <ParticleInBox />}
             {activeView === 'doubleslit'    && <DoubleSlit />}
+            {activeView === 'entanglement'  && <Entanglement />}
           </SceneWrapper>
 
           <div className="absolute top-3 left-4 pointer-events-none">
