@@ -328,12 +328,6 @@ export default function ModulePicker() {
           }
         }
         setHoveredModule(hit)
-
-        // Pinch → enter
-        if (gesture.justPinchedRef.current && hit) {
-          setActiveModule(hit)
-          gesture.justPinchedRef.current = false
-        }
       }
       rafId = requestAnimationFrame(tick)
     }
