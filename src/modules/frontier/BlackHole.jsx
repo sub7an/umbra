@@ -122,28 +122,31 @@ function AccretionDisk({ Rs }) {
 // ── Main export ────────────────────────────────────────────────────────────────
 
 export default function BlackHole({ hiRes }) {
-  const bhMass = useModuleStore((s) => s.fp.bhMass)
-  const Rs     = bhMass * 0.5
+  const bhMass   = useModuleStore((s) => s.fp.bhMass)
+  const Rs       = bhMass * 0.5
+  const unlocked = typeof window !== 'undefined' && sessionStorage.getItem('umbra_unlocked') === '1'
 
   return (
     <group>
       <StarBackground Rs={Rs} hiRes={hiRes} />
       <PhotonSphere   Rs={Rs} />
       <AccretionDisk  Rs={Rs} />
-      <Html position={[0, 2.2, 0]} center style={{ pointerEvents: 'none', textAlign: 'center' }}>
-        <div style={{
-          fontFamily: 'Chakra Petch, sans-serif',
-          fontSize: 28,
-          fontWeight: 700,
-          color: '#ff69b4',
-          textShadow: '0 0 18px #ff69b4, 0 0 40px #ff1493, 0 0 60px #ff1493',
-          letterSpacing: '0.05em',
-          whiteSpace: 'nowrap',
-          lineHeight: 1.3,
-        }}>
-          i like you sabrina mwah ♥
-        </div>
-      </Html>
+      {unlocked && (
+        <Html position={[0, 2.2, 0]} center style={{ pointerEvents: 'none', textAlign: 'center' }}>
+          <div style={{
+            fontFamily: 'Chakra Petch, sans-serif',
+            fontSize: 28,
+            fontWeight: 700,
+            color: '#ff69b4',
+            textShadow: '0 0 18px #ff69b4, 0 0 40px #ff1493, 0 0 60px #ff1493',
+            letterSpacing: '0.05em',
+            whiteSpace: 'nowrap',
+            lineHeight: 1.3,
+          }}>
+            i like you sabrina mwah ♥
+          </div>
+        </Html>
+      )}
     </group>
   )
 }
