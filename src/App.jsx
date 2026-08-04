@@ -5,6 +5,7 @@ import QuantumModule from './modules/quantum/QuantumModule'
 import FrontierModule from './modules/frontier/FrontierModule'
 import ElectromagnetismModule from './modules/electromagnetism/ElectromagnetismModule'
 import DynamicalModule from './modules/dynamical/DynamicalModule'
+import SabrinaModule from './modules/sabrina/SabrinaModule'
 
 export default function App() {
   const activeModule = useModuleStore((s) => s.activeModule)
@@ -14,6 +15,7 @@ export default function App() {
   if (activeModule === 'frontier-physics') return <FrontierModule />
   if (activeModule === 'electromagnetism') return <ElectromagnetismModule />
   if (activeModule === 'dynamical-systems') return <DynamicalModule />
+  if (activeModule === 'sabrina') return <SabrinaModule />
 
   return <ModulePicker />
 }
