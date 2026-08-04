@@ -19,6 +19,16 @@ function checkUnlocked() {
 
 const MODULES = [
   {
+    id: 'physics-sandbox',
+    name: 'Physics Sandbox',
+    abbr: 'Σ',
+    tagline: 'Place sources · Watch them interact · Emergent fields',
+    description:
+      'Drop attractors, repulsors, and vortices onto a live particle field. 900 tracers respond to every source simultaneously — combine them to build spiral galaxies, standing waves, or pure chaos.',
+    color: 'lime',
+    formula: 'F = Σ G·M/r² + Γ/r²',
+  },
+  {
     id: 'special-relativity',
     name: 'Special Relativity',
     abbr: 'SR',
@@ -110,6 +120,7 @@ const ACCENT_HEX = {
   orange:  '#fb923c',
   sky:     '#38bdf8',
   teal:    '#2dd4bf',
+  lime:    '#84cc16',
 }
 
 function ModuleCard({ module, onEnter, onHoverIn, onHoverOut, cardRef }) {
