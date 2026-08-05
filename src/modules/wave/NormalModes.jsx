@@ -8,27 +8,23 @@ const AMP = 0.55
 
 const VERT = `
   varying float vH;
-  varying vec3 vNorm;
   void main() {
     vH = position.y;
-    vNorm = normalize(normalMatrix * normal);
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
 `
 
 const FRAG = `
   varying float vH;
-  varying vec3 vNorm;
   void main() {
     float t = clamp(vH * 1.2 + 0.5, 0.0, 1.0);
-    vec3 low  = vec3(0.38, 0.04, 0.60);
-    vec3 zero = vec3(0.02, 0.06, 0.14);
-    vec3 high = vec3(0.05, 0.85, 0.95);
+    vec3 low  = vec3(0.40, 0.04, 0.62);
+    vec3 zero = vec3(0.02, 0.05, 0.14);
+    vec3 high = vec3(0.05, 0.85, 0.96);
     vec3 col = t < 0.5
       ? mix(low, zero, t * 2.0)
       : mix(zero, high, (t - 0.5) * 2.0);
-    float diff = 0.5 + 0.5 * dot(vNorm, normalize(vec3(0.4, 1.0, 0.5)));
-    gl_FragColor = vec4(col * diff, 0.96);
+    gl_FragColor = vec4(col, 0.96);
   }
 `
 
@@ -66,7 +62,6 @@ export default function NormalModes({ modeIdx = 0 }) {
     const g = new THREE.BufferGeometry()
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3))
     g.setIndex(new THREE.BufferAttribute(idxArr, 1))
-    g.computeVertexNormals()
     return g
   }, [])
 
@@ -87,7 +82,6 @@ export default function NormalModes({ modeIdx = 0 }) {
       }
     }
     attr.needsUpdate = true
-    meshRef.current.geometry.computeVertexNormals()
   })
 
   return (
@@ -95,7 +89,7 @@ export default function NormalModes({ modeIdx = 0 }) {
       <ambientLight intensity={0.10} color="#08051a" />
       <directionalLight position={[5, 10, 4]} intensity={0.5} color="#a0e0ff" />
       <pointLight position={[0, 6, 0]} intensity={1.0} color="#22d3ee" distance={18} decay={2} />
-      <mesh ref={meshRef} geometry={geo}>
+      <mesh ref={meshRef} geometry={geo} frustumCulled={false}>
         <shaderMaterial vertexShader={VERT} fragmentShader={FRAG} side={THREE.DoubleSide} transparent />
       </mesh>
     </group>

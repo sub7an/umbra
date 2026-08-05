@@ -16,27 +16,23 @@ const K = (2 * Math.PI) / LAMBDA
 
 const VERT = `
   varying float vH;
-  varying vec3 vNorm;
   void main() {
     vH = position.y;
-    vNorm = normalize(normalMatrix * normal);
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
 `
 
 const FRAG = `
   varying float vH;
-  varying vec3 vNorm;
   void main() {
     float t = clamp(vH * 1.2 + 0.5, 0.0, 1.0);
-    vec3 dark = vec3(0.01, 0.02, 0.08);
-    vec3 mid  = vec3(0.04, 0.48, 0.80);
-    vec3 brt  = vec3(0.70, 0.94, 1.00);
+    vec3 dark = vec3(0.01, 0.02, 0.10);
+    vec3 mid  = vec3(0.04, 0.48, 0.82);
+    vec3 brt  = vec3(0.72, 0.95, 1.00);
     vec3 col = t < 0.5
       ? mix(dark, mid, t * 2.0)
       : mix(mid, brt, (t - 0.5) * 2.0);
-    float diff = 0.60 + 0.40 * dot(vNorm, normalize(vec3(0.3, 1.0, 0.5)));
-    gl_FragColor = vec4(col * diff, 0.92);
+    gl_FragColor = vec4(col, 0.92);
   }
 `
 
@@ -66,7 +62,6 @@ export default function DoubleSlit() {
     const geo = new THREE.BufferGeometry()
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3))
     geo.setIndex(new THREE.BufferAttribute(idxArr, 1))
-    geo.computeVertexNormals()
     return { geo, positions: pos }
   }, [])
 
@@ -92,7 +87,6 @@ export default function DoubleSlit() {
       }
     }
     attr.needsUpdate = true
-    meshRef.current.geometry.computeVertexNormals()
   })
 
   // Barrier geometry: two rectangles with a gap (the slits)
@@ -106,7 +100,7 @@ export default function DoubleSlit() {
       <directionalLight position={[5, 10, 4]} intensity={0.5} color="#7de8ff" />
       <pointLight position={[srcX, 4, 0]} intensity={1.2} color="#22d3ee" distance={18} decay={2} />
 
-      <mesh ref={meshRef} geometry={geo}>
+      <mesh ref={meshRef} geometry={geo} frustumCulled={false}>
         <shaderMaterial vertexShader={VERT} fragmentShader={FRAG} side={THREE.DoubleSide} transparent />
       </mesh>
 
