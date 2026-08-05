@@ -1,212 +1,103 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useMemo } from 'react'
+import { useFrame } from '@react-three/fiber'
+import * as THREE from 'three'
 
-const GW = 260
-const GH = 180
-const ACCENT = '#22d3ee'
+const W = 96
+const H = 96
+const AMP = 0.55
 
-// Analytical 2D rectangular membrane mode: u(x,y,t) = sin(mπx)sin(nπy)cos(ωt)
-// ω = π√(m²+n²)
+const VERT = `
+  varying float vH;
+  varying vec3 vNorm;
+  void main() {
+    vH = position.y;
+    vNorm = normalize(normalMatrix * normal);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`
 
-function renderMode(ctx, m, n, t, W, H) {
-  const img  = ctx.createImageData(GW, GH)
-  const d    = img.data
-  const omega = Math.PI * Math.sqrt(m * m + n * n)
-  const cosT  = Math.cos(omega * t)
+const FRAG = `
+  varying float vH;
+  varying vec3 vNorm;
+  void main() {
+    float t = clamp(vH * 1.2 + 0.5, 0.0, 1.0);
+    vec3 low  = vec3(0.38, 0.04, 0.60);
+    vec3 zero = vec3(0.02, 0.06, 0.14);
+    vec3 high = vec3(0.05, 0.85, 0.95);
+    vec3 col = t < 0.5
+      ? mix(low, zero, t * 2.0)
+      : mix(zero, high, (t - 0.5) * 2.0);
+    float diff = 0.5 + 0.5 * dot(vNorm, normalize(vec3(0.4, 1.0, 0.5)));
+    gl_FragColor = vec4(col * diff, 0.96);
+  }
+`
 
-  for (let pj = 0; pj < GH; pj++) {
-    const y  = pj / (GH - 1)
-    const sy = Math.sin(n * Math.PI * y)
-    for (let pi = 0; pi < GW; pi++) {
-      const x  = pi / (GW - 1)
-      const sx = Math.sin(m * Math.PI * x)
-      const v  = sx * sy * cosT  // -1 to 1
+export const MODES = [
+  [1, 1], [1, 2], [2, 1],
+  [2, 2], [1, 3], [3, 1],
+  [2, 3], [3, 2], [3, 3],
+]
 
-      let r, g, b
-      if (v >= 0) {
-        r = Math.round(4 * (1 - v))
-        g = Math.round(9  + 220 * v)
-        b = Math.round(12 + 184 * v)
-      } else {
-        const a = -v
-        r = Math.round(4 + 18 * a)
-        g = Math.round(9 + 40 * a)
-        b = Math.round(12 + 188 * a)
+export default function NormalModes({ modeIdx = 0 }) {
+  const meshRef = useRef()
+  const tRef = useRef(0)
+  const modeRef = useRef(modeIdx)
+  modeRef.current = modeIdx
+
+  const geo = useMemo(() => {
+    const pos = new Float32Array(W * H * 3)
+    for (let j = 0; j < H; j++) {
+      for (let i = 0; i < W; i++) {
+        const k = (j * W + i) * 3
+        pos[k]     = (i / (W - 1) - 0.5) * 9
+        pos[k + 1] = 0
+        pos[k + 2] = (j / (H - 1) - 0.5) * 9
       }
-      const base = (pj * GW + pi) * 4
-      d[base]     = r
-      d[base + 1] = g
-      d[base + 2] = b
-      d[base + 3] = 255
     }
-  }
-  ctx.putImageData(img, 0, 0)
-
-  // Draw nodal lines (where the mode is always zero)
-  ctx.save()
-  ctx.strokeStyle = 'rgba(255,255,255,0.12)'
-  ctx.lineWidth = 0.5
-  // Vertical nodal lines: sin(mπx)=0 → x = k/m for k=1..m-1
-  for (let k = 1; k < m; k++) {
-    const px = (k / m) * GW
-    ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, GH); ctx.stroke()
-  }
-  // Horizontal nodal lines: sin(nπy)=0 → y = k/n for k=1..n-1
-  for (let k = 1; k < n; k++) {
-    const py = (k / n) * GH
-    ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(GW, py); ctx.stroke()
-  }
-  ctx.restore()
-}
-
-const MODES = []
-for (let m = 1; m <= 5; m++) {
-  for (let n = 1; n <= 4; n++) {
-    MODES.push({ m, n })
-  }
-}
-
-const labelStyle = {
-  fontFamily: 'JetBrains Mono, monospace',
-  fontSize: 9, letterSpacing: '0.18em',
-  textTransform: 'uppercase',
-  color: 'rgba(255,255,255,0.35)',
-  marginBottom: 6,
-}
-
-export default function NormalModes() {
-  const canvasRef = useRef()
-  const rafRef    = useRef()
-  const tRef      = useRef(0)
-  const [m, setM]       = useState(1)
-  const [n, setN]       = useState(2)
-  const [speed, setSpeed] = useState(0.4)
-
-  const mRef = useRef(m)
-  const nRef = useRef(n)
-  const speedRef = useRef(speed)
-  useEffect(() => { mRef.current = m }, [m])
-  useEffect(() => { nRef.current = n }, [n])
-  useEffect(() => { speedRef.current = speed }, [speed])
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-
-    const tick = () => {
-      tRef.current += speedRef.current * 0.016
-      renderMode(ctx, mRef.current, nRef.current, tRef.current, GW, GH)
-      rafRef.current = requestAnimationFrame(tick)
+    const idxArr = new Uint32Array((W - 1) * (H - 1) * 6)
+    let p = 0
+    for (let j = 0; j < H - 1; j++) {
+      for (let i = 0; i < W - 1; i++) {
+        const a = j * W + i, b = a + 1, c = a + W, d = c + 1
+        idxArr[p++] = a; idxArr[p++] = c; idxArr[p++] = b
+        idxArr[p++] = b; idxArr[p++] = c; idxArr[p++] = d
+      }
     }
-    rafRef.current = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(rafRef.current)
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3))
+    g.setIndex(new THREE.BufferAttribute(idxArr, 1))
+    g.computeVertexNormals()
+    return g
   }, [])
 
-  const omega = (Math.PI * Math.sqrt(m * m + n * n)).toFixed(3)
+  useFrame((_, delta) => {
+    tRef.current += Math.min(delta, 0.033)
+    const t = tRef.current
+    const [m, n] = MODES[modeRef.current]
+    const omega = Math.PI * Math.sqrt(m * m + n * n) * 0.85
+
+    if (!meshRef.current) return
+    const attr = meshRef.current.geometry.attributes.position
+    for (let j = 0; j < H; j++) {
+      for (let i = 0; i < W; i++) {
+        const u = Math.sin(m * Math.PI * i / (W - 1))
+              * Math.sin(n * Math.PI * j / (H - 1))
+              * Math.cos(omega * t)
+        attr.setY(j * W + i, u * AMP)
+      }
+    }
+    attr.needsUpdate = true
+    meshRef.current.geometry.computeVertexNormals()
+  })
 
   return (
-    <div style={{ display: 'flex', width: '100%', height: '100%', overflow: 'hidden' }}>
-      {/* Canvas */}
-      <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-        <canvas
-          ref={canvasRef}
-          width={GW}
-          height={GH}
-          style={{ width: '100%', height: '100%', imageRendering: 'pixelated', display: 'block' }}
-        />
-        {/* Mode label overlay */}
-        <div style={{
-          position: 'absolute', top: 12, left: 14, pointerEvents: 'none',
-          fontFamily: 'JetBrains Mono, monospace', fontSize: 12,
-          letterSpacing: '0.12em', color: 'rgba(34,211,238,0.6)',
-        }}>
-          m={m}, n={n} · ω = {omega}
-        </div>
-        <div style={{
-          position: 'absolute', bottom: 12, left: 12, pointerEvents: 'none',
-          fontFamily: 'JetBrains Mono, monospace', fontSize: 9,
-          letterSpacing: '0.14em', color: 'rgba(255,255,255,0.22)',
-        }}>
-          CLICK A MODE FROM THE GRID ON THE RIGHT
-        </div>
-      </div>
-
-      {/* Right panel */}
-      <div style={{
-        width: 260, flexShrink: 0,
-        background: 'rgba(4,9,12,0.95)',
-        borderLeft: '1px solid rgba(34,211,238,0.1)',
-        padding: '18px 14px',
-        display: 'flex', flexDirection: 'column',
-        overflowY: 'auto',
-      }}>
-        <div style={{ ...labelStyle, color: ACCENT, fontSize: 11, marginBottom: 8 }}>
-          Normal Modes
-        </div>
-        <div style={{
-          fontFamily: 'JetBrains Mono, monospace',
-          fontSize: 9, color: 'rgba(255,255,255,0.22)',
-          letterSpacing: '0.10em', lineHeight: 1.7,
-          marginBottom: 16,
-        }}>
-          2D membrane · u = sin(mπx)sin(nπy)cos(ωt)
-        </div>
-
-        {/* Mode grid */}
-        <div style={labelStyle}>Select Mode (m, n)</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 3, marginBottom: 18 }}>
-          {MODES.map(({ m: mi, n: ni }) => {
-            const active = mi === m && ni === n
-            return (
-              <button
-                key={`${mi}-${ni}`}
-                onClick={() => { setM(mi); setN(ni); tRef.current = 0 }}
-                style={{
-                  fontFamily: 'JetBrains Mono, monospace',
-                  fontSize: 9, padding: '4px 2px',
-                  background: active ? 'rgba(34,211,238,0.18)' : 'rgba(255,255,255,0.04)',
-                  border: `1px solid ${active ? 'rgba(34,211,238,0.5)' : 'rgba(255,255,255,0.08)'}`,
-                  color: active ? '#22d3ee' : 'rgba(255,255,255,0.4)',
-                  borderRadius: 2, cursor: 'pointer',
-                }}
-              >
-                {mi},{ni}
-              </button>
-            )
-          })}
-        </div>
-
-        {/* Speed */}
-        <div style={{ marginBottom: 20 }}>
-          <div style={labelStyle}>Animation Speed</div>
-          <input type="range" min={0.05} max={1.5} step={0.05}
-            value={speed}
-            onChange={(e) => setSpeed(+e.target.value)}
-            style={{ width: '100%', accentColor: ACCENT }}
-          />
-          <div style={{
-            fontFamily: 'JetBrains Mono, monospace',
-            fontSize: 11, color: ACCENT, marginBottom: 10,
-          }}>{speed.toFixed(2)}×</div>
-        </div>
-
-        {/* Physics info */}
-        <div style={{
-          fontFamily: 'JetBrains Mono, monospace',
-          fontSize: 9, letterSpacing: '0.10em',
-          color: 'rgba(255,255,255,0.20)',
-          lineHeight: 1.8,
-          borderTop: '1px solid rgba(255,255,255,0.06)',
-          paddingTop: 14,
-        }}>
-          <div style={{ color: ACCENT, marginBottom: 4 }}>EIGENFREQUENCY</div>
-          <div style={{ color: 'rgba(255,255,255,0.45)', marginBottom: 6 }}>
-            ω_mn = π√(m²+n²)
-          </div>
-          <div>Degenerate modes (same ω) occur when m²+n² is equal — e.g. (1,2) and (2,1).</div>
-          <div style={{ marginTop: 8 }}>White lines mark nodal lines where displacement is always zero.</div>
-        </div>
-      </div>
-    </div>
+    <group>
+      <ambientLight intensity={0.10} color="#08051a" />
+      <directionalLight position={[5, 10, 4]} intensity={0.5} color="#a0e0ff" />
+      <pointLight position={[0, 6, 0]} intensity={1.0} color="#22d3ee" distance={18} decay={2} />
+      <mesh ref={meshRef} geometry={geo}>
+        <shaderMaterial vertexShader={VERT} fragmentShader={FRAG} side={THREE.DoubleSide} transparent />
+      </mesh>
+    </group>
   )
 }

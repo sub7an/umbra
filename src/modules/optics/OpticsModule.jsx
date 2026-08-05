@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import useModuleStore from '../../store/useModuleStore'
+import SceneWrapper from '../../components/SceneWrapper'
+import InfoPanel from '../../components/InfoPanel'
 import RayTracer from './RayTracer'
 import LensLab from './LensLab'
 import DiffractionGrating from './DiffractionGrating'
@@ -7,20 +9,61 @@ import DiffractionGrating from './DiffractionGrating'
 const ACCENT = '#fcd34d'
 
 const VIEWS = [
-  { id: 'ray',       label: 'RAY TRACER'  },
-  { id: 'lens',      label: 'LENS LAB'    },
-  { id: 'grating',   label: 'DIFFRACTION' },
+  { id: 'prism', label: 'PRISM' },
+  { id: 'lens',  label: 'LENS LAB' },
+  { id: 'grating', label: 'DIFFRACTION' },
 ]
 
-const DESCRIPTIONS = {
-  ray:     'Snell\'s law in action. Prism dispersion, mirror reflections, and thin lens convergence — all traced ray-by-ray.',
-  lens:    'Thin lens equation: 1/f = 1/dₒ + 1/dᵢ. Drag parameters to see real vs virtual images form via principal rays.',
-  grating: 'Multi-slit far-field intensity: I(θ) ∝ sinc²(β)·[sin(Nδ)/sin(δ)]². Control N, slit width, and wavelength.',
+const CAMERA = {
+  prism:   [0, 4, 9],
+  lens:    [0, 3, 9],
+  grating: [5, 3, 8],
+}
+
+function buildEquations(view) {
+  switch (view) {
+    case 'prism': return {
+      domain: 'OPTICS · SNELL\'S LAW & DISPERSION',
+      primaryEq: `n_1 \\sin\\theta_1 = n_2 \\sin\\theta_2`,
+      derivedEqs: [
+        { label: 'Cauchy (glass)', eq: `n(\\lambda) = A + B/\\lambda^2` },
+        { label: 'Deviation',     eq: `\\delta = (n-1)A \\text{ (thin prism)}` },
+      ],
+    }
+    case 'lens': return {
+      domain: 'OPTICS · THIN LENS EQUATION',
+      primaryEq: `\\frac{1}{f} = \\frac{1}{d_o} + \\frac{1}{d_i}`,
+      derivedEqs: [
+        { label: 'Magnification', eq: `m = -d_i/d_o` },
+        { label: 'Power',         eq: `P = 1/f \\text{ (diopters)}` },
+      ],
+    }
+    case 'grating': return {
+      domain: 'OPTICS · DIFFRACTION GRATING',
+      primaryEq: `d\\sin\\theta_m = m\\lambda`,
+      derivedEqs: [
+        { label: 'Resolving power', eq: `\\mathcal{R} = mN` },
+        { label: 'Free spectral range', eq: `\\Delta\\lambda_{\\rm FSR} = \\lambda/m` },
+      ],
+    }
+    default: return { domain: '', primaryEq: '', derivedEqs: [] }
+  }
+}
+
+function buildExplanation(view) {
+  switch (view) {
+    case 'prism': return 'White light enters a glass prism. Each wavelength has a slightly different refractive index (dispersion, described by Cauchy\'s formula). Snell\'s law n₁sinθ₁ = n₂sinθ₂ bends each color by a different angle — violet bends most (highest n), red bends least. The 24 spectral rays fan out into a full rainbow. Prism gently rotates for a 3D view.'
+    case 'lens': return 'A biconvex lens refracts parallel rays through its curved surfaces. Paraxial rays (near the axis) all converge at the focal point f. The thin lens equation 1/f = 1/dₒ + 1/dᵢ relates object and image distances. Focal length is positive for converging lenses. Rays further from the axis suffer spherical aberration — they cross the axis slightly closer, which is why real lenses need multiple elements.'
+    case 'grating': return 'A diffraction grating has thousands of equally-spaced slits (here: 600 lines/mm, d = 1.67 µm). Constructive interference occurs where path difference = mλ: d·sinθ = mλ. Each wavelength diffracts at a different angle — white light is spread into orders m = 0, ±1, ±2. The 0th order is straight-through, ±1st orders are the most intense. Larger |m| means wider angular spread.'
+    default: return ''
+  }
 }
 
 export default function OpticsModule() {
   const setActiveModule = useModuleStore((s) => s.setActiveModule)
-  const [view, setView] = useState('ray')
+  const [view, setView] = useState('prism')
+
+  const eq = buildEquations(view)
 
   return (
     <div style={{
@@ -29,11 +72,18 @@ export default function OpticsModule() {
       display: 'flex', flexDirection: 'column',
       fontFamily: 'JetBrains Mono, monospace',
     }}>
-      {/* Header */}
+      <style>{`
+        @keyframes umbra-pulse {
+          0%, 100% { opacity: 1; }
+          50%       { opacity: 0.3; }
+        }
+      `}</style>
+      {/* ── Header ── */}
       <div style={{
-        display: 'flex', alignItems: 'center', gap: 16,
-        padding: '14px 22px',
-        borderBottom: '1px solid rgba(252,211,77,0.1)',
+        display: 'flex', alignItems: 'center', gap: 14,
+        padding: '11px 18px',
+        borderBottom: '1px solid rgba(252,211,77,0.10)',
+        background: 'rgba(4,9,12,0.97)',
         flexShrink: 0,
       }}>
         <button
@@ -41,65 +91,102 @@ export default function OpticsModule() {
           style={{
             fontFamily: 'JetBrains Mono, monospace',
             fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase',
-            color: 'rgba(252,211,77,0.55)',
-            background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+            color: 'rgba(252,211,77,0.5)', background: 'none',
+            border: 'none', cursor: 'pointer', padding: 0,
           }}
-        >
-          ← MODULES
-        </button>
+        >← MODULES</button>
 
-        <div style={{
-          fontSize: 11, letterSpacing: '0.30em', textTransform: 'uppercase',
-          color: ACCENT, fontWeight: 700,
-        }}>
+        <div style={{ width: 1, height: 14, background: 'rgba(252,211,77,0.12)' }} />
+
+        <span style={{ fontSize: 11, letterSpacing: '0.28em', textTransform: 'uppercase', color: ACCENT, fontWeight: 700 }}>
           Optics
-        </div>
+        </span>
 
+        {/* LIVE badge */}
         <div style={{
-          fontSize: 9, letterSpacing: '0.10em',
-          color: 'rgba(255,255,255,0.22)',
-          marginLeft: 8, maxWidth: 380,
+          display: 'flex', alignItems: 'center', gap: 5,
+          padding: '2px 8px',
+          border: '1px solid rgba(252,211,77,0.28)',
+          borderRadius: 2,
+          background: 'rgba(252,211,77,0.05)',
         }}>
-          {DESCRIPTIONS[view]}
+          <div style={{
+            width: 5, height: 5, borderRadius: '50%',
+            background: ACCENT, boxShadow: `0 0 6px ${ACCENT}`,
+            animation: 'umbra-pulse 1.8s ease-in-out infinite',
+          }} />
+          <span style={{ fontSize: 8, letterSpacing: '0.2em', color: ACCENT }}>LIVE</span>
         </div>
 
+        {/* View tabs */}
         <div style={{ display: 'flex', gap: 4, marginLeft: 'auto' }}>
           {VIEWS.map((v) => (
-            <button
-              key={v.id}
-              onClick={() => setView(v.id)}
-              style={{
-                fontFamily: 'JetBrains Mono, monospace',
-                fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase',
-                padding: '6px 14px',
-                background: view === v.id ? 'rgba(252,211,77,0.12)' : 'transparent',
-                border: `1px solid ${view === v.id ? 'rgba(252,211,77,0.40)' : 'rgba(255,255,255,0.08)'}`,
-                color: view === v.id ? ACCENT : 'rgba(255,255,255,0.35)',
-                borderRadius: 3, cursor: 'pointer', transition: 'all 0.15s ease',
-              }}
-              onMouseEnter={(e) => {
-                if (view !== v.id) {
-                  e.currentTarget.style.color = 'rgba(255,255,255,0.6)'
-                  e.currentTarget.style.borderColor = 'rgba(252,211,77,0.22)'
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (view !== v.id) {
-                  e.currentTarget.style.color = 'rgba(255,255,255,0.35)'
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'
-                }
-              }}
-            >
+            <button key={v.id} onClick={() => setView(v.id)} style={{
+              fontFamily: 'JetBrains Mono, monospace',
+              fontSize: 9, letterSpacing: '0.15em', textTransform: 'uppercase',
+              padding: '5px 12px',
+              background: view === v.id ? 'rgba(252,211,77,0.09)' : 'transparent',
+              border: `1px solid ${view === v.id ? 'rgba(252,211,77,0.33)' : 'rgba(255,255,255,0.07)'}`,
+              color: view === v.id ? ACCENT : 'rgba(255,255,255,0.33)',
+              borderRadius: 2, cursor: 'pointer',
+            }}>
               {v.label}
             </button>
           ))}
         </div>
       </div>
 
-      <div style={{ flex: 1, overflow: 'hidden' }}>
-        {view === 'ray'     && <RayTracer />}
-        {view === 'lens'    && <LensLab />}
-        {view === 'grating' && <DiffractionGrating />}
+      {/* ── Body ── */}
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+        {/* Info panel */}
+        <div style={{ width: 235, flexShrink: 0, borderRight: '1px solid rgba(252,211,77,0.07)' }}>
+          <InfoPanel
+            title="Optics"
+            domain={eq.domain}
+            primaryEq={eq.primaryEq}
+            derivedEqs={eq.derivedEqs}
+            explanation={buildExplanation(view)}
+            accentColor="amber"
+            footer="OPTICS · UMBRA"
+          />
+        </div>
+
+        {/* 3D scene */}
+        <div style={{ flex: 1, position: 'relative' }}>
+          <SceneWrapper
+            cameraPosition={CAMERA[view]}
+            showGrid={false}
+            minDist={3}
+            maxDist={22}
+          >
+            {view === 'prism'   && <RayTracer />}
+            {view === 'lens'    && <LensLab />}
+            {view === 'grating' && <DiffractionGrating />}
+          </SceneWrapper>
+
+          {/* SIM ACTIVE badge */}
+          <div style={{
+            position: 'absolute', bottom: 16, left: 16,
+            display: 'flex', alignItems: 'center', gap: 7,
+            padding: '4px 10px',
+            border: '1px solid rgba(252,211,77,0.18)',
+            borderRadius: 2,
+            background: 'rgba(4,9,12,0.88)',
+            pointerEvents: 'none',
+          }}>
+            <div style={{ width: 4, height: 4, borderRadius: '50%', background: ACCENT, boxShadow: `0 0 4px ${ACCENT}` }} />
+            <span style={{ fontSize: 8, letterSpacing: '0.2em', color: 'rgba(252,211,77,0.55)' }}>SIM ACTIVE</span>
+          </div>
+
+          {/* Orbit hint */}
+          <div style={{
+            position: 'absolute', bottom: 16, right: 16,
+            fontSize: 8, letterSpacing: '0.12em', color: 'rgba(252,211,77,0.28)',
+            pointerEvents: 'none',
+          }}>
+            DRAG TO ORBIT · SCROLL TO ZOOM
+          </div>
+        </div>
       </div>
     </div>
   )
