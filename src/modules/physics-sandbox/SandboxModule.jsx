@@ -15,6 +15,72 @@ const MODES = [
   { id: 'erase',      color: '#ef4444', label: 'Erase', symbol: '✕' },
 ]
 
+let _pid = 100
+
+const PRESETS = [
+  {
+    name: 'Galaxy',
+    icon: '↺',
+    desc: 'Attractor + vortex — spiraling infall',
+    sources: [
+      { type: 'attractor',  x:  0,    y:  0   },
+      { type: 'vortex_ccw', x:  0,    y:  0   },
+    ],
+  },
+  {
+    name: 'Binary Star',
+    icon: '⊙⊙',
+    desc: 'Two attractors — orbiting figure-eight',
+    sources: [
+      { type: 'attractor', x: -2.2, y:  0 },
+      { type: 'attractor', x:  2.2, y:  0 },
+    ],
+  },
+  {
+    name: 'Dipole',
+    icon: '◉⊘',
+    desc: 'Attractor + repulsor — field lines visible',
+    sources: [
+      { type: 'attractor', x: -2.5, y:  0 },
+      { type: 'repulsor',  x:  2.5, y:  0 },
+    ],
+  },
+  {
+    name: 'Vortex Ring',
+    icon: '↺↻',
+    desc: 'Alternating vortices — co-rotating pattern',
+    sources: [
+      { type: 'vortex_ccw', x: -3.2, y:  0   },
+      { type: 'vortex_cw',  x:  3.2, y:  0   },
+      { type: 'vortex_ccw', x:  0,   y:  2.8 },
+      { type: 'vortex_cw',  x:  0,   y: -2.8 },
+    ],
+  },
+  {
+    name: 'Chaos',
+    icon: '⊘⊘⊙',
+    desc: 'Three repulsors trap particles between attractors',
+    sources: [
+      { type: 'repulsor',  x: -4,  y: -2.5 },
+      { type: 'repulsor',  x:  4,  y: -2.5 },
+      { type: 'repulsor',  x:  0,  y:  3.5 },
+      { type: 'attractor', x: -1.5, y:  0  },
+      { type: 'attractor', x:  1.5, y:  0  },
+    ],
+  },
+  {
+    name: 'Spiral Arms',
+    icon: '↺↺',
+    desc: 'Two offset galaxy cores — tidal streams',
+    sources: [
+      { type: 'attractor',  x: -2, y:  1 },
+      { type: 'vortex_ccw', x: -2, y:  1 },
+      { type: 'attractor',  x:  2, y: -1 },
+      { type: 'vortex_ccw', x:  2, y: -1 },
+    ],
+  },
+]
+
 const EQUATIONS = {
   domain: 'PHYSICS SANDBOX · INTERACTIVE FIELD',
   primaryEq: `\\mathbf{F}_i = \\sum_k \\frac{G_k\\,\\hat{r}_{ik} + \\Gamma_k\\,\\hat{r}_{ik}^\\perp}{|r_{ik}|^2 + \\varepsilon^2}`,
@@ -98,6 +164,9 @@ export default function SandboxModule() {
   const addSource    = useCallback((src) => setSources((s) => [...s, src]), [])
   const removeSource = useCallback((id)  => setSources((s) => s.filter((x) => x.id !== id)), [])
   const clearAll     = useCallback(() => setSources([]), [])
+  const loadPreset   = useCallback((preset) => {
+    setSources(preset.sources.map((s) => ({ ...s, id: _pid++ })))
+  }, [])
 
   const metrics = [
     { label: 'Particles',  value: '900',              color: 'cyan'  },
@@ -234,6 +303,48 @@ export default function SandboxModule() {
               value={strength} min={0.2} max={3.0} step={0.05} decimals={2}
               onChange={setStrength}
             />
+
+            <div className="h-px bg-border-subtle" />
+
+            {/* Presets */}
+            <div>
+              <p className="font-mono-data text-[9px] tracking-[0.22em] uppercase text-text-dim mb-2">Presets</p>
+              <div className="flex flex-col gap-1">
+                {PRESETS.map((p) => (
+                  <button
+                    key={p.name}
+                    onClick={() => loadPreset(p)}
+                    title={p.desc}
+                    style={{
+                      width: '100%',
+                      display: 'flex', alignItems: 'center', gap: 7,
+                      padding: '5px 8px',
+                      borderRadius: 3,
+                      border: '1px solid rgba(255,255,255,0.06)',
+                      background: 'transparent',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'all 0.15s',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = `rgba(132,204,22,0.35)`
+                      e.currentTarget.style.background = `rgba(132,204,22,0.06)`
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'
+                      e.currentTarget.style.background = 'transparent'
+                    }}
+                  >
+                    <span style={{ fontFamily: 'monospace', fontSize: 10, color: ACCENT, width: 22, textAlign: 'center', flexShrink: 0 }}>
+                      {p.icon}
+                    </span>
+                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>
+                      {p.name}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
 
             <div className="h-px bg-border-subtle" />
 
