@@ -17,13 +17,15 @@ import ThermoModule from './modules/thermodynamics/ThermoModule'
 import FluidModule from './modules/fluid-dynamics/FluidModule'
 import SandboxModule from './modules/physics-sandbox/SandboxModule'
 import WaveModule from './modules/wave/WaveModule'
+import OpticsModule from './modules/optics/OpticsModule'
 
 const OUT_MS = 380
 const IN_MS  = 400
 
 // Modules that can be deep-linked via URL hash
 const ROUTABLE = [
-  'physics-sandbox', 'wave-mechanics', 'special-relativity', 'quantum-mechanics',
+  'physics-sandbox', 'wave-mechanics', 'optics',
+  'special-relativity', 'quantum-mechanics',
   'frontier-physics', 'dynamical-systems', 'electromagnetism',
   'general-relativity', 'thermodynamics', 'fluid-dynamics',
 ]
@@ -31,6 +33,7 @@ const ROUTABLE = [
 function renderModule(id) {
   if (id === 'physics-sandbox')     return <SandboxModule />
   if (id === 'wave-mechanics')      return <WaveModule />
+  if (id === 'optics')              return <OpticsModule />
   if (id === 'special-relativity')  return <SRModule />
   if (id === 'quantum-mechanics')   return <QuantumModule />
   if (id === 'frontier-physics')    return <FrontierModule />

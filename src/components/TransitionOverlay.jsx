@@ -5,6 +5,7 @@ const MODULE_COLOR = {
   null:                 '#00e5c4',
   'physics-sandbox':    '#84cc16',
   'wave-mechanics':     '#22d3ee',
+  'optics':             '#fcd34d',
   'special-relativity': '#00e5c4',
   'quantum-mechanics':  '#f59e0b',
   'frontier-physics':   '#e040fb',
