@@ -34,7 +34,7 @@ const MODULES = [
     abbr: '≋',
     tagline: 'Ripple tank · Interference · Diffraction',
     description:
-      'Real-time 2D wave equation simulation. Place oscillating sources and watch interference patterns emerge. Explore the double-slit experiment and 2D membrane normal modes.',
+      'Live 3D wave surface solving ∂²u/∂t²=c²∇²u on a 128×128 mesh. Click to drop oscillating sources — interference patterns rise from the surface in real time. Double-slit and membrane normal modes.',
     color: 'azure',
     formula: '∂²u/∂t² = c² ∇²u',
   },
@@ -44,7 +44,7 @@ const MODULES = [
     abbr: '◈',
     tagline: 'Ray tracing · Prisms · Lens imaging',
     description:
-      'Geometric and wave optics unified. Trace rays through prisms (Snell\'s law + dispersion), bounce off mirrors, converge through lenses. Thin lens image formation and multi-slit diffraction gratings.',
+      '3D glass prism dispersing 24 spectral wavelengths via Cauchy dispersion. Biconvex lens converging parallel rays to the focal point. Diffraction grating spreading orders m=0,±1,±2 by wavelength.',
     color: 'gold',
     formula: 'n₁ sin θ₁ = n₂ sin θ₂',
   },
