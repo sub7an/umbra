@@ -146,7 +146,7 @@ export default function WaveModule() {
       </div>
 
       {/* ── Body ── */}
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
         {/* Info panel */}
         <div style={{ width: 235, flexShrink: 0, borderRight: '1px solid rgba(34,211,238,0.07)' }}>
           <InfoPanel
@@ -161,7 +161,7 @@ export default function WaveModule() {
         </div>
 
         {/* 3D scene */}
-        <div style={{ flex: 1, position: 'relative' }}>
+        <div style={{ flex: 1, position: 'relative', overflow: 'hidden', minHeight: 0 }}>
           <SceneWrapper
             cameraPosition={CAMERA[view]}
             showGrid={false}
