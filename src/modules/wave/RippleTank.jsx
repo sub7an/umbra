@@ -11,27 +11,23 @@ const AMP = 0.45
 
 const VERT = `
   varying float vH;
-  varying vec3 vNorm;
   void main() {
     vH = position.y;
-    vNorm = normalize(normalMatrix * normal);
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
 `
 
 const FRAG = `
   varying float vH;
-  varying vec3 vNorm;
   void main() {
     float t = clamp(vH * 1.4 + 0.5, 0.0, 1.0);
-    vec3 deep = vec3(0.01, 0.04, 0.16);
-    vec3 mid  = vec3(0.05, 0.52, 0.88);
-    vec3 peak = vec3(0.80, 0.97, 1.00);
+    vec3 deep = vec3(0.01, 0.04, 0.18);
+    vec3 mid  = vec3(0.05, 0.52, 0.90);
+    vec3 peak = vec3(0.82, 0.97, 1.00);
     vec3 col = t < 0.5
       ? mix(deep, mid, t * 2.0)
       : mix(mid, peak, (t - 0.5) * 2.0);
-    float diff = 0.55 + 0.45 * dot(vNorm, normalize(vec3(0.4, 1.0, 0.6)));
-    gl_FragColor = vec4(col * diff, 0.95);
+    gl_FragColor = vec4(col, 0.95);
   }
 `
 
@@ -68,7 +64,6 @@ export default function RippleTank({ onSourceCount }) {
     const geo = new THREE.BufferGeometry()
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3))
     geo.setIndex(new THREE.BufferAttribute(idxArr, 1))
-    geo.computeVertexNormals()
     return { geo }
   }, [])
 
@@ -113,7 +108,6 @@ export default function RippleTank({ onSourceCount }) {
     const attr = meshRef.current.geometry.attributes.position
     for (let k = 0; k < W * H; k++) attr.setY(k, cur[k] * AMP)
     attr.needsUpdate = true
-    meshRef.current.geometry.computeVertexNormals()
   })
 
   return (
@@ -122,7 +116,7 @@ export default function RippleTank({ onSourceCount }) {
       <directionalLight position={[4, 10, 6]} intensity={0.5} color="#7de8ff" />
       <pointLight position={[0, 6, 0]} intensity={1.0} color="#22d3ee" distance={20} decay={2} />
 
-      <mesh ref={meshRef} geometry={geo} onClick={handleClick}>
+      <mesh ref={meshRef} geometry={geo} onClick={handleClick} frustumCulled={false}>
         <shaderMaterial vertexShader={VERT} fragmentShader={FRAG} side={THREE.DoubleSide} transparent />
       </mesh>
 
