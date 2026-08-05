@@ -142,6 +142,7 @@ const ACCENT_HEX = {
   teal:    '#2dd4bf',
   lime:    '#84cc16',
   azure:   '#22d3ee',
+  gold:    '#fcd34d',
 }
 
 function ModuleCard({ module, onEnter, onHoverIn, onHoverOut, cardRef }) {
