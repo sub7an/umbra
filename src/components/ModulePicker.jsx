@@ -39,6 +39,16 @@ const MODULES = [
     formula: '∂²u/∂t² = c² ∇²u',
   },
   {
+    id: 'optics',
+    name: 'Optics',
+    abbr: '◈',
+    tagline: 'Ray tracing · Prisms · Lens imaging',
+    description:
+      'Geometric and wave optics unified. Trace rays through prisms (Snell\'s law + dispersion), bounce off mirrors, converge through lenses. Thin lens image formation and multi-slit diffraction gratings.',
+    color: 'gold',
+    formula: 'n₁ sin θ₁ = n₂ sin θ₂',
+  },
+  {
     id: 'special-relativity',
     name: 'Special Relativity',
     abbr: 'SR',

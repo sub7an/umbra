@@ -9,6 +9,7 @@ const MOD_COLORS = {
   null:                  [0.0,  0.85, 0.77],
   'physics-sandbox':     [0.52, 0.80, 0.09],
   'wave-mechanics':      [0.13, 0.83, 0.93],
+  'optics':              [0.99, 0.83, 0.30],
   'special-relativity':  [0.0,  0.90, 0.77],
   'quantum-mechanics':   [0.96, 0.62, 0.04],
   'frontier-physics':    [0.88, 0.25, 0.98],
@@ -23,7 +24,7 @@ const MOD_COLORS = {
 // Per-module behavior mode
 function getMode(id) {
   if (!id) return 'default'
-  if (['special-relativity', 'fluid-dynamics', 'thermodynamics', 'physics-sandbox'].includes(id)) return 'stream'
+  if (['special-relativity', 'fluid-dynamics', 'thermodynamics', 'physics-sandbox', 'optics', 'wave-mechanics'].includes(id)) return 'stream'
   if (['general-relativity', 'quantum-mechanics'].includes(id)) return 'orbital'
   if (['dynamical-systems', 'electromagnetism'].includes(id)) return 'chaotic'
   if (['frontier-physics', 'sabrina'].includes(id)) return 'expansion'
