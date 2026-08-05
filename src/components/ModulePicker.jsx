@@ -29,6 +29,16 @@ const MODULES = [
     formula: 'F = Σ G·M/r² + Γ/r²',
   },
   {
+    id: 'wave-mechanics',
+    name: 'Wave Mechanics',
+    abbr: '≋',
+    tagline: 'Ripple tank · Interference · Diffraction',
+    description:
+      'Real-time 2D wave equation simulation. Place oscillating sources and watch interference patterns emerge. Explore the double-slit experiment and 2D membrane normal modes.',
+    color: 'azure',
+    formula: '∂²u/∂t² = c² ∇²u',
+  },
+  {
     id: 'special-relativity',
     name: 'Special Relativity',
     abbr: 'SR',
@@ -121,6 +131,7 @@ const ACCENT_HEX = {
   sky:     '#38bdf8',
   teal:    '#2dd4bf',
   lime:    '#84cc16',
+  azure:   '#22d3ee',
 }
 
 function ModuleCard({ module, onEnter, onHoverIn, onHoverOut, cardRef }) {

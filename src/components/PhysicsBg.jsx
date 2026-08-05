@@ -8,6 +8,7 @@ const N = 1200
 const MOD_COLORS = {
   null:                  [0.0,  0.85, 0.77],
   'physics-sandbox':     [0.52, 0.80, 0.09],
+  'wave-mechanics':      [0.13, 0.83, 0.93],
   'special-relativity':  [0.0,  0.90, 0.77],
   'quantum-mechanics':   [0.96, 0.62, 0.04],
   'frontier-physics':    [0.88, 0.25, 0.98],
