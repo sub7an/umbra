@@ -123,19 +123,21 @@ export default function ThermoModule() {
 
   return (
     <div className="flex flex-col w-full h-full bg-ground">
+      <style>{`@keyframes umbra-pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }`}</style>
       {/* Top bar */}
       <header className="flex items-center justify-between px-5 py-2 bg-panel border-b border-border-subtle shrink-0">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 shrink-0">
           <button onClick={() => setActiveModule(null)}
             className="font-mono-data text-[11px] tracking-widest text-text-dim hover:text-sky-glow transition-colors duration-200 uppercase flex items-center gap-1.5">
             ← MODULES
           </button>
           <div className="w-px h-4 bg-border-subtle" />
           <h1 className="font-display text-base font-semibold text-text-primary tracking-wide">Thermodynamics</h1>
-          <span className="font-mono-data text-[9px] tracking-wider uppercase px-2 py-0.5 border rounded"
-            style={{ borderColor: 'rgba(56,189,248,0.3)', color: 'rgba(56,189,248,0.6)', background: 'rgba(56,189,248,0.05)' }}>
-            Maxwell-Boltzmann · Entropy · Heat Engine
-          </span>
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded border shrink-0"
+            style={{ borderColor: 'rgba(56,189,248,0.25)', background: 'rgba(56,189,248,0.05)' }}>
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#38bdf8', boxShadow: '0 0 6px #38bdf8', animation: 'umbra-pulse 1.8s ease-in-out infinite' }} />
+            <span className="font-mono-data text-[8px] tracking-[0.2em]" style={{ color: 'rgba(56,189,248,0.7)' }}>LIVE</span>
+          </div>
         </div>
 
         <nav className="flex gap-1">
@@ -176,6 +178,15 @@ export default function ThermoModule() {
                : thermoView === 'entropy' ? 'Entropy Increase · Second Law of Thermodynamics'
                : 'Carnot Cycle · PV Diagram · Maximum Efficiency'}
             </span>
+          </div>
+          <div className="absolute bottom-4 left-4 flex items-center gap-1.5 px-2.5 py-1 rounded border pointer-events-none"
+            style={{ borderColor: 'rgba(56,189,248,0.18)', background: 'rgba(4,9,12,0.85)' }}>
+            <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#38bdf8', boxShadow: '0 0 4px #38bdf8' }} />
+            <span className="font-mono-data text-[8px] tracking-[0.2em]" style={{ color: 'rgba(56,189,248,0.5)' }}>SIM ACTIVE</span>
+          </div>
+          <div className="absolute bottom-4 right-4 font-mono-data text-[8px] tracking-[0.12em] pointer-events-none"
+            style={{ color: 'rgba(56,189,248,0.28)' }}>
+            DRAG TO ORBIT · SCROLL TO ZOOM
           </div>
         </main>
 

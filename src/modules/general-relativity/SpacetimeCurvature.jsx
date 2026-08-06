@@ -10,6 +10,22 @@ function warpY(x, z, mass) {
   return -mass / (r + 0.6)
 }
 
+const VERT = `
+  varying float vH;
+  void main() { vH = position.y; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }
+`
+const FRAG = `
+  varying float vH;
+  void main() {
+    float t = clamp(-vH * 0.65 + 0.15, 0.0, 1.0);
+    vec3 flat = vec3(0.02, 0.06, 0.14);
+    vec3 mid  = vec3(0.12, 0.08, 0.03);
+    vec3 deep = vec3(0.55, 0.22, 0.02);
+    vec3 col = t < 0.5 ? mix(flat, mid, t * 2.0) : mix(mid, deep, (t - 0.5) * 2.0);
+    gl_FragColor = vec4(col, 0.92);
+  }
+`
+
 export default function SpacetimeCurvature({ mass }) {
   const meshRef    = useRef()
   const gridRef    = useRef()
@@ -17,10 +33,9 @@ export default function SpacetimeCurvature({ mass }) {
   const timeRef    = useRef(0)
 
   // Build base grid positions once
-  const { posArr, uvArr, idxArr, linePos } = useMemo(() => {
+  const { posArr, idxArr, linePos } = useMemo(() => {
     const verts = (GRID + 1) * (GRID + 1)
     const posArr = new Float32Array(verts * 3)
-    const uvArr  = new Float32Array(verts * 2)
     const idxArr = []
 
     for (let iz = 0; iz <= GRID; iz++) {
@@ -31,8 +46,6 @@ export default function SpacetimeCurvature({ mass }) {
         posArr[i*3]   = x
         posArr[i*3+1] = 0
         posArr[i*3+2] = z
-        uvArr[i*2]   = ix / GRID
-        uvArr[i*2+1] = iz / GRID
       }
     }
     for (let iz = 0; iz < GRID; iz++) {
@@ -64,10 +77,9 @@ export default function SpacetimeCurvature({ mass }) {
   const surfaceGeo = useMemo(() => {
     const g = new THREE.BufferGeometry()
     g.setAttribute('position', new THREE.BufferAttribute(posArr.slice(), 3))
-    g.setAttribute('uv',       new THREE.BufferAttribute(uvArr,           2))
     g.setIndex(new THREE.BufferAttribute(idxArr, 1))
     return g
-  }, [posArr, uvArr, idxArr])
+  }, [posArr, idxArr])
 
   const lineGeo = useMemo(() => {
     const g = new THREE.BufferGeometry()
@@ -91,7 +103,6 @@ export default function SpacetimeCurvature({ mass }) {
       }
     }
     surfaceGeo.attributes.position.needsUpdate = true
-    surfaceGeo.computeVertexNormals()
 
     // Grid lines (coarser)
     const lp = lineGeo.attributes.position.array
@@ -119,14 +130,11 @@ export default function SpacetimeCurvature({ mass }) {
     }
   })
 
-  const surfaceMat = useMemo(() => new THREE.MeshStandardMaterial({
-    color:         '#0a1f2e',
-    emissive:      '#003355',
-    emissiveIntensity: 0.25,
-    roughness:     0.7,
-    metalness:     0.3,
-    side:          THREE.DoubleSide,
-    wireframe:     false,
+  const surfaceMat = useMemo(() => new THREE.ShaderMaterial({
+    vertexShader:   VERT,
+    fragmentShader: FRAG,
+    side:           THREE.DoubleSide,
+    transparent:    true,
   }), [])
 
   const lineMat = useMemo(() => new THREE.LineBasicMaterial({
@@ -151,7 +159,7 @@ export default function SpacetimeCurvature({ mass }) {
       <pointLight position={[3, 2, 3]} intensity={0.4} color="#00e5c4" />
 
       {/* Warped surface */}
-      <mesh ref={meshRef} geometry={surfaceGeo} material={surfaceMat} />
+      <mesh ref={meshRef} geometry={surfaceGeo} material={surfaceMat} frustumCulled={false} />
 
       {/* Grid overlay */}
       <lineSegments ref={gridRef} geometry={lineGeo} material={lineMat} />
