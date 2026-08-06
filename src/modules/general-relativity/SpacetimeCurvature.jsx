@@ -18,10 +18,10 @@ const FRAG = `
   varying float vH;
   void main() {
     float t = clamp(-vH * 0.65 + 0.15, 0.0, 1.0);
-    vec3 flat = vec3(0.02, 0.06, 0.14);
-    vec3 mid  = vec3(0.12, 0.08, 0.03);
-    vec3 deep = vec3(0.55, 0.22, 0.02);
-    vec3 col = t < 0.5 ? mix(flat, mid, t * 2.0) : mix(mid, deep, (t - 0.5) * 2.0);
+    vec3 colEdge = vec3(0.02, 0.06, 0.14);
+    vec3 colMid  = vec3(0.12, 0.08, 0.03);
+    vec3 colDeep = vec3(0.55, 0.22, 0.02);
+    vec3 col = t < 0.5 ? mix(colEdge, colMid, t * 2.0) : mix(colMid, colDeep, (t - 0.5) * 2.0);
     gl_FragColor = vec4(col, 0.92);
   }
 `
