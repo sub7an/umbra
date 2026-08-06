@@ -75,6 +75,35 @@ function MeasureToggle({ active, onToggle }) {
   )
 }
 
+// ── Gate operations ───────────────────────────────────────────────────────────
+
+const GATES = ['H', 'X', 'Y', 'Z', 'S']
+const GATE_TIPS = {
+  H: 'Hadamard — π around (X+Z)/√2',
+  X: 'Pauli-X bit flip — π around X',
+  Y: 'Pauli-Y — π around Y',
+  Z: 'Pauli-Z phase flip — π around Z',
+  S: 'Phase S — π/2 around Z',
+}
+
+function applyGateToBloch(gate, theta, phi) {
+  const bx = Math.sin(theta) * Math.cos(phi)
+  const by = Math.sin(theta) * Math.sin(phi)
+  const bz = Math.cos(theta)
+  let nx, ny, nz
+  switch (gate) {
+    case 'X': nx = bx;  ny = -by; nz = -bz; break
+    case 'Y': nx = -bx; ny = by;  nz = -bz; break
+    case 'Z': nx = -bx; ny = -by; nz = bz;  break
+    case 'H': nx = bz;  ny = -by; nz = bx;  break
+    case 'S': nx = -by; ny = bx;  nz = bz;  break
+    default:  return { theta, phi }
+  }
+  const newTheta = Math.acos(Math.max(-1, Math.min(1, nz)))
+  const newPhi   = ((Math.atan2(ny, nx) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)
+  return { theta: newTheta, phi: newPhi }
+}
+
 // ── Explanations ──────────────────────────────────────────────────────────────
 
 function buildExplanation(view, theta, phi, n, lambda, measured, entAlpha = 0) {
@@ -275,9 +304,11 @@ export default function QuantumModule() {
 
   return (
     <div className="flex flex-col w-full h-full bg-ground">
+      <style>{`@keyframes umbra-pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }`}</style>
+
       {/* ── Top bar ── */}
-      <header className="flex items-center justify-between px-5 py-2 bg-panel border-b border-border-subtle shrink-0">
-        <div className="flex items-center gap-4">
+      <header className="flex items-center justify-between px-5 py-2 bg-panel border-b border-border-subtle shrink-0 gap-3">
+        <div className="flex items-center gap-3 shrink-0">
           <button
             onClick={() => setActiveModule(null)}
             className="font-mono-data text-[11px] tracking-widest text-text-dim hover:text-cyan-glow transition-colors duration-200 uppercase flex items-center gap-1.5"
@@ -285,9 +316,14 @@ export default function QuantumModule() {
             ← MODULES
           </button>
           <div className="w-px h-4 bg-border-subtle" />
-          <h1 className="font-display text-base font-semibold text-text-primary tracking-wide">
+          <h1 className="font-display text-base font-semibold text-text-primary tracking-wide whitespace-nowrap">
             Quantum Mechanics
           </h1>
+          {/* LIVE badge */}
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded border border-rose-glow/25 bg-rose-glow/5 shrink-0">
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#e040fb', boxShadow: '0 0 6px #e040fb', animation: 'umbra-pulse 1.8s ease-in-out infinite' }} />
+            <span className="font-mono-data text-[8px] tracking-[0.2em] text-rose-glow/70">LIVE</span>
+          </div>
         </div>
 
         <nav className="flex gap-1 items-center flex-wrap justify-center" role="tablist" aria-label="Scene views">
@@ -320,13 +356,34 @@ export default function QuantumModule() {
             <VizModeToggle mode={activeVizMode} onChange={setActiveVizMode} />
           )}
 
+          {/* Gate buttons (Bloch Sphere only) */}
+          {activeView === 'blochsphere' && (
+            <>
+              <div className="w-px h-5 bg-border-subtle mx-1" />
+              {GATES.map((gate) => (
+                <button
+                  key={gate}
+                  title={GATE_TIPS[gate]}
+                  onClick={() => {
+                    const { theta: nt, phi: np } = applyGateToBloch(gate, theta, phi)
+                    setBlochTheta(nt)
+                    setBlochPhi(np)
+                  }}
+                  className="font-mono-data text-[10px] tracking-wider uppercase px-2 py-1 rounded border border-rose-glow/35 text-rose-glow/75 hover:border-rose-glow hover:text-rose-glow hover:bg-rose-glow/5 transition-all duration-150"
+                >
+                  {gate}
+                </button>
+              ))}
+            </>
+          )}
+
           {/* DoubleSlit measure toggle */}
           {activeView === 'doubleslit' && (
             <MeasureToggle active={measured} onToggle={() => setSlitMeasured(!measured)} />
           )}
         </nav>
 
-        <div className="font-mono-data text-sm text-rose-glow tabular-nums" style={{ textShadow: '0 0 8px rgba(224,64,251,0.5)' }}>
+        <div className="font-mono-data text-sm text-rose-glow tabular-nums shrink-0" style={{ textShadow: '0 0 8px rgba(224,64,251,0.5)' }}>
           iℏ∂ψ/∂t = Ĥψ
         </div>
       </header>
@@ -354,10 +411,40 @@ export default function QuantumModule() {
             {activeView === 'entanglement'  && <Entanglement />}
           </SceneWrapper>
 
+          {/* View label top-left */}
           <div className="absolute top-3 left-4 pointer-events-none">
             <span className="font-display text-[10px] tracking-[0.2em] uppercase text-text-dim">
               {VIEWS.find((v) => v.id === activeView)?.label}
             </span>
+          </div>
+
+          {/* Bloch sphere state readout top-right */}
+          {activeView === 'blochsphere' && (
+            <div className="absolute top-3 right-4 flex flex-col items-end gap-0.5 pointer-events-none">
+              <span className="font-mono-data text-[8px] tracking-[0.15em] text-rose-glow/55">θ {theta.toFixed(3)} rad</span>
+              <span className="font-mono-data text-[8px] tracking-[0.15em] text-rose-glow/55">φ {phi.toFixed(3)} rad</span>
+              <span className="font-mono-data text-[8px] tracking-[0.15em] text-amber-glow/65">P(0) {(prob0(theta) * 100).toFixed(1)}%</span>
+            </div>
+          )}
+
+          {/* Particle in box readout */}
+          {activeView === 'particleinbox' && (
+            <div className="absolute top-3 right-4 flex flex-col items-end gap-0.5 pointer-events-none">
+              <span className="font-mono-data text-[8px] tracking-[0.15em] text-rose-glow/55">n = {n}</span>
+              <span className="font-mono-data text-[8px] tracking-[0.15em] text-amber-glow/65">E = {particleInBoxEnergy(n).toFixed(2)} E₁</span>
+              <span className="font-mono-data text-[8px] tracking-[0.15em] text-text-dim/45">NODES: {n - 1}</span>
+            </div>
+          )}
+
+          {/* SIM ACTIVE badge */}
+          <div className="absolute bottom-4 left-4 flex items-center gap-1.5 px-2.5 py-1 rounded border border-rose-glow/18 bg-ground/85 pointer-events-none">
+            <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#e040fb', boxShadow: '0 0 4px #e040fb' }} />
+            <span className="font-mono-data text-[8px] tracking-[0.2em] text-rose-glow/50">SIM ACTIVE</span>
+          </div>
+
+          {/* Orbit hint */}
+          <div className="absolute bottom-4 right-4 font-mono-data text-[8px] tracking-[0.12em] text-text-dim/40 pointer-events-none">
+            DRAG TO ORBIT · SCROLL TO ZOOM
           </div>
         </main>
 
