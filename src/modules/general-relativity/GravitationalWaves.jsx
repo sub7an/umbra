@@ -5,6 +5,22 @@ import * as THREE from 'three'
 const GRID = 80
 const SIZE = 10
 
+const VERT = `
+  varying float vH;
+  void main() { vH = position.y; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }
+`
+const FRAG = `
+  varying float vH;
+  void main() {
+    float t = clamp(vH * 4.0 + 0.5, 0.0, 1.0);
+    vec3 neg  = vec3(0.18, 0.02, 0.32);
+    vec3 zero = vec3(0.02, 0.04, 0.10);
+    vec3 pos  = vec3(0.38, 0.12, 0.62);
+    vec3 col = t < 0.5 ? mix(neg, zero, t * 2.0) : mix(zero, pos, (t - 0.5) * 2.0);
+    gl_FragColor = vec4(col, 0.90);
+  }
+`
+
 export default function GravitationalWaves({ mass }) {
   const timeRef  = useRef(0)
   const body1Ref = useRef()
@@ -90,7 +106,6 @@ export default function GravitationalWaves({ mass }) {
       }
     }
     sg.attributes.position.needsUpdate = true
-    sg.computeVertexNormals()
 
     // Grid lines
     const lg = lineGeo.current
@@ -120,11 +135,8 @@ export default function GravitationalWaves({ mass }) {
       <pointLight position={[4, 3, 4]} intensity={0.4} color="#00e5c4" />
 
       {/* Wave surface */}
-      <mesh geometry={geo}>
-        <meshStandardMaterial
-          color="#0d1a2e" emissive="#1a0840" emissiveIntensity={0.5}
-          roughness={0.6} metalness={0.4} side={THREE.DoubleSide}
-        />
+      <mesh geometry={geo} frustumCulled={false}>
+        <shaderMaterial vertexShader={VERT} fragmentShader={FRAG} side={THREE.DoubleSide} transparent />
       </mesh>
 
       {/* Grid overlay */}
