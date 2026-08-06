@@ -70,7 +70,7 @@ export default function SpacetimeCurvature({ mass }) {
     }
     const linePos = new Float32Array(lineVerts)
 
-    return { posArr, uvArr, idxArr: new Uint32Array(idxArr), linePos }
+    return { posArr, idxArr: new Uint32Array(idxArr), linePos }
   }, [])
 
   // Geometry objects (plain THREE, declarative JSX below)
