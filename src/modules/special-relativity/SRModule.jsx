@@ -30,11 +30,11 @@ function buildExplanation(view, velocity, gamma, eventX, eventT) {
     case 'lightcone':
       return `The light cone divides spacetime into three regions. Your event is currently ${
         region === 'timelike'
-          ? 'inside the cone: a timelike interval. A signal slower than light can reach this event, so causality holds.'
+          ? 'inside the cone (timelike interval) — a signal slower than light can connect these events; causality holds.'
           : region === 'spacelike'
-          ? 'outside the cone: a spacelike interval. No signal can bridge these events; they share no causal connection.'
-          : 'on the cone surface: a lightlike interval. Only a photon traveling at exactly c can connect them.'
-      } Drag the octahedron to explore all three regions.`
+          ? 'outside the cone (spacelike interval) — no signal can connect them; they share no causal link.'
+          : 'on the cone surface (lightlike interval) — only a photon traveling at c can connect them.'
+      } The magenta dashed axes are the boosted frame (ct′, x′) of an observer moving at β = ${velocity.toFixed(2)}c. Use the velocity slider to see simultaneity lines tilt: events that are simultaneous in the lab (horizontal line) are not simultaneous in the moving frame (tilted). Drag the octahedron to explore all three causal regions.`
 
     case 'timedilation':
       return `At β = ${velocity.toFixed(3)}, the moving clock runs ${pct}% slower than the lab clock. After ${gamma.toFixed(2)} lab seconds, the moving clock has ticked just 1 second. This is a real physical effect, not a signaling delay. If you brought both clocks together afterward, the moving one would show less elapsed time.`
