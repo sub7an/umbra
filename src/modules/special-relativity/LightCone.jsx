@@ -5,6 +5,86 @@ import * as THREE from 'three'
 import useModuleStore from '../../store/useModuleStore'
 import { coneRegion } from './srMath'
 
+// ── Lorentz-boosted frame overlay ─────────────────────────────────────────────
+// Shows t' axis (moving observer's world line), x' axis (simultaneity lines),
+// and a grid of simultaneous events in the primed frame.
+function BoostFrame({ beta }) {
+  const gamma = 1 / Math.sqrt(1 - beta * beta)
+  const H = 3.2
+
+  // t' axis: world line of moving observer → direction (β, 1) in (x, ct) space
+  // x' axis: simultaneity in primed frame → direction (1, β) in (x, ct) space
+  const tPrimeAxis = useMemo(() => [
+    new THREE.Vector3(-H * beta, -H, 0),
+    new THREE.Vector3( H * beta,  H, 0),
+  ], [beta, H])
+
+  const xPrimeAxis = useMemo(() => [
+    new THREE.Vector3(-H,  -H * beta, 0),
+    new THREE.Vector3( H,   H * beta, 0),
+  ], [beta, H])
+
+  // Simultaneity lines at t' = ±1, ±2 in lab coords: ct = β·x + k/γ
+  const simLines = useMemo(() =>
+    [-2, -1, 1, 2].map((k) => {
+      const t0 = k / gamma
+      return [
+        new THREE.Vector3(-H, t0 + beta * (-H), 0),
+        new THREE.Vector3( H, t0 + beta * H,    0),
+      ]
+    }), [beta, gamma, H]
+  )
+
+  // Grid lines at x' = ±1, ±2 in lab coords: ct = (1/β)·x - k/(γ·β)
+  // x' = γ(x - βt) = k → x = k/γ + βt → t = (x - k/γ)/β
+  const gridLines = useMemo(() => {
+    if (Math.abs(beta) < 0.05) return []
+    return [-2, -1, 1, 2].map((k) => {
+      const x0 = k / gamma
+      return [
+        new THREE.Vector3(x0 + beta * (-H), -H, 0),
+        new THREE.Vector3(x0 + beta *  H,    H, 0),
+      ]
+    })
+  }, [beta, gamma, H])
+
+  if (Math.abs(beta) < 0.02) return null
+
+  return (
+    <group>
+      {/* t' axis (world line of moving observer) */}
+      <Line points={tPrimeAxis} color="#e040fb" lineWidth={1.6}
+        transparent opacity={0.75} dashed dashSize={0.22} gapSize={0.10} />
+
+      {/* x' axis (simultaneity plane at t'=0 in moving frame) */}
+      <Line points={xPrimeAxis} color="#e040fb" lineWidth={1.6}
+        transparent opacity={0.75} dashed dashSize={0.22} gapSize={0.10} />
+
+      {/* Simultaneity lines (ct' = const) in lab frame */}
+      {simLines.map((pts, i) => (
+        <Line key={i} points={pts} color="#e040fb" lineWidth={0.9}
+          transparent opacity={0.20} />
+      ))}
+
+      {/* World-line grid (x' = const) in lab frame */}
+      {gridLines.map((pts, i) => (
+        <Line key={i} points={pts} color="#e040fb" lineWidth={0.9}
+          transparent opacity={0.15} />
+      ))}
+
+      {/* Labels */}
+      <Html position={[H * beta + 0.2, H - 0.2, 0]} style={{ pointerEvents: 'none' }}>
+        <span style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 10,
+          color: '#e040fb', letterSpacing: '0.1em', textShadow: '0 0 6px #e040fb' }}>ct′</span>
+      </Html>
+      <Html position={[H + 0.2, H * beta - 0.2, 0]} style={{ pointerEvents: 'none' }}>
+        <span style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 10,
+          color: '#e040fb', letterSpacing: '0.1em', textShadow: '0 0 6px #e040fb' }}>x′</span>
+      </Html>
+    </group>
+  )
+}
+
 // ── Solid translucent cone mesh (depth/volume cue) ────────────────────────────
 function SolidCone({ posY, rotX, h, color, opacity }) {
   const mat = useMemo(() => new THREE.MeshBasicMaterial({
@@ -206,8 +286,9 @@ function WorldLine({ ex, et }) {
 
 // ── Main ─────────────────────────────────────────────────────────────────────
 export default function LightCone() {
-  const eventX = useModuleStore((s) => s.sr.eventX)
-  const eventT = useModuleStore((s) => s.sr.eventT)
+  const eventX   = useModuleStore((s) => s.sr.eventX)
+  const eventT   = useModuleStore((s) => s.sr.eventT)
+  const velocity = useModuleStore((s) => s.sr.velocity)
   const setSrEvent = useModuleStore((s) => s.setSrEvent)
 
   const height = 3
@@ -270,6 +351,9 @@ export default function LightCone() {
         <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={3} />
       </mesh>
       <pointLight position={[0, 0, 0]} color="#f59e0b" intensity={1.0} distance={2.5} />
+
+      {/* ── Lorentz-boosted frame overlay ── */}
+      <BoostFrame beta={velocity} />
 
       {/* ── World-line from origin to event ── */}
       <WorldLine ex={ex} et={et} />
