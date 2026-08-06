@@ -2,190 +2,196 @@ import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
-// 2D SPH dam break
-// N particles stacked in a tall column, collapse under gravity
+// ─── 3D SPH — Navier-Stokes via Smoothed Particle Hydrodynamics ─────────────
+// 216 particles (6×6×6 cube) collapsing as a dam break in a 3D box.
+// Kernels: Müller 2003 (Poly6 density, Spiky pressure, Viscosity Laplacian)
 
-const COLS  = 7
-const ROWS  = 28
-const N     = COLS * ROWS   // 196
-const H     = 0.55          // smoothing length
+const COLS  = 6, ROWS  = 6, DEPTH = 6
+const N     = COLS * ROWS * DEPTH   // 216
+const H     = 0.90                   // smoothing radius
 const H2    = H * H
 const MASS  = 1.0
-const RHO0  = 17.0          // rest density (matches grid packing)
-const K_P   = 100.0         // pressure stiffness
-const MU    = 0.12          // viscosity
-const XMIN  = -5.5, XMAX = 5.5
-const YMIN  = -5.5, YMAX = 5.5
+const RHO0  = 14.0                   // 3D rest density
+const K_P   = 90.0                   // pressure stiffness
+const MU    = 0.16                   // viscosity
+const XMIN  = -5, XMAX = 5
+const YMIN  = -5, YMAX = 5
+const ZMIN  = -3.5, ZMAX = 3.5
+const DAMP  = 0.38
 
-// 2D Poly6 kernel: W(r,h) = (4/πh⁸)(h²−r²)³
-const POLY6_C = 4.0 / (Math.PI * Math.pow(H, 8))
+// Müller 2003 kernels (3D)
+const POLY6_C =  315.0 / (64.0 * Math.PI * Math.pow(H, 9))
+const SPIKY_C =   45.0 / (Math.PI * Math.pow(H, 6))   // pressure gradient magnitude
+const VISC_C  =   45.0 / (Math.PI * Math.pow(H, 6))   // viscosity laplacian
+
 function poly6(r2) {
   if (r2 >= H2) return 0
   const d = H2 - r2
   return POLY6_C * d * d * d
 }
 
-// 2D Spiky gradient magnitude: dW/dr = -(10/πh⁵)(h−r)²
-const SPIKY_C = -10.0 / (Math.PI * Math.pow(H, 5))
 function spikyGrad(r) {
   if (r >= H || r < 1e-5) return 0
   const d = H - r
-  return SPIKY_C * d * d
+  return -SPIKY_C * d * d   // negative → repulsive push
 }
 
-// 2D Viscosity Laplacian: ∇²W = (40/πh⁵)(h−r)
-const VISC_C = 40.0 / (Math.PI * Math.pow(H, 5))
 function viscLap(r) {
   if (r >= H) return 0
   return VISC_C * (H - r)
+}
+
+function initParticles() {
+  const pos = new Float32Array(N * 3)
+  const vel = new Float32Array(N * 3)
+  const sX  = 1.8 / Math.max(COLS - 1, 1)
+  const sY  = 4.2 / Math.max(ROWS - 1, 1)
+  const sZ  = 3.0 / Math.max(DEPTH - 1, 1)
+  let k = 0
+  for (let d = 0; d < DEPTH; d++) {
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        pos[k*3]   = -4.8 + c * sX + (Math.random()-0.5) * 0.05
+        pos[k*3+1] = -4.8 + r * sY + (Math.random()-0.5) * 0.05
+        pos[k*3+2] = -1.5 + d * sZ + (Math.random()-0.5) * 0.05
+        vel[k*3]   =  0.4 + Math.random() * 0.6   // initial push (+X = dam break)
+        k++
+      }
+    }
+  }
+  return { pos, vel }
 }
 
 export default function SPH({ reynolds }) {
   const geoRef = useRef()
   const simRef = useRef(null)
 
-  const gravity = 7 + reynolds * 2.5
-
-  // Build initial state (tall column on left)
-  const col = useMemo(() => new Float32Array(N * 3), [])
-
-  if (!simRef.current) {
-    const spacingX = 1.5 / (COLS - 1)
-    const spacingY = 6.5 / (ROWS - 1)
-    const pos = new Float32Array(N * 2)
-    const vel = new Float32Array(N * 2)
-    let idx = 0
-    for (let row = 0; row < ROWS; row++) {
-      for (let col = 0; col < COLS; col++) {
-        pos[idx * 2]     = -5.0 + col * spacingX + (Math.random() - 0.5) * 0.02
-        pos[idx * 2 + 1] = -5.0 + row * spacingY + (Math.random() - 0.5) * 0.02
-        idx++
-      }
-    }
-    simRef.current = { pos, vel }
-  }
+  if (!simRef.current) simRef.current = initParticles()
 
   const pos3 = useMemo(() => new Float32Array(N * 3), [])
-
-  const prevRe = useRef(reynolds)
+  const col  = useMemo(() => new Float32Array(N * 3), [])
 
   useFrame((_, delta) => {
-    if (!simRef.current) return
+    if (!simRef.current || !geoRef.current) return
     const { pos, vel } = simRef.current
-    const g = 7 + reynolds * 2.5
+    const g       = 6.0 + reynolds * 3.5
     const substeps = 3
-    const dt = Math.min(delta, 0.04) / substeps
+    const dt      = Math.min(delta, 0.033) / substeps
 
     for (let step = 0; step < substeps; step++) {
-      // 1. Compute densities
+      // — Density ————————————————————————————————
       const rho = new Float32Array(N)
       for (let i = 0; i < N; i++) {
-        const xi = pos[i * 2], yi = pos[i * 2 + 1]
+        const xi = pos[i*3], yi = pos[i*3+1], zi = pos[i*3+2]
         for (let j = 0; j < N; j++) {
-          const dx = pos[j * 2] - xi, dy = pos[j * 2 + 1] - yi
-          rho[i] += MASS * poly6(dx * dx + dy * dy)
+          const dx = pos[j*3]-xi, dy = pos[j*3+1]-yi, dz = pos[j*3+2]-zi
+          rho[i] += MASS * poly6(dx*dx + dy*dy + dz*dz)
         }
       }
 
-      // 2. Compute accelerations
+      // — Forces —————————————————————————————————
       const ax = new Float32Array(N)
       const ay = new Float32Array(N)
+      const az = new Float32Array(N)
       for (let i = 0; i < N; i++) {
         ay[i] = -g
-        const pi = Math.max(K_P * (rho[i] - RHO0), 0)
-        const xi = pos[i * 2], yi = pos[i * 2 + 1]
-        const rhoi = Math.max(rho[i], 0.001)
-
+        const pi   = Math.max(K_P * (rho[i] - RHO0), 0)
+        const xi   = pos[i*3], yi = pos[i*3+1], zi = pos[i*3+2]
+        const rhoi = Math.max(rho[i], 0.01)
         for (let j = 0; j < N; j++) {
           if (j === i) continue
-          const dx = pos[j * 2] - xi, dy = pos[j * 2 + 1] - yi
-          const r2 = dx * dx + dy * dy
+          const dx = pos[j*3]-xi, dy = pos[j*3+1]-yi, dz = pos[j*3+2]-zi
+          const r2 = dx*dx + dy*dy + dz*dz
           if (r2 >= H2 || r2 < 1e-8) continue
           const r    = Math.sqrt(r2)
-          const rhoj = Math.max(rho[j], 0.001)
-
-          // Pressure
+          const rhoj = Math.max(rho[j], 0.01)
           const pj   = Math.max(K_P * (rho[j] - RHO0), 0)
-          const gW   = spikyGrad(r)
-          const pFac = -MASS * (pi / (rhoi * rhoi) + pj / (rhoj * rhoj)) * gW
-          ax[i] += pFac * dx / r
-          ay[i] += pFac * dy / r
-
+          // Pressure (SPH symmetric form)
+          const gW   = spikyGrad(r) / r
+          const pFac = MASS * (pi/(rhoi*rhoi) + pj/(rhoj*rhoj)) * gW
+          ax[i] += pFac * dx; ay[i] += pFac * dy; az[i] += pFac * dz
           // Viscosity
-          const lapW = viscLap(r)
-          const vFac = MU * MASS * lapW / rhoj
-          ax[i] += vFac * (vel[j * 2]     - vel[i * 2])
-          ay[i] += vFac * (vel[j * 2 + 1] - vel[i * 2 + 1])
+          const vFac = MU * MASS * viscLap(r) / rhoj
+          ax[i] += vFac * (vel[j*3]   - vel[i*3])
+          ay[i] += vFac * (vel[j*3+1] - vel[i*3+1])
+          az[i] += vFac * (vel[j*3+2] - vel[i*3+2])
         }
       }
 
-      // 3. Integrate + boundary
+      // — Integrate + 3D wall boundaries ————————
       for (let i = 0; i < N; i++) {
-        vel[i * 2]     += ax[i] * dt
-        vel[i * 2 + 1] += ay[i] * dt
-
-        // Clamp velocity
-        const sp = Math.sqrt(vel[i * 2] ** 2 + vel[i * 2 + 1] ** 2)
-        if (sp > 20) { vel[i * 2] *= 20 / sp; vel[i * 2 + 1] *= 20 / sp }
-
-        pos[i * 2]     += vel[i * 2]     * dt
-        pos[i * 2 + 1] += vel[i * 2 + 1] * dt
-
-        // Elastic walls with damping
-        if (pos[i * 2] < XMIN) { pos[i * 2] = XMIN; vel[i * 2] = Math.abs(vel[i * 2]) * 0.4 }
-        if (pos[i * 2] > XMAX) { pos[i * 2] = XMAX; vel[i * 2] = -Math.abs(vel[i * 2]) * 0.4 }
-        if (pos[i * 2 + 1] < YMIN) { pos[i * 2 + 1] = YMIN; vel[i * 2 + 1] = Math.abs(vel[i * 2 + 1]) * 0.4 }
-        if (pos[i * 2 + 1] > YMAX) { pos[i * 2 + 1] = YMAX; vel[i * 2 + 1] = -Math.abs(vel[i * 2 + 1]) * 0.4 }
-      }
-
-      // Color by density (blue→cyan→white)
-      let maxRho = 0.001
-      for (let i = 0; i < N; i++) if (rho[i] > maxRho) maxRho = rho[i]
-      for (let i = 0; i < N; i++) {
-        const t = Math.min(rho[i] / Math.max(maxRho, 1), 1)
-        pos3[i * 3]     = pos[i * 2]
-        pos3[i * 3 + 1] = pos[i * 2 + 1]
-        pos3[i * 3 + 2] = 0
-        if (t < 0.5) {
-          const s = t * 2
-          col[i * 3]     = 0.05 + s * 0.12
-          col[i * 3 + 1] = 0.2  + s * 0.63
-          col[i * 3 + 2] = 0.65 + s * 0.10
-        } else {
-          const s = (t - 0.5) * 2
-          col[i * 3]     = 0.17 + s * 0.83
-          col[i * 3 + 1] = 0.83 + s * 0.17
-          col[i * 3 + 2] = 0.75 + s * 0.25
-        }
+        vel[i*3]   += ax[i] * dt
+        vel[i*3+1] += ay[i] * dt
+        vel[i*3+2] += az[i] * dt
+        // Speed cap
+        const sp = Math.sqrt(vel[i*3]**2 + vel[i*3+1]**2 + vel[i*3+2]**2)
+        if (sp > 24) { const f = 24/sp; vel[i*3]*=f; vel[i*3+1]*=f; vel[i*3+2]*=f }
+        pos[i*3]   += vel[i*3]   * dt
+        pos[i*3+1] += vel[i*3+1] * dt
+        pos[i*3+2] += vel[i*3+2] * dt
+        // Elastic walls
+        if (pos[i*3]   < XMIN) { pos[i*3]   = XMIN; vel[i*3]   =  Math.abs(vel[i*3])   * DAMP }
+        if (pos[i*3]   > XMAX) { pos[i*3]   = XMAX; vel[i*3]   = -Math.abs(vel[i*3])   * DAMP }
+        if (pos[i*3+1] < YMIN) { pos[i*3+1] = YMIN; vel[i*3+1] =  Math.abs(vel[i*3+1]) * DAMP }
+        if (pos[i*3+1] > YMAX) { pos[i*3+1] = YMAX; vel[i*3+1] = -Math.abs(vel[i*3+1]) * DAMP }
+        if (pos[i*3+2] < ZMIN) { pos[i*3+2] = ZMIN; vel[i*3+2] =  Math.abs(vel[i*3+2]) * DAMP }
+        if (pos[i*3+2] > ZMAX) { pos[i*3+2] = ZMAX; vel[i*3+2] = -Math.abs(vel[i*3+2]) * DAMP }
       }
     }
 
-    const geo = geoRef.current
-    if (geo) {
-      geo.attributes.position.needsUpdate = true
-      geo.attributes.color.needsUpdate    = true
+    // — Color by velocity speed (blue→cyan→amber→white) ——
+    let maxSp = 0.5
+    for (let i = 0; i < N; i++) {
+      const sp = Math.sqrt(vel[i*3]**2 + vel[i*3+1]**2 + vel[i*3+2]**2)
+      if (sp > maxSp) maxSp = sp
     }
+    for (let i = 0; i < N; i++) {
+      pos3[i*3]   = pos[i*3]
+      pos3[i*3+1] = pos[i*3+1]
+      pos3[i*3+2] = pos[i*3+2]
+      const sp = Math.sqrt(vel[i*3]**2 + vel[i*3+1]**2 + vel[i*3+2]**2)
+      const t  = Math.min(sp / maxSp, 1)
+      if (t < 0.30) {
+        const s = t / 0.30
+        col[i*3] = 0.0; col[i*3+1] = 0.18 + s * 0.68; col[i*3+2] = 0.85
+      } else if (t < 0.65) {
+        const s = (t - 0.30) / 0.35
+        col[i*3] = s * 0.92; col[i*3+1] = 0.86 - s * 0.22; col[i*3+2] = 0.85 - s * 0.80
+      } else {
+        const s = (t - 0.65) / 0.35
+        col[i*3] = 0.92 + s * 0.08; col[i*3+1] = 0.64 - s * 0.52; col[i*3+2] = 0.05
+      }
+    }
+
+    geoRef.current.attributes.position.needsUpdate = true
+    geoRef.current.attributes.color.needsUpdate    = true
   })
+
+  const W = XMAX - XMIN, Ht = YMAX - YMIN, D = ZMAX - ZMIN
 
   return (
     <group>
-      <ambientLight intensity={0.3} />
-      <pointLight position={[0, 3, 6]} intensity={0.5} color="#2dd4bf" />
+      <ambientLight intensity={0.4} />
+      <pointLight position={[0, 4, 8]} intensity={1.0} color="#2dd4bf" />
+      <pointLight position={[4, -2, 5]} intensity={0.5} color="#fb923c" />
+      <pointLight position={[-4, 3, 6]} intensity={0.3} color="#a855f7" />
 
-      {/* Domain boundary */}
+      {/* Domain wireframe box */}
       <lineSegments>
-        <edgesGeometry args={[new THREE.BoxGeometry((XMAX - XMIN), (YMAX - YMIN), 0.1)]} />
+        <edgesGeometry args={[new THREE.BoxGeometry(W, Ht, D)]} />
         <lineBasicMaterial color="#2dd4bf" transparent opacity={0.12} />
       </lineSegments>
 
-      {/* Particles */}
+      {/* 3D SPH particle cloud */}
       <points>
         <bufferGeometry ref={geoRef}>
           <bufferAttribute attach="attributes-position" args={[pos3, 3]} />
-          <bufferAttribute attach="attributes-color"    args={[col, 3]} />
+          <bufferAttribute attach="attributes-color"    args={[col,  3]} />
         </bufferGeometry>
-        <pointsMaterial size={0.14} vertexColors transparent opacity={0.9}
-          blending={THREE.AdditiveBlending} depthWrite={false} sizeAttenuation />
+        <pointsMaterial
+          size={0.22} vertexColors transparent opacity={0.95}
+          blending={THREE.AdditiveBlending} depthWrite={false} sizeAttenuation
+        />
       </points>
     </group>
   )
