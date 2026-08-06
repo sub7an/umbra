@@ -742,7 +742,7 @@ export default function CardPreview({ moduleId, cardEl }) {
       <Canvas
         camera={{ position: camPos, fov: 45 }}
         gl={{ antialias: false, alpha: true }}
-        style={{ position: 'absolute', inset: 0 }}
+        style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
       >
         <ambientLight intensity={0.08} />
         <ActiveScene moduleId={displayMod} />
