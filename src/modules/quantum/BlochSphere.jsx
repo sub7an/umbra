@@ -8,6 +8,69 @@ import { blochCoordinates } from './qmMath'
 // Map Bloch {x,y,z} → Three.js [x, z, y]  (Bloch z-axis → Three.js Y vertical)
 function toThree(bx, by, bz) { return [bx, bz, by] }
 
+// ── State vector trail ─────────────────────────────────────────────────────────
+
+const TRAIL_LEN = 60
+const TRAIL_DT  = 0.035  // sample every ~35 ms
+
+function StateTrail({ thetaRef, phiRef }) {
+  const samplesRef  = useRef([])
+  const lastTRef    = useRef(-1)
+  const posArr      = useMemo(() => new Float32Array(TRAIL_LEN * 3), [])
+  const colArr      = useMemo(() => new Float32Array(TRAIL_LEN * 3), [])
+
+  const geo = useMemo(() => {
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.BufferAttribute(posArr, 3))
+    g.setAttribute('color',    new THREE.BufferAttribute(colArr,  3))
+    g.setDrawRange(0, 0)
+    return g
+  }, [posArr, colArr])
+
+  const mat = useMemo(() => new THREE.LineBasicMaterial({
+    vertexColors: true,
+    transparent:  true,
+    blending:     THREE.AdditiveBlending,
+    depthWrite:   false,
+  }), [])
+
+  useEffect(() => () => { geo.dispose(); mat.dispose() }, [geo, mat])
+
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime()
+    if (t - lastTRef.current > TRAIL_DT) {
+      lastTRef.current = t
+      const theta = thetaRef.current
+      const phi   = phiRef.current
+      const bx = Math.sin(theta) * Math.cos(phi)
+      const by = Math.sin(theta) * Math.sin(phi)
+      const bz = Math.cos(theta)
+      // Convert to Three.js space (same as toThree): [bx, bz, by]
+      const px = bx, py = bz, pz = by
+      const last = samplesRef.current[samplesRef.current.length - 1]
+      const moved = !last || (Math.abs(last[0] - px) + Math.abs(last[1] - py) + Math.abs(last[2] - pz)) > 0.003
+      if (moved) {
+        samplesRef.current.push([px, py, pz])
+        if (samplesRef.current.length > TRAIL_LEN) samplesRef.current.shift()
+      }
+    }
+
+    const samples = samplesRef.current
+    const n       = samples.length
+    for (let i = 0; i < n; i++) {
+      const [x, y, z] = samples[i]
+      posArr[i * 3]     = x; posArr[i * 3 + 1] = y; posArr[i * 3 + 2] = z
+      const a = i / (TRAIL_LEN - 1)
+      colArr[i * 3] = 0; colArr[i * 3 + 1] = a * 0.85; colArr[i * 3 + 2] = a * 0.72
+    }
+    geo.setDrawRange(0, Math.max(n, 0))
+    geo.attributes.position.needsUpdate = true
+    geo.attributes.color.needsUpdate    = true
+  })
+
+  return <line geometry={geo} material={mat} />
+}
+
 // ── Shaders ───────────────────────────────────────────────────────────────────
 
 const VERT = /* glsl */`
@@ -229,6 +292,12 @@ export default function BlochSphere() {
   const bloch  = blochCoordinates(theta, phi)
   const vecPos = toThree(bloch.x, bloch.y, bloch.z)
 
+  // Refs so trail useFrame always reads the latest theta/phi without stale closure
+  const thetaRef = useRef(theta)
+  const phiRef   = useRef(phi)
+  thetaRef.current = theta
+  phiRef.current   = phi
+
   const groupRef = useRef()
   useFrame((_, delta) => {
     if (groupRef.current) groupRef.current.rotation.y += delta * 0.06
@@ -251,6 +320,9 @@ export default function BlochSphere() {
 
       {/* Monte Carlo particle cloud (shader-driven, all modes) */}
       <SphereCloud theta={theta} phi={phi} vizMode={vizMode} />
+
+      {/* State vector trail — glowing arc tracing the state's history on the sphere */}
+      <StateTrail thetaRef={thetaRef} phiRef={phiRef} />
 
       {/* Great circles */}
       <GreatCircles />

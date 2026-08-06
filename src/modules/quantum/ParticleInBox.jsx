@@ -13,6 +13,34 @@ const Y_SPREAD  = 0.55
 const Z_SPREAD  = 0.50
 const WAVE_AMP  = 1.0    // visual amplitude of the drawn wavefunction curve
 
+// 3D surface mesh constants
+const SURF_NX     = 64
+const SURF_NZ     = 28
+const SURF_AMP    = 0.88
+const SURF_Z_SPAN = 3.2
+
+const SURF_VERT = /* glsl */`
+  varying float vH;
+  void main() {
+    vH = position.y;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`
+
+const SURF_FRAG = /* glsl */`
+  varying float vH;
+  void main() {
+    float t = clamp(vH * 1.3 + 0.5, 0.0, 1.0);
+    vec3 low  = vec3(0.32, 0.02, 0.58);
+    vec3 zero = vec3(0.01, 0.03, 0.12);
+    vec3 high = vec3(0.05, 0.58, 0.96);
+    vec3 col = t < 0.5
+      ? mix(low, zero, t * 2.0)
+      : mix(zero, high, (t - 0.5) * 2.0);
+    gl_FragColor = vec4(col, 0.78);
+  }
+`
+
 // ── Shaders ───────────────────────────────────────────────────────────────────
 
 const VERT = /* glsl */`
@@ -60,6 +88,82 @@ const FRAG = /* glsl */`
     gl_FragColor = vec4(vColor, a);
   }
 `
+
+// ── 3D wavefunction surface ───────────────────────────────────────────────────
+
+function WaveSurface3D({ n, En, vizMode }) {
+  const meshRef  = useRef()
+  const tRef     = useRef(0)
+  const nRef     = useRef(n)
+  const EnRef    = useRef(En)
+  const modeRef  = useRef(vizMode)
+  nRef.current   = n
+  EnRef.current  = En
+  modeRef.current = vizMode
+
+  const geo = useMemo(() => {
+    const pos    = new Float32Array(SURF_NX * SURF_NZ * 3)
+    const idxArr = new Uint32Array((SURF_NX - 1) * (SURF_NZ - 1) * 6)
+    for (let j = 0; j < SURF_NZ; j++) {
+      for (let i = 0; i < SURF_NX; i++) {
+        const k = (j * SURF_NX + i) * 3
+        pos[k]     = BOX_LEFT + (i / (SURF_NX - 1)) * BOX_W
+        pos[k + 1] = 0
+        pos[k + 2] = (j / (SURF_NZ - 1) - 0.5) * SURF_Z_SPAN
+      }
+    }
+    let p = 0
+    for (let j = 0; j < SURF_NZ - 1; j++) {
+      for (let i = 0; i < SURF_NX - 1; i++) {
+        const a = j * SURF_NX + i, b = a + 1, c = a + SURF_NX, d = c + 1
+        idxArr[p++] = a; idxArr[p++] = c; idxArr[p++] = b
+        idxArr[p++] = b; idxArr[p++] = c; idxArr[p++] = d
+      }
+    }
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3))
+    g.setIndex(new THREE.BufferAttribute(idxArr, 1))
+    return g
+  }, [])
+
+  useEffect(() => () => geo.dispose(), [geo])
+
+  useFrame((_, delta) => {
+    tRef.current += Math.min(delta, 0.033)
+    const t    = tRef.current
+    const nn   = nRef.current
+    const En_  = EnRef.current
+    const mode = modeRef.current
+    const cosEt = Math.cos(En_ * t * 0.9)
+    const sinEt = Math.sin(En_ * t * 0.9)
+    if (!meshRef.current) return
+    const attr = meshRef.current.geometry.attributes.position
+    for (let j = 0; j < SURF_NZ; j++) {
+      const zTaper = Math.sin((j / (SURF_NZ - 1)) * Math.PI)  // taper to 0 at edges
+      for (let i = 0; i < SURF_NX; i++) {
+        const xi  = i / (SURF_NX - 1)
+        const psi = particleInBoxWavefunction(nn, xi, 1)
+        let y
+        if (mode === 'prob')       y = psi * psi * SURF_AMP * 0.52 * zTaper
+        else if (mode === 'real')  y = psi * cosEt * SURF_AMP * zTaper
+        else                       y = psi * sinEt * SURF_AMP * zTaper
+        attr.setY(j * SURF_NX + i, y)
+      }
+    }
+    attr.needsUpdate = true
+  })
+
+  return (
+    <mesh ref={meshRef} geometry={geo} frustumCulled={false}>
+      <shaderMaterial
+        vertexShader={SURF_VERT}
+        fragmentShader={SURF_FRAG}
+        side={THREE.DoubleSide}
+        transparent
+      />
+    </mesh>
+  )
+}
 
 // ── CPU sampling ──────────────────────────────────────────────────────────────
 
@@ -313,6 +417,9 @@ export default function ParticleInBox() {
         dashSize={0.2}
         gapSize={0.1}
       />
+
+      {/* ── 3D wavefunction surface mesh ── */}
+      <WaveSurface3D n={n} En={En} vizMode={vizMode} />
 
       {/* ── Oscillating wavefunction curve ── */}
       <WaveCurve n={n} En={En} vizMode={vizMode} />
