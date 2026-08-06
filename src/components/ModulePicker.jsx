@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import useModuleStore from '../store/useModuleStore'
 import PhysicsBg from './PhysicsBg'
+import CardPreview from './CardPreview'
 import { useGesture } from '../context/GestureContext'
 
 const SECRET_PHRASE = 'sabrina'
@@ -156,7 +157,7 @@ function ModuleCard({ module, onEnter, onHoverIn, onHoverOut, cardRef }) {
     <button
       ref={cardRef}
       onClick={onEnter}
-      onMouseEnter={onHoverIn}
+      onMouseEnter={(e) => onHoverIn(e.currentTarget)}
       onMouseLeave={onHoverOut}
       className="group relative flex flex-col text-left p-5 rounded-sm cursor-pointer focus:outline-none focus-visible:ring-1 transition-all duration-300"
       style={{
@@ -172,7 +173,7 @@ function ModuleCard({ module, onEnter, onHoverIn, onHoverOut, cardRef }) {
       onMouseLeave={(e) => {
         e.currentTarget.style.borderColor = `rgba(${r},${g},${b},0.18)`
         e.currentTarget.style.boxShadow   = 'none'
-        onHoverOut()
+        onHoverOut(e.currentTarget)
       }}
     >
       {/* Abbr */}
@@ -287,6 +288,7 @@ function SabrinaCard({ onEnter, onHoverIn, onHoverOut, cardRef, bloomIn }) {
 export default function ModulePicker() {
   const setActiveModule    = useModuleStore((s) => s.setActiveModule)
   const [hoveredModule, setHoveredModule] = useState(null)
+  const [hoveredCardEl, setHoveredCardEl] = useState(null)
   const [unlocked,    setUnlocked]    = useState(checkUnlocked)
   const [justUnlocked, setJustUnlocked] = useState(false)
   const mouseRef  = useRef({ x: 0, y: 0 })
@@ -435,8 +437,8 @@ export default function ModulePicker() {
                 module={mod}
                 cardRef={(el) => { cardRefs.current[mod.id] = el }}
                 onEnter={() => setActiveModule(mod.id)}
-                onHoverIn={() => setHoveredModule(mod.id)}
-                onHoverOut={() => setHoveredModule(null)}
+                onHoverIn={(el) => { setHoveredModule(mod.id); setHoveredCardEl(el) }}
+                onHoverOut={() => { setHoveredModule(null); setHoveredCardEl(null) }}
               />
             ))}
             {unlocked && (
@@ -469,6 +471,9 @@ export default function ModulePicker() {
           {MODULES.find((m) => m.id === hoveredModule)?.name || 'For Sabrina'}
         </div>
       )}
+
+      {/* Live 3D preview overlay */}
+      <CardPreview moduleId={hoveredModule} cardEl={hoveredCardEl} />
     </div>
   )
 }
