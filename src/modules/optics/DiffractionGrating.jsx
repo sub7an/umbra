@@ -1,4 +1,4 @@
-// 3D diffraction grating: spectral orders rendered as angled beams
+// 3D diffraction grating: spectral orders + animated photon pulses
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
@@ -15,55 +15,53 @@ function wlToRGB(wl) {
   return [r * f, g * f, b * f]
 }
 
-const D = 600e-9   // grating spacing 600 nm (lines/mm = 1666)
-const N_WL = 20
-const ORDERS = [-2, -1, 0, 1, 2]
+const D       = 600e-9
+const N_WL    = 20
+const ORDERS  = [-2, -1, 0, 1, 2]
 const GRATING_X = 0
 
-function buildGratingRays() {
-  const segs = []
-  const incidentDir = new THREE.Vector3(1, 0, 0)  // normal incidence
+function buildGratingData() {
+  const segs  = []
+  const paths = []   // for photon animation
 
   for (let wi = 0; wi < N_WL; wi++) {
     const wl = (380 + wi * (340 / (N_WL - 1))) * 1e-9
     const [r, g, b] = wlToRGB(wl / 1e-9)
     const col = new THREE.Color(r, g, b)
+    const y   = (wi / (N_WL - 1) - 0.5) * 3.5
+
+    // Incident ray
+    const incFrom = new THREE.Vector3(-5, y, 0)
+    const incTo   = new THREE.Vector3(GRATING_X, y, 0)
+    segs.push({ from: incFrom, to: incTo, color: new THREE.Color('#ffe8a0'), opacity: 0.5 })
 
     for (const m of ORDERS) {
       const sinTheta = m * wl / D
       if (Math.abs(sinTheta) > 1) continue
-      const theta = Math.asin(sinTheta)
+      const theta    = Math.asin(sinTheta)
       const cosTheta = Math.cos(theta)
+      const len      = 5
+      const diffFrom = new THREE.Vector3(GRATING_X, y, 0)
+      const diffTo   = new THREE.Vector3(GRATING_X + cosTheta * len, y, Math.sin(theta) * len)
+      segs.push({ from: diffFrom, to: diffTo, color: col.clone(), opacity: m === 0 ? 0.4 : 0.75 })
 
-      const y = (wi / (N_WL - 1) - 0.5) * 3.5
-
-      // Incident ray
-      segs.push({
-        from: new THREE.Vector3(-5, y, 0),
-        to:   new THREE.Vector3(GRATING_X, y, 0),
-        color: new THREE.Color('#ffe8a0'),
-        opacity: 0.5,
-      })
-
-      // Diffracted ray in XZ plane
-      const dirX =  cosTheta
-      const dirZ =  sinTheta
-      const len = 5
-      segs.push({
-        from: new THREE.Vector3(GRATING_X, y, 0),
-        to:   new THREE.Vector3(GRATING_X + dirX * len, y, dirZ * len),
-        color: col.clone(),
-        opacity: m === 0 ? 0.4 : 0.75,
-      })
+      // Build photon path (incident → grating → diffracted end) for animated subset
+      if (wi % 4 === 0) {
+        paths.push({
+          points: [incFrom.clone(), incTo.clone(), diffTo.clone()],
+          color:  m === 0 ? new THREE.Color('#ffe8a0') : col.clone(),
+          delay:  (wi * ORDERS.length + ORDERS.indexOf(m)) / (N_WL * ORDERS.length),
+        })
+      }
     }
   }
-  return segs
+  return { segs, paths }
 }
 
-// Animated grating surface
+// ─── Animated grating surface ────────────────────────────────────────────────
 function GratingSurface() {
   const meshRef = useRef()
-  const tRef = useRef(0)
+  const tRef    = useRef(0)
 
   const geo = useMemo(() => {
     const W = 64, H = 32
@@ -80,7 +78,7 @@ function GratingSurface() {
     let p = 0
     for (let j = 0; j < H - 1; j++) {
       for (let i = 0; i < W - 1; i++) {
-        const a = j * W + i, b = a + 1, c = a + W, d = c + 1
+        const a = j*W+i, b = a+1, c = a+W, d = c+1
         idxArr[p++] = a; idxArr[p++] = c; idxArr[p++] = b
         idxArr[p++] = b; idxArr[p++] = c; idxArr[p++] = d
       }
@@ -93,14 +91,12 @@ function GratingSurface() {
 
   useFrame((_, delta) => {
     tRef.current += delta * 2
-    const t = tRef.current
     if (!meshRef.current) return
     const attr = meshRef.current.geometry.attributes.position
     const W = 64, H = 32
     for (let j = 0; j < H; j++) {
       for (let i = 0; i < W; i++) {
-        const fz = i / (W - 1)
-        attr.setX(j * W + i, Math.sin(fz * Math.PI * 16 + t) * 0.04)
+        attr.setX(j * W + i, Math.sin(i / (W - 1) * Math.PI * 16 + tRef.current) * 0.04)
       }
     }
     attr.needsUpdate = true
@@ -108,23 +104,42 @@ function GratingSurface() {
 
   return (
     <mesh ref={meshRef} geometry={geo}>
-      <meshBasicMaterial
-        color="#fcd34d"
-        wireframe
-        transparent
-        opacity={0.12}
-        side={THREE.DoubleSide}
-      />
+      <meshBasicMaterial color="#fcd34d" wireframe transparent opacity={0.12} side={THREE.DoubleSide} />
     </mesh>
   )
 }
 
+// ─── Photon pulse ────────────────────────────────────────────────────────────
+function Photon({ points, color, delay }) {
+  const ref  = useRef()
+  const tRef = useRef(delay)
+
+  useFrame((_, delta) => {
+    tRef.current = (tRef.current + 0.18 * delta) % 1
+    const t  = tRef.current
+    const fi = t * (points.length - 1)
+    const si = Math.floor(fi)
+    const fr = fi - si
+    if (ref.current && si < points.length - 1) {
+      ref.current.position.lerpVectors(points[si], points[si + 1], fr)
+    }
+  })
+
+  return (
+    <mesh ref={ref}>
+      <sphereGeometry args={[0.04, 6, 6]} />
+      <meshBasicMaterial color={color} />
+    </mesh>
+  )
+}
+
+// ─── Main component ──────────────────────────────────────────────────────────
 export default function DiffractionGrating() {
-  const segs = useMemo(() => buildGratingRays(), [])
+  const { segs, paths } = useMemo(() => buildGratingData(), [])
 
   const lineGeos = useMemo(() => segs.map((s) => ({
-    geo: new THREE.BufferGeometry().setFromPoints([s.from, s.to]),
-    color: s.color,
+    geo:     new THREE.BufferGeometry().setFromPoints([s.from, s.to]),
+    color:   s.color,
     opacity: s.opacity,
   })), [segs])
 
@@ -143,13 +158,19 @@ export default function DiffractionGrating() {
       </mesh>
       <mesh position={[0, 0, 0]}>
         <boxGeometry args={[0.07, 4.5, 6.5]} />
-        <meshBasicMaterial color="#fcd34d" wireframe transparent opacity={0.1} />
+        <meshBasicMaterial color="#fcd34d" wireframe transparent opacity={0.10} />
       </mesh>
 
+      {/* Spectral ray lines */}
       {lineGeos.map((l, i) => (
         <line key={i} geometry={l.geo}>
           <lineBasicMaterial color={l.color} transparent opacity={l.opacity} />
         </line>
+      ))}
+
+      {/* Animated photon pulses on diffracted rays */}
+      {paths.map((p, i) => (
+        <Photon key={i} points={p.points} color={p.color} delay={p.delay} />
       ))}
     </group>
   )

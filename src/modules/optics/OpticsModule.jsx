@@ -8,6 +8,20 @@ import DiffractionGrating from './DiffractionGrating'
 
 const ACCENT = '#fcd34d'
 
+function Slider({ label, value, min, max, step, decimals, onChange }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)' }}>{label}</span>
+        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: ACCENT, tabularNums: true }}>{value.toFixed(decimals)}</span>
+      </div>
+      <input type="range" min={min} max={max} step={step} value={value}
+        onChange={e => onChange(parseFloat(e.target.value))}
+        style={{ width: '100%', accentColor: ACCENT, cursor: 'pointer' }} />
+    </div>
+  )
+}
+
 const VIEWS = [
   { id: 'prism', label: 'PRISM' },
   { id: 'lens',  label: 'LENS LAB' },
@@ -62,6 +76,7 @@ function buildExplanation(view) {
 export default function OpticsModule() {
   const setActiveModule = useModuleStore((s) => s.setActiveModule)
   const [view, setView] = useState('prism')
+  const [focalLength, setFocalLength] = useState(2.5)
 
   const eq = buildEquations(view)
 
@@ -160,7 +175,7 @@ export default function OpticsModule() {
             maxDist={22}
           >
             {view === 'prism'   && <RayTracer />}
-            {view === 'lens'    && <LensLab />}
+            {view === 'lens'    && <LensLab f={focalLength} />}
             {view === 'grating' && <DiffractionGrating />}
           </SceneWrapper>
 
@@ -187,6 +202,40 @@ export default function OpticsModule() {
             DRAG TO ORBIT · SCROLL TO ZOOM
           </div>
         </div>
+
+        {/* ── Parameter sidebar (Lens view only) ── */}
+        {view === 'lens' && (
+          <div style={{
+            width: 180, flexShrink: 0,
+            background: 'rgba(4,9,12,0.97)',
+            borderLeft: '1px solid rgba(252,211,77,0.08)',
+            display: 'flex', flexDirection: 'column',
+          }}>
+            <div style={{
+              padding: '10px 14px',
+              borderBottom: '1px solid rgba(252,211,77,0.08)',
+              fontFamily: 'JetBrains Mono, monospace',
+              fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase',
+              color: 'rgba(255,255,255,0.30)',
+            }}>
+              Parameters
+            </div>
+            <div style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <Slider
+                label="Focal length f"
+                value={focalLength}
+                min={1.5} max={5.0} step={0.1} decimals={1}
+                onChange={setFocalLength}
+              />
+              <div style={{ height: 1, background: 'rgba(252,211,77,0.08)' }} />
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 8, color: 'rgba(255,255,255,0.22)', lineHeight: 1.6 }}>
+                <p style={{ color: ACCENT, marginBottom: 4 }}>● focal pts: ±{focalLength.toFixed(1)}</p>
+                <p>Power: {(1/focalLength).toFixed(2)} D</p>
+                <p>Magnification varies</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

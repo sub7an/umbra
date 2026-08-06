@@ -4,6 +4,7 @@ import * as THREE from 'three'
 
 const GRID = 64
 const SIZE = 8
+const G2 = 32
 
 function warpY(x, z, mass) {
   const r = Math.sqrt(x * x + z * z)
@@ -12,171 +13,139 @@ function warpY(x, z, mass) {
 
 const VERT = `
   varying float vH;
-  void main() { vH = position.y; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }
+  void main() {
+    vH = position.y;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
 `
 const FRAG = `
   varying float vH;
   void main() {
-    float t = clamp(-vH * 0.65 + 0.15, 0.0, 1.0);
-    vec3 colEdge = vec3(0.02, 0.06, 0.14);
-    vec3 colMid  = vec3(0.12, 0.08, 0.03);
-    vec3 colDeep = vec3(0.55, 0.22, 0.02);
-    vec3 col = t < 0.5 ? mix(colEdge, colMid, t * 2.0) : mix(colMid, colDeep, (t - 0.5) * 2.0);
-    gl_FragColor = vec4(col, 0.92);
+    float t = clamp(-vH * 0.45 + 0.08, 0.0, 1.0);
+    vec3 c0 = vec3(0.06, 0.14, 0.32);
+    vec3 c1 = vec3(0.30, 0.14, 0.04);
+    vec3 c2 = vec3(0.90, 0.40, 0.05);
+    vec3 col = t < 0.5 ? mix(c0, c1, t * 2.0) : mix(c1, c2, (t - 0.5) * 2.0);
+    gl_FragColor = vec4(col, 0.94);
   }
 `
 
 export default function SpacetimeCurvature({ mass }) {
-  const meshRef    = useRef()
-  const gridRef    = useRef()
-  const ringRef    = useRef()
-  const timeRef    = useRef(0)
+  const meshRef = useRef()
+  const wireRef = useRef()
+  const ringRef = useRef()
+  const massRef = useRef(mass)
+  massRef.current = mass
 
-  // Build base grid positions once
-  const { posArr, idxArr, linePos } = useMemo(() => {
-    const verts = (GRID + 1) * (GRID + 1)
-    const posArr = new Float32Array(verts * 3)
+  const { surfaceGeo, wireGeo } = useMemo(() => {
+    const N = GRID + 1
+    const posArr = new Float32Array(N * N * 3)
     const idxArr = []
 
-    for (let iz = 0; iz <= GRID; iz++) {
-      for (let ix = 0; ix <= GRID; ix++) {
-        const i = iz * (GRID + 1) + ix
-        const x = (ix / GRID - 0.5) * SIZE * 2
-        const z = (iz / GRID - 0.5) * SIZE * 2
-        posArr[i*3]   = x
-        posArr[i*3+1] = 0
-        posArr[i*3+2] = z
+    for (let iz = 0; iz < N; iz++) {
+      for (let ix = 0; ix < N; ix++) {
+        const k = (iz * N + ix) * 3
+        posArr[k]   = (ix / GRID - 0.5) * SIZE * 2
+        posArr[k+1] = 0
+        posArr[k+2] = (iz / GRID - 0.5) * SIZE * 2
       }
     }
     for (let iz = 0; iz < GRID; iz++) {
       for (let ix = 0; ix < GRID; ix++) {
-        const a = iz * (GRID + 1) + ix
-        const b = a + 1
-        const c = a + (GRID + 1)
-        const d = c + 1
-        idxArr.push(a, b, c,  b, d, c)
+        const a = iz * N + ix
+        idxArr.push(a, a + 1, a + N, a + 1, a + N + 1, a + N)
       }
     }
 
-    // Grid lines for wireframe overlay (32×32 coarser grid)
-    const G2 = 32
-    const lineVerts = []
-    for (let i = 0; i <= G2; i++) {
-      const t = i / G2
-      lineVerts.push(-SIZE, 0, (t - 0.5) * SIZE * 2)
-      lineVerts.push( SIZE, 0, (t - 0.5) * SIZE * 2)
-      lineVerts.push((t - 0.5) * SIZE * 2, 0, -SIZE)
-      lineVerts.push((t - 0.5) * SIZE * 2, 0,  SIZE)
-    }
-    const linePos = new Float32Array(lineVerts)
+    const sg = new THREE.BufferGeometry()
+    sg.setAttribute('position', new THREE.BufferAttribute(posArr, 3))
+    sg.setIndex(idxArr)
 
-    return { posArr, idxArr: new Uint32Array(idxArr), linePos }
-  }, [])
-
-  // Geometry objects (plain THREE, declarative JSX below)
-  const surfaceGeo = useMemo(() => {
-    const g = new THREE.BufferGeometry()
-    g.setAttribute('position', new THREE.BufferAttribute(posArr.slice(), 3))
-    g.setIndex(new THREE.BufferAttribute(idxArr, 1))
-    return g
-  }, [posArr, idxArr])
-
-  const lineGeo = useMemo(() => {
-    const g = new THREE.BufferGeometry()
-    g.setAttribute('position', new THREE.BufferAttribute(linePos.slice(), 3))
-    return g
-  }, [linePos])
-
-  // Warp geometry every frame (mass can change)
-  useFrame((_, delta) => {
-    timeRef.current += delta
-    const t = timeRef.current
-
-    // Surface
-    const pos = surfaceGeo.attributes.position.array
-    for (let iz = 0; iz <= GRID; iz++) {
-      for (let ix = 0; ix <= GRID; ix++) {
-        const i = iz * (GRID + 1) + ix
-        const x = (ix / GRID - 0.5) * SIZE * 2
-        const z = (iz / GRID - 0.5) * SIZE * 2
-        pos[i*3+1] = warpY(x, z, mass)
-      }
-    }
-    surfaceGeo.attributes.position.needsUpdate = true
-
-    // Grid lines (coarser)
-    const lp = lineGeo.attributes.position.array
-    const G2 = 32
+    const wireVerts = new Float32Array((G2 + 1) * 4 * 3)
     let vi = 0
     for (let i = 0; i <= G2; i++) {
-      const t2 = i / G2
-      const z1 = (t2 - 0.5) * SIZE * 2
-      // horizontal line: varying x, fixed z
-      lp[vi*3] = -SIZE; lp[vi*3+1] = warpY(-SIZE, z1, mass); lp[vi*3+2] = z1; vi++
-      lp[vi*3] =  SIZE; lp[vi*3+1] = warpY( SIZE, z1, mass); lp[vi*3+2] = z1; vi++
-      // vertical line: fixed x, varying z
-      const x1 = (t2 - 0.5) * SIZE * 2
-      lp[vi*3] = x1; lp[vi*3+1] = warpY(x1, -SIZE, mass); lp[vi*3+2] = -SIZE; vi++
-      lp[vi*3] = x1; lp[vi*3+1] = warpY(x1,  SIZE, mass); lp[vi*3+2] =  SIZE; vi++
+      const s = (i / G2 - 0.5) * SIZE * 2
+      wireVerts[vi++] = -SIZE; wireVerts[vi++] = 0; wireVerts[vi++] = s
+      wireVerts[vi++] =  SIZE; wireVerts[vi++] = 0; wireVerts[vi++] = s
+      wireVerts[vi++] = s;     wireVerts[vi++] = 0; wireVerts[vi++] = -SIZE
+      wireVerts[vi++] = s;     wireVerts[vi++] = 0; wireVerts[vi++] =  SIZE
     }
-    lineGeo.attributes.position.needsUpdate = true
+    const wg = new THREE.BufferGeometry()
+    wg.setAttribute('position', new THREE.BufferAttribute(wireVerts, 3))
 
-    // Pulsing ring at photon sphere
+    return { surfaceGeo: sg, wireGeo: wg }
+  }, [])
+
+  useFrame(() => {
+    if (!meshRef.current || !wireRef.current) return
+    const m = massRef.current
+    const N = GRID + 1
+
+    const sPos = meshRef.current.geometry.attributes.position
+    for (let iz = 0; iz < N; iz++) {
+      for (let ix = 0; ix < N; ix++) {
+        const x = (ix / GRID - 0.5) * SIZE * 2
+        const z = (iz / GRID - 0.5) * SIZE * 2
+        sPos.setY(iz * N + ix, warpY(x, z, m))
+      }
+    }
+    sPos.needsUpdate = true
+
+    const wPos = wireRef.current.geometry.attributes.position
+    let vi = 0
+    for (let i = 0; i <= G2; i++) {
+      const s = (i / G2 - 0.5) * SIZE * 2
+      wPos.setXYZ(vi++, -SIZE, warpY(-SIZE, s, m), s)
+      wPos.setXYZ(vi++,  SIZE, warpY( SIZE, s, m), s)
+      wPos.setXYZ(vi++, s, warpY(s, -SIZE, m), -SIZE)
+      wPos.setXYZ(vi++, s, warpY(s,  SIZE, m),  SIZE)
+    }
+    wPos.needsUpdate = true
+
     if (ringRef.current) {
+      const t = performance.now() * 0.001
       ringRef.current.rotation.y = t * 0.4
-      const rs = mass * 0.18
-      ringRef.current.scale.set(1 + 0.04 * Math.sin(t * 3), 1, 1 + 0.04 * Math.sin(t * 3))
-      ringRef.current.position.y = warpY(rs, 0, mass) + 0.05
+      ringRef.current.position.y = warpY(m * 0.55, 0, m) + 0.05
     }
   })
-
-  const surfaceMat = useMemo(() => new THREE.ShaderMaterial({
-    vertexShader:   VERT,
-    fragmentShader: FRAG,
-    side:           THREE.DoubleSide,
-    transparent:    true,
-  }), [])
-
-  const lineMat = useMemo(() => new THREE.LineBasicMaterial({
-    color:       '#00e5c4',
-    transparent: true,
-    opacity:     0.18,
-  }), [])
-
-  const ringMat = useMemo(() => new THREE.MeshBasicMaterial({
-    color:       '#fb923c',
-    transparent: true,
-    opacity:     0.7,
-    side:        THREE.DoubleSide,
-  }), [])
 
   const centerY = warpY(0, 0, mass)
 
   return (
     <group>
-      <ambientLight intensity={0.3} color="#0a2030" />
-      <pointLight position={[0, 4, 0]} intensity={1.2} color="#fb923c" />
-      <pointLight position={[3, 2, 3]} intensity={0.4} color="#00e5c4" />
+      <ambientLight intensity={0.6} />
+      <pointLight position={[0, 6, 0]} intensity={2.0} color="#fb923c" />
+      <pointLight position={[4, 3, 4]} intensity={0.5} color="#00e5c4" />
 
-      {/* Warped surface */}
-      <mesh ref={meshRef} geometry={surfaceGeo} material={surfaceMat} frustumCulled={false} />
+      <mesh ref={meshRef} geometry={surfaceGeo} frustumCulled={false}>
+        <shaderMaterial
+          vertexShader={VERT}
+          fragmentShader={FRAG}
+          side={THREE.DoubleSide}
+          transparent
+        />
+      </mesh>
 
-      {/* Grid overlay */}
-      <lineSegments ref={gridRef} geometry={lineGeo} material={lineMat} />
+      <lineSegments ref={wireRef} geometry={wireGeo} frustumCulled={false}>
+        <lineBasicMaterial color="#00e5c4" transparent opacity={0.22} />
+      </lineSegments>
 
       {/* Central mass */}
       <mesh position={[0, centerY + mass * 0.22, 0]}>
         <sphereGeometry args={[mass * 0.18, 32, 32]} />
         <meshStandardMaterial
-          color="#fb923c" emissive="#fb923c" emissiveIntensity={1.2}
-          roughness={0.1} metalness={0.5}
+          color="#fb923c"
+          emissive="#fb923c"
+          emissiveIntensity={1.5}
+          roughness={0.1}
+          metalness={0.5}
         />
       </mesh>
 
       {/* Photon-sphere ring */}
-      <mesh ref={ringRef} position={[0, 0, 0]}>
+      <mesh ref={ringRef} position={[0, centerY + 0.3, 0]}>
         <torusGeometry args={[mass * 0.55, 0.03, 8, 64]} />
-        <primitive object={ringMat} />
+        <meshBasicMaterial color="#fb923c" transparent opacity={0.7} side={THREE.DoubleSide} />
       </mesh>
     </group>
   )

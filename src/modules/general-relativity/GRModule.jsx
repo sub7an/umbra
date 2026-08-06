@@ -14,7 +14,7 @@ const VIEWS = [
 
 const CAMERA = {
   curvature: [0, 7, 10],
-  geodesics:  [0, 12, 2],
+  geodesics:  [2, 11, 7],
   waves:      [0, 8, 10],
 }
 
@@ -57,7 +57,7 @@ function buildExplanation(view) {
     case 'curvature':
       return `Einstein replaced Newton's gravitational force with geometry. Mass curves the 4D spacetime manifold; objects then follow the straightest possible paths through that curved space. The well here shows the Schwarzschild solution — the exact spacetime geometry around a non-rotating mass. Curvature is steepest at small r and falls off as 1/r. The orange ring marks the photon sphere: the radius where light can orbit in an unstable circular path.`
     case 'geodesics':
-      return `A geodesic is the GR equivalent of a straight line — the path a free-falling object traces through curved spacetime. In Newtonian gravity, orbits close perfectly. In GR they precess: Mercury's orbit shifts 43 arcsec/century, confirmed in 1859. The white lines show light rays bent by the mass. GR predicts bending twice as large as Newton. Eddington confirmed this in 1919, making Einstein famous overnight.`
+      return `A geodesic is the GR equivalent of a straight line — the path a free-falling object traces through curved spacetime. The gray ghost circle shows the Newtonian orbit (perfectly closed); the colored orbit is the GR solution — it precesses each revolution, tracing out a rosette. Three rings mark special radii: red = event horizon (r=2M), gold = photon sphere (r=3M, where light orbits), cyan = ISCO (r=6M, innermost stable orbit). White rays are photons bent by the gravitational field — the closer they pass, the more they curve. Eddington confirmed GR's light-bending prediction in 1919.`
     case 'waves':
       return `When two massive objects orbit each other, they radiate energy as ripples in spacetime — gravitational waves. The grid shows the h₊ polarization: spacetime alternately stretches and compresses perpendicular to the wave direction. LIGO detected the first signal in 2015 (GW150914), a binary black hole merger 1.3 billion light-years away. The strain was 10⁻²¹ — a thousand times smaller than a proton over 4 km.`
     default:

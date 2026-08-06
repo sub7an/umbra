@@ -14,7 +14,7 @@ const VIEWS = [
 const CAMERA = {
   streamlines: [0, 0, 17],
   vortex:      [0, 0, 20],
-  sph:         [0, 0, 16],
+  sph:         [4, 2, 15],
 }
 
 function buildEquations(view) {
@@ -58,7 +58,7 @@ function buildExplanation(view) {
     case 'vortex':
       return `When a real viscous fluid flows past a cylinder above a critical Reynolds number (~47), the wake becomes unstable and alternating vortices are shed — the Kármán vortex street. Here each vortex is a point singularity with circulation Γ. Tracer particles are advected by the sum of all vortex velocities (Biot-Savart law). Red vortices have positive circulation (CCW), blue have negative (CW). They self-organize into two staggered rows separated by 0.28D and advancing at ~0.7U. The Strouhal number St ≈ 0.20 is nearly universal across a wide Reynolds range.`
     case 'sph':
-      return `Smoothed Particle Hydrodynamics discretizes the Navier-Stokes equations into 196 interacting particles. Each particle carries mass, velocity, and pressure. Density is estimated by summing neighbor contributions through a polynomial kernel W(r, h). Pressure pushes particles apart when compressed beyond rest density ρ₀; viscosity damps relative motion. Gravity pulls the column down. The result is a dam break: a tall water column collapses, sloshes across the domain, and equilibrates into a shallow layer. Color encodes local density — bright = compressed, dark = rarefied.`
+      return `Smoothed Particle Hydrodynamics (SPH) discretizes the Navier-Stokes equations into 216 interacting 3D particles. Each particle carries mass, velocity, and pressure; density is summed over neighbors via the Müller Poly6 kernel. Pressure repels compressed particles; viscosity damps relative motion; gravity pulls the column down. The result is a 3D dam break: a tall block collapses, splashes across the box in all three axes, and eventually settles. Color encodes velocity speed — blue = slow (settled), cyan → amber = accelerating, white = peak impact. The additive glow reveals density: overlapping fast particles create bright halos.`
     default:
       return ''
   }
@@ -84,10 +84,10 @@ function buildMetrics(view, reynolds) {
       ]
     case 'sph':
       return [
-        { label: 'Particles N',   value: '196',                color: 'cyan'  },
+        { label: 'Particles N',   value: '216 (3D)',           color: 'cyan'  },
         { label: 'Gravity g',     value: `${(7+reynolds*2.5).toFixed(1)} m/s²`, color: 'amber' },
-        { label: 'Kernel h',      value: '0.55',               color: 'cyan'  },
-        { label: 'Scenario',      value: 'Dam break',          color: 'dim'   },
+        { label: 'Kernel h',      value: '0.90',               color: 'cyan'  },
+        { label: 'Scenario',      value: '3D dam break',       color: 'dim'   },
       ]
     default:
       return []
@@ -124,19 +124,21 @@ export default function FluidModule() {
 
   return (
     <div className="flex flex-col w-full h-full bg-ground">
+      <style>{`@keyframes umbra-pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }`}</style>
       {/* Top bar */}
       <header className="flex items-center justify-between px-5 py-2 bg-panel border-b border-border-subtle shrink-0">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 shrink-0">
           <button onClick={() => setActiveModule(null)}
             className="font-mono-data text-[11px] tracking-widest text-text-dim hover:text-teal-glow transition-colors duration-200 uppercase flex items-center gap-1.5">
             ← MODULES
           </button>
           <div className="w-px h-4 bg-border-subtle" />
           <h1 className="font-display text-base font-semibold text-text-primary tracking-wide">Fluid Dynamics</h1>
-          <span className="font-mono-data text-[9px] tracking-wider uppercase px-2 py-0.5 border rounded"
-            style={{ borderColor: 'rgba(45,212,191,0.3)', color: 'rgba(45,212,191,0.6)', background: 'rgba(45,212,191,0.05)' }}>
-            Streamlines · Vortex shedding · SPH
-          </span>
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded border shrink-0"
+            style={{ borderColor: 'rgba(45,212,191,0.25)', background: 'rgba(45,212,191,0.05)' }}>
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: ACCENT, boxShadow: `0 0 6px ${ACCENT}`, animation: 'umbra-pulse 1.8s ease-in-out infinite' }} />
+            <span className="font-mono-data text-[8px] tracking-[0.2em]" style={{ color: 'rgba(45,212,191,0.7)' }}>LIVE</span>
+          </div>
         </div>
 
         <nav className="flex gap-1">
@@ -175,8 +177,17 @@ export default function FluidModule() {
             <span className="font-display text-[10px] tracking-[0.2em] uppercase text-text-dim">
               {fluidView === 'streamlines' ? 'Potential Flow · Irrotational · Incompressible'
                : fluidView === 'vortex'    ? 'Kármán Vortex Street · Discrete Vortex Method'
-               : 'SPH Dam Break · Navier-Stokes · 196 Particles'}
+               : 'SPH Dam Break 3D · Navier-Stokes · 216 Particles'}
             </span>
+          </div>
+          <div className="absolute bottom-4 left-4 flex items-center gap-1.5 px-2.5 py-1 rounded border pointer-events-none"
+            style={{ borderColor: 'rgba(45,212,191,0.18)', background: 'rgba(4,9,12,0.85)' }}>
+            <div style={{ width: 4, height: 4, borderRadius: '50%', background: ACCENT, boxShadow: `0 0 4px ${ACCENT}` }} />
+            <span className="font-mono-data text-[8px] tracking-[0.2em]" style={{ color: 'rgba(45,212,191,0.5)' }}>SIM ACTIVE</span>
+          </div>
+          <div className="absolute bottom-4 right-4 font-mono-data text-[8px] tracking-[0.12em] pointer-events-none"
+            style={{ color: 'rgba(45,212,191,0.28)' }}>
+            DRAG TO ORBIT · SCROLL TO ZOOM
           </div>
         </main>
 
@@ -238,9 +249,9 @@ export default function FluidModule() {
               )}
               {fluidView === 'sph' && (
                 <>
-                  <p style={{ color: '#38bdf8' }}>■ low density</p>
-                  <p style={{ color: ACCENT }}>■ medium density</p>
-                  <p style={{ color: '#fff', opacity: 0.8 }}>■ high density</p>
+                  <p style={{ color: '#38bdf8' }}>■ slow (settled)</p>
+                  <p style={{ color: ACCENT }}>■ accelerating</p>
+                  <p style={{ color: '#fff', opacity: 0.8 }}>■ peak impact</p>
                 </>
               )}
             </div>
@@ -248,7 +259,7 @@ export default function FluidModule() {
 
           <div className="px-4 py-3 border-t border-border-subtle">
             <p className="font-mono-data text-[9px] text-text-dim tracking-wider">
-              FLUID DYNAMICS · 2D · INCOMPRESSIBLE
+              FLUID DYNAMICS · 3D SPH · NAVIER-STOKES
             </p>
           </div>
         </aside>
