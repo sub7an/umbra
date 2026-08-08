@@ -52,7 +52,7 @@ function buildEquations(view) {
 
 function buildExplanation(view) {
   switch (view) {
-    case 'ripple': return 'Click anywhere on the surface to place a wave source. Waves propagate outward and interfere — crest+crest gives constructive interference (peaks), crest+trough gives destructive (nodes). Solved via finite differences on a 128×128 grid. Sponge layers at the boundary absorb outgoing energy so reflections don\'t pollute the pattern.'
+    case 'ripple': return 'Click on the left half to place a wave source (up to 5). Waves propagate outward and interfere — crest+crest gives constructive interference (bright peaks), crest+trough gives destructive interference (flat nodes). Switch to 1 SLIT or 2 SLITS to insert a barrier: waves diffract through the openings and form the classic single- or double-slit interference pattern behind it. FDTD 128×128 grid; sponge absorbs edges.'
     case 'slit': return 'A plane wave passes through two slits separated by d, creating two coherent point sources. Their superposed wavefronts form a standing interference pattern. Bright fringes where path difference Δ = mλ (constructive). Dark fringes where Δ = (m+½)λ (destructive). Fringe spacing scales as Δy = λL/d.'
     case 'modes': return 'A rectangular membrane fixed at all edges can only vibrate in quantized normal modes (m, n). Each mode has a characteristic nodal grid: m−1 nodal lines in x, n−1 in y. Frequency scales as √(m²+n²). Mode (1,1) is the fundamental; (2,1) and (1,2) are degenerate. Click a mode to see its pattern.'
     default: return ''
@@ -64,6 +64,8 @@ export default function WaveModule() {
   const [view, setView]         = useState('ripple')
   const [sourceCount, setCount] = useState(1)
   const [modeIdx, setModeIdx]   = useState(0)
+  const [slitMode, setSlitMode] = useState(0)
+  const [clearCount, setClear]  = useState(0)
 
   const eq = buildEquations(view)
   const [m, n] = MODES[modeIdx]
@@ -168,7 +170,7 @@ export default function WaveModule() {
             minDist={4}
             maxDist={28}
           >
-            {view === 'ripple' && <RippleTank onSourceCount={setCount} />}
+            {view === 'ripple' && <RippleTank onSourceCount={setCount} slitMode={slitMode} clearCount={clearCount} />}
             {view === 'slit'   && <DoubleSlit />}
             {view === 'modes'  && <NormalModes modeIdx={modeIdx} />}
           </SceneWrapper>
@@ -187,14 +189,46 @@ export default function WaveModule() {
             <span style={{ fontSize: 8, letterSpacing: '0.2em', color: 'rgba(34,211,238,0.55)' }}>SIM ACTIVE</span>
           </div>
 
-          {/* Ripple hint */}
+          {/* Ripple controls: slit mode + clear */}
           {view === 'ripple' && (
             <div style={{
               position: 'absolute', bottom: 16, right: 16,
-              fontSize: 8, letterSpacing: '0.12em', color: 'rgba(34,211,238,0.3)',
-              pointerEvents: 'none',
+              display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6,
+              pointerEvents: 'all',
             }}>
-              CLICK SURFACE · ADD SOURCE
+              {/* Slit selector */}
+              <div style={{ display: 'flex', gap: 3 }}>
+                {[
+                  { id: 0, label: 'OPEN' },
+                  { id: 1, label: '1 SLIT' },
+                  { id: 2, label: '2 SLITS' },
+                ].map((s) => (
+                  <button key={s.id} onClick={() => setSlitMode(s.id)} style={{
+                    fontFamily: 'JetBrains Mono, monospace',
+                    fontSize: 8, letterSpacing: '0.1em',
+                    padding: '4px 9px',
+                    background: slitMode === s.id ? 'rgba(34,211,238,0.12)' : 'rgba(4,9,12,0.88)',
+                    border: `1px solid ${slitMode === s.id ? 'rgba(34,211,238,0.4)' : 'rgba(34,211,238,0.12)'}`,
+                    color: slitMode === s.id ? ACCENT : 'rgba(34,211,238,0.38)',
+                    borderRadius: 2, cursor: 'pointer',
+                  }}>{s.label}</button>
+                ))}
+              </div>
+              {/* Clear button + hint */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 8, letterSpacing: '0.1em', color: 'rgba(34,211,238,0.28)' }}>
+                  CLICK SURFACE · ADD SOURCE
+                </span>
+                <button onClick={() => setClear((c) => c + 1)} style={{
+                  fontFamily: 'JetBrains Mono, monospace',
+                  fontSize: 8, letterSpacing: '0.1em',
+                  padding: '4px 9px',
+                  background: 'rgba(4,9,12,0.88)',
+                  border: '1px solid rgba(34,211,238,0.12)',
+                  color: 'rgba(34,211,238,0.38)',
+                  borderRadius: 2, cursor: 'pointer',
+                }}>CLEAR</button>
+              </div>
             </div>
           )}
 
