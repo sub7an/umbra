@@ -85,7 +85,8 @@ function PhotonSphere({ Rs }) {
 }
 
 // ── Accretion disk ─────────────────────────────────────────────────────────────
-// Ring from ISCO (3 Rs) outward, Keplerian turbulence, additive blending.
+// Ring from ISCO (3 Rs) outward, Keplerian turbulence + relativistic Doppler
+// beaming — approaching side appears brighter and bluer (like real M87* images).
 
 function AccretionDisk({ Rs }) {
   const innerR = Rs * 3.0
@@ -95,9 +96,10 @@ function AccretionDisk({ Rs }) {
     vertexShader:   DISK_VERT,
     fragmentShader: DISK_FRAG,
     uniforms: {
-      uTime:  { value: 0.0 },
-      uInner: { value: innerR },
-      uOuter: { value: outerR },
+      uTime:   { value: 0.0 },
+      uInner:  { value: innerR },
+      uOuter:  { value: outerR },
+      uCamPos: { value: new THREE.Vector3() },
     },
     transparent: true,
     depthWrite:  false,
@@ -107,8 +109,9 @@ function AccretionDisk({ Rs }) {
 
   useEffect(() => () => mat.dispose(), [mat])
 
-  useFrame(({ clock }) => {
+  useFrame(({ clock, camera }) => {
     mat.uniforms.uTime.value = clock.getElapsedTime()
+    mat.uniforms.uCamPos.value.copy(camera.position)
   })
 
   return (
@@ -116,6 +119,75 @@ function AccretionDisk({ Rs }) {
       {/* 180 angular × 8 radial segments → smooth Keplerian gradients */}
       <ringGeometry args={[innerR, outerR, 180, 8]} />
     </mesh>
+  )
+}
+
+// ── Relativistic polar jets ────────────────────────────────────────────────────
+// AGN-style jets launched perpendicular to the disk along the spin axis (±Y).
+// Rendered as open cones with additive blending + animated knot pattern.
+
+const JET_VERT = /* glsl */`
+varying float vHeight;
+varying float vRNorm;
+void main() {
+  vHeight = position.y;
+  float coneR = abs(position.x) + abs(position.z);
+  float maxR  = abs(vHeight) * 0.35 + 0.01;
+  vRNorm = coneR / maxR;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`
+
+const JET_FRAG = /* glsl */`
+uniform float uTime;
+varying float vHeight;
+varying float vRNorm;
+void main() {
+  float h    = abs(vHeight);
+  // Knot pattern: plasma blobs propagating outward along jet
+  float knot = 0.5 + 0.5 * sin(h * 6.0 - uTime * 7.0);
+  // Edge glow: bright at rim, fades toward axis
+  float rim  = 1.0 - clamp(vRNorm, 0.0, 1.0);
+  float dist = exp(-h * 0.55);               // fades with distance from BH
+  float glow = (rim * 0.4 + 0.6) * knot * dist;
+  // Color: white-blue core → electric cyan → fades out
+  vec3 inner = vec3(0.85, 0.95, 1.00);
+  vec3 outer = vec3(0.20, 0.65, 1.00);
+  vec3 col   = mix(inner, outer, clamp(vRNorm, 0.0, 1.0));
+  float alpha = glow * 0.72;
+  if (alpha < 0.004) discard;
+  gl_FragColor = vec4(col * alpha, alpha);
+}
+`
+
+function PolarJets({ Rs }) {
+  const mat = useMemo(() => new THREE.ShaderMaterial({
+    vertexShader:   JET_VERT,
+    fragmentShader: JET_FRAG,
+    uniforms: { uTime: { value: 0.0 } },
+    transparent: true,
+    depthWrite:  false,
+    blending:    THREE.AdditiveBlending,
+    side:        THREE.DoubleSide,
+  }), [])
+
+  useEffect(() => () => mat.dispose(), [mat])
+  useFrame(({ clock }) => { mat.uniforms.uTime.value = clock.getElapsedTime() })
+
+  const jetH = Rs * 10
+  const jetBaseR = Rs * 0.22
+
+  return (
+    <group>
+      {/* Upper jet */}
+      <mesh position={[0, jetH / 2, 0]} material={mat}>
+        <cylinderGeometry args={[Rs * 0.55, jetBaseR, jetH, 24, 1, true]} />
+      </mesh>
+      {/* Lower jet */}
+      <mesh position={[0, -jetH / 2, 0]} rotation={[Math.PI, 0, 0]} material={mat}>
+        <cylinderGeometry args={[Rs * 0.55, jetBaseR, jetH, 24, 1, true]} />
+      </mesh>
+    </group>
   )
 }
 
@@ -131,6 +203,7 @@ export default function BlackHole({ hiRes }) {
       <StarBackground Rs={Rs} hiRes={hiRes} />
       <PhotonSphere   Rs={Rs} />
       <AccretionDisk  Rs={Rs} />
+      <PolarJets      Rs={Rs} />
       {unlocked && (
         <Html position={[0, 2.2, 0]} center style={{ pointerEvents: 'none', textAlign: 'center' }}>
           <div style={{
