@@ -4,6 +4,7 @@ import InfoPanel from '../../components/InfoPanel'
 import AttractorViz from './AttractorViz'
 import PhaseSpace from './PhaseSpace'
 import SabrinaAttractor from './SabrinaAttractor'
+import DoublePendulum from './DoublePendulum'
 import useModuleStore from '../../store/useModuleStore'
 import { ATTRACTOR_DEFS } from './attractorMath'
 
@@ -12,8 +13,9 @@ const ATTRACTORS = [
   { id: 'rossler',     abbr: 'ROS', label: 'Rössler',     desc: 'Scroll band — simplest chaos' },
   { id: 'thomas',      abbr: 'THO', label: 'Thomas',      desc: 'Labyrinth — cyclic symmetry' },
   { id: 'aizawa',      abbr: 'AIZ', label: 'Aizawa',      desc: 'Toroidal — driven oscillator' },
-  { id: 'phasespace',  abbr: 'PHS', label: 'Phase Space', desc: 'Van der Pol portrait', separator: true },
-  { id: 'sabrina',    abbr: '♡',   label: 'Sabrina',    desc: 'for her',              separator: false },
+  { id: 'phasespace',  abbr: 'PHS', label: 'Phase Space',      desc: 'Van der Pol portrait',       separator: true  },
+  { id: 'pendulum',   abbr: 'PND', label: 'Double Pendulum',  desc: 'Chaos divergence · λ > 0',   separator: false },
+  { id: 'sabrina',    abbr: '♡',   label: 'Sabrina',          desc: 'for her',                    separator: false },
 ]
 
 function buildEquations(type) {
@@ -67,6 +69,15 @@ function buildEquations(type) {
           { label: 'Limit cycle exists for', eq: `\\textcolor{#f59e0b}{\\mu} > 0` },
         ],
       }
+    case 'pendulum':
+      return {
+        domain: 'DYNAMICAL SYSTEMS · DOUBLE PENDULUM',
+        primaryEq: `\\ddot{\\theta}_1 = \\frac{-3g\\sin\\theta_1 - g\\sin(\\theta_1-2\\theta_2) - 2\\sin\\delta(\\dot{\\theta}_2^2 + \\dot{\\theta}_1^2\\cos\\delta)}{L(3-\\cos 2\\delta)}`,
+        derivedEqs: [
+          { label: 'δ',        eq: `\\delta = \\theta_1 - \\theta_2` },
+          { label: 'Lyapunov', eq: `\\lambda > 0 \\;\\Rightarrow\\; \\text{chaos}` },
+        ],
+      }
     case 'sabrina':
       return {
         domain: 'DYNAMICAL SYSTEMS · SABRINA CURVE',
@@ -93,6 +104,8 @@ function buildExplanation(type) {
       return `Aizawa's system wraps chaos around a torus-like surface with a hollow center. The z-axis acts as a driver for a circular oscillator in the xy-plane. Adjust a near 0.95 to stretch or compress the torus; lower b to close the inner void. Lyapunov exponents here are much smaller than Lorenz, so the chaos feels more structured and geometric. Instead of a butterfly, you get a quiet doughnut that rearranges endlessly without quite repeating.`
     case 'phasespace':
       return `The Van der Pol oscillator was built in 1927 to model oscillations in vacuum tube circuits. At μ = 0 it's a perfect harmonic oscillator, circular in phase space. As μ increases, the limit cycle distorts. By μ = 3 the oscillator snaps into relaxation mode, with slow drift and fast jumps. The fixed point at the origin is an unstable focus for all μ > 0, so every trajectory eventually settles onto the limit cycle. Each particle in the scene is an independent initial condition converging toward it.`
+    case 'pendulum':
+      return `8 pendulums released from θ₁ = θ₂ = 2.4 rad with initial separations of 10⁻⁵ rad between them. Because the system is chaotic (positive Lyapunov exponent λ ≈ 3 s⁻¹), trajectories diverge exponentially — within about 15 s the pendulums are completely uncorrelated. The colored trails trace the lower bob. RK4 with 4 sub-steps per frame maintains accuracy. Every color starts at the same point; watch them peel apart one by one.`
     case 'sabrina':
       return `700 particles flow along a closed parametric curve in ℝ³ shaped like her name. Each particle traces the same path at a slightly different speed, so they never bunch up. The curve is a Catmull-Rom spline through waypoints that define each letter. Unlike a chaotic attractor, this one has a perfectly ordered trajectory — every particle knows exactly where it's going.`
     default:
@@ -142,6 +155,14 @@ function buildMetrics(type, p) {
         { label: 'Limit cycle',       value: (p.mu ?? 1) > 0 ? 'EXISTS' : 'ABSENT', color: (p.mu ?? 1) > 0 ? 'cyan' : 'dim' },
         { label: 'Fixed point',       value: (p.mu ?? 1) > 0 ? 'UNSTABLE' : 'STABLE', color: (p.mu ?? 1) > 0 ? 'rose' : 'cyan' },
         { label: 'Type',              value: (p.mu ?? 1) > 2.5 ? 'RELAXATION' : 'SOFT', color: 'dim' },
+      ]
+    case 'pendulum':
+      return [
+        { label: 'Pendulums',  value: '8',             color: 'cyan'  },
+        { label: 'Δθ₁ initial', value: '10⁻⁵ rad',   color: 'amber' },
+        { label: 'Regime',     value: 'CHAOTIC',       color: 'rose'  },
+        { label: 'λ (Lyap.)',  value: '≈ 3 s⁻¹',      color: 'rose'  },
+        { label: 'Integrator', value: 'RK4 × 4/frame', color: 'dim'   },
       ]
     case 'sabrina':
       return [
@@ -223,7 +244,8 @@ export default function DynamicalModule() {
 
   const isPhaseSpace = attractorType === 'phasespace'
   const isSabrina    = attractorType === 'sabrina'
-  const def = ATTRACTOR_DEFS[attractorType] ?? { name: attractorType === 'sabrina' ? 'Sabrina' : 'Phase Space', dt: 0.012 }
+  const isPendulum   = attractorType === 'pendulum'
+  const def = ATTRACTOR_DEFS[attractorType] ?? { name: attractorType === 'sabrina' ? 'Sabrina' : attractorType === 'pendulum' ? 'Double Pendulum' : 'Phase Space', dt: 0.004 }
 
   function resetParams() {
     setSigma(10); setRho(28); setBeta(2.667)
@@ -329,7 +351,7 @@ export default function DynamicalModule() {
           className="font-mono-data text-sm tabular-nums"
           style={{ color: '#10b981', textShadow: '0 0 8px rgba(16,185,129,0.5)' }}
         >
-          {isSabrina ? `Sabrina · 700 particles ♡` : isPhaseSpace ? `Van der Pol · μ = ${phaseMu.toFixed(2)}` : `${def.name} · 1,800 particles`}
+          {isSabrina ? `Sabrina · 700 particles ♡` : isPendulum ? `Double Pendulum · 8 + chaos · RK4` : isPhaseSpace ? `Van der Pol · μ = ${phaseMu.toFixed(2)}` : `${def.name} · 1,800 particles`}
         </div>
       </header>
 
@@ -352,12 +374,12 @@ export default function DynamicalModule() {
         {/* 3D scene */}
         <main className="flex-1 relative overflow-hidden" style={{ minHeight: 0 }}>
           <SceneWrapper
-            cameraPosition={isSabrina ? [0, 0, 11] : isPhaseSpace ? [0, 0, 9] : [0, 3, 8]}
+            cameraPosition={isSabrina ? [0, 0, 11] : isPendulum ? [0, 2.5, 8] : isPhaseSpace ? [0, 0, 9] : [0, 3, 8]}
             showGrid={false}
             minDist={2}
             maxDist={24}
           >
-            {!isPhaseSpace && !isSabrina && (
+            {!isPhaseSpace && !isSabrina && !isPendulum && (
               <AttractorViz
                 key={attractorType}
                 attractorType={attractorType}
@@ -367,11 +389,13 @@ export default function DynamicalModule() {
             )}
             {isPhaseSpace && <PhaseSpace key="phasespace" />}
             {isSabrina    && <SabrinaAttractor key="sabrina" />}
+            {isPendulum   && <DoublePendulum key="pendulum" />}
           </SceneWrapper>
 
           <div className="absolute top-3 left-4 pointer-events-none">
             <span className="font-display text-[10px] tracking-[0.2em] uppercase text-text-dim">
               {isSabrina    ? `Sabrina Curve · Catmull-Rom · 700 particles`
+               : isPendulum  ? `Double Pendulum · 8 pendulums · RK4 × 4 · L = 1.5`
                : isPhaseSpace ? `Van der Pol · Phase Portrait · RK4 · dt = ${def.dt}`
                : `${def.name} Attractor · RK4 · dt = ${def.dt}`}
             </span>
@@ -462,7 +486,9 @@ export default function DynamicalModule() {
 
           <div className="px-4 py-3 border-t border-border-subtle">
             <p className="font-mono-data text-[10px] text-text-dim leading-relaxed">
-              {isPhaseSpace ? 'DS · VAN DER POL · RK4' : 'DS · 1,800 PARTICLES · TRAIL 72'}
+              {isPhaseSpace ? 'DS · VAN DER POL · RK4'
+               : isPendulum ? 'DS · DOUBLE PENDULUM · RK4'
+               : 'DS · 1,800 PARTICLES · TRAIL 72'}
             </p>
           </div>
         </aside>
