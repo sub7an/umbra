@@ -198,6 +198,7 @@ export const DISK_FRAG = /* glsl */`
 uniform float uTime;
 uniform float uInner;
 uniform float uOuter;
+uniform vec3  uCamPos;  // camera world position for Doppler calculation
 
 varying vec3 vWorldPos;
 
@@ -215,19 +216,36 @@ void main() {
   // Azimuth + Keplerian angular velocity (ω ∝ r^-3/2)
   float phi    = atan(vWorldPos.z, vWorldPos.x);
   float omega  = 1.0 / max(r * sqrt(max(r, 0.01)), 0.01);
-  float swept  = phi - uTime * omega * 0.30; // animation
+  float swept  = phi - uTime * omega * 0.30;
 
-  // Turbulence: multiple sinusoidal layers at different scales
+  // Turbulence layers
   float t1     = 0.55 + 0.45 * sin(swept *  6.0 + rNorm * 24.0);
   float t2     = 0.70 + 0.30 * sin(swept *  2.5 - rNorm *  8.0 + 1.4);
-  float t3     = 0.80 + 0.20 * sin(swept * 14.0 + rNorm * 40.0 + 2.7); // fine grain
+  float t3     = 0.80 + 0.20 * sin(swept * 14.0 + rNorm * 40.0 + 2.7);
 
-  // Discrete bright streaks simulating magnetic field lines / blobs
   float cellPhi = floor(mod(swept * 3.0 + rNorm * 6.0, 6.28) * 4.0);
   float streak  = hD(vec2(cellPhi, floor(rNorm * 12.0)));
   float blob    = smoothstep(0.85, 1.0, streak) * 0.6;
 
   float bright  = pow(1.0 - rNorm, 1.8) * 3.5 * t1 * t2 * t3 + blob;
+
+  // ── Relativistic Doppler beaming ───────────────────────────────────────────
+  // CCW Keplerian orbit in XZ plane. Tangential velocity direction at angle φ:
+  //   v_tang = (-sinφ, 0, cosφ)
+  // Orbital speed: β = sqrt(Rs / (2r)), Rs ≈ uInner/3 (ISCO at 3Rs)
+  // Relativistic Doppler factor: D = 1 / [γ(1 − β·cosα)]
+  //   cosα = v_tang · view_dir (positive → approaching camera → blueshift)
+  // Beaming: observed intensity ∝ D^3 (photon number rate from surface element)
+  float Rs_est  = uInner / 3.0;
+  float beta_k  = clamp(sqrt(Rs_est / (2.0 * max(r, Rs_est))), 0.0, 0.88);
+  float gamma_k = 1.0 / sqrt(1.0 - beta_k * beta_k);
+
+  vec3  tanVel  = vec3(-sin(phi), 0.0, cos(phi));       // orbital velocity direction
+  vec3  viewDir = normalize(uCamPos - vWorldPos);        // fragment → camera
+  float cosA    = dot(tanVel, viewDir);                  // >0: approaching camera
+
+  float D       = 1.0 / max(gamma_k * (1.0 - beta_k * cosA), 0.05);
+  float beaming = pow(clamp(D, 0.1, 8.0), 3.0);
 
   // Color: blue-white core → white-gold → orange → dim crimson outer
   vec3 coreCol  = vec3(0.92, 0.96, 1.0);
@@ -240,13 +258,16 @@ void main() {
   else if (rNorm < 0.40) col = mix(hotCol,  midCol,  (rNorm - 0.12) / 0.28);
   else                   col = mix(midCol,  outerCol, (rNorm - 0.40) / 0.60);
 
-  float alpha = bright
+  // Temperature color shift: approaching → bluer, receding → redder
+  float dT = (D - 1.0) * 0.40;
+  col += vec3(-dT * 0.45, -dT * 0.18, dT * 0.85);
+  col  = max(col, vec3(0.0));
+
+  float alpha = bright * beaming
     * smoothstep(0.0, 0.06, rNorm)
     * smoothstep(1.0, 0.88, rNorm);
 
   if (alpha < 0.004) discard;
-
-  // Additive blending: output pre-multiplied color, alpha drives bloom
   gl_FragColor = vec4(col * alpha, alpha);
 }
 `
