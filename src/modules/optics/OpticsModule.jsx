@@ -29,7 +29,7 @@ const VIEWS = [
 ]
 
 const CAMERA = {
-  prism:   [0, 4, 9],
+  prism:   [2, 4.5, 10],
   lens:    [0, 3, 9],
   grating: [5, 3, 8],
 }
@@ -66,7 +66,7 @@ function buildEquations(view) {
 
 function buildExplanation(view) {
   switch (view) {
-    case 'prism': return 'White light enters a glass prism. Each wavelength has a slightly different refractive index (dispersion, described by Cauchy\'s formula). Snell\'s law n₁sinθ₁ = n₂sinθ₂ bends each color by a different angle — violet bends most (highest n), red bends least. The 24 spectral rays fan out into a full rainbow. Prism gently rotates for a 3D view.'
+    case 'prism': return '48 spectral rays (380–720 nm) pass through a glass prism. Cauchy dispersion n(λ) = A + B/λ² gives higher n for shorter wavelengths — violet bends most, red least — creating a rainbow on the projection screen. Use the PRISM ANGLE slider to rotate the prism: shallow angles show a narrow spread, steep angles push internal rays past the critical angle θ_c = arcsin(1/n) and trigger Total Internal Reflection (TIR), trapping those wavelengths inside.'
     case 'lens': return 'A biconvex lens refracts parallel rays through its curved surfaces. Paraxial rays (near the axis) all converge at the focal point f. The thin lens equation 1/f = 1/dₒ + 1/dᵢ relates object and image distances. Focal length is positive for converging lenses. Rays further from the axis suffer spherical aberration — they cross the axis slightly closer, which is why real lenses need multiple elements.'
     case 'grating': return 'A diffraction grating has thousands of equally-spaced slits (here: 600 lines/mm, d = 1.67 µm). Constructive interference occurs where path difference = mλ: d·sinθ = mλ. Each wavelength diffracts at a different angle — white light is spread into orders m = 0, ±1, ±2. The 0th order is straight-through, ±1st orders are the most intense. Larger |m| means wider angular spread.'
     default: return ''
