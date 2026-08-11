@@ -3,18 +3,23 @@ import InfoPanel from '../../components/InfoPanel'
 import GasSimulation from './GasSimulation'
 import Entropy from './Entropy'
 import HeatEngine from './HeatEngine'
+import IsingModel from './IsingModel'
 import useModuleStore from '../../store/useModuleStore'
 
 const VIEWS = [
   { id: 'gas',    label: 'Gas' },
   { id: 'entropy', label: 'Entropy' },
   { id: 'engine', label: 'Heat Engine' },
+  { id: 'ising',  label: 'Ising Model' },
 ]
+
+const TC = 2.0 / Math.log(1 + Math.sqrt(2))   // ≈ 2.2692
 
 const CAMERA = {
   gas:    [0, 0, 14],
   entropy: [0, 0, 14],
   engine: [0, 2.5, 14],
+  ising:  [0, 9, 8],
 }
 
 function buildEquations(view) {
@@ -46,6 +51,15 @@ function buildEquations(view) {
           { label: 'Adiabatic', eq: `PV^\\gamma = {\\rm const}` },
         ],
       }
+    case 'ising':
+      return {
+        domain: 'STATISTICAL MECHANICS · PHASE TRANSITION',
+        primaryEq: `\\mathcal{H} = -J\\sum_{\\langle i,j\\rangle} s_i s_j,\\quad s_i = \\pm 1`,
+        derivedEqs: [
+          { label: 'Curie temp (exact)', eq: `T_c = \\dfrac{2J}{k_B\\ln(1+\\sqrt{2})} \\approx 2.269\\,\\tfrac{J}{k_B}` },
+          { label: 'Metropolis rule', eq: `P(\\text{flip}) = \\min\\!\\left(1,\\,e^{-\\Delta E/k_BT}\\right)` },
+        ],
+      }
     default:
       return { domain: '', primaryEq: '', derivedEqs: [] }
   }
@@ -59,6 +73,11 @@ function buildExplanation(view) {
       return `Two gases start separated by a partition — cyan on the left, orange on the right. After 2 seconds the partition opens. The gases spontaneously mix. This is entropy: the number of microstates Ω consistent with the macrostate surges, so S = k ln Ω rises sharply. The second law says this process is irreversible — you will never see the gases spontaneously un-mix. Temperature controls how vigorously particles collide and cross the barrier once it opens.`
     case 'engine':
       return `The Carnot cycle traces the most efficient heat engine possible between hot (T_H) and cold (T_C) reservoirs. Two isothermal strokes (at constant temperature, the gas exchanges heat) alternate with two adiabatic strokes (no heat exchange, the gas does mechanical work by expansion). The enclosed area on the PV diagram is the net work done per cycle. Carnot's theorem proves no engine can exceed this efficiency — it is a thermodynamic limit, not an engineering one.`
+    case 'ising':
+      return `Each cell is a magnetic spin (±1) on a 40×40 square lattice with periodic boundary conditions. At every frame, the Metropolis algorithm attempts 4 sweeps of random spin flips: a flip is always accepted if it lowers energy, otherwise accepted with probability exp(−ΔE/kT).
+
+Below the critical temperature T_c ≈ 2.269 (Onsager exact solution, 1944), thermal fluctuations are weak — the system spontaneously breaks Z₂ symmetry and the spins align into ordered domains (ferromagnetic phase, |M| → 1). Above T_c, entropy wins and the lattice randomizes (paramagnetic phase, |M| → 0). The phase transition is second-order: the order parameter |M| decreases continuously from 1 to 0. Drag temperature past T_c and watch the pattern lose its clusters.`
+
     default:
       return ''
   }
@@ -90,6 +109,19 @@ function buildMetrics(view, temperature) {
         { label: 'Efficiency η', value: `${eff}%`, color: 'cyan'  },
         { label: 'Cycle',     value: 'Carnot',    color: 'dim'   },
       ]
+    case 'ising': {
+      const ratio = temperature / TC
+      const phase = temperature < TC ? 'FERROMAGNETIC' : 'PARAMAGNETIC'
+      return [
+        { label: 'T (current)',     value: temperature.toFixed(3),    color: 'cyan'  },
+        { label: 'T_c (critical)',  value: TC.toFixed(4),             color: 'amber' },
+        { label: 'T / T_c',        value: ratio.toFixed(4),  color: ratio < 1 ? 'cyan' : 'rose' },
+        { label: 'Phase',          value: phase, color: ratio < 1 ? 'cyan' : 'rose' },
+        { label: 'Lattice',        value: '40 × 40',                  color: 'dim'   },
+        { label: 'Boundary',       value: 'Periodic',                 color: 'dim'   },
+        { label: '|M| live',       value: '→ scene readout',          color: 'dim'   },
+      ]
+    }
     default:
       return []
   }
@@ -171,11 +203,13 @@ export default function ThermoModule() {
             {thermoView === 'gas'    && <GasSimulation  key="gas"    temperature={temperature} />}
             {thermoView === 'entropy' && <Entropy         key="ent"    temperature={temperature} />}
             {thermoView === 'engine' && <HeatEngine      key="eng"    temperature={temperature} />}
+            {thermoView === 'ising'  && <IsingModel      key="ising"  temperature={temperature} />}
           </SceneWrapper>
           <div className="absolute top-3 left-4 pointer-events-none">
             <span className="font-display text-[10px] tracking-[0.2em] uppercase text-text-dim">
               {thermoView === 'gas'     ? 'Maxwell-Boltzmann Distribution · Kinetic Theory'
                : thermoView === 'entropy' ? 'Entropy Increase · Second Law of Thermodynamics'
+               : thermoView === 'ising'   ? 'Ising Model · Metropolis MC · Phase Transition'
                : 'Carnot Cycle · PV Diagram · Maximum Efficiency'}
             </span>
           </div>
