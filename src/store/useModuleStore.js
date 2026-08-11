@@ -39,6 +39,8 @@ const useModuleStore = create((set) => ({
     boxVizMode: 'prob',        // 'prob' | 'real' | 'imag'
     blochVizMode: 'prob',      // 'prob' | 'real' | 'imag'
     entangleAlpha: Math.PI / 8, // coupling angle α ∈ [0, π/4]; C = sin(2α)
+    tunnelV0: 3.0,             // barrier height V₀ ∈ [0.5, 6]
+    tunnelK0: 2.0,             // incident momentum k₀ ∈ [0.5, 4]
   },
 
   setBlochTheta: (v) =>
@@ -82,6 +84,12 @@ const useModuleStore = create((set) => ({
       qm: { ...state.qm, entangleAlpha: Math.max(0, Math.min(Math.PI / 4, v)) },
     })),
 
+  setTunnelV0: (v) =>
+    set((state) => ({ qm: { ...state.qm, tunnelV0: Math.max(0.5, Math.min(6.0, v)) } })),
+
+  setTunnelK0: (v) =>
+    set((state) => ({ qm: { ...state.qm, tunnelK0: Math.max(0.5, Math.min(4.0, v)) } })),
+
   resetQm: () =>
     set({
       qm: {
@@ -94,6 +102,8 @@ const useModuleStore = create((set) => ({
         boxVizMode: 'prob',
         blochVizMode: 'prob',
         entangleAlpha: Math.PI / 8,
+        tunnelV0: 3.0,
+        tunnelK0: 2.0,
       },
     }),
 
