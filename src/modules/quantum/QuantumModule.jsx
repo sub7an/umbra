@@ -6,6 +6,7 @@ import BlochSphere from './BlochSphere'
 import ParticleInBox from './ParticleInBox'
 import DoubleSlit from './DoubleSlit'
 import Entanglement from './Entanglement'
+import Tunneling from './Tunneling'
 import useModuleStore from '../../store/useModuleStore'
 import { blochCoordinates, prob0, prob1, particleInBoxEnergy, interferenceIntensity } from './qmMath'
 
@@ -16,6 +17,7 @@ const VIEWS = [
   { id: 'particleinbox', label: 'Particle in Box' },
   { id: 'doubleslit',    label: 'Double Slit' },
   { id: 'entanglement',  label: 'Entanglement' },
+  { id: 'tunneling',     label: 'Tunneling' },
 ]
 
 const CAMERA_POSITIONS = {
@@ -23,6 +25,7 @@ const CAMERA_POSITIONS = {
   particleinbox: [0, 0.8, 7],
   doubleslit:    [0, 3.5, 9],
   entanglement:  [0, 1.2, 9],
+  tunneling:     [0, 1.8, 10],
 }
 
 // ── Viz mode toggle ───────────────────────────────────────────────────────────
@@ -104,6 +107,19 @@ function applyGateToBloch(gate, theta, phi) {
   return { theta: newTheta, phi: newPhi }
 }
 
+// ── Tunneling helper (mirrors Tunneling.jsx formula) ─────────────────────────
+function tunnelT(V0, k0) {
+  const a = 0.8, E = 0.5 * k0 * k0
+  if (V0 <= 0) return 1
+  if (Math.abs(E - V0) < 1e-6) return 1 / (1 + 0.25 * V0 * a * a)
+  if (E < V0) {
+    const k = Math.sqrt(2 * (V0 - E)), s = Math.sinh(k * a)
+    return 1 / (1 + V0 * V0 * s * s / (4 * E * (V0 - E)))
+  }
+  const k2 = Math.sqrt(2 * (E - V0)), s = Math.sin(k2 * a)
+  return 1 / (1 + V0 * V0 * s * s / (4 * E * (E - V0)))
+}
+
 // ── Explanations ──────────────────────────────────────────────────────────────
 
 function buildExplanation(view, theta, phi, n, lambda, measured, entAlpha = 0) {
@@ -130,6 +146,11 @@ function buildExplanation(view, theta, phi, n, lambda, measured, entAlpha = 0) {
       const C = Math.sin(2 * entAlpha)
       return `The state is |ψ⟩ = cos(α)|00⟩ + sin(α)|11⟩. Move α from 0 to π/4 and the state goes from a plain product to the Bell state |Φ⁺⟩. Right now concurrence C = ${C.toFixed(3)}. The Bloch vector for each qubit starts at the north pole and shrinks toward zero as entanglement grows, because a maximally entangled qubit has no definite local state. You cannot describe it as any single spin direction. The two qubits are perfectly correlated, but neither one has a state of its own.`
     }
+
+    case 'tunneling':
+      return `Classical particles bounce off barriers they lack the energy to cross. Quantum particles don't: the wavefunction penetrates into and through classically forbidden regions. The amplitude decays exponentially inside the barrier (evanescent wave), but if the barrier is thin enough, a nonzero amplitude survives on the other side.
+
+Transmission T depends sharply on barrier width and height. Doubling the barrier width can drop T by many orders of magnitude — which is why tunneling only matters at small scales. It underlies scanning tunneling microscopes (which image individual atoms), nuclear fusion in stars (p–p chain), and most semiconductor devices. The Gaussian packet shown splits at contact: the reflected portion bounces back, the transmitted portion emerges attenuated by √T. Watch R + T = 1 hold exactly.`
 
     default:
       return ''
@@ -206,6 +227,17 @@ function buildEquations(view, theta, phi, n, lambda, measured, entAlpha = 0) {
       }
     }
 
+    case 'tunneling':
+      return {
+        domain: 'QUANTUM TUNNELING · WKB · SCHRÖDINGER',
+        primaryEq: `T = \\dfrac{1}{1 + \\dfrac{V_0^2\\sinh^2(\\kappa a)}{4E(V_0-E)}}`,
+        derivedEqs: [
+          { label: 'Evanescent wave', eq: `\\kappa = \\sqrt{\\dfrac{2m(V_0-E)}{\\hbar^2}}` },
+          { label: 'WKB approx.', eq: `T \\approx e^{-2\\kappa a}\\;\\text{(thick barrier)}` },
+          { label: 'Conservation', eq: `T + R = 1` },
+        ],
+      }
+
     default:
       return { domain: '', primaryEq: '', derivedEqs: [] }
   }
@@ -235,10 +267,18 @@ export default function QuantumModule() {
   const setBoxVizMode   = useModuleStore((s) => s.setBoxVizMode)
   const setBlochVizMode = useModuleStore((s) => s.setBlochVizMode)
   const setEntangleAlpha= useModuleStore((s) => s.setEntangleAlpha)
+  const tunnelV0        = useModuleStore((s) => s.qm.tunnelV0)
+  const tunnelK0        = useModuleStore((s) => s.qm.tunnelK0)
+  const setTunnelV0     = useModuleStore((s) => s.setTunnelV0)
+  const setTunnelK0     = useModuleStore((s) => s.setTunnelK0)
   const resetQm         = useModuleStore((s) => s.resetQm)
   const setActiveModule = useModuleStore((s) => s.setActiveModule)
 
   const bloch = blochCoordinates(theta, phi)
+
+  const tE   = 0.5 * tunnelK0 * tunnelK0
+  const tT   = tunnelT(tunnelV0, tunnelK0)
+  const tStt = tE < tunnelV0 * 0.97 ? 'TUNNELING' : tE > tunnelV0 * 1.03 ? 'OVER BARRIER' : 'RESONANCE'
 
   const controlsByView = {
     blochsphere: [
@@ -255,6 +295,10 @@ export default function QuantumModule() {
     ],
     entanglement: [
       { label: 'Coupling α', min: 0, max: Math.PI / 4, step: 0.005, value: entangleAlpha, onChange: setEntangleAlpha, unit: ' rad' },
+    ],
+    tunneling: [
+      { label: 'Barrier V₀', min: 0.5, max: 6.0, step: 0.1, value: tunnelV0, onChange: setTunnelV0, unit: ' ℏ²/m' },
+      { label: 'Momentum k₀', min: 0.5, max: 4.0, step: 0.1, value: tunnelK0, onChange: setTunnelK0, unit: '' },
     ],
   }
 
@@ -291,6 +335,15 @@ export default function QuantumModule() {
       { label: 'P(|00⟩)',        value: (Math.pow(Math.cos(entangleAlpha), 2) * 100).toFixed(1), unit: '%', color: 'cyan' },
       { label: 'P(|11⟩)',        value: (Math.pow(Math.sin(entangleAlpha), 2) * 100).toFixed(1), unit: '%', color: 'rose' },
       { label: 'State',          value: concurrence > 0.95 ? 'BELL |Φ⁺⟩' : concurrence < 0.05 ? 'PRODUCT' : 'PARTIAL', color: concurrence > 0.95 ? 'rose' : 'cyan' },
+    ],
+    tunneling: [
+      { label: 'V₀ (barrier)',   value: tunnelV0.toFixed(2), unit: ' ℏ²/m', color: 'amber' },
+      { label: 'k₀ (momentum)',  value: tunnelK0.toFixed(2),                 color: 'cyan'  },
+      { label: 'E (kinetic)',    value: tE.toFixed(3),        unit: ' ℏ²/m', color: 'cyan'  },
+      { label: 'E / V₀',        value: (tE / tunnelV0).toFixed(3),           color: tE < tunnelV0 ? 'rose' : 'amber' },
+      { label: 'T (transmit)',   value: (tT * 100).toFixed(2), unit: '%',    color: 'cyan'  },
+      { label: 'R (reflect)',    value: ((1-tT) * 100).toFixed(2), unit: '%', color: 'rose' },
+      { label: 'Status',         value: tStt, color: tE < tunnelV0 ? 'rose' : 'amber' },
     ],
   }
 
@@ -404,11 +457,12 @@ export default function QuantumModule() {
         </div>
 
         <main className="flex-1 relative overflow-hidden" style={{ minHeight: 0 }}>
-          <SceneWrapper cameraPosition={camPos}>
+          <SceneWrapper cameraPosition={camPos} showGrid={activeView !== 'tunneling'}>
             {activeView === 'blochsphere'   && <BlochSphere />}
             {activeView === 'particleinbox' && <ParticleInBox />}
             {activeView === 'doubleslit'    && <DoubleSlit />}
             {activeView === 'entanglement'  && <Entanglement />}
+            {activeView === 'tunneling'     && <Tunneling />}
           </SceneWrapper>
 
           {/* View label top-left */}
