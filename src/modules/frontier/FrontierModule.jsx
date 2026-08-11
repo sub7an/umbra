@@ -5,6 +5,7 @@ import InfoPanel from '../../components/InfoPanel'
 import RotationCurve from './RotationCurve'
 import ExpansionSim from './ExpansionSim'
 import BlackHole, { isMobile } from './BlackHole'
+import NBody from './NBody'
 import useModuleStore from '../../store/useModuleStore'
 import {
   keplerianVelocity,
@@ -19,12 +20,14 @@ const VIEWS = [
   { id: 'rotationcurve', label: 'Rotation Curves' },
   { id: 'expansion', label: 'Hubble Expansion' },
   { id: 'blackhole', label: 'Black Hole' },
+  { id: 'nbody', label: 'N-Body' },
 ]
 
 const CAMERA_POSITIONS = {
   rotationcurve: [0, 4.5, 9],
   expansion: [0, 8, 12],
   blackhole: [0, 2.5, 6],
+  nbody: [0, 7, 8],
 }
 
 function buildExplanation(view, fpRadius, hubble, bhMass) {
@@ -51,6 +54,11 @@ Flat rotation curves are reproducible across hundreds of galaxies. The extra mas
 
 Cosmic expansion is confirmed through redshifts, Cepheid distances, and Type Ia supernovae. Expansion has been accelerating since around z ≈ 0.7, confirmed in 1998. Something is driving it, labeled "dark energy" or the cosmological constant Λ. Its nature is unknown. There's also the Hubble tension: the local distance ladder gives H₀ ≈ 73 km/s/Mpc, while the CMB gives ≈ 67.4. That 5σ gap has no agreed resolution.`
     }
+
+    case 'nbody':
+      return `Newton's law of gravitation couples every pair of bodies: F = G·m₁m₂/r². With 3 or more bodies, the system has no general closed-form solution — the three-body problem has been open since Newton. Trajectories become chaotic: arbitrarily small differences in initial conditions diverge exponentially (Lyapunov instability).
+
+The figure-8 choreographic solution (Chenciner & Montgomery, 2000) is a rare periodic exception: three equal masses chase each other on the same figure-8 curve indefinitely. Any perturbation breaks it. Integration here uses 4th-order Runge-Kutta with gravitational softening ε to avoid singularities, running 4 sub-steps per frame for RK4 accuracy.`
 
     default:
       return ''
@@ -113,6 +121,17 @@ function buildEquations(view, fpRadius, hubble, vo, vk, bhMass) {
       }
     }
 
+    case 'nbody':
+      return {
+        domain: 'CELESTIAL MECHANICS · CHAOS THEORY',
+        primaryEq: `\\mathbf{F}_i = G\\sum_{j\\neq i}\\dfrac{m_j(\\mathbf{r}_j-\\mathbf{r}_i)}{|\\mathbf{r}_j-\\mathbf{r}_i|^3+\\varepsilon^3}`,
+        derivedEqs: [
+          { label: 'Energy (conserved)', eq: `E = \\tfrac{1}{2}\\sum m_i v_i^2 - G\\sum_{i<j}\\dfrac{m_im_j}{r_{ij}}` },
+          { label: 'RK4 update', eq: `\\mathbf{r}_{n+1}=\\mathbf{r}_n+\\tfrac{h}{6}(k_1+2k_2+2k_3+k_4)` },
+          { label: 'Figure-8 period', eq: `T \\approx 6.3259\\;\\text{(Chenciner 2000)}` },
+        ],
+      }
+
     default:
       return { domain: '', primaryEq: '', derivedEqs: [] }
   }
@@ -147,6 +166,7 @@ export default function FrontierModule() {
     blackhole: [
       { label: 'BH Mass', min: 0.3, max: 1.5, step: 0.05, value: bhMass, onChange: setFpBhMass, unit: ' M' },
     ],
+    nbody: [],
   }
 
   const metricsByView = {
@@ -174,12 +194,21 @@ export default function FrontierModule() {
       { label: 'ISCO (disk inner)', value: (Rs * 3.0).toFixed(3), unit: ' u', color: 'cyan' },
       { label: '* screen-space approx.', value: '~1st order', color: 'dim' },
     ],
+    nbody: [
+      { label: 'Integrator', value: 'RK4', color: 'cyan' },
+      { label: 'Sub-steps / frame', value: '4', color: 'cyan' },
+      { label: 'G (normalized)', value: '1.000', color: 'amber' },
+      { label: 'Softening ε', value: '0.02 – 0.08', color: 'amber' },
+      { label: 'Trail length', value: '600 pts', color: 'dim' },
+      { label: 'Presets', value: 'select in scene', color: 'dim' },
+    ],
   }
 
   const explanation = buildExplanation(activeView, fpRadius, hubble, bhMass)
   const { domain, primaryEq, derivedEqs } = buildEquations(activeView, fpRadius, hubble, vo, vk, bhMass)
   const camPos = CAMERA_POSITIONS[activeView]
   const isBlackHole = activeView === 'blackhole'
+  const isNBody     = activeView === 'nbody'
 
   return (
     <div className="flex flex-col w-full h-full bg-ground">
@@ -224,7 +253,7 @@ export default function FrontierModule() {
         </nav>
 
         <div className="font-mono-data text-sm text-amber-glow tabular-nums" style={{ textShadow: '0 0 8px rgba(245,158,11,0.5)' }}>
-          {isBlackHole ? 'R_s = 2GM/c²' : 'v = H₀·d'}
+          {isBlackHole ? 'R_s = 2GM/c²' : isNBody ? 'F = Gm₁m₂/r²' : 'v = H₀·d'}
         </div>
       </header>
 
@@ -243,10 +272,11 @@ export default function FrontierModule() {
         </div>
 
         <main className="flex-1 relative overflow-hidden" style={{ minHeight: 0 }}>
-          <SceneWrapper cameraPosition={camPos} showGrid={!isBlackHole} minDist={isBlackHole ? 2.5 : 2}>
+          <SceneWrapper cameraPosition={camPos} showGrid={!isBlackHole && !isNBody} minDist={isBlackHole ? 2.5 : 2}>
             {activeView === 'rotationcurve' && <RotationCurve />}
             {activeView === 'expansion' && <ExpansionSim />}
             {isBlackHole && <BlackHole hiRes={bhHiRes} />}
+            {isNBody && <NBody />}
           </SceneWrapper>
 
           <div className="absolute top-3 left-4 pointer-events-none">
