@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react'
 import useModuleStore from './store/useModuleStore'
 import ModulePicker from './components/ModulePicker'
 import GestureHUD from './components/GestureHUD'
@@ -6,18 +6,39 @@ import GestureEventBridge from './components/GestureEventBridge'
 import TransitionOverlay from './components/TransitionOverlay'
 import BootScreen from './components/BootScreen'
 import { GestureProvider } from './context/GestureContext'
-import SRModule from './modules/special-relativity/SRModule'
-import QuantumModule from './modules/quantum/QuantumModule'
-import FrontierModule from './modules/frontier/FrontierModule'
-import ElectromagnetismModule from './modules/electromagnetism/ElectromagnetismModule'
-import DynamicalModule from './modules/dynamical/DynamicalModule'
-import SabrinaModule from './modules/sabrina/SabrinaModule'
-import GRModule from './modules/general-relativity/GRModule'
-import ThermoModule from './modules/thermodynamics/ThermoModule'
-import FluidModule from './modules/fluid-dynamics/FluidModule'
-import SandboxModule from './modules/physics-sandbox/SandboxModule'
-import WaveModule from './modules/wave/WaveModule'
-import OpticsModule from './modules/optics/OpticsModule'
+
+// Lazy-load all heavy modules — each becomes its own JS chunk fetched on demand
+const SRModule             = lazy(() => import('./modules/special-relativity/SRModule'))
+const QuantumModule        = lazy(() => import('./modules/quantum/QuantumModule'))
+const FrontierModule       = lazy(() => import('./modules/frontier/FrontierModule'))
+const ElectromagnetismModule = lazy(() => import('./modules/electromagnetism/ElectromagnetismModule'))
+const DynamicalModule      = lazy(() => import('./modules/dynamical/DynamicalModule'))
+const SabrinaModule        = lazy(() => import('./modules/sabrina/SabrinaModule'))
+const GRModule             = lazy(() => import('./modules/general-relativity/GRModule'))
+const ThermoModule         = lazy(() => import('./modules/thermodynamics/ThermoModule'))
+const FluidModule          = lazy(() => import('./modules/fluid-dynamics/FluidModule'))
+const SandboxModule        = lazy(() => import('./modules/physics-sandbox/SandboxModule'))
+const WaveModule           = lazy(() => import('./modules/wave/WaveModule'))
+const OpticsModule         = lazy(() => import('./modules/optics/OpticsModule'))
+
+function ModuleFallback() {
+  return (
+    <div style={{
+      width: '100%', height: '100%',
+      background: '#04090c',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      <div style={{
+        fontFamily: 'JetBrains Mono, monospace',
+        fontSize: 10, letterSpacing: '0.22em',
+        color: 'rgba(34,211,238,0.35)',
+        animation: 'umbra-pulse 1.4s ease-in-out infinite',
+      }}>
+        LOADING
+      </div>
+    </div>
+  )
+}
 
 const OUT_MS = 380
 const IN_MS  = 400
@@ -31,22 +52,25 @@ const ROUTABLE = [
 ]
 
 function renderModule(id) {
-  if (id === 'physics-sandbox')     return <SandboxModule />
-  if (id === 'wave-mechanics')      return <WaveModule />
-  if (id === 'optics')              return <OpticsModule />
-  if (id === 'special-relativity')  return <SRModule />
-  if (id === 'quantum-mechanics')   return <QuantumModule />
-  if (id === 'frontier-physics')    return <FrontierModule />
-  if (id === 'electromagnetism')    return <ElectromagnetismModule />
-  if (id === 'dynamical-systems')   return <DynamicalModule />
-  if (id === 'sabrina') {
+  let inner = null
+  if (id === 'physics-sandbox')     inner = <SandboxModule />
+  else if (id === 'wave-mechanics')      inner = <WaveModule />
+  else if (id === 'optics')              inner = <OpticsModule />
+  else if (id === 'special-relativity')  inner = <SRModule />
+  else if (id === 'quantum-mechanics')   inner = <QuantumModule />
+  else if (id === 'frontier-physics')    inner = <FrontierModule />
+  else if (id === 'electromagnetism')    inner = <ElectromagnetismModule />
+  else if (id === 'dynamical-systems')   inner = <DynamicalModule />
+  else if (id === 'sabrina') {
     if (sessionStorage.getItem('umbra_unlocked') !== '1') return null
-    return <SabrinaModule />
+    inner = <SabrinaModule />
   }
-  if (id === 'general-relativity')  return <GRModule />
-  if (id === 'thermodynamics')      return <ThermoModule />
-  if (id === 'fluid-dynamics')      return <FluidModule />
-  return <ModulePicker />
+  else if (id === 'general-relativity')  inner = <GRModule />
+  else if (id === 'thermodynamics')      inner = <ThermoModule />
+  else if (id === 'fluid-dynamics')      inner = <FluidModule />
+  else return <ModulePicker />
+
+  return <Suspense fallback={<ModuleFallback />}>{inner}</Suspense>
 }
 
 export default function App() {
