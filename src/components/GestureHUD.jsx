@@ -2,32 +2,61 @@ import { useEffect, useRef, useCallback } from 'react'
 import { useGesture } from '../context/GestureContext'
 import { HAND_CONNECTIONS } from '../hooks/useHandGesture'
 
-// Draw video frame + hand skeleton onto the preview canvas
-function drawFrame(ctx, video, landmarks, W, H, pinching) {
-  ctx.clearRect(0, 0, W, H)
+const PALM_HOLD_MS = 820
 
-  // Mirror the video frame
+const STATUS_COLOR = {
+  idle:       'rgba(255,255,255,0.22)',
+  pointing:   'rgba(255,255,255,0.65)',
+  pinching:   '#00e5c4',
+  peace:      '#60a5fa',
+  fist:       '#fb923c',
+  open_palm:  '#a78bfa',
+}
+
+const STATUS_LABEL = {
+  idle:       'IDLE',
+  pointing:   'POINT',
+  pinching:   'PINCH',
+  peace:      'PEACE',
+  fist:       'FIST',
+  open_palm:  'PALM',
+}
+
+const GESTURE_GUIDE = [
+  ['👆', 'Point',  'aim cursor'],
+  ['🤏', 'Pinch',  'click / select'],
+  ['✌️', 'Peace',  'orbit scene'],
+  ['✊', 'Fist',   'reset sim'],
+  ['🖐', 'Hold',   '← back to menu'],
+  ['⚡', 'Swipe',  'change view'],
+]
+
+function drawFrame(ctx, video, W, H) {
+  ctx.clearRect(0, 0, W, H)
   if (video && video.readyState >= 2) {
     ctx.save()
     ctx.translate(W, 0)
     ctx.scale(-1, 1)
-    ctx.globalAlpha = 0.6
+    ctx.globalAlpha = 0.55
     ctx.drawImage(video, 0, 0, W, H)
     ctx.restore()
     ctx.globalAlpha = 1
   }
 }
 
-function drawSkeleton(ctx, landmarks, W, H, pinching) {
-
+function drawSkeleton(ctx, landmarks, W, H, pinching, peace, fist, openPalm) {
   if (!landmarks.length) return
-
-  const toX = (lm) => (1 - lm.x) * W   // mirrored (CSS scaleX(-1) mirrors video)
+  const toX = (lm) => (1 - lm.x) * W
   const toY = (lm) => lm.y * H
 
-  // Connections
+  const lineColor = fist      ? 'rgba(251,146,60,0.85)'
+                  : openPalm  ? 'rgba(167,139,250,0.85)'
+                  : peace     ? 'rgba(96,165,250,0.85)'
+                  : pinching  ? 'rgba(0,229,196,0.9)'
+                  : 'rgba(0,229,196,0.5)'
+
   ctx.lineWidth = 1.5
-  ctx.strokeStyle = pinching ? 'rgba(0,229,196,0.9)' : 'rgba(0,229,196,0.5)'
+  ctx.strokeStyle = lineColor
   ctx.beginPath()
   for (const [a, b] of HAND_CONNECTIONS) {
     ctx.moveTo(toX(landmarks[a]), toY(landmarks[a]))
@@ -35,21 +64,17 @@ function drawSkeleton(ctx, landmarks, W, H, pinching) {
   }
   ctx.stroke()
 
-  // All landmark dots
   for (let i = 0; i < landmarks.length; i++) {
     const x = toX(landmarks[i])
     const y = toY(landmarks[i])
     ctx.beginPath()
     ctx.arc(x, y, i === 8 || i === 4 ? 4 : 2, 0, Math.PI * 2)
-    ctx.fillStyle = i === 8
-      ? '#00e5c4'
-      : i === 4
-      ? (pinching ? '#00e5c4' : '#fb923c')
-      : 'rgba(255,255,255,0.5)'
+    ctx.fillStyle = i === 8 ? '#00e5c4'
+      : i === 4 ? (pinching ? '#00e5c4' : '#fb923c')
+      : 'rgba(255,255,255,0.45)'
     ctx.fill()
   }
 
-  // Pinch line
   if (pinching) {
     ctx.beginPath()
     ctx.moveTo(toX(landmarks[4]), toY(landmarks[4]))
@@ -61,52 +86,121 @@ function drawSkeleton(ctx, landmarks, W, H, pinching) {
 }
 
 export default function GestureHUD() {
-  const { enabled, status, toggle, initError, videoRef, landmarksRef, pinchingRef, pointerRef } = useGesture()
+  const {
+    enabled, status, toggle, initError,
+    videoRef, landmarksRef, pinchingRef, peaceRef, fistRef, openPalmRef, pointerRef,
+  } = useGesture()
+
   const skeletonRef  = useRef(null)
   const cursorRef    = useRef(null)
+  const dwellRef     = useRef(null)
   const rafRef       = useRef(null)
+  const palmStartRef = useRef(null)
 
-  // Update skeleton canvas + cursor position every frame
+  // Inject global CSS for ripple animation
+  useEffect(() => {
+    const style = document.createElement('style')
+    style.id = 'umbra-gesture-css'
+    style.textContent = `
+      @keyframes umbra-ripple {
+        0%   { transform: translate(-50%,-50%) scale(0.3); opacity: 1; }
+        100% { transform: translate(-50%,-50%) scale(2.8); opacity: 0; }
+      }
+      .umbra-ripple-el {
+        position: fixed; pointer-events: none; z-index: 10000;
+        width: 44px; height: 44px; border-radius: 50%;
+        border: 2px solid #00e5c4;
+        animation: umbra-ripple 0.42s ease-out forwards;
+      }
+    `
+    document.head.appendChild(style)
+    return () => document.getElementById('umbra-gesture-css')?.remove()
+  }, [])
+
   const tick = useCallback(() => {
-    // Video frame + skeleton
+    const pinching = pinchingRef.current
+    const peace    = peaceRef.current
+    const fist     = fistRef.current
+    const openPalm = openPalmRef.current
+    const ptr      = pointerRef.current
+
+    // Skeleton canvas
     const canvas = skeletonRef.current
     if (canvas && enabled) {
       const ctx = canvas.getContext('2d')
-      drawFrame(ctx, videoRef.current, landmarksRef.current, canvas.width, canvas.height, pinchingRef.current)
-      drawSkeleton(ctx, landmarksRef.current, canvas.width, canvas.height, pinchingRef.current)
+      const W = canvas.width, H = canvas.height
+      drawFrame(ctx, videoRef.current, W, H)
+      drawSkeleton(ctx, landmarksRef.current, W, H, pinching, peace, fist, openPalm)
     }
 
     // Cursor ring
     const cursor = cursorRef.current
+    const dwell  = dwellRef.current
     if (cursor) {
-      const ptr = pointerRef.current
       if (ptr && enabled) {
         const sx = ((ptr.x + 1) / 2) * window.innerWidth
         const sy = ((1 - ptr.y) / 2) * window.innerHeight
-        cursor.style.transform = `translate(${sx}px, ${sy}px)`
-        cursor.style.opacity   = '1'
-        cursor.style.width     = pinchingRef.current ? '18px' : '32px'
-        cursor.style.height    = pinchingRef.current ? '18px' : '32px'
-        cursor.style.borderColor = pinchingRef.current ? 'rgba(0,229,196,1)' : 'rgba(0,229,196,0.7)'
-        cursor.style.boxShadow   = pinchingRef.current
-          ? '0 0 12px 4px rgba(0,229,196,0.6), inset 0 0 8px rgba(0,229,196,0.3)'
-          : '0 0 8px 2px rgba(0,229,196,0.35)'
+
+        const transform = `translate(${sx}px,${sy}px)`
+        cursor.style.transform = transform
+
+        const color = pinching  ? '#00e5c4'
+                    : fist      ? '#fb923c'
+                    : openPalm  ? '#a78bfa'
+                    : peace     ? '#60a5fa'
+                    : 'rgba(0,229,196,0.7)'
+
+        const size = pinching ? 18 : fist ? 14 : openPalm ? 36 : peace ? 28 : 32
+        cursor.style.width  = `${size}px`
+        cursor.style.height = `${size}px`
+        cursor.style.marginLeft  = `${-size / 2}px`
+        cursor.style.marginTop   = `${-size / 2}px`
+        cursor.style.borderColor = color
+        cursor.style.boxShadow   = pinching
+          ? `0 0 14px 5px rgba(0,229,196,0.55), inset 0 0 8px rgba(0,229,196,0.25)`
+          : `0 0 8px 2px ${color}55`
+        cursor.style.opacity = '1'
+
+        // Dwell arc for open palm
+        if (dwell) {
+          dwell.style.transform = transform
+          if (openPalm) {
+            if (!palmStartRef.current) palmStartRef.current = performance.now()
+            const t = Math.min(1, (performance.now() - palmStartRef.current) / PALM_HOLD_MS)
+            dwell.style.opacity = '1'
+            const c = dwell.getContext('2d')
+            c.clearRect(0, 0, 56, 56)
+            if (t > 0.01) {
+              c.beginPath()
+              c.arc(28, 28, 23, -Math.PI / 2, -Math.PI / 2 + t * Math.PI * 2, false)
+              c.strokeStyle = `rgba(167,139,250,${0.4 + t * 0.55})`
+              c.lineWidth = 3.5
+              c.lineCap = 'round'
+              c.stroke()
+            }
+          } else {
+            palmStartRef.current = null
+            dwell.style.opacity = '0'
+          }
+        }
       } else {
         cursor.style.opacity = '0'
+        if (dwell) { dwell.style.opacity = '0'; palmStartRef.current = null }
       }
     }
 
     rafRef.current = requestAnimationFrame(tick)
-  }, [enabled, landmarksRef, pinchingRef, pointerRef])
+  }, [enabled, videoRef, landmarksRef, pinchingRef, peaceRef, fistRef, openPalmRef, pointerRef])
 
   useEffect(() => {
     rafRef.current = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(rafRef.current)
   }, [tick])
 
+  const statusColor = STATUS_COLOR[status] ?? 'rgba(255,255,255,0.3)'
+
   return (
     <>
-      {/* Video always in DOM so videoRef.current is available before enabled state updates */}
       <video
         ref={videoRef}
         muted
@@ -114,7 +208,7 @@ export default function GestureHUD() {
         style={{ position: 'fixed', top: -9999, left: -9999, width: 1, height: 1, opacity: 0 }}
       />
 
-      {/* ── Full-screen gesture cursor ring ── */}
+      {/* Cursor ring */}
       <div
         ref={cursorRef}
         style={{
@@ -131,11 +225,30 @@ export default function GestureHUD() {
           pointerEvents: 'none',
           zIndex:         9999,
           opacity:        0,
-          transition:    'width 0.1s, height 0.1s, border-color 0.1s, box-shadow 0.1s',
+          transition:    'width 0.08s, height 0.08s, border-color 0.12s, box-shadow 0.12s',
         }}
       />
 
-      {/* ── HUD panel (bottom-right) ── */}
+      {/* Dwell arc canvas — positioned at same cursor location */}
+      <canvas
+        ref={dwellRef}
+        width={56}
+        height={56}
+        style={{
+          position:      'fixed',
+          top:            0,
+          left:           0,
+          width:         '56px',
+          height:        '56px',
+          marginLeft:    '-28px',
+          marginTop:     '-28px',
+          pointerEvents: 'none',
+          zIndex:         9998,
+          opacity:        0,
+        }}
+      />
+
+      {/* HUD panel bottom-right */}
       <div
         style={{
           position:   'fixed',
@@ -149,82 +262,114 @@ export default function GestureHUD() {
           pointerEvents: 'none',
         }}
       >
-        {/* Preview canvas (video drawn into it in tick()) */}
         {enabled && (
-          <div
-            style={{
-              position:     'relative',
-              width:        '160px',
-              height:       '90px',
-              borderRadius: '4px',
-              overflow:     'hidden',
-              border:       '1px solid rgba(0,229,196,0.25)',
-              background:   '#04090c',
-            }}
-          >
-            <canvas
-              ref={skeletonRef}
-              width={160}
-              height={90}
-              style={{ display: 'block', width: '100%', height: '100%' }}
-            />
-            {/* Status badge */}
+          <>
+            {/* Camera feed */}
             <div style={{
-              position:   'absolute',
-              top:        '4px',
-              left:       '4px',
-              fontFamily: 'monospace',
-              fontSize:   '8px',
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-              color:  status === 'pinching' ? '#00e5c4' : status === 'pointing' ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.3)',
-              padding: '1px 4px',
-              background: 'rgba(4,9,12,0.7)',
-              borderRadius: '2px',
+              position:     'relative',
+              width:        '200px',
+              height:       '112px',
+              borderRadius: '5px',
+              overflow:     'hidden',
+              border:       `1px solid ${statusColor}44`,
+              background:   '#04090c',
+              transition:   'border-color 0.25s',
             }}>
-              {status}
+              <canvas
+                ref={skeletonRef}
+                width={200}
+                height={112}
+                style={{ display: 'block', width: '100%', height: '100%' }}
+              />
+              {/* Status badge */}
+              <div style={{
+                position:      'absolute',
+                top:           '5px',
+                left:          '5px',
+                fontFamily:    'JetBrains Mono, monospace',
+                fontSize:      '8px',
+                letterSpacing: '0.14em',
+                color:         statusColor,
+                padding:       '1px 5px',
+                background:    'rgba(4,9,12,0.75)',
+                borderRadius:  '2px',
+                transition:    'color 0.2s',
+              }}>
+                {STATUS_LABEL[status] ?? status.toUpperCase()}
+              </div>
             </div>
-          </div>
+
+            {/* Gesture guide */}
+            <div style={{
+              width:        '200px',
+              background:   'rgba(4,9,12,0.88)',
+              border:       '1px solid rgba(255,255,255,0.06)',
+              borderRadius: '5px',
+              padding:      '8px 10px',
+            }}>
+              <div style={{
+                fontFamily: 'JetBrains Mono, monospace',
+                fontSize: '7px', letterSpacing: '0.20em', textTransform: 'uppercase',
+                color: 'rgba(255,255,255,0.22)', marginBottom: '7px',
+              }}>
+                Gesture Guide
+              </div>
+              {GESTURE_GUIDE.map(([icon, gesture, action]) => (
+                <div key={gesture} style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '11px', width: '16px', textAlign: 'center', lineHeight: 1 }}>{icon}</span>
+                  <span style={{
+                    fontFamily: 'JetBrains Mono, monospace',
+                    fontSize: '8px', letterSpacing: '0.06em',
+                    color: 'rgba(0,229,196,0.72)', width: '42px', flexShrink: 0,
+                  }}>
+                    {gesture}
+                  </span>
+                  <span style={{
+                    fontFamily: 'JetBrains Mono, monospace',
+                    fontSize: '7px', color: 'rgba(255,255,255,0.32)',
+                  }}>
+                    {action}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </>
         )}
 
-        {/* Error message */}
         {initError && (
           <div style={{
-            fontFamily:  'monospace',
+            fontFamily:  'JetBrains Mono, monospace',
             fontSize:    '9px',
             color:       '#fb923c',
-            background:  'rgba(4,9,12,0.85)',
+            background:  'rgba(4,9,12,0.88)',
             border:      '1px solid rgba(251,146,60,0.3)',
             padding:     '4px 8px',
             borderRadius: '4px',
-            maxWidth:    '160px',
+            maxWidth:    '200px',
             pointerEvents: 'auto',
           }}>
             {initError}
           </div>
         )}
 
-        {/* Toggle button */}
         <button
           onClick={toggle}
           style={{
             pointerEvents: 'auto',
-            fontFamily:  'monospace',
-            fontSize:    '9px',
+            fontFamily:    'JetBrains Mono, monospace',
+            fontSize:      '9px',
             letterSpacing: '0.18em',
             textTransform: 'uppercase',
-            padding:     '5px 10px',
-            borderRadius: '4px',
-            cursor:      'pointer',
-            border:      enabled
+            padding:       '5px 10px',
+            borderRadius:  '4px',
+            cursor:        'pointer',
+            border:        enabled
               ? '1px solid rgba(0,229,196,0.6)'
               : '1px solid rgba(255,255,255,0.12)',
-            background:  enabled
-              ? 'rgba(0,229,196,0.08)'
-              : 'rgba(4,9,12,0.85)',
-            color:       enabled ? '#00e5c4' : 'rgba(255,255,255,0.4)',
-            boxShadow:   enabled ? '0 0 8px rgba(0,229,196,0.2)' : 'none',
-            transition:  'all 0.2s',
+            background:    enabled ? 'rgba(0,229,196,0.08)' : 'rgba(4,9,12,0.85)',
+            color:         enabled ? '#00e5c4' : 'rgba(255,255,255,0.4)',
+            boxShadow:     enabled ? '0 0 8px rgba(0,229,196,0.2)' : 'none',
+            transition:    'all 0.2s',
           }}
           title={enabled ? 'Disable hand gestures' : 'Enable hand gestures (requires webcam)'}
         >

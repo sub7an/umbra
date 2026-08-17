@@ -175,6 +175,8 @@ export default function ThermoModule() {
         <nav className="flex gap-1">
           {VIEWS.map((v) => (
             <button key={v.id} onClick={() => setThermoView(v.id)}
+              role="tab"
+              aria-selected={thermoView === v.id ? 'true' : 'false'}
               className={[
                 'font-mono-data text-[11px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
                 thermoView === v.id

@@ -123,6 +123,13 @@ export default function App() {
     return () => window.removeEventListener('popstate', handler)
   }, [setModule])
 
+  // ── Gesture: open-palm hold fires umbra-back → return to picker ───────────
+  useEffect(() => {
+    const handler = () => setModule(null)
+    window.addEventListener('umbra-back', handler)
+    return () => window.removeEventListener('umbra-back', handler)
+  }, [setModule])
+
   // ── Transition orchestration ───────────────────────────────────────────────
   useEffect(() => {
     if (activeModule === prevRef.current) return
