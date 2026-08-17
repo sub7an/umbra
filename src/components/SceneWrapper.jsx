@@ -33,44 +33,53 @@ function SceneGrid() {
   )
 }
 
-// Detects peace sign (index + middle extended, ring + pinky curled)
 function isPeaceSign(lms) {
   if (!lms || lms.length < 21) return false
-  const w = lms[0]
+  const w    = lms[0]
   const dist = (a) => Math.hypot(lms[a].x - w.x, lms[a].y - w.y)
-  return dist(8) > dist(6) * 1.12 &&   // index up
-         dist(12) > dist(10) * 1.12 &&  // middle up
-         dist(16) < dist(14) * 1.05 &&  // ring down
-         dist(20) < dist(18) * 1.05     // pinky down
+  return dist(8)  > dist(6)  * 1.12 &&
+         dist(12) > dist(10) * 1.12 &&
+         dist(16) < dist(14) * 1.05 &&
+         dist(20) < dist(18) * 1.05
 }
 
-// Reads gesture context (available because GestureProvider wraps the whole app)
-// and applies camera rotation + zoom directly, bypassing OrbitControls during interaction.
 function GestureCamera({ orbitRef, minDist, maxDist }) {
-  const { enabled, pointerRef, pinchingRef, landmarksRef } = useGesture()
+  const { enabled, pointerRef, pinchingRef, landmarksRef, twoPinchRef, peaceRef } = useGesture()
   const { camera } = useThree()
 
-  const prevNDC     = useRef(null)
-  const spherical   = useRef(new THREE.Spherical())
-  const wasPinch    = useRef(false)
+  const prevNDC   = useRef(null)
+  const spherical = useRef(new THREE.Spherical())
 
   useFrame(() => {
     if (!enabled) return
 
-    const ptr      = pointerRef.current
-    const pinching = pinchingRef.current
-    const lms      = landmarksRef.current
-    const peace    = isPeaceSign(lms)
-    const active   = pinching || peace
+    const ptr       = pointerRef.current
+    const pinching  = pinchingRef.current
+    const peace     = peaceRef?.current ?? isPeaceSign(landmarksRef.current)
+    const twoPinch  = twoPinchRef?.current
 
-    // Disable orbit controls while gesture is steering the camera
+    // ── Two-hand pinch zoom takes priority ───────────────────────────────────
+    if (twoPinch?.active) {
+      if (orbitRef.current) orbitRef.current.enabled = false
+      spherical.current.setFromVector3(camera.position)
+      const clamped = THREE.MathUtils.clamp(
+        spherical.current.radius * (twoPinch.delta ?? 1),
+        minDist, maxDist,
+      )
+      spherical.current.radius = clamped
+      spherical.current.makeSafe()
+      camera.position.setFromSpherical(spherical.current)
+      camera.lookAt(0, 0, 0)
+      prevNDC.current = null
+      return
+    }
+
+    const active = pinching || peace
     if (orbitRef.current) orbitRef.current.enabled = !active
 
-    // Snapshot spherical when not controlling so we start from correct state
     if (!active) {
       spherical.current.setFromVector3(camera.position)
       prevNDC.current = null
-      wasPinch.current = pinching
       return
     }
 
@@ -79,14 +88,12 @@ function GestureCamera({ orbitRef, minDist, maxDist }) {
       const dy = ptr.y - prevNDC.current.y
 
       if (pinching) {
-        // Pinch + drag → orbit rotation
         spherical.current.theta -= dx * 3.2
         spherical.current.phi    = THREE.MathUtils.clamp(
           spherical.current.phi - dy * 2.4,
           0.08, Math.PI - 0.08,
         )
       } else if (peace) {
-        // Peace sign + move up/down → zoom
         spherical.current.radius = THREE.MathUtils.clamp(
           spherical.current.radius * (1 - dy * 4),
           minDist, maxDist,
@@ -98,8 +105,7 @@ function GestureCamera({ orbitRef, minDist, maxDist }) {
       camera.lookAt(0, 0, 0)
     }
 
-    prevNDC.current  = ptr ? { x: ptr.x, y: ptr.y } : null
-    wasPinch.current = pinching
+    prevNDC.current = ptr ? { x: ptr.x, y: ptr.y } : null
   })
 
   return null

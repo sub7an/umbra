@@ -4,11 +4,11 @@ import { HandLandmarker, FilesetResolver } from '@mediapipe/tasks-vision'
 const WASM_CDN  = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm'
 const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task'
 
-const PINCH_THR      = 0.07   // thumb–index distance for pinch
-const SMOOTH_α       = 0.28   // EMA weight — lower = smoother, more lag
-const SWIPE_VEL_THR  = 0.026  // NDC/frame to count as a swipe
-const SWIPE_COOLDOWN = 700    // ms between swipe events
-const PALM_HOLD_MS   = 820    // ms of open palm → back navigation
+const PINCH_THR      = 0.07
+const SMOOTH_α       = 0.28
+const SWIPE_VEL_THR  = 0.026
+const SWIPE_COOLDOWN = 700
+const PALM_HOLD_MS   = 820
 
 export const HAND_CONNECTIONS = [
   [0,1],[1,2],[2,3],[3,4],
@@ -26,7 +26,6 @@ function isPinch(lms) {
   return Math.sqrt(dx*dx + dy*dy) < PINCH_THR
 }
 
-// Index + middle extended, ring + pinky curled
 function isPeace(lms) {
   if (!lms?.length) return false
   const w = lms[0]
@@ -37,20 +36,32 @@ function isPeace(lms) {
          dist(20) < dist(18) * 1.05
 }
 
-// All four fingertips below their base knuckles (curled in)
 function isFist(lms) {
   if (!lms?.length) return false
   const pairs = [[5,8],[9,12],[13,16],[17,20]]
-  // fingertip.y > mcp.y means lower on screen (curled)
   return pairs.every(([mcp, tip]) => lms[tip].y > lms[mcp].y + 0.01)
     && Math.hypot(lms[4].x - lms[8].x, lms[4].y - lms[8].y) < PINCH_THR * 2.2
 }
 
-// All four fingers extended and spread above their base knuckles
 function isOpenPalm(lms) {
   if (!lms?.length) return false
   const pairs = [[5,8],[9,12],[13,16],[17,20]]
   return pairs.every(([mcp, tip]) => lms[tip].y < lms[mcp].y - 0.04)
+}
+
+function isThumbsUp(lms) {
+  if (!lms?.length) return false
+  // Thumb tip above thumb MCP (lower y = higher on screen), other fingers curled
+  return lms[4].y < lms[2].y - 0.06 &&
+    lms[8].y  > lms[6].y  + 0.015 &&
+    lms[12].y > lms[10].y + 0.015 &&
+    lms[16].y > lms[14].y + 0.015 &&
+    lms[20].y > lms[18].y + 0.015
+}
+
+function pinchMidpoint(lms) {
+  if (!lms?.length || !isPinch(lms)) return null
+  return { x: (lms[4].x + lms[8].x) / 2, y: (lms[4].y + lms[8].y) / 2 }
 }
 
 export default function useHandGesture() {
@@ -58,27 +69,35 @@ export default function useHandGesture() {
   const [status,    setStatus]    = useState('idle')
   const [initError, setInitError] = useState(null)
 
-  const videoRef        = useRef(null)
-  const landmarkerRef   = useRef(null)
-  const streamRef       = useRef(null)
-  const rafRef          = useRef(null)
-  const prevPinchRef    = useRef(false)
+  const videoRef      = useRef(null)
+  const landmarkerRef = useRef(null)
+  const streamRef     = useRef(null)
+  const rafRef        = useRef(null)
+  const prevPinchRef  = useRef(false)
 
-  // ── Public refs consumed without re-render ──────────────────────────────────
-  const pointerRef      = useRef(null)   // { x, y } smoothed NDC
-  const rawPointerRef   = useRef(null)   // { x, y } unsmoothed (for velocity)
-  const landmarksRef    = useRef([])
-  const pinchingRef     = useRef(false)
-  const justPinchedRef  = useRef(false)
-  const velocityRef     = useRef({ x: 0, y: 0 })
-  const swipeRef        = useRef(null)   // 'left'|'right'|'up'|'down'|null
-  const fistRef         = useRef(false)
-  const openPalmRef     = useRef(false)
-  const peaceRef        = useRef(false)
-  // Hold gesture tracking (internal)
-  const palmHoldStart   = useRef(null)
-  const palmFiredRef    = useRef(false)
-  const lastSwipeAt     = useRef(0)
+  // ── Public refs ─────────────────────────────────────────────────────────────
+  const pointerRef       = useRef(null)
+  const rawPointerRef    = useRef(null)
+  const landmarksRef     = useRef([])     // primary hand landmarks
+  const allHandsRef      = useRef([])     // all detected hands' landmarks
+  const hand2LandmarksRef= useRef([])     // second hand (or [])
+  const pinchingRef      = useRef(false)
+  const justPinchedRef   = useRef(false)
+  const velocityRef      = useRef({ x: 0, y: 0 })
+  const swipeRef         = useRef(null)
+  const fistRef          = useRef(false)
+  const openPalmRef      = useRef(false)
+  const peaceRef         = useRef(false)
+  const thumbsUpRef      = useRef(false)
+  // Two-hand pinch zoom: { active, dist, delta }
+  const twoPinchRef      = useRef({ active: false, dist: 0, delta: 1.0 })
+
+  // Internal
+  const palmHoldStart    = useRef(null)
+  const palmFiredRef     = useRef(false)
+  const lastSwipeAt      = useRef(0)
+  const prevThumbsUpRef  = useRef(false)
+  const prevTwoPinchDist = useRef(null)
 
   const initLandmarker = useCallback(async () => {
     if (landmarkerRef.current) return
@@ -86,7 +105,7 @@ export default function useHandGesture() {
     landmarkerRef.current = await HandLandmarker.createFromOptions(vision, {
       baseOptions: { modelAssetPath: MODEL_URL, delegate: 'GPU' },
       runningMode: 'VIDEO',
-      numHands: 1,
+      numHands: 2,   // detect up to two hands
     })
   }, [])
 
@@ -110,43 +129,68 @@ export default function useHandGesture() {
     }
 
     const result = lm.detectForVideo(vid, performance.now())
+    const allHands = result.landmarks ?? []
 
-    if (result.landmarks?.length > 0) {
-      const lms = result.landmarks[0]
-      landmarksRef.current = lms
+    if (allHands.length > 0) {
+      const lms = allHands[0]            // primary hand
+      const lms2 = allHands[1] ?? []    // second hand
 
-      // Raw pointer from index fingertip (mirrored)
+      allHandsRef.current       = allHands
+      landmarksRef.current      = lms
+      hand2LandmarksRef.current = lms2
+
+      // ── Primary hand pointer ────────────────────────────────────────────────
       const rawX = -(lms[8].x * 2 - 1)
       const rawY = -(lms[8].y * 2 - 1)
-
-      // Velocity (from raw, before smoothing)
       const prev = rawPointerRef.current
       const vx   = prev ? rawX - prev.x : 0
       const vy   = prev ? rawY - prev.y : 0
-      velocityRef.current = { x: vx, y: vy }
+      velocityRef.current   = { x: vx, y: vy }
       rawPointerRef.current = { x: rawX, y: rawY }
 
-      // EMA smoothing
       const sp = pointerRef.current
       pointerRef.current = {
         x: sp ? sp.x + SMOOTH_α * (rawX - sp.x) : rawX,
         y: sp ? sp.y + SMOOTH_α * (rawY - sp.y) : rawY,
       }
 
-      // Gesture classification
-      const pinching  = isPinch(lms)
-      const peace     = isPeace(lms)
-      const fist      = isFist(lms)
-      const openPalm  = isOpenPalm(lms)
+      // ── Primary hand gestures ───────────────────────────────────────────────
+      const pinching = isPinch(lms)
+      const peace    = isPeace(lms)
+      const fist     = isFist(lms)
+      const openPalm = isOpenPalm(lms)
+      const thumbsUp = isThumbsUp(lms)
 
-      justPinchedRef.current = pinching && !prevPinchRef.current
-      prevPinchRef.current   = pinching
-      pinchingRef.current    = pinching
-      peaceRef.current       = peace
-      fistRef.current        = fist
-      openPalmRef.current    = openPalm
+      justPinchedRef.current   = pinching && !prevPinchRef.current
+      prevPinchRef.current     = pinching
+      pinchingRef.current      = pinching
+      peaceRef.current         = peace
+      fistRef.current          = fist
+      openPalmRef.current      = openPalm
+      thumbsUpRef.current      = thumbsUp
 
-      // Swipe: fast movement while pointing (not pinching, not fist)
+      // Thumbs up: fire event on leading edge
+      if (thumbsUp && !prevThumbsUpRef.current) {
+        window.dispatchEvent(new CustomEvent('umbra-thumbsup'))
+      }
+      prevThumbsUpRef.current = thumbsUp
+
+      // ── Two-hand pinch zoom ─────────────────────────────────────────────────
+      const m0 = pinchMidpoint(lms)
+      const m1 = lms2.length ? pinchMidpoint(lms2) : null
+      if (m0 && m1) {
+        const dist  = Math.hypot(m0.x - m1.x, m0.y - m1.y)
+        const delta = prevTwoPinchDist.current != null
+          ? prevTwoPinchDist.current / dist   // >1 = spreading = zoom in
+          : 1.0
+        prevTwoPinchDist.current = dist
+        twoPinchRef.current = { active: true, dist, delta }
+      } else {
+        prevTwoPinchDist.current = null
+        twoPinchRef.current = { active: false, dist: 0, delta: 1.0 }
+      }
+
+      // ── Swipe detection ─────────────────────────────────────────────────────
       const speed = Math.sqrt(vx*vx + vy*vy)
       const now   = performance.now()
       if (speed > SWIPE_VEL_THR && !pinching && !fist && now - lastSwipeAt.current > SWIPE_COOLDOWN) {
@@ -158,7 +202,7 @@ export default function useHandGesture() {
         setTimeout(() => { swipeRef.current = null }, 180)
       }
 
-      // Open palm hold → back navigation
+      // ── Open palm hold → back navigation ────────────────────────────────────
       if (openPalm && !pinching) {
         if (!palmHoldStart.current) { palmHoldStart.current = now; palmFiredRef.current = false }
         else if (!palmFiredRef.current && now - palmHoldStart.current > PALM_HOLD_MS) {
@@ -170,26 +214,35 @@ export default function useHandGesture() {
         palmFiredRef.current  = false
       }
 
-      // Status string
-      if (pinching)        setStatus('pinching')
-      else if (fist)       setStatus('fist')
-      else if (openPalm)   setStatus('open_palm')
-      else if (peace)      setStatus('peace')
-      else                 setStatus('pointing')
+      // ── Status ──────────────────────────────────────────────────────────────
+      if (twoPinchRef.current.active) setStatus('twopinch')
+      else if (thumbsUp)              setStatus('thumbsup')
+      else if (pinching)              setStatus('pinching')
+      else if (fist)                  setStatus('fist')
+      else if (openPalm)              setStatus('open_palm')
+      else if (peace)                 setStatus('peace')
+      else                            setStatus('pointing')
 
     } else {
-      landmarksRef.current  = []
-      pointerRef.current    = null
-      rawPointerRef.current = null
-      pinchingRef.current   = false
-      justPinchedRef.current = false
-      prevPinchRef.current  = false
-      fistRef.current       = false
-      openPalmRef.current   = false
-      peaceRef.current      = false
-      velocityRef.current   = { x: 0, y: 0 }
-      palmHoldStart.current = null
-      palmFiredRef.current  = false
+      // No hands detected
+      allHandsRef.current       = []
+      landmarksRef.current      = []
+      hand2LandmarksRef.current = []
+      pointerRef.current        = null
+      rawPointerRef.current     = null
+      pinchingRef.current       = false
+      justPinchedRef.current    = false
+      prevPinchRef.current      = false
+      fistRef.current           = false
+      openPalmRef.current       = false
+      peaceRef.current          = false
+      thumbsUpRef.current       = false
+      prevThumbsUpRef.current   = false
+      velocityRef.current       = { x: 0, y: 0 }
+      palmHoldStart.current     = null
+      palmFiredRef.current      = false
+      prevTwoPinchDist.current  = null
+      twoPinchRef.current       = { active: false, dist: 0, delta: 1.0 }
       setStatus('idle')
     }
 
@@ -203,12 +256,16 @@ export default function useHandGesture() {
       streamRef.current     = null
       pointerRef.current    = null
       landmarksRef.current  = []
+      allHandsRef.current   = []
+      hand2LandmarksRef.current = []
       pinchingRef.current   = false
       justPinchedRef.current = false
       prevPinchRef.current  = false
       fistRef.current       = false
       openPalmRef.current   = false
       peaceRef.current      = false
+      thumbsUpRef.current   = false
+      twoPinchRef.current   = { active: false, dist: 0, delta: 1.0 }
       setEnabled(false)
       setStatus('idle')
     } else {
@@ -232,7 +289,9 @@ export default function useHandGesture() {
 
   return {
     enabled, status, initError, toggle, videoRef,
-    pointerRef, landmarksRef, pinchingRef, justPinchedRef,
+    pointerRef, landmarksRef, allHandsRef, hand2LandmarksRef,
+    pinchingRef, justPinchedRef,
     velocityRef, swipeRef, fistRef, openPalmRef, peaceRef,
+    thumbsUpRef, twoPinchRef,
   }
 }
