@@ -20,6 +20,7 @@ const FluidModule          = lazy(() => import('./modules/fluid-dynamics/FluidMo
 const SandboxModule        = lazy(() => import('./modules/physics-sandbox/SandboxModule'))
 const WaveModule           = lazy(() => import('./modules/wave/WaveModule'))
 const OpticsModule         = lazy(() => import('./modules/optics/OpticsModule'))
+const AcousticModule       = lazy(() => import('./modules/acoustic/AcousticModule'))
 
 function ModuleFallback() {
   return (
@@ -49,6 +50,7 @@ const ROUTABLE = [
   'special-relativity', 'quantum-mechanics',
   'frontier-physics', 'dynamical-systems', 'electromagnetism',
   'general-relativity', 'thermodynamics', 'fluid-dynamics',
+  'acoustic-physics',
 ]
 
 function renderModule(id) {
@@ -68,6 +70,7 @@ function renderModule(id) {
   else if (id === 'general-relativity')  inner = <GRModule />
   else if (id === 'thermodynamics')      inner = <ThermoModule />
   else if (id === 'fluid-dynamics')      inner = <FluidModule />
+  else if (id === 'acoustic-physics')    inner = <AcousticModule />
   else return <ModulePicker />
 
   return <Suspense fallback={<ModuleFallback />}>{inner}</Suspense>

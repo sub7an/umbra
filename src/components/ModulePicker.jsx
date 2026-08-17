@@ -130,6 +130,16 @@ const MODULES = [
     color: 'teal',
     formula: 'ρ(∂u/∂t + u·∇u) = −∇p + μ∇²u',
   },
+  {
+    id: 'acoustic-physics',
+    name: 'Acoustic Physics',
+    abbr: '♪',
+    tagline: 'Cymatics · Harmonics · Lissajous',
+    description:
+      'Sound meets matter. Chladni figures show how vibrating plates form geometric nodal patterns. The harmonic series reveals why musical intervals sound consonant. Lissajous curves trace the geometric fingerprint of every musical ratio.',
+    color: 'violet',
+    formula: 'f_n = nf₀,  λ_n = 2L/n',
+  },
 ]
 
 const ACCENT_HEX = {
