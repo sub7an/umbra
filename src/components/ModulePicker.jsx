@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import useModuleStore from '../store/useModuleStore'
 import PhysicsBg from './PhysicsBg'
@@ -337,6 +337,16 @@ const HERO_CAMERAS = [
   [0.4, 1.0, 3.0],  // GR
 ]
 
+function HeroCameraRig({ idx }) {
+  const { camera } = useThree()
+  useEffect(() => {
+    const [x, y, z] = HERO_CAMERAS[idx]
+    camera.position.set(x, y, z)
+    camera.lookAt(0, 0, 0)
+  }, [idx, camera])
+  return null
+}
+
 function HeroActiveScene({ idx }) {
   if (idx === 0) return <HeroLorenz />
   if (idx === 1) return <HeroWave />
@@ -407,6 +417,7 @@ function HeroCanvas() {
         performance={{ min: 0.5 }}
         style={{ background: '#04090c', width: '100%', height: '100%', display: 'block' }}
       >
+        <HeroCameraRig idx={idx} />
         <HeroActiveScene idx={idx} />
       </Canvas>
 

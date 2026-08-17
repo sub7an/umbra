@@ -1,19 +1,57 @@
 import { useEffect, useRef } from 'react'
 import { useGesture } from '../context/GestureContext'
 
-// Watches for quick pinch gestures and fires DOM click events at the cursor position.
-// This makes every button / card on the page clickable via gesture without touching
-// individual components.
+function spawnRipple(sx, sy) {
+  const el = document.createElement('div')
+  el.className = 'umbra-ripple-el'
+  el.style.left = `${sx}px`
+  el.style.top  = `${sy}px`
+  document.body.appendChild(el)
+  el.addEventListener('animationend', () => el.remove(), { once: true })
+}
+
+function clickResetButton() {
+  const btns = [...document.querySelectorAll('button')]
+  const rst  = btns.find(b => /^(rst|reset)$/i.test(b.textContent?.trim()))
+  rst?.click()
+}
+
 export default function GestureEventBridge() {
-  const { enabled, pointerRef, pinchingRef } = useGesture()
+  const { enabled, pointerRef, pinchingRef, fistRef } = useGesture()
 
-  const wasPinchRef     = useRef(false)
-  const pinchStartRef   = useRef(0)          // timestamp
-  const pinchStartPosRef = useRef(null)      // { x, y } screen px
+  const wasPinchRef      = useRef(false)
+  const pinchStartRef    = useRef(0)
+  const pinchStartPosRef = useRef(null)
+  const wasFistRef       = useRef(false)
 
+  // ── Swipe → cycle module view tabs ────────────────────────────────────────
+  useEffect(() => {
+    const handler = (e) => {
+      const dir  = e.detail.dir
+      const tabs = [...document.querySelectorAll('[role="tab"]')]
+      if (tabs.length < 2) return
+
+      // Find the active tab: aria-selected or active styling class
+      const activeIdx = tabs.findIndex(t =>
+        t.getAttribute('aria-selected') === 'true' ||
+        t.classList.contains('text-sky-glow')
+      )
+      if (activeIdx === -1) return
+
+      // Mirror: swipe right = previous tab, swipe left = next tab (camera is mirrored)
+      const delta   = dir === 'right' ? -1 : 1
+      const nextIdx = (activeIdx + delta + tabs.length) % tabs.length
+      tabs[nextIdx].click()
+    }
+    window.addEventListener('umbra-swipe', handler)
+    return () => window.removeEventListener('umbra-swipe', handler)
+  }, [])
+
+  // ── Main frame loop: pinch-click + fist-reset ─────────────────────────────
   useEffect(() => {
     if (!enabled) {
       wasPinchRef.current = false
+      wasFistRef.current  = false
       return
     }
 
@@ -22,25 +60,30 @@ export default function GestureEventBridge() {
     const tick = () => {
       const ptr      = pointerRef.current
       const pinching = pinchingRef.current
+      const fist     = fistRef.current
 
+      // ── Fist: click Reset button on leading edge ─────────────────────────
+      if (fist && !wasFistRef.current) {
+        clickResetButton()
+      }
+      wasFistRef.current = fist
+
+      // ── Pinch-to-click ───────────────────────────────────────────────────
       if (ptr) {
         const sx = ((ptr.x + 1) / 2) * window.innerWidth
         const sy = ((1 - ptr.y) / 2) * window.innerHeight
 
         if (pinching && !wasPinchRef.current) {
-          // Pinch started
-          wasPinchRef.current     = true
-          pinchStartRef.current   = performance.now()
+          wasPinchRef.current      = true
+          pinchStartRef.current    = performance.now()
           pinchStartPosRef.current = { x: sx, y: sy }
         } else if (!pinching && wasPinchRef.current) {
-          // Pinch released — check if it counts as a click
           wasPinchRef.current = false
           const duration = performance.now() - pinchStartRef.current
           const start    = pinchStartPosRef.current
           const moved    = start ? Math.hypot(sx - start.x, sy - start.y) : 999
 
           if (duration < 400 && moved < 55) {
-            // Find the deepest element at the pointer, walk up to the first clickable
             let el = document.elementFromPoint(sx, sy)
             while (el && el !== document.body) {
               const tag = el.tagName
@@ -48,10 +91,8 @@ export default function GestureEventBridge() {
               el = el.parentElement
             }
             if (el && el !== document.body) {
-              el.dispatchEvent(new MouseEvent('click', {
-                clientX: sx, clientY: sy,
-                bubbles: true, cancelable: true,
-              }))
+              el.dispatchEvent(new MouseEvent('click', { clientX: sx, clientY: sy, bubbles: true, cancelable: true }))
+              spawnRipple(sx, sy)
             }
           }
         }
@@ -64,7 +105,7 @@ export default function GestureEventBridge() {
 
     rafId = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(rafId)
-  }, [enabled, pointerRef, pinchingRef])
+  }, [enabled, pointerRef, pinchingRef, fistRef])
 
   return null
 }
