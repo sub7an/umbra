@@ -1,19 +1,19 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import { useGesture } from '../context/GestureContext'
 
 const PALM_HOLD_MS = 820
 const TRAIL_LEN    = 9
+const LOG_MAX      = 7
 
 // ── Per-finger connection groups ─────────────────────────────────────────────
 const FINGER_SEGS = [
-  { key: 'palm',   color: 'rgba(255,255,255,0.28)', pairs: [[0,1],[0,5],[5,9],[9,13],[13,17],[0,17]] },
-  { key: 'thumb',  color: '#fb923c',                pairs: [[1,2],[2,3],[3,4]] },
-  { key: 'index',  color: '#00e5c4',                pairs: [[5,6],[6,7],[7,8]] },
-  { key: 'middle', color: '#60a5fa',                pairs: [[9,10],[10,11],[11,12]] },
-  { key: 'ring',   color: '#a78bfa',                pairs: [[13,14],[14,15],[15,16]] },
-  { key: 'pinky',  color: '#f472b6',                pairs: [[17,18],[18,19],[19,20]] },
+  { color: 'rgba(255,255,255,0.28)', pairs: [[0,1],[0,5],[5,9],[9,13],[13,17],[0,17]] },
+  { color: '#fb923c', pairs: [[1,2],[2,3],[3,4]] },
+  { color: '#00e5c4', pairs: [[5,6],[6,7],[7,8]] },
+  { color: '#60a5fa', pairs: [[9,10],[10,11],[11,12]] },
+  { color: '#a78bfa', pairs: [[13,14],[14,15],[15,16]] },
+  { color: '#f472b6', pairs: [[17,18],[18,19],[19,20]] },
 ]
-
 const TIP_COLORS = { 4: '#fb923c', 8: '#00e5c4', 12: '#60a5fa', 16: '#a78bfa', 20: '#f472b6' }
 
 const STATUS_COLOR = {
@@ -23,26 +23,34 @@ const STATUS_COLOR = {
   peace:      '#60a5fa',
   fist:       '#fb923c',
   open_palm:  '#a78bfa',
+  thumbsup:   '#4ade80',
+  twopinch:   '#f0abfc',
 }
 
 const STATUS_LABEL = {
   idle: 'IDLE', pointing: 'POINT', pinching: 'PINCH',
   peace: 'PEACE', fist: 'FIST', open_palm: 'PALM',
+  thumbsup: 'THUMB↑', twopinch: '2-HAND',
 }
 
 const STATUS_TO_GUIDE = {
   pointing: 'point', pinching: 'pinch', peace: 'peace',
-  fist: 'fist', open_palm: 'hold', idle: null,
+  fist: 'fist', open_palm: 'hold', thumbsup: 'thumbup',
+  twopinch: 'twopinch', idle: null,
 }
 
 const GESTURE_GUIDE = [
-  ['👆', 'Point',  'aim cursor',     'point'],
-  ['🤏', 'Pinch',  'click · drag',   'pinch'],
-  ['✌️', 'Peace',  'orbit scene',    'peace'],
-  ['✊', 'Fist',   'reset sim',      'fist'],
-  ['🖐', 'Hold',   '← back',         'hold'],
-  ['⚡', 'Swipe',  'change view',    'swipe'],
+  ['👆', 'Point',      'aim cursor',      'point'],
+  ['🤏', 'Pinch',      'click · drag',    'pinch'],
+  ['✌️', 'Peace',      'orbit scene',     'peace'],
+  ['✊', 'Fist',       'reset sim',       'fist'],
+  ['🖐', 'Hold',       '← back',          'hold'],
+  ['⚡', 'Swipe',      'change view',     'swipe'],
+  ['👍', 'Thumb up',   'toggle guide',    'thumbup'],
+  ['🤲', '2 Hands',    'pinch zoom',      'twopinch'],
 ]
+
+// ── Canvas drawing ────────────────────────────────────────────────────────────
 
 function drawFrame(ctx, video, W, H) {
   ctx.clearRect(0, 0, W, H)
@@ -57,16 +65,17 @@ function drawFrame(ctx, video, W, H) {
   }
 }
 
-function drawSkeleton(ctx, landmarks, W, H, pinching) {
-  if (!landmarks.length) return
+function drawOneSkeleton(ctx, landmarks, W, H, alpha = 1) {
+  if (!landmarks?.length) return
   const toX = (lm) => (1 - lm.x) * W
   const toY = (lm) => lm.y * H
 
-  // Per-finger colored connections
+  ctx.globalAlpha = alpha
+
   for (const { color, pairs } of FINGER_SEGS) {
     ctx.beginPath()
     ctx.strokeStyle = color
-    ctx.lineWidth = 1.6
+    ctx.lineWidth   = 1.6
     for (const [a, b] of pairs) {
       ctx.moveTo(toX(landmarks[a]), toY(landmarks[a]))
       ctx.lineTo(toX(landmarks[b]), toY(landmarks[b]))
@@ -74,32 +83,46 @@ function drawSkeleton(ctx, landmarks, W, H, pinching) {
     ctx.stroke()
   }
 
-  // Landmark dots — tips colored per finger, others white
   for (let i = 0; i < landmarks.length; i++) {
     const x = toX(landmarks[i])
     const y = toY(landmarks[i])
-    const isTip = i in TIP_COLORS
     ctx.beginPath()
-    ctx.arc(x, y, isTip ? 4.5 : 2, 0, Math.PI * 2)
+    ctx.arc(x, y, (i in TIP_COLORS) ? 4.5 : 2, 0, Math.PI * 2)
     ctx.fillStyle = TIP_COLORS[i] ?? 'rgba(255,255,255,0.4)'
     ctx.fill()
   }
 
-  // Pinch line
-  if (pinching && landmarks[4] && landmarks[8]) {
+  ctx.globalAlpha = 1
+}
+
+function drawSkeleton(ctx, landmarks, hand2Landmarks, W, H, pinching) {
+  // Second hand first (dimmer, behind)
+  if (hand2Landmarks?.length) {
+    drawOneSkeleton(ctx, hand2Landmarks, W, H, 0.38)
+  }
+  // Primary hand
+  drawOneSkeleton(ctx, landmarks, W, H, 1)
+
+  // Pinch line on primary hand
+  if (pinching && landmarks?.[4] && landmarks?.[8]) {
+    const toX = (lm) => (1 - lm.x) * W
+    const toY = (lm) => lm.y * H
     ctx.beginPath()
     ctx.moveTo(toX(landmarks[4]), toY(landmarks[4]))
     ctx.lineTo(toX(landmarks[8]), toY(landmarks[8]))
     ctx.strokeStyle = 'rgba(0,229,196,0.95)'
-    ctx.lineWidth = 2.2
+    ctx.lineWidth   = 2.2
     ctx.stroke()
   }
 }
 
+// ── Component ─────────────────────────────────────────────────────────────────
+
 export default function GestureHUD() {
   const {
     enabled, status, toggle, initError,
-    videoRef, landmarksRef, pinchingRef, peaceRef, fistRef, openPalmRef, pointerRef,
+    videoRef, landmarksRef, hand2LandmarksRef, pinchingRef,
+    peaceRef, fistRef, openPalmRef, thumbsUpRef, twoPinchRef, pointerRef,
   } = useGesture()
 
   const skeletonRef  = useRef(null)
@@ -108,15 +131,36 @@ export default function GestureHUD() {
   const trailEls     = useRef([])
   const rafRef       = useRef(null)
 
-  // Smooth velocity for cursor stretch
-  const smoothVelRef    = useRef({ x: 0, y: 0 })
-  const prevCursorRef   = useRef(null)
-  // Trail buffer
-  const trailPosRef     = useRef([])
-  // Palm hold tracking (local copy)
-  const palmStartRef    = useRef(null)
+  const smoothVelRef  = useRef({ x: 0, y: 0 })
+  const prevCursorRef = useRef(null)
+  const trailPosRef   = useRef([])
+  const palmStartRef  = useRef(null)
 
-  // Inject global CSS for ripple + dwell
+  // Gesture history log (React state — updates when status changes)
+  const [gestureLog, setGestureLog] = useState([])
+  // Guide panel visibility (toggled by thumbs-up)
+  const [guideVisible, setGuideVisible] = useState(true)
+
+  // Track status changes for the gesture log
+  const prevStatusRef = useRef('idle')
+  useEffect(() => {
+    if (!enabled) return
+    if (status === prevStatusRef.current) return
+    prevStatusRef.current = status
+    if (status === 'idle' || status === 'pointing') return
+    const color = STATUS_COLOR[status] ?? 'rgba(255,255,255,0.5)'
+    const label = STATUS_LABEL[status] ?? status
+    setGestureLog(prev => [{ label, color, id: Date.now() }, ...prev].slice(0, LOG_MAX))
+  }, [status, enabled])
+
+  // Thumbs-up → toggle guide panel
+  useEffect(() => {
+    const handler = () => setGuideVisible(v => !v)
+    window.addEventListener('umbra-thumbsup', handler)
+    return () => window.removeEventListener('umbra-thumbsup', handler)
+  }, [])
+
+  // Inject global CSS
   useEffect(() => {
     const style = document.createElement('style')
     style.id = 'umbra-gesture-css'
@@ -131,10 +175,6 @@ export default function GestureHUD() {
         border: 2px solid #00e5c4;
         animation: umbra-ripple 0.42s ease-out forwards;
       }
-      @keyframes umbra-dwell-ring {
-        0%   { box-shadow: 0 0 0 0 rgba(0,229,196,0.55); }
-        100% { box-shadow: 0 0 0 6px rgba(0,229,196,0); }
-      }
     `
     document.head.appendChild(style)
     return () => document.getElementById('umbra-gesture-css')?.remove()
@@ -145,6 +185,8 @@ export default function GestureHUD() {
     const peace    = peaceRef.current
     const fist     = fistRef.current
     const openPalm = openPalmRef.current
+    const thumbsUp = thumbsUpRef.current
+    const twoPinch = twoPinchRef.current?.active
     const ptr      = pointerRef.current
 
     // ── Skeleton canvas ──────────────────────────────────────────────────────
@@ -152,14 +194,22 @@ export default function GestureHUD() {
     if (canvas && enabled) {
       const ctx = canvas.getContext('2d')
       drawFrame(ctx, videoRef.current, canvas.width, canvas.height)
-      drawSkeleton(ctx, landmarksRef.current, canvas.width, canvas.height, pinching)
+      drawSkeleton(
+        ctx,
+        landmarksRef.current,
+        hand2LandmarksRef.current,
+        canvas.width, canvas.height,
+        pinching,
+      )
     }
 
-    // ── Compute gesture color ─────────────────────────────────────────────────
-    const color = pinching  ? '#00e5c4'
-                : fist      ? '#fb923c'
-                : openPalm  ? '#a78bfa'
-                : peace     ? '#60a5fa'
+    // ── Gesture color for cursor + trail ─────────────────────────────────────
+    const color = twoPinch   ? '#f0abfc'
+                : thumbsUp   ? '#4ade80'
+                : pinching   ? '#00e5c4'
+                : fist       ? '#fb923c'
+                : openPalm   ? '#a78bfa'
+                : peace      ? '#60a5fa'
                 : 'rgba(0,229,196,0.7)'
 
     // ── Cursor ring ──────────────────────────────────────────────────────────
@@ -170,15 +220,15 @@ export default function GestureHUD() {
         const sx = ((ptr.x + 1) / 2) * window.innerWidth
         const sy = ((1 - ptr.y) / 2) * window.innerHeight
 
-        // Screen-space velocity for stretch
+        // Smooth velocity for stretch
         const prev = prevCursorRef.current
         const rawVx = prev ? sx - prev.x : 0
         const rawVy = prev ? sy - prev.y : 0
-        prevCursorRef.current = { x: sx, y: sy }
-        smoothVelRef.current.x = smoothVelRef.current.x * 0.72 + rawVx * 0.28
-        smoothVelRef.current.y = smoothVelRef.current.y * 0.72 + rawVy * 0.28
-        const svx = smoothVelRef.current.x
-        const svy = smoothVelRef.current.y
+        prevCursorRef.current   = { x: sx, y: sy }
+        smoothVelRef.current.x  = smoothVelRef.current.x * 0.72 + rawVx * 0.28
+        smoothVelRef.current.y  = smoothVelRef.current.y * 0.72 + rawVy * 0.28
+        const svx   = smoothVelRef.current.x
+        const svy   = smoothVelRef.current.y
         const speed = Math.sqrt(svx*svx + svy*svy)
         const stretch = 1 + Math.min(speed / 16, 1.1)
         const angle   = speed > 0.6 ? Math.atan2(svy, svx) * 180 / Math.PI : 0
@@ -192,32 +242,32 @@ export default function GestureHUD() {
           if (!el) continue
           const ti = trail.length - TRAIL_LEN + i
           if (ti < 0) { el.style.opacity = '0'; continue }
-          const tp  = trail[ti]
+          const tp   = trail[ti]
           const frac = (i + 1) / TRAIL_LEN
-          const sz  = 3 + frac * 8
-          el.style.transform    = `translate(${tp.x}px, ${tp.y}px)`
-          el.style.width        = `${sz}px`
-          el.style.height       = `${sz}px`
-          el.style.marginLeft   = `${-sz / 2}px`
-          el.style.marginTop    = `${-sz / 2}px`
-          el.style.background   = tp.color
-          el.style.opacity      = `${frac * 0.45}`
+          const sz   = 3 + frac * 8
+          el.style.transform  = `translate(${tp.x}px, ${tp.y}px)`
+          el.style.width      = `${sz}px`
+          el.style.height     = `${sz}px`
+          el.style.marginLeft = `${-sz / 2}px`
+          el.style.marginTop  = `${-sz / 2}px`
+          el.style.background = tp.color
+          el.style.opacity    = `${frac * 0.45}`
         }
 
-        // Cursor style
-        const size = pinching ? 18 : fist ? 14 : openPalm ? 36 : peace ? 28 : 32
+        // Cursor
+        const size = twoPinch ? 40 : pinching ? 18 : fist ? 14 : openPalm ? 36 : peace ? 28 : 32
         cursor.style.width       = `${size}px`
         cursor.style.height      = `${size}px`
         cursor.style.marginLeft  = `${-size / 2}px`
         cursor.style.marginTop   = `${-size / 2}px`
         cursor.style.borderColor = color
-        cursor.style.boxShadow   = pinching
-          ? `0 0 14px 5px rgba(0,229,196,0.55), inset 0 0 8px rgba(0,229,196,0.25)`
+        cursor.style.boxShadow   = (pinching || twoPinch)
+          ? `0 0 14px 5px ${color}88, inset 0 0 8px ${color}44`
           : `0 0 8px 2px ${color}55`
-        cursor.style.transform   = `translate(${sx}px, ${sy}px) rotate(${angle}deg) scaleX(${stretch})`
+        cursor.style.transform   = `translate(${sx}px,${sy}px) rotate(${angle}deg) scaleX(${stretch})`
         cursor.style.opacity     = '1'
 
-        // ── Palm hold dwell arc ─────────────────────────────────────────────
+        // Palm hold dwell arc
         if (dwell) {
           dwell.style.transform = `translate(${sx}px, ${sy}px)`
           if (openPalm) {
@@ -238,9 +288,9 @@ export default function GestureHUD() {
           }
         }
       } else {
-        cursor.style.opacity = '0'
-        trailPosRef.current  = []
-        smoothVelRef.current = { x: 0, y: 0 }
+        cursor.style.opacity  = '0'
+        trailPosRef.current   = []
+        smoothVelRef.current  = { x: 0, y: 0 }
         prevCursorRef.current = null
         for (let i = 0; i < TRAIL_LEN; i++) {
           const el = trailEls.current[i]
@@ -251,7 +301,8 @@ export default function GestureHUD() {
     }
 
     rafRef.current = requestAnimationFrame(tick)
-  }, [enabled, videoRef, landmarksRef, pinchingRef, peaceRef, fistRef, openPalmRef, pointerRef])
+  }, [enabled, videoRef, landmarksRef, hand2LandmarksRef, pinchingRef, peaceRef,
+      fistRef, openPalmRef, thumbsUpRef, twoPinchRef, pointerRef])
 
   useEffect(() => {
     rafRef.current = requestAnimationFrame(tick)
@@ -263,14 +314,11 @@ export default function GestureHUD() {
 
   return (
     <>
-      {/* Hidden video element */}
-      <video
-        ref={videoRef}
-        muted playsInline
+      <video ref={videoRef} muted playsInline
         style={{ position: 'fixed', top: -9999, left: -9999, width: 1, height: 1, opacity: 0 }}
       />
 
-      {/* Trail dots — pre-rendered, updated via refs in tick */}
+      {/* Cursor trail dots */}
       {Array.from({ length: TRAIL_LEN }, (_, i) => (
         <div
           key={i}
@@ -288,24 +336,20 @@ export default function GestureHUD() {
         />
       ))}
 
-      {/* Cursor ring — velocity-stretched ellipse */}
+      {/* Velocity-stretch cursor ring */}
       <div
         ref={cursorRef}
         style={{
-          position:      'fixed',
-          top:            0,
-          left:           0,
-          width:          '32px',
-          height:         '32px',
-          marginLeft:    '-16px',
-          marginTop:     '-16px',
-          borderRadius:  '50%',
-          border:        '2px solid rgba(0,229,196,0.7)',
-          boxShadow:     '0 0 8px 2px rgba(0,229,196,0.35)',
+          position: 'fixed', top: 0, left: 0,
+          width: '32px', height: '32px',
+          marginLeft: '-16px', marginTop: '-16px',
+          borderRadius: '50%',
+          border: '2px solid rgba(0,229,196,0.7)',
+          boxShadow: '0 0 8px 2px rgba(0,229,196,0.35)',
           pointerEvents: 'none',
-          zIndex:         9999,
-          opacity:        0,
-          transition:    'width 0.07s, height 0.07s, border-color 0.12s, box-shadow 0.12s',
+          zIndex: 9999,
+          opacity: 0,
+          transition: 'width 0.07s, height 0.07s, border-color 0.12s, box-shadow 0.12s',
         }}
       />
 
@@ -323,14 +367,13 @@ export default function GestureHUD() {
         }}
       />
 
-      {/* HUD panel — bottom right */}
+      {/* HUD panel */}
       <div style={{
         position: 'fixed', bottom: '20px', right: '20px',
         zIndex: 9998,
         display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px',
         pointerEvents: 'none',
       }}>
-
         {enabled && (
           <>
             {/* Camera feed */}
@@ -351,63 +394,110 @@ export default function GestureHUD() {
                 position: 'absolute', top: '5px', left: '5px',
                 fontFamily: 'JetBrains Mono, monospace',
                 fontSize: '8px', letterSpacing: '0.14em',
-                color: statusColor,
-                padding: '1px 5px',
-                background: 'rgba(4,9,12,0.75)',
-                borderRadius: '2px', transition: 'color 0.2s',
+                color: statusColor, padding: '1px 5px',
+                background: 'rgba(4,9,12,0.75)', borderRadius: '2px',
+                transition: 'color 0.2s',
               }}>
                 {STATUS_LABEL[status] ?? status.toUpperCase()}
               </div>
+              {/* Two-hand indicator dot */}
+              {hand2LandmarksRef?.current?.length > 0 && (
+                <div style={{
+                  position: 'absolute', top: '5px', right: '5px',
+                  width: '6px', height: '6px', borderRadius: '50%',
+                  background: '#f0abfc',
+                  boxShadow: '0 0 6px #f0abfc',
+                }} />
+              )}
             </div>
 
-            {/* Gesture guide */}
-            <div style={{
-              width: '200px',
-              background: 'rgba(4,9,12,0.88)',
-              border: '1px solid rgba(255,255,255,0.06)',
-              borderRadius: '5px', padding: '8px 10px',
-            }}>
+            {/* Gesture guide — hidden/shown by thumbs-up */}
+            {guideVisible && (
               <div style={{
-                fontFamily: 'JetBrains Mono, monospace',
-                fontSize: '7px', letterSpacing: '0.20em', textTransform: 'uppercase',
-                color: 'rgba(255,255,255,0.20)', marginBottom: '7px',
+                width: '200px',
+                background: 'rgba(4,9,12,0.88)',
+                border: '1px solid rgba(255,255,255,0.06)',
+                borderRadius: '5px', padding: '8px 10px',
               }}>
-                Gesture Guide
-              </div>
-              {GESTURE_GUIDE.map(([icon, gesture, action, id]) => {
-                const isActive = id === activeGuideId
-                return (
-                  <div
-                    key={gesture}
-                    style={{
+                <div style={{
+                  fontFamily: 'JetBrains Mono, monospace',
+                  fontSize: '7px', letterSpacing: '0.20em', textTransform: 'uppercase',
+                  color: 'rgba(255,255,255,0.20)', marginBottom: '7px',
+                  display: 'flex', justifyContent: 'space-between',
+                }}>
+                  <span>Gesture Guide</span>
+                  <span style={{ color: 'rgba(255,255,255,0.12)', fontSize: '6px' }}>👍 to hide</span>
+                </div>
+                {GESTURE_GUIDE.map(([icon, gesture, action, id]) => {
+                  const isActive = id === activeGuideId
+                  return (
+                    <div key={gesture} style={{
                       display: 'flex', alignItems: 'center', gap: '7px',
                       marginBottom: '4px',
                       opacity: isActive ? 1 : 0.42,
                       transition: 'opacity 0.18s',
+                      padding: '1px 3px',
                       background: isActive ? 'rgba(0,229,196,0.05)' : 'transparent',
                       borderRadius: '2px',
-                      padding: isActive ? '1px 3px' : '1px 3px',
-                    }}
-                  >
-                    <span style={{ fontSize: '11px', width: '16px', textAlign: 'center', lineHeight: 1 }}>{icon}</span>
-                    <span style={{
-                      fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', letterSpacing: '0.06em',
-                      color: isActive ? statusColor : 'rgba(0,229,196,0.65)',
-                      width: '42px', flexShrink: 0, transition: 'color 0.18s',
                     }}>
-                      {gesture}
-                    </span>
+                      <span style={{ fontSize: '11px', width: '16px', textAlign: 'center', lineHeight: 1 }}>{icon}</span>
+                      <span style={{
+                        fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', letterSpacing: '0.06em',
+                        color: isActive ? statusColor : 'rgba(0,229,196,0.65)',
+                        width: '52px', flexShrink: 0, transition: 'color 0.18s',
+                      }}>
+                        {gesture}
+                      </span>
+                      <span style={{
+                        fontFamily: 'JetBrains Mono, monospace', fontSize: '7px',
+                        color: isActive ? 'rgba(255,255,255,0.65)' : 'rgba(255,255,255,0.28)',
+                        transition: 'color 0.18s',
+                      }}>
+                        {action}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            {/* Gesture history log */}
+            {gestureLog.length > 0 && (
+              <div style={{
+                width: '200px',
+                background: 'rgba(4,9,12,0.75)',
+                border: '1px solid rgba(255,255,255,0.05)',
+                borderRadius: '5px', padding: '6px 10px',
+              }}>
+                <div style={{
+                  fontFamily: 'JetBrains Mono, monospace',
+                  fontSize: '7px', letterSpacing: '0.18em', textTransform: 'uppercase',
+                  color: 'rgba(255,255,255,0.16)', marginBottom: '5px',
+                }}>
+                  Recent
+                </div>
+                {gestureLog.map((entry, i) => (
+                  <div key={entry.id} style={{
+                    display: 'flex', alignItems: 'center', gap: '7px',
+                    marginBottom: '3px',
+                    opacity: Math.max(0.15, 1 - i * 0.16),
+                  }}>
+                    <div style={{
+                      width: '5px', height: '5px', borderRadius: '50%',
+                      background: entry.color, flexShrink: 0,
+                      boxShadow: i === 0 ? `0 0 5px ${entry.color}` : 'none',
+                    }} />
                     <span style={{
-                      fontFamily: 'JetBrains Mono, monospace', fontSize: '7px',
-                      color: isActive ? 'rgba(255,255,255,0.65)' : 'rgba(255,255,255,0.28)',
-                      transition: 'color 0.18s',
+                      fontFamily: 'JetBrains Mono, monospace',
+                      fontSize: '8px', letterSpacing: '0.08em',
+                      color: i === 0 ? entry.color : 'rgba(255,255,255,0.45)',
                     }}>
-                      {action}
+                      {entry.label}
                     </span>
                   </div>
-                )
-              })}
-            </div>
+                ))}
+              </div>
+            )}
           </>
         )}
 
