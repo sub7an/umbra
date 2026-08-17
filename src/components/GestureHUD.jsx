@@ -67,14 +67,73 @@ const STATUS_TO_GUIDE = {
 }
 
 const GUIDE_ROWS = [
-  ['👆','Point',  'aim cursor',   'point'],
-  ['🤏','Pinch',  'select · drag','pinch'],
-  ['✌️','Peace',  'orbit scene',  'peace'],
-  ['✊','Fist',   'reset sim',    'fist'],
-  ['🖐','Hold 1s','← back',       'hold'],
-  ['⚡','Swipe',  'change view',  'swipe'],
-  ['👍','Thumb',  'hide guide',   'thumbup'],
-  ['🤲','2 Hands','eclipse zoom', 'twopinch'],
+  ['👆','Index finger up',   'Moves cursor',           'point'],
+  ['🤏','Pinch thumb+index', 'Click / drag sliders',   'pinch'],
+  ['✌️','Peace / V sign',   'Zoom 3D view up/down',   'peace'],
+  ['✊','Make a fist',       'Reset the simulation',   'fist'],
+  ['🖐','Open palm, hold 1s','Go back to menu',        'hold'],
+  ['⚡','Flick left/right',  'Switch tabs',            'swipe'],
+  ['👍','Thumbs up',         'Show / hide this guide', 'thumbup'],
+  ['🤲','Pinch with 2 hands','Spread/close to zoom',   'twopinch'],
+]
+
+const TUTORIAL_STEPS = [
+  {
+    emoji:   '👆',
+    name:    'Point to move the cursor',
+    how:     'Raise just your index finger like you\'re pointing at something.',
+    does:    'The glowing cursor follows your fingertip around the screen. Hover over buttons to highlight them.',
+    color:   P_CYAN,
+    id:      'point',
+  },
+  {
+    emoji:   '🤏',
+    name:    'Pinch to click',
+    how:     'Touch your thumb tip to your index fingertip — like picking up something tiny.',
+    does:    'A quick pinch clicks whatever the cursor is over. Pinch and hold while moving to drag sliders.',
+    color:   P_WHITE,
+    id:      'pinch',
+  },
+  {
+    emoji:   '✌️',
+    name:    'Peace sign to zoom',
+    how:     'Hold up your index and middle fingers in a V shape.',
+    does:    'Move your hand upward to zoom in on the 3D scene, downward to zoom out.',
+    color:   '#4499FF',
+    id:      'peace',
+  },
+  {
+    emoji:   '✊',
+    name:    'Fist to reset',
+    how:     'Curl all your fingers into a fist.',
+    does:    'Instantly resets the physics simulation back to its starting state.',
+    color:   P_EMBER,
+    id:      'fist',
+  },
+  {
+    emoji:   '🖐',
+    name:    'Open palm to go back',
+    how:     'Hold your full open hand up with fingers spread wide for about 1 second.',
+    does:    'Navigates back to the main module selection screen.',
+    color:   P_PURPLE,
+    id:      'hold',
+  },
+  {
+    emoji:   '⚡',
+    name:    'Swipe to switch tabs',
+    how:     'While pointing, quickly flick your whole hand to the left or right.',
+    does:    'Cycles through the view tabs inside the current physics module.',
+    color:   P_GOLD,
+    id:      'swipe',
+  },
+  {
+    emoji:   '🤲',
+    name:    'Two hands to zoom',
+    how:     'Pinch with both hands at the same time.',
+    does:    'Spread your hands apart to zoom in, bring them together to zoom out.',
+    color:   P_GOLD,
+    id:      'twopinch',
+  },
 ]
 
 const CONF_BARS = [
@@ -889,9 +948,12 @@ export default function GestureHUD() {
     openPalmRef,pointerRef,velocityRef,
   } = gesture
 
-  const [gestureLog,   setGestureLog]   = useState([])
-  const [guideVisible, setGuideVisible] = useState(true)
-  const [hasTwo,       setHasTwo]       = useState(false)
+  const [gestureLog,    setGestureLog]    = useState([])
+  const [guideVisible,  setGuideVisible]  = useState(true)
+  const [hasTwo,        setHasTwo]        = useState(false)
+  const [tutorialOpen,  setTutorialOpen]  = useState(false)
+  const [tutorialStep,  setTutorialStep]  = useState(0)
+  const prevEnabledRef  = useRef(false)
 
   const overlayRef   = useRef(null)
   const cursorCvsRef = useRef(null)
@@ -953,6 +1015,15 @@ export default function GestureHUD() {
     window.addEventListener('umbra-thumbsup',h)
     return ()=>window.removeEventListener('umbra-thumbsup',h)
   },[])
+
+  // Open tutorial whenever the gesture system is switched on
+  useEffect(()=>{
+    if (enabled && !prevEnabledRef.current) {
+      setTutorialStep(0)
+      setTutorialOpen(true)
+    }
+    prevEnabledRef.current = enabled
+  },[enabled])
 
   useEffect(()=>{
     const s=document.createElement('style'); s.id='umbra-gesture-css'
@@ -1241,57 +1312,190 @@ export default function GestureHUD() {
         </div>
       )}
 
+      {/* ── Tutorial modal ── */}
+      {tutorialOpen && (
+        <div style={{
+          position:'fixed',inset:0,zIndex:10001,
+          background:'rgba(0,2,10,0.88)',backdropFilter:'blur(6px)',
+          display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
+          padding:24,
+        }}>
+          {/* Step counter */}
+          <div style={{
+            fontFamily:'JetBrains Mono, monospace',fontSize:'10px',letterSpacing:'0.25em',
+            color:`${P_GOLD}55`,marginBottom:24,textTransform:'uppercase',
+          }}>
+            GESTURE {tutorialStep+1} OF {TUTORIAL_STEPS.length}
+          </div>
+
+          {/* Card */}
+          <div style={{
+            width:'min(460px,92vw)',
+            background:'rgba(0,4,18,0.95)',
+            border:`1px solid ${TUTORIAL_STEPS[tutorialStep].color}30`,
+            borderRadius:8,padding:'36px 40px',
+            boxShadow:`0 0 60px ${TUTORIAL_STEPS[tutorialStep].color}12, 0 8px 60px rgba(0,0,0,0.8)`,
+            textAlign:'center',
+          }}>
+            {/* Big emoji */}
+            <div style={{fontSize:72,lineHeight:1,marginBottom:20}}>
+              {TUTORIAL_STEPS[tutorialStep].emoji}
+            </div>
+
+            {/* Gesture name */}
+            <div style={{
+              fontFamily:'JetBrains Mono, monospace',fontWeight:700,
+              fontSize:18,letterSpacing:'0.12em',textTransform:'uppercase',
+              color:TUTORIAL_STEPS[tutorialStep].color,marginBottom:16,
+              textShadow:`0 0 24px ${TUTORIAL_STEPS[tutorialStep].color}`,
+            }}>
+              {TUTORIAL_STEPS[tutorialStep].name}
+            </div>
+
+            {/* How-to */}
+            <div style={{
+              fontFamily:'system-ui, sans-serif',fontSize:15,fontWeight:600,
+              color:'#E0EEFF',marginBottom:12,lineHeight:1.5,
+            }}>
+              {TUTORIAL_STEPS[tutorialStep].how}
+            </div>
+
+            {/* What it does */}
+            <div style={{
+              fontFamily:'system-ui, sans-serif',fontSize:13,
+              color:'rgba(200,220,255,0.55)',lineHeight:1.6,marginBottom:32,
+            }}>
+              {TUTORIAL_STEPS[tutorialStep].does}
+            </div>
+
+            {/* Step dots */}
+            <div style={{display:'flex',justifyContent:'center',gap:8,marginBottom:28}}>
+              {TUTORIAL_STEPS.map((_,i) => (
+                <div key={i} onClick={()=>setTutorialStep(i)} style={{
+                  width:i===tutorialStep?20:6,height:6,borderRadius:3,cursor:'pointer',
+                  background:i===tutorialStep?TUTORIAL_STEPS[tutorialStep].color:'rgba(255,255,255,0.15)',
+                  transition:'all 0.25s',
+                }}/>
+              ))}
+            </div>
+
+            {/* Navigation buttons */}
+            <div style={{display:'flex',gap:12,justifyContent:'center'}}>
+              {tutorialStep > 0 && (
+                <button onClick={()=>setTutorialStep(s=>s-1)} style={{
+                  fontFamily:'JetBrains Mono, monospace',fontSize:'11px',letterSpacing:'0.18em',
+                  padding:'9px 22px',borderRadius:4,cursor:'pointer',textTransform:'uppercase',
+                  border:`1px solid rgba(255,255,255,0.15)`,background:'transparent',color:'rgba(255,255,255,0.4)',
+                }}>
+                  ← Back
+                </button>
+              )}
+
+              {tutorialStep < TUTORIAL_STEPS.length - 1 ? (
+                <button onClick={()=>setTutorialStep(s=>s+1)} style={{
+                  fontFamily:'JetBrains Mono, monospace',fontSize:'11px',letterSpacing:'0.18em',
+                  padding:'9px 28px',borderRadius:4,cursor:'pointer',textTransform:'uppercase',
+                  border:`1px solid ${TUTORIAL_STEPS[tutorialStep].color}`,
+                  background:`${TUTORIAL_STEPS[tutorialStep].color}18`,
+                  color:TUTORIAL_STEPS[tutorialStep].color,
+                  boxShadow:`0 0 16px ${TUTORIAL_STEPS[tutorialStep].color}20`,
+                }}>
+                  Next →
+                </button>
+              ) : (
+                <button onClick={()=>setTutorialOpen(false)} style={{
+                  fontFamily:'JetBrains Mono, monospace',fontSize:'11px',letterSpacing:'0.18em',
+                  padding:'9px 28px',borderRadius:4,cursor:'pointer',textTransform:'uppercase',
+                  border:`1px solid ${P_GOLD}`,background:`${P_GOLD}20`,color:P_GOLD,
+                  boxShadow:`0 0 20px ${P_GOLD}30`,
+                }}>
+                  ◈ Let's go
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Skip link */}
+          <button onClick={()=>setTutorialOpen(false)} style={{
+            marginTop:20,fontFamily:'JetBrains Mono, monospace',fontSize:'10px',
+            letterSpacing:'0.20em',textTransform:'uppercase',
+            background:'none',border:'none',color:'rgba(255,255,255,0.20)',cursor:'pointer',
+          }}>
+            SKIP TUTORIAL
+          </button>
+        </div>
+      )}
+
+      {/* ── Side panel ── */}
       <div style={{
         position:'fixed',bottom:20,right:20,zIndex:9998,
         display:'flex',flexDirection:'column',alignItems:'flex-end',gap:8,pointerEvents:'none',
       }}>
         {enabled&&guideVisible&&(
           <div style={{
-            width:205,background:P_BG,
-            border:`1px solid ${P_GOLD}18`,borderRadius:3,padding:'10px 12px',
+            width:230,background:P_BG,
+            border:`1px solid ${P_GOLD}18`,borderRadius:4,padding:'12px 14px',
             boxShadow:`0 0 30px ${P_GOLD}08,0 4px 40px rgba(0,0,0,0.8)`,
           }}>
             <div style={{
-              display:'flex',justifyContent:'space-between',marginBottom:7,
-              fontFamily:'JetBrains Mono, monospace',fontSize:'7px',letterSpacing:'0.20em',textTransform:'uppercase',
+              display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8,
             }}>
-              <span style={{color:`${P_GOLD}55`}}>◈ PENUMBRA COMMANDS</span>
-              <span style={{color:`${P_GOLD}25`,fontSize:'6px'}}>👍 DISMISS</span>
+              <span style={{fontFamily:'JetBrains Mono, monospace',fontSize:'7px',letterSpacing:'0.20em',textTransform:'uppercase',color:`${P_GOLD}55`}}>GESTURE GUIDE</span>
+              <button onClick={()=>setTutorialOpen(true)} style={{
+                pointerEvents:'auto',fontFamily:'JetBrains Mono, monospace',fontSize:'7px',
+                letterSpacing:'0.14em',textTransform:'uppercase',
+                background:`${P_CYAN}12`,border:`1px solid ${P_CYAN}30`,color:`${P_CYAN}99`,
+                borderRadius:2,padding:'2px 6px',cursor:'pointer',
+              }}>? Tutorial</button>
             </div>
-            <div style={{height:1,background:`${P_GOLD}15`,marginBottom:7}}/>
+            <div style={{height:1,background:`${P_GOLD}15`,marginBottom:8}}/>
             {GUIDE_ROWS.map(([icon,name,action,id])=>{
               const isActive=id===activeGuideId
               return (
                 <div key={id} style={{
-                  display:'flex',alignItems:'center',gap:8,marginBottom:4,
-                  opacity:isActive?1:.28,transition:'opacity 0.15s',
+                  display:'flex',alignItems:'center',gap:10,marginBottom:5,
+                  opacity:isActive?1:.30,transition:'opacity 0.15s',
                   background:isActive?`${P_GOLD}08`:'transparent',
-                  borderRadius:2,padding:'1px 3px',
+                  borderRadius:3,padding:'3px 4px',
                   borderLeft:isActive?`2px solid ${statusColor}`:'2px solid transparent',
                 }}>
-                  <span style={{fontSize:'10px',width:14,textAlign:'center',flexShrink:0}}>{icon}</span>
-                  <span style={{fontFamily:'JetBrains Mono, monospace',fontSize:'7px',letterSpacing:'0.06em',color:isActive?statusColor:`${P_CYAN}77`,width:52,flexShrink:0,transition:'color 0.15s'}}>{name}</span>
-                  <span style={{fontFamily:'JetBrains Mono, monospace',fontSize:'6.5px',color:isActive?`${P_WHITE}77`:`${P_WHITE}20`,transition:'color 0.15s'}}>{action}</span>
+                  <span style={{fontSize:'14px',width:20,textAlign:'center',flexShrink:0,lineHeight:1}}>{icon}</span>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{
+                      fontFamily:'system-ui, sans-serif',fontSize:'12px',fontWeight:600,
+                      color:isActive?statusColor:'rgba(200,230,255,0.75)',
+                      transition:'color 0.15s',lineHeight:1.2,marginBottom:1,
+                    }}>{name}</div>
+                    <div style={{
+                      fontFamily:'system-ui, sans-serif',fontSize:'10px',
+                      color:isActive?'rgba(200,230,255,0.65)':'rgba(180,210,255,0.28)',
+                      transition:'color 0.15s',lineHeight:1.2,
+                    }}>{action}</div>
+                  </div>
                 </div>
               )
             })}
+            <div style={{height:1,background:`${P_GOLD}10`,margin:'8px 0 4px'}}/>
+            <div style={{fontFamily:'system-ui, sans-serif',fontSize:'10px',color:'rgba(180,210,255,0.25)',textAlign:'center'}}>
+              👍 Thumbs up hides this panel
+            </div>
           </div>
         )}
 
         {enabled&&gestureLog.length>0&&(
-          <div style={{width:205,background:P_BG,border:`1px solid ${P_GOLD}12`,borderRadius:3,padding:'7px 12px'}}>
+          <div style={{width:230,background:P_BG,border:`1px solid ${P_GOLD}12`,borderRadius:4,padding:'8px 14px'}}>
             <div style={{fontFamily:'JetBrains Mono, monospace',fontSize:'6.5px',letterSpacing:'0.20em',textTransform:'uppercase',color:`${P_GOLD}28`,marginBottom:5}}>PHASE LOG</div>
             {gestureLog.map((e,i)=>(
               <div key={e.id} style={{display:'flex',alignItems:'center',gap:8,marginBottom:3,opacity:Math.max(0.09,1-i*0.18)}}>
                 <div style={{width:4,height:4,borderRadius:'50%',background:e.color,flexShrink:0,boxShadow:i===0?`0 0 6px ${e.color}`:'none'}}/>
-                <span style={{fontFamily:'JetBrains Mono, monospace',fontSize:'7px',letterSpacing:'0.08em',color:i===0?e.color:`${P_WHITE}38`}}>{e.label}</span>
+                <span style={{fontFamily:'system-ui, sans-serif',fontSize:'11px',color:i===0?e.color:'rgba(200,220,255,0.35)'}}>{e.label}</span>
               </div>
             ))}
           </div>
         )}
 
         {initError&&(
-          <div style={{fontFamily:'JetBrains Mono, monospace',fontSize:'8px',color:'#ff5555',background:P_BG,border:'1px solid rgba(255,80,80,0.3)',padding:'4px 10px',borderRadius:3,maxWidth:205,pointerEvents:'auto'}}>
+          <div style={{fontFamily:'system-ui, sans-serif',fontSize:'12px',color:'#ff5555',background:P_BG,border:'1px solid rgba(255,80,80,0.3)',padding:'6px 12px',borderRadius:4,maxWidth:230,pointerEvents:'auto'}}>
             {initError}
           </div>
         )}
@@ -1299,7 +1503,7 @@ export default function GestureHUD() {
         <button onClick={toggle} style={{
           pointerEvents:'auto',fontFamily:'JetBrains Mono, monospace',
           fontSize:'8px',letterSpacing:'0.22em',textTransform:'uppercase',
-          padding:'7px 16px',borderRadius:2,cursor:'pointer',
+          padding:'9px 18px',borderRadius:3,cursor:'pointer',
           border:enabled?`1px solid ${P_GOLD}88`:`1px solid ${P_GOLD}18`,
           background:enabled?`${P_GOLD}0E`:P_BG,
           color:enabled?P_GOLD:`${P_GOLD}38`,
