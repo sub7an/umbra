@@ -467,8 +467,8 @@ function HeroCanvas() {
 
 // ── Stats strip ────────────────────────────────────────────────────────────────
 const STATS = [
-  { value: '12',   label: 'Modules' },
-  { value: '40+',  label: 'Simulations' },
+  { value: `${MODULES.length}`,  label: 'Modules' },
+  { value: '50+',  label: 'Simulations' },
   { value: 'GPU',  label: 'Accelerated' },
   { value: '0',    label: 'Server calls' },
 ]
@@ -773,7 +773,7 @@ export default function ModulePicker() {
             <p className="font-body leading-relaxed mb-10 max-w-[400px]"
               style={{ fontSize: 14, color: 'rgba(255,255,255,0.38)' }}>
               <span style={{ color: 'rgba(0,229,196,0.7)', fontWeight: 500 }}>
-                12 simulations. Zero downloads.
+                {MODULES.length} modules. Zero downloads.
               </span>{' '}
               From quantum tunneling to gravitational N-body — all running on your GPU, all in your browser.
             </p>

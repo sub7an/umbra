@@ -44,6 +44,14 @@ function buildContext(moduleId, s) {
       return `Temperature T = ${s.thermo.temperature.toFixed(2)}× normalized, view: ${s.thermo.viewType}.`
     case 'fluid-dynamics':
       return `Flow intensity (Reynolds proxy) = ${s.fluid.reynolds.toFixed(2)}, view: ${s.fluid.viewType}.`
+    case 'acoustic-physics':
+      return `Three interactive views: CYMATICS — 2200 sand particles settling onto Chladni nodal lines driven by F = -sign(u)·∇|u|, 10 mode presets from (1,1) at 141 Hz to (3,5) at 583 Hz, mic input supported. HARMONICS — 8 clickable standing wave strings, harmonics of C3 (130.8 Hz), pluck any to hear it. LISSAJOUS — 3D trail tracing musical interval ratios (1:1 Unison through 5:8 Minor Sixth) with phase slider and dual-oscillator audio.`
+    case 'wave-mechanics':
+      return `Live wave simulation on a 128×128 mesh solving the 2D wave equation. Multiple views including ripple tank, interference, and diffraction.`
+    case 'optics':
+      return `Ray tracing simulation showing prism dispersion via Cauchy's equation, biconvex lens focusing, and diffraction grating spreading spectral orders.`
+    case 'physics-sandbox':
+      return `Interactive particle field with 900 tracers responding to user-placed attractors, repulsors, and vortices simultaneously.`
     default:
       return ''
   }
