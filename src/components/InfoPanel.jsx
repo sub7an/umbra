@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import katex from 'katex'
+import PhysicsTutor from './PhysicsTutor'
 
 function KatexMath({ tex, block = false }) {
   const html = katex.renderToString(tex, {
@@ -154,6 +155,8 @@ export default function InfoPanel({
           )}
         </div>
       )}
+
+      <PhysicsTutor />
 
       <div className="px-4 py-3 border-t border-border-subtle shrink-0">
         <p className="font-mono-data text-[10px] text-text-dim leading-relaxed">{footer}</p>
