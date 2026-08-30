@@ -487,20 +487,34 @@ function ModuleCard({ module, onEnter, onHoverIn, onHoverOut, cardRef }) {
       onClick={onEnter}
       onMouseEnter={(e) => onHoverIn(e.currentTarget)}
       onMouseLeave={onHoverOut}
-      className="group relative flex flex-col text-left p-5 rounded-sm cursor-pointer focus:outline-none focus-visible:ring-1 transition-all duration-300"
+      className="group relative flex flex-col text-left p-5 rounded-sm cursor-pointer focus:outline-none focus-visible:ring-1"
       style={{
         background: 'rgba(10, 18, 24, 0.72)',
         backdropFilter: 'blur(14px)',
         WebkitBackdropFilter: 'blur(14px)',
         border: `1px solid rgba(${r},${g},${b},0.18)`,
+        transition: 'border-color 0.15s, box-shadow 0.15s',
+        transformStyle: 'preserve-3d',
+        willChange: 'transform',
       }}
       onMouseMove={(e) => {
-        e.currentTarget.style.borderColor = `rgba(${r},${g},${b},0.7)`
-        e.currentTarget.style.boxShadow   = `0 0 18px 2px rgba(${r},${g},${b},0.15), inset 0 1px 0 rgba(${r},${g},${b},0.08)`
+        const rect = e.currentTarget.getBoundingClientRect()
+        const dx = (e.clientX - rect.left - rect.width  / 2) / (rect.width  / 2)
+        const dy = (e.clientY - rect.top  - rect.height / 2) / (rect.height / 2)
+        const rotY =  dx * 9
+        const rotX = -dy * 7
+        e.currentTarget.style.transform = `perspective(900px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(1.025) translateZ(4px)`
+        e.currentTarget.style.borderColor = `rgba(${r},${g},${b},0.75)`
+        e.currentTarget.style.boxShadow   = `0 0 24px 3px rgba(${r},${g},${b},0.18), inset 0 1px 0 rgba(${r},${g},${b},0.1), ${-rotY*0.8}px ${-rotX*0.8}px 22px rgba(${r},${g},${b},0.09)`
+        const glare = e.currentTarget.querySelector('[data-glare]')
+        if (glare) glare.style.background = `radial-gradient(circle at ${(dx+1)/2*100}% ${(dy+1)/2*100}%, rgba(255,255,255,0.10) 0%, transparent 65%)`
       }}
       onMouseLeave={(e) => {
+        e.currentTarget.style.transform   = 'perspective(900px) rotateX(0deg) rotateY(0deg) scale(1) translateZ(0)'
         e.currentTarget.style.borderColor = `rgba(${r},${g},${b},0.18)`
         e.currentTarget.style.boxShadow   = 'none'
+        const glare = e.currentTarget.querySelector('[data-glare]')
+        if (glare) glare.style.background = 'none'
         onHoverOut(e.currentTarget)
       }}
     >
@@ -537,6 +551,8 @@ function ModuleCard({ module, onEnter, onHoverIn, onHoverOut, cardRef }) {
       >
         ENTER →
       </div>
+      {/* Glare overlay */}
+      <div data-glare="1" className="absolute inset-0 rounded-sm pointer-events-none" style={{ transition: 'background 0.08s' }} />
     </button>
   )
 }

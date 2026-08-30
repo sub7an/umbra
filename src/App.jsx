@@ -5,7 +5,40 @@ import GestureHUD from './components/GestureHUD'
 import GestureEventBridge from './components/GestureEventBridge'
 import TransitionOverlay from './components/TransitionOverlay'
 import BootScreen from './components/BootScreen'
+import CursorAura from './components/CursorAura'
 import { GestureProvider } from './context/GestureContext'
+
+const MOD_GLOW = {
+  'special-relativity':  '245,166,35',
+  'quantum-mechanics':   '168,85,247',
+  'frontier-physics':    '139,92,246',
+  'dynamical-systems':   '34,197,94',
+  'electromagnetism':    '59,130,246',
+  'general-relativity':  '249,115,22',
+  'thermodynamics':      '239,68,68',
+  'fluid-dynamics':      '14,165,233',
+  'acoustic-physics':    '20,184,166',
+  'wave-mechanics':      '99,102,241',
+  'optics':              '251,191,36',
+  'physics-sandbox':     '0,229,196',
+}
+
+function AmbientGlow() {
+  const [rgb, setRgb] = useState('0,229,196')
+  useEffect(() => {
+    const unsub = useModuleStore.subscribe(s => {
+      setRgb(MOD_GLOW[s.activeModule] || '0,229,196')
+    })
+    return unsub
+  }, [])
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
+      background: `radial-gradient(ellipse 70% 45% at 50% -5%, rgba(${rgb},0.055) 0%, transparent 70%)`,
+      transition: 'background 1.8s ease',
+    }} />
+  )
+}
 
 // Lazy-load all heavy modules — each becomes its own JS chunk fetched on demand
 const SRModule             = lazy(() => import('./modules/special-relativity/SRModule'))
@@ -147,13 +180,15 @@ export default function App() {
 
   return (
     <GestureProvider>
-      <div style={{ width: '100%', height: '100%' }}>
+      <AmbientGlow />
+      <div style={{ width: '100%', height: '100%', position: 'relative', zIndex: 1 }}>
         {renderModule(rendered)}
       </div>
       <GestureHUD />
       <GestureEventBridge />
       <TransitionOverlay phase={phase} targetModule={transTarget} />
       {!booted && <BootScreen onComplete={handleBoot} />}
+      <CursorAura />
     </GestureProvider>
   )
 }

@@ -503,7 +503,8 @@ export default function PhysicsTutor() {
 
     } catch (e) {
       if (!e.message?.includes('abort')) {
-        setError('UMBRA is unreachable — check VITE_ANTHROPIC_API_KEY in .env')
+        console.error('UMBRA API error:', e)
+        setError(`UMBRA error: ${e.message || e.status || 'unknown'} — check VITE_ANTHROPIC_API_KEY in .env`)
         setMessages(prev => prev.slice(0, -1))
       }
       setUmbraMode('idle')
