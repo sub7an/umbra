@@ -627,6 +627,9 @@ export default function ModulePicker() {
   const [hoveredCardEl,  setHoveredCardEl]  = useState(null)
   const [unlocked,       setUnlocked]       = useState(checkUnlocked)
   const [justUnlocked,   setJustUnlocked]   = useState(false)
+  const [recentIds]                         = useState(() => {
+    try { return JSON.parse(localStorage.getItem('umbra_recent') || '[]') } catch { return [] }
+  })
   const mouseRef  = useRef({ x: 0, y: 0 })
   const cardRefs  = useRef({})
   const gridRef   = useRef(null)
@@ -745,10 +748,29 @@ export default function ModulePicker() {
             </span>
           </button>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <div className="font-mono-data text-[9px] text-text-dim tracking-wider hidden md:block">
               NATURAL UNITS · c = ℏ = G = 1
             </div>
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('umbra-palette-open'))}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                fontFamily: 'JetBrains Mono, monospace', fontSize: 9,
+                letterSpacing: '0.08em', color: 'rgba(0,229,196,0.38)',
+                border: '1px solid rgba(0,229,196,0.12)',
+                borderRadius: 3, padding: '4px 8px', cursor: 'pointer',
+                background: 'transparent', transition: 'color 0.15s, border-color 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.color = 'rgba(0,229,196,0.7)'; e.currentTarget.style.borderColor = 'rgba(0,229,196,0.28)' }}
+              onMouseLeave={e => { e.currentTarget.style.color = 'rgba(0,229,196,0.38)'; e.currentTarget.style.borderColor = 'rgba(0,229,196,0.12)' }}
+            >
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <circle cx="4.5" cy="4.5" r="3.2" stroke="currentColor" strokeWidth="1.2"/>
+                <path d="M7.2 7.2L9 9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+              </svg>
+              ⌘K
+            </button>
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded"
               style={{ border: '1px solid rgba(0,229,196,0.14)', background: 'rgba(0,229,196,0.04)' }}>
               <span className="w-1.5 h-1.5 rounded-full"
@@ -868,6 +890,47 @@ export default function ModulePicker() {
           </span>
           <div className="flex-1 h-px" style={{ background: 'rgba(0,229,196,0.08)' }} />
         </div>
+
+        {/* ── Recently visited strip ── */}
+        {recentIds.length > 0 && (() => {
+          const recent = recentIds.map(id => MODULES.find(m => m.id === id)).filter(Boolean)
+          if (!recent.length) return null
+          return (
+            <div className="px-8 pb-5">
+              <p className="font-mono-data text-[8px] tracking-[0.26em] uppercase mb-3" style={{ color: 'rgba(0,229,196,0.28)' }}>
+                Recently visited
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {recent.map(mod => {
+                  const hex = ACCENT_HEX[mod.color]
+                  return (
+                    <button
+                      key={mod.id}
+                      onClick={() => setActiveModule(mod.id)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 7,
+                        padding: '5px 11px',
+                        background: `${hex}0c`,
+                        border: `1px solid ${hex}28`,
+                        borderRadius: 3, cursor: 'pointer',
+                        fontFamily: 'inherit', transition: 'background 0.1s, border-color 0.1s',
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background = `${hex}1c`; e.currentTarget.style.borderColor = `${hex}55` }}
+                      onMouseLeave={e => { e.currentTarget.style.background = `${hex}0c`; e.currentTarget.style.borderColor = `${hex}28` }}
+                    >
+                      <span style={{ fontFamily: 'Chakra Petch, sans-serif', fontSize: 10, fontWeight: 700, color: hex }}>
+                        {mod.abbr}
+                      </span>
+                      <span style={{ fontFamily: 'Chakra Petch, sans-serif', fontSize: 10, color: 'rgba(223,242,237,0.48)', letterSpacing: '0.04em' }}>
+                        {mod.name}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })()}
 
         <main className="flex-1 px-8 pb-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">

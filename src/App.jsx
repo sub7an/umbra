@@ -6,6 +6,7 @@ import GestureEventBridge from './components/GestureEventBridge'
 import TransitionOverlay from './components/TransitionOverlay'
 import BootScreen from './components/BootScreen'
 import CursorAura from './components/CursorAura'
+import CommandPalette from './components/CommandPalette'
 import { GestureProvider } from './context/GestureContext'
 
 const MOD_GLOW = {
@@ -166,6 +167,28 @@ export default function App() {
     return () => window.removeEventListener('umbra-back', handler)
   }, [setModule])
 
+  // ── Track recently visited modules in localStorage ─────────────────────────
+  useEffect(() => {
+    if (!activeModule) return
+    try {
+      const prev = JSON.parse(localStorage.getItem('umbra_recent') || '[]')
+      const next = [activeModule, ...prev.filter(x => x !== activeModule)].slice(0, 6)
+      localStorage.setItem('umbra_recent', JSON.stringify(next))
+    } catch {}
+  }, [activeModule])
+
+  // ── Escape key → go back to picker (only when not in command palette) ──────
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key !== 'Escape') return
+      if (document.activeElement?.tagName === 'INPUT') return
+      if (window.__UMBRA_PALETTE_OPEN) return
+      if (useModuleStore.getState().activeModule) setModule(null)
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [setModule])
+
   // ── Transition orchestration ───────────────────────────────────────────────
   useEffect(() => {
     if (activeModule === prevRef.current) return
@@ -189,6 +212,7 @@ export default function App() {
       <TransitionOverlay phase={phase} targetModule={transTarget} />
       {!booted && <BootScreen onComplete={handleBoot} />}
       <CursorAura />
+      <CommandPalette />
     </GestureProvider>
   )
 }
