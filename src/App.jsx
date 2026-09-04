@@ -10,6 +10,7 @@ import CommandPalette from './components/CommandPalette'
 import ShareButton, { decodeShareState, applySharedState } from './components/ShareButton'
 import FloatingToolbar from './components/FloatingToolbar'
 import Challenges from './components/Challenges'
+import ExplainMode from './components/ExplainMode'
 import { GestureProvider } from './context/GestureContext'
 
 const MOD_GLOW = {
@@ -119,6 +120,7 @@ export default function App() {
 
   const [rendered,    setRendered]  = useState(activeModule)
   const [phase,       setPhase]     = useState('idle')
+  const [explainOn,   setExplainOn] = useState(false)
   const [transTarget, setTarget]    = useState(activeModule)
   const [booted,      setBooted]    = useState(
     () => sessionStorage.getItem('umbra_booted') === '1'
@@ -194,10 +196,14 @@ export default function App() {
   // ── Escape key → go back to picker (only when not in command palette) ──────
   useEffect(() => {
     const handler = (e) => {
-      if (e.key !== 'Escape') return
       if (document.activeElement?.tagName === 'INPUT') return
-      if (window.__UMBRA_PALETTE_OPEN) return
-      if (useModuleStore.getState().activeModule) setModule(null)
+      if (e.key === 'Escape') {
+        if (window.__UMBRA_PALETTE_OPEN) return
+        if (useModuleStore.getState().activeModule) setModule(null)
+      } else if (e.key === 'e' || e.key === 'E') {
+        if (window.__UMBRA_PALETTE_OPEN) return
+        if (useModuleStore.getState().activeModule) setExplainOn(v => !v)
+      }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
@@ -227,7 +233,8 @@ export default function App() {
       {!booted && <BootScreen onComplete={handleBoot} />}
       <CursorAura />
       <CommandPalette />
-      <FloatingToolbar />
+      <FloatingToolbar explainActive={explainOn} onExplainToggle={() => setExplainOn(v => !v)} />
+      <ExplainMode active={explainOn} onToggle={() => setExplainOn(v => !v)} />
       <Challenges />
     </GestureProvider>
   )

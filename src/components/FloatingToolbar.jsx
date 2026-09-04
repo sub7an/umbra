@@ -281,11 +281,10 @@ function AskAction() {
 }
 
 // ── Main export: unified floating toolbar ─────────────────────────────────────
-export default function FloatingToolbar() {
+export default function FloatingToolbar({ explainActive, onExplainToggle }) {
   const activeModule = useModuleStore(s => s.activeModule)
   const hasModule = Boolean(activeModule)
 
-  // Always render (ASK works from home screen too), but some actions hide without activeModule
   return (
     <div style={{
       position: 'fixed',
@@ -304,6 +303,19 @@ export default function FloatingToolbar() {
       overflow: 'hidden',
     }}>
       <AskAction />
+      {hasModule && (
+        <>
+          <Divider />
+          <Btn
+            onClick={onExplainToggle}
+            active={explainActive}
+            color="#00e5c4"
+            title="Click anywhere in the simulation to get a plain English explanation (E)"
+            icon={<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="currentColor" strokeWidth="1.1"/><path d="M5 3v2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><circle cx="5" cy="7.2" r="0.55" fill="currentColor"/></svg>}
+            label={explainActive ? 'CLICK ANYTHING' : 'EXPLAIN'}
+          />
+        </>
+      )}
       {hasModule && <><Divider /><RecordAction activeModule={activeModule} /></>}
       {hasModule && <><Divider /><ShareAction activeModule={activeModule} /></>}
     </div>
