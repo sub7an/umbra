@@ -274,7 +274,7 @@ export default function PhaseDiagram() {
 
     // Physics boundary curve (e.g., E = V₀ for QM)
     if (cfg.boundary) {
-      ctx.strokeStyle = 'rgba(245,158,11,0.7)'
+      ctx.strokeStyle = 'rgba(0,229,196,0.7)'
       ctx.lineWidth = 1.5
       ctx.beginPath()
       let started = false
@@ -340,10 +340,10 @@ export default function PhaseDiagram() {
   const handleLeave = () => setTooltip(null)
 
   // ── Collapsed toggle ──────────────────────────────────────────────────────
-  const accentColor = cfg ? 'rgba(245,158,11,0.6)' : 'rgba(255,255,255,0.15)'
+  const accentColor = cfg ? 'rgba(0,229,196,0.6)' : 'rgba(255,255,255,0.15)'
 
   return (
-    <div style={{ borderTop: '1px solid rgba(245,158,11,0.06)', background: 'rgba(1,6,12,0.97)', flexShrink: 0 }}>
+    <div style={{ borderTop: '1px solid rgba(0,229,196,0.06)', background: 'rgba(1,6,12,0.97)', flexShrink: 0 }}>
       {/* Toggle bar */}
       <button
         onClick={() => cfg && setOpen(o => !o)}
@@ -378,7 +378,7 @@ export default function PhaseDiagram() {
 
           {/* Title */}
           <p style={{ fontFamily:'JetBrains Mono,monospace', fontSize:9,
-            letterSpacing:'.18em', color:'rgba(245,158,11,0.9)', margin:'0 0 3px' }}>
+            letterSpacing:'.18em', color:'rgba(0,229,196,0.9)', margin:'0 0 3px' }}>
             {cfg.title}
           </p>
           <p style={{ fontFamily:'JetBrains Mono,monospace', fontSize:8,
@@ -393,9 +393,9 @@ export default function PhaseDiagram() {
               disabled={state === 'computing'}
               style={{
                 width:'100%', padding:'7px', marginBottom:10,
-                background: state === 'computing' ? 'rgba(245,158,11,0.06)' : 'rgba(245,158,11,0.09)',
-                border:'1px solid rgba(245,158,11,0.25)',
-                color:'rgba(245,158,11,0.9)', fontFamily:'JetBrains Mono,monospace',
+                background: state === 'computing' ? 'rgba(0,229,196,0.06)' : 'rgba(0,229,196,0.09)',
+                border:'1px solid rgba(0,229,196,0.25)',
+                color:'rgba(0,229,196,0.9)', fontFamily:'JetBrains Mono,monospace',
                 fontSize:9, letterSpacing:'.2em', cursor: state === 'computing' ? 'default' : 'pointer',
                 borderRadius:2, transition:'all .15s',
               }}
@@ -457,7 +457,7 @@ export default function PhaseDiagram() {
                 <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center',
                   justifyContent:'center', background:'rgba(1,6,12,0.75)' }}>
                   <span style={{ fontFamily:'JetBrains Mono,monospace', fontSize:9,
-                    color:'rgba(245,158,11,0.7)', letterSpacing:'.2em',
+                    color:'rgba(0,229,196,0.7)', letterSpacing:'.2em',
                     animation:'umbra-pulse 1.2s ease-in-out infinite' }}>
                     COMPUTING…
                   </span>
@@ -468,11 +468,11 @@ export default function PhaseDiagram() {
               {tooltip && state === 'done' && (
                 <div style={{
                   position:'absolute', top:5, right:5, background:'rgba(1,6,12,0.92)',
-                  border:'1px solid rgba(245,158,11,0.2)', borderRadius:2,
+                  border:'1px solid rgba(0,229,196,0.2)', borderRadius:2,
                   padding:'4px 7px', pointerEvents:'none',
                 }}>
                   <p style={{ fontFamily:'JetBrains Mono,monospace', fontSize:8,
-                    color:'rgba(245,158,11,0.9)', margin:0, lineHeight:1.8 }}>
+                    color:'rgba(0,229,196,0.9)', margin:0, lineHeight:1.8 }}>
                     x: {tooltip.xv.toFixed(3)}<br/>
                     y: {tooltip.yv.toFixed(3)}<br/>
                     <span style={{ color:'rgba(248,149,64,0.9)' }}>
@@ -510,14 +510,14 @@ export default function PhaseDiagram() {
                 </span>
                 <button onClick={() => setState('idle')} style={{
                   background:'none', border:'none', fontFamily:'JetBrains Mono,monospace',
-                  fontSize:7, color:'rgba(245,158,11,0.4)', cursor:'pointer', letterSpacing:'.1em',
+                  fontSize:7, color:'rgba(0,229,196,0.4)', cursor:'pointer', letterSpacing:'.1em',
                 }}>
                   ↺ RECOMPUTE
                 </button>
               </div>
               {cfg.boundary && (
                 <p style={{ fontFamily:'JetBrains Mono,monospace', fontSize:7,
-                  color:'rgba(245,158,11,0.5)', margin:'5px 0 0', letterSpacing:'.08em' }}>
+                  color:'rgba(0,229,196,0.5)', margin:'5px 0 0', letterSpacing:'.08em' }}>
                   ─── {cfg.boundary.label}
                 </p>
               )}

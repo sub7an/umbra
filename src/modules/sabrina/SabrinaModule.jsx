@@ -116,14 +116,14 @@ export default function SabrinaModule() {
   const setActiveModule = useModuleStore((s) => s.setActiveModule)
 
   return (
-    <div className="relative w-full h-full" style={{ background: '#060404', overflow: 'hidden' }}>
+    <div className="relative w-full h-full" style={{ background: '#070b0d', overflow: 'hidden' }}>
 
       <Canvas
         camera={{ position: [0, 0, 8], fov: 45, near: 0.1, far: 100 }}
         gl={{ antialias: true, alpha: false, preserveDrawingBuffer: true }}
         style={{ width: '100%', height: '100%', display: 'block' }}
       >
-        <color attach="background" args={['#060404']} />
+        <color attach="background" args={['#070b0d']} />
         <HeartCloud />
         <Sparkles />
         <OrbitControls enablePan={false} enableDamping dampingFactor={0.08} minDistance={3} maxDistance={16} />

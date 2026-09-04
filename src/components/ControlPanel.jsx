@@ -21,7 +21,7 @@ function Slider({ label, min, max, step, value, onChange, unit = '' }) {
         {/* Filled portion */}
         <div
           className="absolute left-0 h-0.5 rounded-full bg-cyan-glow"
-          style={{ width: `${pct}%`, boxShadow: '0 0 4px 1px rgba(245,158,11,0.5)' }}
+          style={{ width: `${pct}%`, boxShadow: '0 0 4px 1px rgba(0,229,196,0.5)' }}
         />
         {/* Native range (transparent overlay for interaction) */}
         <input
@@ -39,7 +39,7 @@ function Slider({ label, min, max, step, value, onChange, unit = '' }) {
           className="absolute w-3.5 h-3.5 rounded-full bg-cyan-glow pointer-events-none z-20 transition-shadow duration-150 group-hover:shadow-glow-cyan-strong"
           style={{
             left: `calc(${pct}% - 7px)`,
-            boxShadow: '0 0 8px 2px rgba(245,158,11,0.5)',
+            boxShadow: '0 0 8px 2px rgba(0,229,196,0.5)',
           }}
         />
       </div>

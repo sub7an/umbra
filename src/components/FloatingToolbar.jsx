@@ -41,8 +41,8 @@ function getBestMime() {
 }
 
 // ── Individual action buttons ─────────────────────────────────────────────────
-function Btn({ label, icon, onClick, active, color = '#f59e0b', title }) {
-  const base = `rgba(${color === '#f59e0b' ? '245,158,11' : color === '#a855f7' ? '168,85,247' : '239,68,68'},`
+function Btn({ label, icon, onClick, active, color = '#00e5c4', title }) {
+  const base = `rgba(${color === '#00e5c4' ? '0,229,196' : color === '#a855f7' ? '168,85,247' : '239,68,68'},`
   return (
     <button
       onClick={onClick}
@@ -52,7 +52,7 @@ function Btn({ label, icon, onClick, active, color = '#f59e0b', title }) {
         padding: '6px 12px',
         fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.10em',
         color: active ? color : `${base}0.45)`,
-        background: active ? `${base}0.10)` : `rgba(8,6,4,0.0)`,
+        background: active ? `${base}0.10)` : `rgba(4,9,12,0.0)`,
         border: 'none', borderRadius: 3, cursor: 'pointer',
         transition: 'color 0.15s, background 0.15s',
         userSelect: 'none', whiteSpace: 'nowrap',
@@ -67,7 +67,7 @@ function Btn({ label, icon, onClick, active, color = '#f59e0b', title }) {
 }
 
 function Divider() {
-  return <div style={{ width: 1, height: 18, background: 'rgba(245,158,11,0.1)', flexShrink: 0 }} />
+  return <div style={{ width: 1, height: 18, background: 'rgba(0,229,196,0.1)', flexShrink: 0 }} />
 }
 
 // ── Share action ──────────────────────────────────────────────────────────────
@@ -90,7 +90,7 @@ function ShareAction({ activeModule }) {
     <Btn
       onClick={handle}
       active={status === 'copied'}
-      color="#f59e0b"
+      color="#00e5c4"
       title="Copy shareable link to this exact simulation state"
       icon={status === 'copied'
         ? <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7.5L8 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -231,11 +231,11 @@ function AskAction() {
       />
       {open && (
         <div
-          style={{ position:'fixed',inset:0,zIndex:10100,background:'rgba(8,6,4,0.80)',backdropFilter:'blur(12px)',WebkitBackdropFilter:'blur(12px)',display:'flex',alignItems:'flex-start',justifyContent:'center',paddingTop:'15vh' }}
+          style={{ position:'fixed',inset:0,zIndex:10100,background:'rgba(4,9,12,0.80)',backdropFilter:'blur(12px)',WebkitBackdropFilter:'blur(12px)',display:'flex',alignItems:'flex-start',justifyContent:'center',paddingTop:'15vh' }}
           onClick={() => setOpen(false)}
         >
           <div
-            style={{ width:'100%',maxWidth:600,margin:'0 16px',background:'rgba(10,7,4,0.98)',border:'1px solid rgba(168,85,247,0.22)',boxShadow:'0 32px 80px rgba(0,0,0,0.8)',borderRadius:6,overflow:'hidden' }}
+            style={{ width:'100%',maxWidth:600,margin:'0 16px',background:'rgba(6,10,16,0.98)',border:'1px solid rgba(168,85,247,0.22)',boxShadow:'0 32px 80px rgba(0,0,0,0.8)',borderRadius:6,overflow:'hidden' }}
             onClick={e => e.stopPropagation()}
           >
             <div style={{ padding:'11px 16px',borderBottom:'1px solid rgba(168,85,247,0.09)',display:'flex',alignItems:'center',gap:8 }}>
@@ -248,7 +248,7 @@ function AskAction() {
                 onKeyDown={e => e.key === 'Enter' && submit()}
                 placeholder="e.g. Black hole 3× solar mass, electron tunneling through a barrier…"
                 disabled={loading}
-                style={{ width:'100%',background:'none',border:'none',outline:'none',fontFamily:'JetBrains Mono, monospace',fontSize:13,color:'#fef9ec',letterSpacing:'0.02em',opacity:loading?0.5:1 }}
+                style={{ width:'100%',background:'none',border:'none',outline:'none',fontFamily:'JetBrains Mono, monospace',fontSize:13,color:'#dff2ed',letterSpacing:'0.02em',opacity:loading?0.5:1 }}
               />
             </div>
             {loading && <div style={{ padding:'12px 16px',display:'flex',alignItems:'center',gap:8 }}><span style={{ display:'inline-block',width:6,height:6,borderRadius:'50%',background:'rgba(168,85,247,0.7)',animation:'umbra-pulse 0.9s ease-in-out infinite' }}/><span style={{ fontFamily:'JetBrains Mono, monospace',fontSize:11,letterSpacing:'0.12em',color:'rgba(168,85,247,0.65)' }}>ROUTING TO MODULE…</span></div>}
@@ -300,11 +300,11 @@ function SnapshotAction({ activeModule }) {
       ctx.drawImage(canvas, 0, 0)
 
       // Footer bar
-      ctx.fillStyle = 'rgba(8,6,4,0.96)'
+      ctx.fillStyle = 'rgba(4,9,12,0.96)'
       ctx.fillRect(0, H, W, BAR)
 
       // Teal accent line
-      ctx.fillStyle = '#f59e0b'
+      ctx.fillStyle = '#00e5c4'
       ctx.fillRect(0, H, W, 2)
 
       const scale = W / 1920
@@ -312,7 +312,7 @@ function SnapshotAction({ activeModule }) {
 
       // UMBRA wordmark
       ctx.font = `700 ${fs(18)}px "JetBrains Mono", monospace`
-      ctx.fillStyle = '#f59e0b'
+      ctx.fillStyle = '#00e5c4'
       ctx.fillText('UMBRA', fs(24), H + BAR * 0.65)
 
       // Module name
@@ -324,7 +324,7 @@ function SnapshotAction({ activeModule }) {
 
       // URL watermark
       ctx.font = `${fs(10)}px "JetBrains Mono", monospace`
-      ctx.fillStyle = 'rgba(245,158,11,0.25)'
+      ctx.fillStyle = 'rgba(0,229,196,0.25)'
       ctx.fillText('umbrasandbox.com', fs(24), H + BAR * 0.92)
 
       const blob = await new Promise(res => off.toBlob(res, 'image/png'))
@@ -344,7 +344,7 @@ function SnapshotAction({ activeModule }) {
     <Btn
       onClick={snap}
       active={status === 'done'}
-      color="#f59e0b"
+      color="#00e5c4"
       title="Download simulation as PNG (with Umbra watermark)"
       icon={
         status === 'done'
@@ -414,8 +414,8 @@ export default function FloatingToolbar({ explainActive, onExplainToggle }) {
       zIndex: 10050,
       display: 'flex',
       alignItems: 'center',
-      background: 'rgba(8,6,4,0.82)',
-      border: '1px solid rgba(245,158,11,0.10)',
+      background: 'rgba(4,9,12,0.82)',
+      border: '1px solid rgba(0,229,196,0.10)',
       borderRadius: 5,
       backdropFilter: 'blur(10px)',
       WebkitBackdropFilter: 'blur(10px)',
@@ -430,7 +430,7 @@ export default function FloatingToolbar({ explainActive, onExplainToggle }) {
           <Btn
             onClick={onExplainToggle}
             active={explainActive}
-            color="#f59e0b"
+            color="#00e5c4"
             title="Click anywhere in the simulation to get a plain English explanation (E)"
             icon={<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="currentColor" strokeWidth="1.1"/><path d="M5 3v2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><circle cx="5" cy="7.2" r="0.55" fill="currentColor"/></svg>}
             label={explainActive ? 'CLICK ANYTHING' : 'EXPLAIN'}
