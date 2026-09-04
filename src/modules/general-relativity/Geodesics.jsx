@@ -271,7 +271,7 @@ export default function Geodesics({ mass }) {
     const orbits = [
       {
         pts:   integrateGeodesic(mass, 4.8, 0.09, 2200, 0.013),
-        color: '#00e5c4', speed: 0.16,
+        color: '#b44dff', speed: 0.16,
         label: 'Tight precessing orbit',
       },
       {
@@ -308,7 +308,7 @@ export default function Geodesics({ mass }) {
     <group>
       <ambientLight intensity={0.3} />
       <pointLight position={[0, 5, 0]} intensity={2.2} color="#fb923c" />
-      <pointLight position={[4, 3, 5]} intensity={0.4} color="#00e5c4" />
+      <pointLight position={[4, 3, 5]} intensity={0.4} color="#b44dff" />
 
       {/* Curved spacetime background */}
       <BackgroundSurface mass={mass} />
@@ -319,7 +319,7 @@ export default function Geodesics({ mass }) {
       {/* Photon sphere r = 3M */}
       <RadiusRing r={3 * M} mass={mass} color="#fbbf24" opacity={0.55} />
       {/* ISCO r = 6M */}
-      <RadiusRing r={6 * M} mass={mass} color="#00e5c4" opacity={0.30} />
+      <RadiusRing r={6 * M} mass={mass} color="#b44dff" opacity={0.30} />
 
       {/* ── Newtonian reference (closed circle, no precession) ── */}
       <OrbitLine pts={newtonPts} color="#94a3b8" opacity={0.20} />

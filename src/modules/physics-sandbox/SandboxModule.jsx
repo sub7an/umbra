@@ -219,9 +219,9 @@ export default function SandboxModule() {
           <Canvas
             camera={{ position: [0, 0, 12], fov: 55, near: 0.1, far: 100 }}
             gl={{ antialias: false, alpha: false, preserveDrawingBuffer: true }}
-            style={{ width: '100%', height: '100%', display: 'block', background: '#070b0d' }}
+            style={{ width: '100%', height: '100%', display: 'block', background: '#07041a' }}
           >
-            <color attach="background" args={['#070b0d']} />
+            <color attach="background" args={['#07041a']} />
             <SandboxScene
               sources={sources}
               mode={mode}
@@ -354,7 +354,7 @@ export default function SandboxModule() {
               <div className="flex flex-col gap-1">
                 {[
                   { color: '#0b1247', label: 'Slow' },
-                  { color: '#00e5c4', label: 'Medium' },
+                  { color: '#b44dff', label: 'Medium' },
                   { color: '#fb923c', label: 'Fast' },
                   { color: '#ffffff', label: 'Maximum' },
                 ].map(({ color, label }) => (

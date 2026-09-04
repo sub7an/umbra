@@ -2,11 +2,11 @@ import { useEffect, useRef } from 'react'
 
 // Accent color per module id
 const MODULE_COLOR = {
-  null:                 '#00e5c4',
+  null:                 '#b44dff',
   'physics-sandbox':    '#84cc16',
   'wave-mechanics':     '#22d3ee',
   'optics':             '#fcd34d',
-  'special-relativity': '#00e5c4',
+  'special-relativity': '#b44dff',
   'quantum-mechanics':  '#f59e0b',
   'frontier-physics':   '#e040fb',
   'dynamical-systems':  '#10b981',
@@ -18,7 +18,7 @@ const MODULE_COLOR = {
 }
 
 function hexRgb(hex) {
-  const n = parseInt((hex ?? '#00e5c4').replace('#', ''), 16)
+  const n = parseInt((hex ?? '#b44dff').replace('#', ''), 16)
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
 }
 
@@ -85,7 +85,7 @@ export default function TransitionOverlay({ phase, targetModule }) {
 
       // Background fade
       const bgAlpha = phase === 'out' ? t * 0.97 : (1 - t) * 0.97
-      ctx.fillStyle = `rgba(4,9,12,${bgAlpha})`
+      ctx.fillStyle = `rgba(7,4,26,${bgAlpha})`
       ctx.fillRect(0, 0, W, H)
 
       // Scanline sweep (every 14px, faint, moves with t)

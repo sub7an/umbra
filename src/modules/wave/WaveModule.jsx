@@ -73,7 +73,7 @@ export default function WaveModule() {
   return (
     <div style={{
       width: '100%', height: '100%',
-      background: '#04090c',
+      background: '#07041a',
       display: 'flex', flexDirection: 'column',
       fontFamily: 'JetBrains Mono, monospace',
     }}>
@@ -88,7 +88,7 @@ export default function WaveModule() {
         display: 'flex', alignItems: 'center', gap: 14,
         padding: '11px 18px',
         borderBottom: '1px solid rgba(34,211,238,0.10)',
-        background: 'rgba(4,9,12,0.97)',
+        background: 'rgba(7,4,26,0.97)',
         flexShrink: 0,
       }}>
         <button
@@ -182,7 +182,7 @@ export default function WaveModule() {
             padding: '4px 10px',
             border: '1px solid rgba(34,211,238,0.18)',
             borderRadius: 2,
-            background: 'rgba(4,9,12,0.88)',
+            background: 'rgba(7,4,26,0.88)',
             pointerEvents: 'none',
           }}>
             <div style={{ width: 4, height: 4, borderRadius: '50%', background: ACCENT, boxShadow: `0 0 4px ${ACCENT}` }} />
@@ -207,7 +207,7 @@ export default function WaveModule() {
                     fontFamily: 'JetBrains Mono, monospace',
                     fontSize: 8, letterSpacing: '0.1em',
                     padding: '4px 9px',
-                    background: slitMode === s.id ? 'rgba(34,211,238,0.12)' : 'rgba(4,9,12,0.88)',
+                    background: slitMode === s.id ? 'rgba(34,211,238,0.12)' : 'rgba(7,4,26,0.88)',
                     border: `1px solid ${slitMode === s.id ? 'rgba(34,211,238,0.4)' : 'rgba(34,211,238,0.12)'}`,
                     color: slitMode === s.id ? ACCENT : 'rgba(34,211,238,0.38)',
                     borderRadius: 2, cursor: 'pointer',
@@ -223,7 +223,7 @@ export default function WaveModule() {
                   fontFamily: 'JetBrains Mono, monospace',
                   fontSize: 8, letterSpacing: '0.1em',
                   padding: '4px 9px',
-                  background: 'rgba(4,9,12,0.88)',
+                  background: 'rgba(7,4,26,0.88)',
                   border: '1px solid rgba(34,211,238,0.12)',
                   color: 'rgba(34,211,238,0.38)',
                   borderRadius: 2, cursor: 'pointer',
@@ -244,7 +244,7 @@ export default function WaveModule() {
                   fontFamily: 'JetBrains Mono, monospace',
                   fontSize: 8, letterSpacing: '0.08em',
                   padding: '4px 6px',
-                  background: modeIdx === i ? 'rgba(34,211,238,0.12)' : 'rgba(4,9,12,0.85)',
+                  background: modeIdx === i ? 'rgba(34,211,238,0.12)' : 'rgba(7,4,26,0.85)',
                   border: `1px solid ${modeIdx === i ? 'rgba(34,211,238,0.4)' : 'rgba(34,211,238,0.12)'}`,
                   color: modeIdx === i ? ACCENT : 'rgba(34,211,238,0.4)',
                   borderRadius: 2, cursor: 'pointer',
