@@ -556,19 +556,19 @@ function ModuleCard({ module, onEnter, onHoverIn, onHoverOut, cardRef }) {
       >
         {module.abbr}
       </div>
-      <div className="mb-2.5">
-        <h2 className="font-display text-[13px] font-semibold text-text-primary mb-0.5 leading-tight tracking-wide">
+      <div className="mb-3">
+        <h2 className="font-display text-[15px] font-semibold text-text-primary mb-1 leading-tight tracking-wide">
           {module.name}
         </h2>
-        <p className="font-mono-data text-[10px] leading-relaxed" style={{ color: `rgba(${r},${g},${b},0.75)` }}>
+        <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12, lineHeight: 1.5, color: `rgba(${r},${g},${b},0.85)`, margin: 0 }}>
           {module.tagline}
         </p>
       </div>
-      <p className="font-body text-[11px] text-text-dim leading-relaxed mb-4 flex-1">
+      <p className="font-body leading-relaxed mb-4 flex-1" style={{ fontSize: 13, color: 'rgba(215,232,228,0.68)' }}>
         {module.description}
       </p>
       <div
-        className="self-start font-mono-data text-[10px] px-2 py-0.5 rounded border"
+        className="self-start font-mono-data text-[11px] px-2 py-0.5 rounded border"
         style={{
           color: hex,
           borderColor: `rgba(${r},${g},${b},0.3)`,
@@ -578,7 +578,7 @@ function ModuleCard({ module, onEnter, onHoverIn, onHoverOut, cardRef }) {
         {module.formula}
       </div>
       <div
-        className="absolute bottom-4 right-4 font-mono-data text-[9px] tracking-[0.18em] uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        className="absolute bottom-4 right-4 font-mono-data text-[10px] tracking-[0.18em] uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-200"
         style={{ color: hex }}
       >
         ENTER →
@@ -628,22 +628,22 @@ function SabrinaCard({ onEnter, onHoverIn, onHoverOut, cardRef, bloomIn }) {
           style={{ color: '#ff69b4', textShadow: '0 0 20px rgba(255,20,147,0.5)' }}>
           ♡
         </div>
-        <div className="mb-2.5">
-          <h2 className="font-display text-[13px] font-semibold text-text-primary mb-0.5 leading-tight tracking-wide">
+        <div className="mb-3">
+          <h2 className="font-display text-[15px] font-semibold text-text-primary mb-1 leading-tight tracking-wide">
             For Sabrina
           </h2>
-          <p className="font-mono-data text-[10px]" style={{ color: 'rgba(255,105,180,0.75)' }}>
+          <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12, lineHeight: 1.5, color: 'rgba(255,105,180,0.88)', margin: 0 }}>
             a message · just for you
           </p>
         </div>
-        <p className="font-body text-[11px] text-text-dim leading-relaxed mb-4 flex-1">
+        <p className="font-body leading-relaxed mb-4 flex-1" style={{ fontSize: 13, color: 'rgba(215,232,228,0.68)' }}>
           something made for you, because you deserve it.
         </p>
-        <div className="self-start font-mono-data text-[10px] px-2 py-0.5 rounded border"
+        <div className="self-start font-mono-data text-[11px] px-2 py-0.5 rounded border"
           style={{ color: '#ff69b4', borderColor: 'rgba(255,105,180,0.3)', background: 'rgba(255,105,180,0.07)' }}>
           mwah ♥
         </div>
-        <div className="absolute bottom-4 right-4 font-mono-data text-[9px] tracking-[0.18em] uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        <div className="absolute bottom-4 right-4 font-mono-data text-[10px] tracking-[0.18em] uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-200"
           style={{ color: '#ff69b4' }}>
           ENTER →
         </div>
@@ -776,21 +776,21 @@ export default function ModulePicker() {
             >
               UMBRA
             </span>
-            <span className="font-mono-data text-[9px] tracking-[0.22em] uppercase text-text-dim hidden sm:block">
+            <span className="font-mono-data text-[10px] tracking-[0.22em] uppercase text-text-dim hidden sm:block">
               Physics Visualizer
             </span>
           </button>
 
           <div className="flex items-center gap-3">
-            <div className="font-mono-data text-[9px] text-text-dim tracking-wider hidden md:block">
+            <div className="font-mono-data text-[10px] text-text-dim tracking-wider hidden md:block">
               NATURAL UNITS · c = ℏ = G = 1
             </div>
             <button
               onClick={() => window.dispatchEvent(new CustomEvent('umbra-palette-open'))}
               style={{
                 display: 'flex', alignItems: 'center', gap: 5,
-                fontFamily: 'JetBrains Mono, monospace', fontSize: 9,
-                letterSpacing: '0.08em', color: 'rgba(0,229,196,0.38)',
+                fontFamily: 'JetBrains Mono, monospace', fontSize: 10,
+                letterSpacing: '0.08em', color: 'rgba(0,229,196,0.50)',
                 border: '1px solid rgba(0,229,196,0.12)',
                 borderRadius: 3, padding: '4px 8px', cursor: 'pointer',
                 background: 'transparent', transition: 'color 0.15s, border-color 0.15s',
@@ -808,7 +808,7 @@ export default function ModulePicker() {
               style={{ border: '1px solid rgba(0,229,196,0.14)', background: 'rgba(0,229,196,0.04)' }}>
               <span className="w-1.5 h-1.5 rounded-full"
                 style={{ background: '#00e5c4', boxShadow: '0 0 5px #00e5c4', animation: 'umbra-pulse 2s ease-in-out infinite' }} />
-              <span className="font-mono-data text-[9px] tracking-wider" style={{ color: 'rgba(0,229,196,0.7)' }}>
+              <span className="font-mono-data text-[10px] tracking-wider" style={{ color: 'rgba(0,229,196,0.8)' }}>
                 {totalModules} MODULES ACTIVE
               </span>
             </div>
@@ -820,8 +820,8 @@ export default function ModulePicker() {
 
           {/* Left: headline + CTA */}
           <div className="flex-1 max-w-[540px]">
-            <p className="font-mono-data text-[10px] tracking-[0.32em] uppercase mb-6"
-              style={{ color: 'rgba(0,229,196,0.45)' }}>
+            <p className="font-mono-data text-[11px] tracking-[0.28em] uppercase mb-6"
+              style={{ color: 'rgba(0,229,196,0.65)' }}>
               Interactive · Real-time · Browser-native
             </p>
 
@@ -842,8 +842,8 @@ export default function ModulePicker() {
             </h1>
 
             <p className="font-body leading-relaxed mb-10 max-w-[400px]"
-              style={{ fontSize: 14, color: 'rgba(255,255,255,0.38)' }}>
-              <span style={{ color: 'rgba(0,229,196,0.7)', fontWeight: 500 }}>
+              style={{ fontSize: 15, color: 'rgba(255,255,255,0.62)' }}>
+              <span style={{ color: 'rgba(0,229,196,0.85)', fontWeight: 500 }}>
                 {MODULES.length} modules. Zero downloads.
               </span>{' '}
               From quantum tunneling to gravitational N-body — all running on your GPU, all in your browser.
@@ -871,8 +871,8 @@ export default function ModulePicker() {
               >
                 Browse all modules →
               </button>
-              <span className="font-mono-data text-[9px] tracking-wider hidden sm:block"
-                style={{ color: 'rgba(255,255,255,0.20)' }}>
+              <span className="font-mono-data text-[10px] tracking-wider hidden sm:block"
+                style={{ color: 'rgba(255,255,255,0.42)' }}>
                 No account required
               </span>
             </div>
@@ -912,7 +912,7 @@ export default function ModulePicker() {
                 {s.live && (
                   <span className="w-1 h-1 rounded-full" style={{ background: '#00e5c4', boxShadow: '0 0 4px #00e5c4', animation: 'umbra-pulse 1.2s ease-in-out infinite' }} />
                 )}
-                <span className="font-mono-data text-[9px] tracking-[0.22em] uppercase text-text-dim text-center">
+                <span className="font-mono-data text-[11px] tracking-[0.18em] uppercase text-center" style={{ color: '#6aada5' }}>
                   {s.label}
                 </span>
               </div>
@@ -923,7 +923,7 @@ export default function ModulePicker() {
         {/* ── Module grid header + view toggle ── */}
         <div ref={gridRef} className="shrink-0 flex items-center gap-4 px-8 pt-10 pb-5">
           <div className="flex-1 h-px" style={{ background: 'rgba(0,229,196,0.08)' }} />
-          <span className="font-mono-data text-[9px] tracking-[0.28em] uppercase text-text-dim px-1">
+          <span className="font-mono-data text-[10px] tracking-[0.24em] uppercase px-1" style={{ color: '#6aada5' }}>
             // SELECT MODULE
           </span>
           <div className="flex-1 h-px" style={{ background: 'rgba(0,229,196,0.08)' }} />
@@ -934,7 +934,7 @@ export default function ModulePicker() {
                 key={mode}
                 onClick={() => setViewMode(mode)}
                 style={{
-                  fontFamily: 'JetBrains Mono, monospace', fontSize: 9,
+                  fontFamily: 'JetBrains Mono, monospace', fontSize: 10,
                   letterSpacing: '0.1em', padding: '5px 10px', cursor: 'pointer',
                   border: 'none', borderRight: mode === 'grid' ? '1px solid rgba(0,229,196,0.12)' : 'none',
                   background: viewMode === mode ? 'rgba(0,229,196,0.10)' : 'transparent',
@@ -952,7 +952,7 @@ export default function ModulePicker() {
           if (!recent.length) return null
           return (
             <div className="px-8 pb-5">
-              <p className="font-mono-data text-[8px] tracking-[0.26em] uppercase mb-3" style={{ color: 'rgba(0,229,196,0.28)' }}>
+              <p className="font-mono-data text-[10px] tracking-[0.22em] uppercase mb-3" style={{ color: 'rgba(0,229,196,0.50)' }}>
                 Recently visited
               </p>
               <div className="flex flex-wrap gap-2">
@@ -973,10 +973,10 @@ export default function ModulePicker() {
                       onMouseEnter={e => { e.currentTarget.style.background = `${hex}1c`; e.currentTarget.style.borderColor = `${hex}55` }}
                       onMouseLeave={e => { e.currentTarget.style.background = `${hex}0c`; e.currentTarget.style.borderColor = `${hex}28` }}
                     >
-                      <span style={{ fontFamily: 'Chakra Petch, sans-serif', fontSize: 10, fontWeight: 700, color: hex }}>
+                      <span style={{ fontFamily: 'Chakra Petch, sans-serif', fontSize: 12, fontWeight: 700, color: hex }}>
                         {mod.abbr}
                       </span>
-                      <span style={{ fontFamily: 'Chakra Petch, sans-serif', fontSize: 10, color: 'rgba(223,242,237,0.48)', letterSpacing: '0.04em' }}>
+                      <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12, color: 'rgba(223,242,237,0.65)', letterSpacing: '0.01em' }}>
                         {mod.name}
                       </span>
                     </button>
@@ -1018,13 +1018,13 @@ export default function ModulePicker() {
         {/* ── Physics intel ticker ── */}
         <div className="shrink-0 overflow-hidden" style={{ borderTop: '1px solid rgba(0,229,196,0.07)', background: 'rgba(0,0,0,0.22)' }}>
           <div style={{ display: 'flex', alignItems: 'center', padding: '7px 16px', gap: 10 }}>
-            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 8, letterSpacing: '0.18em', color: '#00e5c4', flexShrink: 0, opacity: 0.5 }}>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.18em', color: '#00e5c4', flexShrink: 0, opacity: 0.7 }}>
               UMBRA INTEL
             </span>
             <div style={{ flex: 1, overflow: 'hidden' }}>
               <div style={{ display: 'inline-block', animation: 'umbra-ticker 90s linear infinite', whiteSpace: 'nowrap' }}>
                 {[...TICKER_FACTS, ...TICKER_FACTS].map((fact, i) => (
-                  <span key={i} style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: 'rgba(0,229,196,0.32)', letterSpacing: '0.06em', marginRight: '4em' }}>
+                  <span key={i} style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11, color: 'rgba(0,229,196,0.60)', letterSpacing: '0.01em', marginRight: '4em' }}>
                     {fact}
                   </span>
                 ))}
@@ -1036,7 +1036,7 @@ export default function ModulePicker() {
         {/* ── Footer ── */}
         <footer className="shrink-0 px-8 pb-6 pt-2">
           <div className="h-px mb-4" style={{ background: 'rgba(0,229,196,0.06)' }} />
-          <p className="font-mono-data text-[9px] text-text-dim tracking-wider">
+          <p className="font-mono-data text-[10px] tracking-wider" style={{ color: '#6aada5' }}>
             UMBRA · All visualizations run in your browser — no server, no data sent.
           </p>
         </footer>
@@ -1045,8 +1045,8 @@ export default function ModulePicker() {
       {/* Hovered module name overlay */}
       {hoveredModule && (
         <div
-          className="absolute bottom-5 right-8 font-mono-data text-[10px] tracking-[0.2em] uppercase text-text-dim pointer-events-none transition-opacity duration-200"
-          style={{ zIndex: 20 }}
+          className="absolute bottom-5 right-8 font-mono-data text-[11px] tracking-[0.18em] uppercase pointer-events-none transition-opacity duration-200"
+          style={{ zIndex: 20, color: '#6aada5' }}
         >
           {MODULES.find((m) => m.id === hoveredModule)?.name || 'For Sabrina'}
         </div>

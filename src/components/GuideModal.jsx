@@ -124,12 +124,12 @@ function FeatureCard({ f, index }) {
           }}>{f.label}</div>
           <div style={{
             fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13,
-            color: 'rgba(200,230,220,0.6)', lineHeight: 1.7, letterSpacing: '-0.01em',
+            color: 'rgba(215,238,232,0.78)', lineHeight: 1.7, letterSpacing: '-0.01em',
           }}>{f.desc}</div>
           <div style={{
             marginTop: 7,
             fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11,
-            color: `rgba(${f.color},0.55)`, letterSpacing: 'normal',
+            color: `rgba(${f.color},0.72)`, letterSpacing: 'normal',
           }}>{f.hint}</div>
         </div>
       </div>
@@ -151,21 +151,21 @@ function ShortcutRow({ keys, desc, index }) {
         {keys.map((k, i) => (
           <span key={k}>
             <kbd style={{
-              fontFamily: 'JetBrains Mono, monospace', fontSize: 9,
-              padding: '3px 7px', borderRadius: 4,
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.14)',
-              color: '#e8f4f0', letterSpacing: '0.06em',
+              fontFamily: 'JetBrains Mono, monospace', fontSize: 10,
+              padding: '3px 8px', borderRadius: 4,
+              background: 'rgba(255,255,255,0.07)',
+              border: '1px solid rgba(255,255,255,0.16)',
+              color: '#e8f4f0', letterSpacing: '0.04em',
             }}>{k}</kbd>
             {i < keys.length - 1 && (
-              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 8, color: 'rgba(255,255,255,0.2)', margin: '0 2px' }}>/</span>
+              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: 'rgba(255,255,255,0.30)', margin: '0 3px' }}>/</span>
             )}
           </span>
         ))}
       </div>
       <div style={{
         fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12,
-        color: 'rgba(200,230,220,0.55)', lineHeight: 1.5, letterSpacing: '-0.01em',
+        color: 'rgba(215,238,232,0.70)', lineHeight: 1.5, letterSpacing: '-0.01em',
       }}>{desc}</div>
     </div>
   )
@@ -280,8 +280,8 @@ export default function GuideModal() {
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                 <div>
                   <div style={{
-                    fontFamily: 'JetBrains Mono, monospace', fontSize: 8,
-                    letterSpacing: '0.22em', color: 'rgba(0,229,196,0.45)', marginBottom: 6,
+                    fontFamily: 'JetBrains Mono, monospace', fontSize: 10,
+                    letterSpacing: '0.18em', color: 'rgba(0,229,196,0.65)', marginBottom: 6,
                   }}>
                     {firstRun ? 'WELCOME TO UMBRA' : 'UMBRA GUIDE'}
                   </div>
@@ -294,7 +294,7 @@ export default function GuideModal() {
                   {firstRun && (
                     <div style={{
                       fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13,
-                      color: 'rgba(200,230,220,0.4)', marginTop: 6, lineHeight: 1.6, letterSpacing: '-0.01em',
+                      color: 'rgba(215,238,232,0.65)', marginTop: 6, lineHeight: 1.6, letterSpacing: '-0.01em',
                     }}>
                       12 live physics simulations · AI-powered tools · multiplayer · guided journeys
                     </div>
@@ -320,8 +320,8 @@ export default function GuideModal() {
                     onClick={() => setTab(id)}
                     style={{
                       padding: '5px 14px',
-                      fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.14em',
-                      color: tab === id ? '#04090c' : 'rgba(200,230,220,0.4)',
+                      fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.12em',
+                      color: tab === id ? '#04090c' : 'rgba(215,238,232,0.55)',
                       background: tab === id ? '#00e5c4' : 'transparent',
                       border: `1px solid ${tab === id ? '#00e5c4' : 'rgba(255,255,255,0.08)'}`,
                       borderRadius: 4, cursor: 'pointer', transition: 'all 0.15s',
@@ -343,8 +343,8 @@ export default function GuideModal() {
               ) : (
                 <div style={{ paddingTop: 4 }}>
                   <div style={{
-                    fontFamily: 'JetBrains Mono, monospace', fontSize: 8,
-                    letterSpacing: '0.16em', color: 'rgba(0,229,196,0.4)',
+                    fontFamily: 'JetBrains Mono, monospace', fontSize: 10,
+                    letterSpacing: '0.14em', color: 'rgba(0,229,196,0.60)',
                     marginBottom: 12,
                   }}>KEYBOARD SHORTCUTS</div>
                   {SHORTCUTS.map((s, i) => (
@@ -388,8 +388,8 @@ export default function GuideModal() {
               flexShrink: 0,
             }}>
               <div style={{
-                fontFamily: 'JetBrains Mono, monospace', fontSize: 7,
-                color: 'rgba(200,230,220,0.2)', letterSpacing: '0.1em',
+                fontFamily: 'JetBrains Mono, monospace', fontSize: 10,
+                color: 'rgba(200,230,220,0.42)', letterSpacing: '0.10em',
               }}>
                 PRESS ? ANYTIME TO REOPEN · ESC TO CLOSE
               </div>
@@ -397,7 +397,7 @@ export default function GuideModal() {
                 onClick={close}
                 style={{
                   padding: '7px 20px',
-                  fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.14em',
+                  fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.12em',
                   color: '#04090c', background: '#00e5c4',
                   border: 'none', borderRadius: 5, cursor: 'pointer', fontWeight: 700,
                   boxShadow: '0 4px 16px rgba(0,229,196,0.25)',

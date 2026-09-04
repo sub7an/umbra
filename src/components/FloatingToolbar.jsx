@@ -50,7 +50,7 @@ function Btn({ label, icon, onClick, active, color = '#00e5c4', title }) {
       style={{
         display: 'flex', alignItems: 'center', gap: 6,
         padding: '6px 12px',
-        fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.12em',
+        fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.10em',
         color: active ? color : `${base}0.45)`,
         background: active ? `${base}0.10)` : `rgba(4,9,12,0.0)`,
         border: 'none', borderRadius: 3, cursor: 'pointer',
@@ -239,7 +239,7 @@ function AskAction() {
             onClick={e => e.stopPropagation()}
           >
             <div style={{ padding:'11px 16px',borderBottom:'1px solid rgba(168,85,247,0.09)',display:'flex',alignItems:'center',gap:8 }}>
-              <span style={{ fontFamily:'JetBrains Mono, monospace',fontSize:9,letterSpacing:'0.2em',color:'rgba(168,85,247,0.5)' }}>DESCRIBE A PHYSICS SCENARIO</span>
+              <span style={{ fontFamily:'JetBrains Mono, monospace',fontSize:10,letterSpacing:'0.15em',color:'rgba(168,85,247,0.70)' }}>DESCRIBE A PHYSICS SCENARIO</span>
               <kbd style={{ marginLeft:'auto',fontFamily:'JetBrains Mono, monospace',fontSize:9,color:'rgba(168,85,247,0.25)',border:'1px solid rgba(168,85,247,0.12)',borderRadius:3,padding:'2px 5px' }}>ESC</kbd>
             </div>
             <div style={{ padding:'12px 16px',borderBottom:'1px solid rgba(168,85,247,0.07)' }}>
@@ -251,15 +251,15 @@ function AskAction() {
                 style={{ width:'100%',background:'none',border:'none',outline:'none',fontFamily:'JetBrains Mono, monospace',fontSize:13,color:'#dff2ed',letterSpacing:'0.02em',opacity:loading?0.5:1 }}
               />
             </div>
-            {loading && <div style={{ padding:'12px 16px',display:'flex',alignItems:'center',gap:8 }}><span style={{ display:'inline-block',width:6,height:6,borderRadius:'50%',background:'rgba(168,85,247,0.7)',animation:'umbra-pulse 0.9s ease-in-out infinite' }}/><span style={{ fontFamily:'JetBrains Mono, monospace',fontSize:9,letterSpacing:'0.14em',color:'rgba(168,85,247,0.45)' }}>ROUTING TO MODULE…</span></div>}
-            {result && <div style={{ padding:'12px 16px' }}><div style={{ fontFamily:'Chakra Petch, sans-serif',fontSize:12,color:'#a855f7',fontWeight:600 }}>✓ {result.label}</div><div style={{ fontFamily:'JetBrains Mono, monospace',fontSize:9,color:'rgba(168,85,247,0.38)',marginTop:3 }}>{result.reason}</div></div>}
+            {loading && <div style={{ padding:'12px 16px',display:'flex',alignItems:'center',gap:8 }}><span style={{ display:'inline-block',width:6,height:6,borderRadius:'50%',background:'rgba(168,85,247,0.7)',animation:'umbra-pulse 0.9s ease-in-out infinite' }}/><span style={{ fontFamily:'JetBrains Mono, monospace',fontSize:11,letterSpacing:'0.12em',color:'rgba(168,85,247,0.65)' }}>ROUTING TO MODULE…</span></div>}
+            {result && <div style={{ padding:'12px 16px' }}><div style={{ fontFamily:'Chakra Petch, sans-serif',fontSize:13,color:'#a855f7',fontWeight:600 }}>✓ {result.label}</div><div style={{ fontFamily:"'Inter', system-ui, sans-serif",fontSize:12,color:'rgba(168,85,247,0.60)',marginTop:4 }}>{result.reason}</div></div>}
             {error && <div style={{ padding:'12px 16px' }}><span style={{ fontFamily:'JetBrains Mono, monospace',fontSize:9,color:'rgba(239,68,68,0.65)' }}>{error}</span></div>}
             {!loading && !result && !error && (
               <div style={{ padding:'8px 16px 10px',display:'flex',flexWrap:'wrap',gap:5 }}>
                 {NL_EXAMPLES.map(ex => (
-                  <button key={ex} onClick={() => { setQuery(ex); submit(ex) }} style={{ fontFamily:'JetBrains Mono, monospace',fontSize:8,letterSpacing:'0.06em',color:'rgba(168,85,247,0.42)',border:'1px solid rgba(168,85,247,0.12)',borderRadius:3,padding:'3px 8px',cursor:'pointer',background:'transparent' }}
-                    onMouseEnter={e=>{e.currentTarget.style.color='rgba(168,85,247,0.75)';e.currentTarget.style.borderColor='rgba(168,85,247,0.28)'}}
-                    onMouseLeave={e=>{e.currentTarget.style.color='rgba(168,85,247,0.42)';e.currentTarget.style.borderColor='rgba(168,85,247,0.12)'}}
+                  <button key={ex} onClick={() => { setQuery(ex); submit(ex) }} style={{ fontFamily:"'Inter', system-ui, sans-serif",fontSize:11,letterSpacing:'0.01em',color:'rgba(168,85,247,0.55)',border:'1px solid rgba(168,85,247,0.14)',borderRadius:3,padding:'4px 10px',cursor:'pointer',background:'transparent' }}
+                    onMouseEnter={e=>{e.currentTarget.style.color='rgba(168,85,247,0.85)';e.currentTarget.style.borderColor='rgba(168,85,247,0.30)'}}
+                    onMouseLeave={e=>{e.currentTarget.style.color='rgba(168,85,247,0.55)';e.currentTarget.style.borderColor='rgba(168,85,247,0.14)'}}
                   >{ex}</button>
                 ))}
               </div>
@@ -267,11 +267,11 @@ function AskAction() {
             <div style={{ padding:'7px 16px',borderTop:'1px solid rgba(168,85,247,0.07)',display:'flex',alignItems:'center',gap:12 }}>
               {[['↵','launch'],['ESC','close']].map(([k,l]) => (
                 <div key={k} style={{ display:'flex',alignItems:'center',gap:4 }}>
-                  <kbd style={{ fontFamily:'JetBrains Mono, monospace',fontSize:8,color:'rgba(168,85,247,0.3)',border:'1px solid rgba(168,85,247,0.12)',borderRadius:3,padding:'2px 4px' }}>{k}</kbd>
-                  <span style={{ fontFamily:'JetBrains Mono, monospace',fontSize:8,color:'rgba(168,85,247,0.18)' }}>{l}</span>
+                  <kbd style={{ fontFamily:'JetBrains Mono, monospace',fontSize:10,color:'rgba(168,85,247,0.50)',border:'1px solid rgba(168,85,247,0.18)',borderRadius:3,padding:'2px 5px' }}>{k}</kbd>
+                  <span style={{ fontFamily:"'Inter', system-ui, sans-serif",fontSize:11,color:'rgba(168,85,247,0.38)' }}>{l}</span>
                 </div>
               ))}
-              <span style={{ marginLeft:'auto',fontFamily:'JetBrains Mono, monospace',fontSize:8,color:'rgba(168,85,247,0.18)' }}>powered by claude</span>
+              <span style={{ marginLeft:'auto',fontFamily:"'Inter', system-ui, sans-serif",fontSize:11,color:'rgba(168,85,247,0.35)' }}>powered by claude</span>
             </div>
           </div>
         </div>
