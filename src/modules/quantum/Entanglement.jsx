@@ -324,7 +324,7 @@ export default function Entanglement() {
 
       <QubitBloch
         position={[-3, 0, 0]}
-        color="#00e5c4"
+        color="#f59e0b"
         label="QUBIT A"
         blochLen={displayLen}
         blochDir={displayDir}

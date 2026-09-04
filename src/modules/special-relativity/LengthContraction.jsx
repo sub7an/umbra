@@ -203,7 +203,7 @@ export default function LengthContraction() {
       {/* ── Rest-frame reference (ghost) ── */}
       <group position={[0, 1.5, 0]}>
         <RoundedBox args={[PROPER_LENGTH, 0.26, 0.26]} radius={0.05} smoothness={4}>
-          <meshStandardMaterial color="#0c2530" emissive="#00e5c4" emissiveIntensity={0.18} transparent opacity={0.55} />
+          <meshStandardMaterial color="#0c2530" emissive="#f59e0b" emissiveIntensity={0.18} transparent opacity={0.55} />
         </RoundedBox>
         <Line
           points={[

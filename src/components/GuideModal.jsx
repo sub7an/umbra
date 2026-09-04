@@ -124,7 +124,7 @@ function FeatureCard({ f, index }) {
           }}>{f.label}</div>
           <div style={{
             fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13,
-            color: 'rgba(215,238,232,0.78)', lineHeight: 1.7, letterSpacing: '-0.01em',
+            color: 'rgba(254,249,236,0.78)', lineHeight: 1.7, letterSpacing: '-0.01em',
           }}>{f.desc}</div>
           <div style={{
             marginTop: 7,
@@ -165,7 +165,7 @@ function ShortcutRow({ keys, desc, index }) {
       </div>
       <div style={{
         fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12,
-        color: 'rgba(215,238,232,0.70)', lineHeight: 1.5, letterSpacing: '-0.01em',
+        color: 'rgba(254,249,236,0.70)', lineHeight: 1.5, letterSpacing: '-0.01em',
       }}>{desc}</div>
     </div>
   )
@@ -232,7 +232,7 @@ export default function GuideModal() {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontFamily: 'JetBrains Mono, monospace', fontSize: 14, fontWeight: 700,
             color: open ? '#e8f4f0' : 'rgba(200,230,220,0.35)',
-            background: open ? 'rgba(255,255,255,0.08)' : 'rgba(4,9,12,0.72)',
+            background: open ? 'rgba(255,255,255,0.08)' : 'rgba(8,6,4,0.72)',
             border: `1px solid ${open ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.08)'}`,
             backdropFilter: 'blur(10px)',
             WebkitBackdropFilter: 'blur(10px)',
@@ -261,10 +261,10 @@ export default function GuideModal() {
             style={{
               width: '100%', maxWidth: 680,
               maxHeight: 'calc(100vh - 60px)',
-              background: 'rgba(4,9,12,0.98)',
-              border: '1px solid rgba(0,229,196,0.15)',
+              background: 'rgba(8,6,4,0.98)',
+              border: '1px solid rgba(245,158,11,0.15)',
               borderRadius: 12,
-              boxShadow: '0 32px 100px rgba(0,0,0,0.9), 0 0 60px rgba(0,229,196,0.04)',
+              boxShadow: '0 32px 100px rgba(0,0,0,0.9), 0 0 60px rgba(245,158,11,0.04)',
               overflow: 'hidden',
               display: 'flex', flexDirection: 'column',
               animation: 'umbra-slide-up 0.25s ease',
@@ -273,15 +273,15 @@ export default function GuideModal() {
             {/* Header */}
             <div style={{
               padding: '20px 24px 16px',
-              borderBottom: '1px solid rgba(0,229,196,0.08)',
-              background: 'linear-gradient(135deg, rgba(0,229,196,0.04) 0%, transparent 50%)',
+              borderBottom: '1px solid rgba(245,158,11,0.08)',
+              background: 'linear-gradient(135deg, rgba(245,158,11,0.04) 0%, transparent 50%)',
               flexShrink: 0,
             }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                 <div>
                   <div style={{
                     fontFamily: 'JetBrains Mono, monospace', fontSize: 10,
-                    letterSpacing: '0.18em', color: 'rgba(0,229,196,0.65)', marginBottom: 6,
+                    letterSpacing: '0.18em', color: 'rgba(245,158,11,0.65)', marginBottom: 6,
                   }}>
                     {firstRun ? 'WELCOME TO UMBRA' : 'UMBRA GUIDE'}
                   </div>
@@ -294,7 +294,7 @@ export default function GuideModal() {
                   {firstRun && (
                     <div style={{
                       fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13,
-                      color: 'rgba(215,238,232,0.65)', marginTop: 6, lineHeight: 1.6, letterSpacing: '-0.01em',
+                      color: 'rgba(254,249,236,0.65)', marginTop: 6, lineHeight: 1.6, letterSpacing: '-0.01em',
                     }}>
                       12 live physics simulations · AI-powered tools · multiplayer · guided journeys
                     </div>
@@ -321,9 +321,9 @@ export default function GuideModal() {
                     style={{
                       padding: '5px 14px',
                       fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.12em',
-                      color: tab === id ? '#04090c' : 'rgba(215,238,232,0.55)',
-                      background: tab === id ? '#00e5c4' : 'transparent',
-                      border: `1px solid ${tab === id ? '#00e5c4' : 'rgba(255,255,255,0.08)'}`,
+                      color: tab === id ? '#060404' : 'rgba(254,249,236,0.55)',
+                      background: tab === id ? '#f59e0b' : 'transparent',
+                      border: `1px solid ${tab === id ? '#f59e0b' : 'rgba(255,255,255,0.08)'}`,
                       borderRadius: 4, cursor: 'pointer', transition: 'all 0.15s',
                       fontWeight: tab === id ? 700 : 400,
                     }}
@@ -344,7 +344,7 @@ export default function GuideModal() {
                 <div style={{ paddingTop: 4 }}>
                   <div style={{
                     fontFamily: 'JetBrains Mono, monospace', fontSize: 10,
-                    letterSpacing: '0.14em', color: 'rgba(0,229,196,0.60)',
+                    letterSpacing: '0.14em', color: 'rgba(245,158,11,0.60)',
                     marginBottom: 12,
                   }}>KEYBOARD SHORTCUTS</div>
                   {SHORTCUTS.map((s, i) => (
@@ -354,7 +354,7 @@ export default function GuideModal() {
                   <div style={{ marginTop: 20 }}>
                     <div style={{
                       fontFamily: 'JetBrains Mono, monospace', fontSize: 8,
-                      letterSpacing: '0.16em', color: 'rgba(0,229,196,0.4)',
+                      letterSpacing: '0.16em', color: 'rgba(245,158,11,0.4)',
                       marginBottom: 12,
                     }}>INSIDE ANY MODULE</div>
                     {[
@@ -366,7 +366,7 @@ export default function GuideModal() {
                   <div style={{ marginTop: 20 }}>
                     <div style={{
                       fontFamily: 'JetBrains Mono, monospace', fontSize: 8,
-                      letterSpacing: '0.16em', color: 'rgba(0,229,196,0.4)',
+                      letterSpacing: '0.16em', color: 'rgba(245,158,11,0.4)',
                       marginBottom: 12,
                     }}>TOOLBAR (BOTTOM OF SCREEN)</div>
                     {[
@@ -383,7 +383,7 @@ export default function GuideModal() {
             {/* Footer */}
             <div style={{
               padding: '12px 24px',
-              borderTop: '1px solid rgba(0,229,196,0.07)',
+              borderTop: '1px solid rgba(245,158,11,0.07)',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               flexShrink: 0,
             }}>
@@ -398,9 +398,9 @@ export default function GuideModal() {
                 style={{
                   padding: '7px 20px',
                   fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.12em',
-                  color: '#04090c', background: '#00e5c4',
+                  color: '#060404', background: '#f59e0b',
                   border: 'none', borderRadius: 5, cursor: 'pointer', fontWeight: 700,
-                  boxShadow: '0 4px 16px rgba(0,229,196,0.25)',
+                  boxShadow: '0 4px 16px rgba(245,158,11,0.25)',
                   transition: 'opacity 0.15s',
                 }}
                 onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}

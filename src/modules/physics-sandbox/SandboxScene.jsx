@@ -11,7 +11,7 @@ const SPEED_MAX = 8.5
 const DX = 10, DY = 6.5  // domain half-extents (world units)
 
 export const SOURCE_DEFS = {
-  attractor:  { color: '#00e5c4', label: 'Attractor',  symbol: '◉', G:  3.5, Γ:  0   },
+  attractor:  { color: '#f59e0b', label: 'Attractor',  symbol: '◉', G:  3.5, Γ:  0   },
   repulsor:   { color: '#fb923c', label: 'Repulsor',   symbol: '⊘', G: -3.5, Γ:  0   },
   vortex_ccw: { color: '#a855f7', label: 'Vortex ↺',  symbol: '↺', G:  0,   Γ:  3.0 },
   vortex_cw:  { color: '#f59e0b', label: 'Vortex ↻',  symbol: '↻', G:  0,   Γ: -3.0 },
