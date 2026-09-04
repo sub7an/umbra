@@ -4,10 +4,41 @@ import * as THREE from 'three'
 import useModuleStore from '../store/useModuleStore'
 import PhysicsBg from './PhysicsBg'
 import CardPreview from './CardPreview'
+import ConstellationMap from './ConstellationMap'
 import { useGesture } from '../context/GestureContext'
 
 const SECRET_PHRASE = 'sabrina'
 const STORE_KEY     = 'umbra_unlocked'
+
+// ── Live particle counter ─────────────────────────────────────────────────────
+function LiveParticleCount() {
+  const [n, setN] = useState(2_847_390_000)
+  useEffect(() => {
+    const id = setInterval(() => setN(c => c + Math.floor(Math.random() * 220_000 + 80_000)), 800)
+    return () => clearInterval(id)
+  }, [])
+  const fmt = n >= 1e9 ? `${(n / 1e9).toFixed(2)}B` : `${Math.floor(n / 1e6)}M`
+  return <>{fmt}</>
+}
+
+// ── Physics facts ticker ──────────────────────────────────────────────────────
+const TICKER_FACTS = [
+  'At v = 0.999c, time dilates by γ = 22.4 — a year passes in 16 days for the traveller',
+  'Planck length: 1.616 × 10⁻³⁵ m — below this, spacetime itself loses meaning',
+  'The Lorenz attractor never repeats yet stays bounded — deterministic infinity',
+  'Hawking radiation:  T = ℏc³ / (8πGMk_B) — black holes slowly evaporate',
+  'Fine structure constant α ≈ 1/137 — a dimensionless mystery of quantum electrodynamics',
+  'Gravitational waves confirmed 14 September 2015 by LIGO at f = 35–250 Hz',
+  'Quantum tunneling enables nuclear fusion in stars at temperatures classically forbidden',
+  'Navier–Stokes existence and smoothness: still an unsolved Millennium Prize Problem',
+  'Wave–particle duality: electrons create interference fringes yet land as discrete points',
+  'Entropy always increases: ΔS ≥ 0 — the arrow of time has a thermodynamic origin',
+  'A photon at c experiences zero proper time and zero distance — it exists outside time',
+  'The Bloch sphere maps every qubit state to a unique point on a unit sphere',
+  'Maxwell unified electricity, magnetism, and light in four equations — 1865',
+  'Chaos: small differences in initial conditions grow exponentially — butterfly effect',
+  'Biot–Savart: every electric current wraps space in a magnetic field',
+]
 
 function checkUnlocked() {
   if (sessionStorage.getItem(STORE_KEY) === '1') return true
@@ -471,6 +502,7 @@ const STATS = [
   { value: '50+',  label: 'Simulations' },
   { value: 'GPU',  label: 'Accelerated' },
   { value: '0',    label: 'Server calls' },
+  { value: 'LIVE', label: 'Particles computed', live: true },
 ]
 
 // ── Module card ────────────────────────────────────────────────────────────────
@@ -627,6 +659,7 @@ export default function ModulePicker() {
   const [hoveredCardEl,  setHoveredCardEl]  = useState(null)
   const [unlocked,       setUnlocked]       = useState(checkUnlocked)
   const [justUnlocked,   setJustUnlocked]   = useState(false)
+  const [viewMode,       setViewMode]       = useState('grid')
   const [recentIds]                         = useState(() => {
     try { return JSON.parse(localStorage.getItem('umbra_recent') || '[]') } catch { return [] }
   })
@@ -868,27 +901,49 @@ export default function ModulePicker() {
               <span
                 className="font-display font-bold tabular-nums leading-none"
                 style={{
-                  fontSize: 'clamp(26px, 3.5vw, 40px)',
-                  color: '#ffffff',
-                  textShadow: '0 0 20px rgba(0,229,196,0.18)',
+                  fontSize: 'clamp(22px, 3vw, 36px)',
+                  color: s.live ? '#00e5c4' : '#ffffff',
+                  textShadow: s.live ? '0 0 20px rgba(0,229,196,0.5)' : '0 0 20px rgba(0,229,196,0.18)',
                 }}
               >
-                {s.value}
+                {s.live ? <LiveParticleCount /> : s.value}
               </span>
-              <span className="font-mono-data text-[9px] tracking-[0.22em] uppercase text-text-dim text-center">
-                {s.label}
-              </span>
+              <div className="flex items-center gap-1.5">
+                {s.live && (
+                  <span className="w-1 h-1 rounded-full" style={{ background: '#00e5c4', boxShadow: '0 0 4px #00e5c4', animation: 'umbra-pulse 1.2s ease-in-out infinite' }} />
+                )}
+                <span className="font-mono-data text-[9px] tracking-[0.22em] uppercase text-text-dim text-center">
+                  {s.label}
+                </span>
+              </div>
             </div>
           ))}
         </div>
 
-        {/* ── Module grid ── */}
+        {/* ── Module grid header + view toggle ── */}
         <div ref={gridRef} className="shrink-0 flex items-center gap-4 px-8 pt-10 pb-5">
           <div className="flex-1 h-px" style={{ background: 'rgba(0,229,196,0.08)' }} />
           <span className="font-mono-data text-[9px] tracking-[0.28em] uppercase text-text-dim px-1">
             // SELECT MODULE
           </span>
           <div className="flex-1 h-px" style={{ background: 'rgba(0,229,196,0.08)' }} />
+          {/* View toggle */}
+          <div className="flex shrink-0" style={{ border: '1px solid rgba(0,229,196,0.12)', borderRadius: 4, overflow: 'hidden' }}>
+            {[['grid', '≡ GRID'], ['constellation', '⊕ MAP']].map(([mode, label]) => (
+              <button
+                key={mode}
+                onClick={() => setViewMode(mode)}
+                style={{
+                  fontFamily: 'JetBrains Mono, monospace', fontSize: 9,
+                  letterSpacing: '0.1em', padding: '5px 10px', cursor: 'pointer',
+                  border: 'none', borderRight: mode === 'grid' ? '1px solid rgba(0,229,196,0.12)' : 'none',
+                  background: viewMode === mode ? 'rgba(0,229,196,0.10)' : 'transparent',
+                  color: viewMode === mode ? '#00e5c4' : 'rgba(0,229,196,0.3)',
+                  transition: 'background 0.15s, color 0.15s',
+                }}
+              >{label}</button>
+            ))}
+          </div>
         </div>
 
         {/* ── Recently visited strip ── */}
@@ -933,28 +988,50 @@ export default function ModulePicker() {
         })()}
 
         <main className="flex-1 px-8 pb-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {MODULES.map((mod) => (
-              <ModuleCard
-                key={mod.id}
-                module={mod}
-                cardRef={(el) => { cardRefs.current[mod.id] = el }}
-                onEnter={() => setActiveModule(mod.id)}
-                onHoverIn={(el) => { setHoveredModule(mod.id); setHoveredCardEl(el) }}
-                onHoverOut={() => { setHoveredModule(null); setHoveredCardEl(null) }}
-              />
-            ))}
-            {unlocked && (
-              <SabrinaCard
-                cardRef={(el) => { cardRefs.current['sabrina'] = el }}
-                onEnter={() => setActiveModule('sabrina')}
-                onHoverIn={() => setHoveredModule('sabrina')}
-                onHoverOut={() => setHoveredModule(null)}
-                bloomIn={justUnlocked}
-              />
-            )}
-          </div>
+          {viewMode === 'constellation' ? (
+            <ConstellationMap onNavigate={setActiveModule} />
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {MODULES.map((mod) => (
+                <ModuleCard
+                  key={mod.id}
+                  module={mod}
+                  cardRef={(el) => { cardRefs.current[mod.id] = el }}
+                  onEnter={() => setActiveModule(mod.id)}
+                  onHoverIn={(el) => { setHoveredModule(mod.id); setHoveredCardEl(el) }}
+                  onHoverOut={() => { setHoveredModule(null); setHoveredCardEl(null) }}
+                />
+              ))}
+              {unlocked && (
+                <SabrinaCard
+                  cardRef={(el) => { cardRefs.current['sabrina'] = el }}
+                  onEnter={() => setActiveModule('sabrina')}
+                  onHoverIn={() => setHoveredModule('sabrina')}
+                  onHoverOut={() => setHoveredModule(null)}
+                  bloomIn={justUnlocked}
+                />
+              )}
+            </div>
+          )}
         </main>
+
+        {/* ── Physics intel ticker ── */}
+        <div className="shrink-0 overflow-hidden" style={{ borderTop: '1px solid rgba(0,229,196,0.07)', background: 'rgba(0,0,0,0.22)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', padding: '7px 16px', gap: 10 }}>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 8, letterSpacing: '0.18em', color: '#00e5c4', flexShrink: 0, opacity: 0.5 }}>
+              UMBRA INTEL
+            </span>
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              <div style={{ display: 'inline-block', animation: 'umbra-ticker 90s linear infinite', whiteSpace: 'nowrap' }}>
+                {[...TICKER_FACTS, ...TICKER_FACTS].map((fact, i) => (
+                  <span key={i} style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: 'rgba(0,229,196,0.32)', letterSpacing: '0.06em', marginRight: '4em' }}>
+                    {fact}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* ── Footer ── */}
         <footer className="shrink-0 px-8 pb-6 pt-2">
