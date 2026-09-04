@@ -258,18 +258,18 @@ export default function Challenges() {
             <div style={{ padding:'16px 20px',borderBottom:'1px solid rgba(0,229,196,0.08)',display:'flex',alignItems:'center',gap:12 }}>
               <div>
                 <div style={{ fontFamily:'Chakra Petch, sans-serif',fontSize:16,fontWeight:700,color:'#dff2ed',letterSpacing:'0.06em' }}>DAILY CHALLENGES</div>
-                <div style={{ fontFamily:'JetBrains Mono, monospace',fontSize:8,color:'rgba(0,229,196,0.35)',letterSpacing:'0.16em',marginTop:2 }}>{TODAY} · RESETS MIDNIGHT</div>
+                <div style={{ fontFamily:'JetBrains Mono, monospace',fontSize:10,color:'rgba(0,229,196,0.55)',letterSpacing:'0.14em',marginTop:2 }}>{TODAY} · RESETS MIDNIGHT</div>
               </div>
               <div style={{ marginLeft:'auto',display:'flex',alignItems:'center',gap:16 }}>
                 {progress.streak > 0 && (
                   <div style={{ textAlign:'center' }}>
                     <div style={{ fontFamily:'Chakra Petch, sans-serif',fontSize:18,fontWeight:700,color:'#f59e0b' }}>{progress.streak}🔥</div>
-                    <div style={{ fontFamily:'JetBrains Mono, monospace',fontSize:7,color:'rgba(245,158,11,0.5)',letterSpacing:'0.14em' }}>DAY STREAK</div>
+                    <div style={{ fontFamily:'JetBrains Mono, monospace',fontSize:10,color:'rgba(245,158,11,0.70)',letterSpacing:'0.12em' }}>DAY STREAK</div>
                   </div>
                 )}
                 <div style={{ textAlign:'center' }}>
                   <div style={{ fontFamily:'Chakra Petch, sans-serif',fontSize:18,fontWeight:700,color:'#00e5c4' }}>{totalPts}</div>
-                  <div style={{ fontFamily:'JetBrains Mono, monospace',fontSize:7,color:'rgba(0,229,196,0.4)',letterSpacing:'0.14em' }}>TODAY PTS</div>
+                  <div style={{ fontFamily:'JetBrains Mono, monospace',fontSize:10,color:'rgba(0,229,196,0.60)',letterSpacing:'0.12em' }}>TODAY PTS</div>
                 </div>
               </div>
             </div>
@@ -308,21 +308,21 @@ export default function Challenges() {
                     <div style={{ flex:1,minWidth:0 }}>
                       <div style={{ display:'flex',alignItems:'center',gap:8,marginBottom:3 }}>
                         <span style={{ fontFamily:'Chakra Petch, sans-serif',fontSize:12,fontWeight:600,color:done?'rgba(16,185,129,0.7)':'#dff2ed' }}>{ch.title}</span>
-                        <span style={{ fontFamily:'JetBrains Mono, monospace',fontSize:7,letterSpacing:'0.1em',padding:'2px 6px',borderRadius:3,background:diff.bg,color:diff.color,border:`1px solid ${diff.color}30` }}>{ch.difficulty}</span>
+                        <span style={{ fontFamily:'JetBrains Mono, monospace',fontSize:9,letterSpacing:'0.08em',padding:'2px 6px',borderRadius:3,background:diff.bg,color:diff.color,border:`1px solid ${diff.color}30` }}>{ch.difficulty}</span>
                       </div>
                       <div style={{ fontFamily:"'Inter', system-ui, sans-serif",fontSize:13,color:'rgba(255,255,255,0.32)',lineHeight:1.5,letterSpacing:'-0.01em' }}>{ch.description}</div>
                     </div>
                     {/* Points + action */}
                     <div style={{ flexShrink:0,textAlign:'right' }}>
                       <div style={{ fontFamily:'Chakra Petch, sans-serif',fontSize:14,fontWeight:700,color:done?'#10b981':ch.color,marginBottom:6 }}>
-                        {done?'+'+ch.points:ch.points} <span style={{ fontSize:9,fontFamily:'JetBrains Mono, monospace',fontWeight:400 }}>PTS</span>
+                        {done?'+'+ch.points:ch.points} <span style={{ fontSize:10,fontFamily:'JetBrains Mono, monospace',fontWeight:400 }}>PTS</span>
                       </div>
                       {!done && (
                         <button
                           onClick={() => startChallenge(ch)}
                           style={{
                             padding:'5px 12px',borderRadius:3,cursor:'pointer',
-                            fontFamily:'JetBrains Mono, monospace',fontSize:9,letterSpacing:'0.1em',
+                            fontFamily:'JetBrains Mono, monospace',fontSize:10,letterSpacing:'0.08em',
                             color:ch.color,background:`${ch.color}0a`,
                             border:`1px solid ${ch.color}30`,
                             transition:'background 0.1s',
@@ -341,10 +341,10 @@ export default function Challenges() {
 
             {/* Footer */}
             <div style={{ padding:'12px 20px',borderTop:'1px solid rgba(0,229,196,0.06)',display:'flex',alignItems:'center',gap:12 }}>
-              <span style={{ fontFamily:"'Inter', system-ui, sans-serif",fontSize:12,color:'rgba(0,229,196,0.22)',letterSpacing:'-0.01em' }}>
+              <span style={{ fontFamily:"'Inter', system-ui, sans-serif",fontSize:12,color:'rgba(0,229,196,0.50)',letterSpacing:'-0.01em' }}>
                 Complete all 5 daily challenges to extend your streak
               </span>
-              <kbd style={{ marginLeft:'auto',fontFamily:'JetBrains Mono, monospace',fontSize:8,color:'rgba(0,229,196,0.25)',border:'1px solid rgba(0,229,196,0.12)',borderRadius:3,padding:'2px 5px' }}>SHIFT+C</kbd>
+              <kbd style={{ marginLeft:'auto',fontFamily:'JetBrains Mono, monospace',fontSize:10,color:'rgba(0,229,196,0.45)',border:'1px solid rgba(0,229,196,0.20)',borderRadius:3,padding:'2px 5px' }}>SHIFT+C</kbd>
             </div>
           </div>
         </div>
