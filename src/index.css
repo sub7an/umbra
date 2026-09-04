@@ -7,7 +7,7 @@
 /* ─── design-contract (seed: 3ec9088e) ─────────────────────────────────────
    THESIS: Oscilloscope-instrument world; refuses the generic "floating neon
    panel on starfield" default. Every element belongs to precision measurement.
-   OWN-WORLD: #07041a ground, #b44dff phosphor-cyan + #f59e0b amber accents,
+   OWN-WORLD: #070b0d ground, #00e5c4 phosphor-cyan + #f59e0b amber accents,
    Chakra Petch display, JetBrains Mono data, osc-grid panel texture,
    single-px cyan borders with blur-glow, no decorative drop-shadows.
    STORY: User scrubs velocity → three scenes respond → gamma glows in mono →
@@ -34,21 +34,8 @@ html, body, #root {
   padding: 0;
   width: 100%;
   height: 100%;
-  background: #07041a;
+  background: #070b0d;
   overflow: hidden;
-}
-
-/* Ambient violet nebula — gives depth to the void */
-#root::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 60% 50% at 15% 80%, rgba(180,77,255,0.07) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 40% at 85% 20%, rgba(34,211,238,0.05) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 35% at 50% 50%, rgba(247,37,133,0.03) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
 }
 
 /* ── Scanline + film grain cinematic layer ──────────────────────────────────── */
@@ -113,17 +100,17 @@ body::after {
   to   { opacity: 1; transform: translateY(0) }
 }
 
-/* Aurora grid — applied to panel backgrounds */
+/* Oscilloscope measurement grid — applied to panel backgrounds */
 .osc-grid {
   background-image:
-    linear-gradient(rgba(28,12,52,0.85) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(28,12,52,0.85) 1px, transparent 1px);
+    linear-gradient(rgba(15,31,40,0.9) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15,31,40,0.9) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
 /* Phosphor glow text effect */
 .glow-cyan {
-  text-shadow: 0 0 6px rgba(180,77,255,0.7), 0 0 14px rgba(180,77,255,0.3);
+  text-shadow: 0 0 6px rgba(0,229,196,0.7), 0 0 14px rgba(0,229,196,0.3);
 }
 .glow-amber {
   text-shadow: 0 0 6px rgba(245,158,11,0.7), 0 0 14px rgba(245,158,11,0.3);
@@ -156,10 +143,10 @@ body::after {
 
 /* Phosphor border glow */
 .border-glow {
-  box-shadow: 0 0 0 1px rgba(180,77,255,0.4), 0 0 8px rgba(180,77,255,0.15);
+  box-shadow: 0 0 0 1px rgba(0,229,196,0.4), 0 0 8px rgba(0,229,196,0.15);
 }
 .border-glow-strong {
-  box-shadow: 0 0 0 1px rgba(180,77,255,0.7), 0 0 16px rgba(180,77,255,0.25);
+  box-shadow: 0 0 0 1px rgba(0,229,196,0.7), 0 0 16px rgba(0,229,196,0.25);
 }
 
 /* Scroll inside panels */
@@ -170,11 +157,11 @@ body::after {
   background: transparent;
 }
 .thin-scroll::-webkit-scrollbar-thumb {
-  background: #2d1b5e;
+  background: #1e4a5a;
   border-radius: 2px;
 }
 .thin-scroll::-webkit-scrollbar-thumb:hover {
-  background: #9333ea;
+  background: #00b89e;
 }
 
 @layer utilities {

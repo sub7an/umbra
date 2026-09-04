@@ -261,14 +261,14 @@ function StateArrow({ vecPos }) {
 
   return (
     <group>
-      <Line points={[[0, 0, 0], vecPos]} color="#b44dff" lineWidth={3} />
+      <Line points={[[0, 0, 0], vecPos]} color="#00e5c4" lineWidth={3} />
       <mesh position={tipPos} quaternion={quaternion}>
         <coneGeometry args={[0.055, 0.18, 10]} />
-        <meshStandardMaterial color="#b44dff" emissive="#b44dff" emissiveIntensity={1.2} />
+        <meshStandardMaterial color="#00e5c4" emissive="#00e5c4" emissiveIntensity={1.2} />
       </mesh>
       <mesh>
         <sphereGeometry args={[0.04, 8, 8]} />
-        <meshStandardMaterial color="#b44dff" emissive="#b44dff" emissiveIntensity={1} />
+        <meshStandardMaterial color="#00e5c4" emissive="#00e5c4" emissiveIntensity={1} />
       </mesh>
     </group>
   )
@@ -328,7 +328,7 @@ export default function BlochSphere() {
       <GreatCircles />
 
       {/* Axes */}
-      <Line points={[[0, -1.45, 0], [0, 1.45, 0]]} color="#b44dff" lineWidth={1} transparent opacity={0.45} />
+      <Line points={[[0, -1.45, 0], [0, 1.45, 0]]} color="#00e5c4" lineWidth={1} transparent opacity={0.45} />
       <Line points={[[-1.45, 0, 0], [1.45, 0, 0]]} color="#f59e0b" lineWidth={1} transparent opacity={0.35} />
       <Line points={[[0, 0, -1.45], [0, 0, 1.45]]} color="#e040fb" lineWidth={1} transparent opacity={0.35} />
 
@@ -337,10 +337,10 @@ export default function BlochSphere() {
 
       {/* Pole and equator labels */}
       <Html position={[0, 1.55, 0]}    center style={{ pointerEvents: 'none' }}>
-        <span style={{ ...LABEL_STYLE, color: '#b44dff', textShadow: '0 0 8px rgba(180,77,255,0.7)' }}>|0⟩</span>
+        <span style={{ ...LABEL_STYLE, color: '#00e5c4', textShadow: '0 0 8px rgba(0,229,196,0.7)' }}>|0⟩</span>
       </Html>
       <Html position={[0, -1.55, 0]}   center style={{ pointerEvents: 'none' }}>
-        <span style={{ ...LABEL_STYLE, color: '#b44dff', textShadow: '0 0 8px rgba(180,77,255,0.7)' }}>|1⟩</span>
+        <span style={{ ...LABEL_STYLE, color: '#00e5c4', textShadow: '0 0 8px rgba(0,229,196,0.7)' }}>|1⟩</span>
       </Html>
       <Html position={[1.55, 0, 0]}    center style={{ pointerEvents: 'none' }}>
         <span style={{ ...LABEL_STYLE, color: '#f59e0b', textShadow: '0 0 6px rgba(245,158,11,0.5)' }}>|+⟩</span>
@@ -361,18 +361,18 @@ export default function BlochSphere() {
         <div style={{
           fontFamily: 'JetBrains Mono, monospace',
           fontSize: 10,
-          color: '#ede9ff',
+          color: '#dff2ed',
           background: 'rgba(7,11,13,0.82)',
           padding: '2px 5px',
           borderRadius: 3,
-          border: '1px solid rgba(180,77,255,0.2)',
+          border: '1px solid rgba(0,229,196,0.2)',
           whiteSpace: 'nowrap',
         }}>
           θ={theta.toFixed(2)} φ={phi.toFixed(2)}
         </div>
       </Html>
 
-      <pointLight position={vecPos} color="#b44dff" intensity={0.4} distance={2} />
+      <pointLight position={vecPos} color="#00e5c4" intensity={0.4} distance={2} />
     </group>
   )
 }

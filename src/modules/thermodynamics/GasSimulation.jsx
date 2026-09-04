@@ -162,7 +162,7 @@ export default function GasSimulation({ temperature }) {
       <Html position={[6.6, 0.2, 0]} center style={{ pointerEvents: 'none' }}>
         <div ref={histRef} style={{
           width: 136,
-          background: 'rgba(7,4,26,0.88)',
+          background: 'rgba(4,9,12,0.88)',
           border: '1px solid rgba(56,189,248,0.15)',
           borderRadius: 3,
           padding: '8px 10px',

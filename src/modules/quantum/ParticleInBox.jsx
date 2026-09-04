@@ -264,7 +264,7 @@ function WaveCurve({ n, En, vizMode }) {
     return g
   }, [])
   const mat = useMemo(() => new THREE.LineBasicMaterial({
-    color: new THREE.Color('#b44dff'),
+    color: new THREE.Color('#00e5c4'),
     transparent: true,
     opacity: 0.7,
   }), [])
@@ -292,7 +292,7 @@ function WaveCurve({ n, En, vizMode }) {
     geo.attributes.position.needsUpdate = true
     // Color: |ψ|²=amber, Re=cyan, Im=rose
     if (vizMode === 'prob')  mat.color.set('#f59e0b')
-    else if (vizMode === 'real') mat.color.set('#b44dff')
+    else if (vizMode === 'real') mat.color.set('#00e5c4')
     else mat.color.set('#e040fb')
   })
 
@@ -314,7 +314,7 @@ function NodeMarkers({ n }) {
       {nodes.map((x, i) => (
         <mesh key={i} position={[x, 0, 0]}>
           <sphereGeometry args={[0.055, 8, 8]} />
-          <meshStandardMaterial color="#1e1640" emissive="#b44dff" emissiveIntensity={0.6} />
+          <meshStandardMaterial color="#162229" emissive="#00e5c4" emissiveIntensity={0.6} />
         </mesh>
       ))}
     </>
@@ -326,7 +326,7 @@ function WallGlow({ x }) {
   return (
     <mesh position={[x, 0, -0.15]}>
       <planeGeometry args={[0.25, WALL_H * 1.05]} />
-      <meshBasicMaterial color={new THREE.Color('#b44dff')} transparent opacity={0.06} blending={THREE.AdditiveBlending} depthWrite={false} />
+      <meshBasicMaterial color={new THREE.Color('#00e5c4')} transparent opacity={0.06} blending={THREE.AdditiveBlending} depthWrite={false} />
     </mesh>
   )
 }
@@ -351,7 +351,7 @@ function EnergyLadder({ n }) {
         <group key={k}>
           <Line
             points={[[0, y, 0], [0.5, y, 0]]}
-            color={active ? '#f59e0b' : '#1e1640'}
+            color={active ? '#f59e0b' : '#162229'}
             lineWidth={active ? 2 : 1}
             transparent
             opacity={active ? 1 : 0.5}
@@ -388,19 +388,19 @@ export default function ParticleInBox() {
       {/* ── Box walls ── */}
       <mesh position={[BOX_LEFT, 0, 0]}>
         <boxGeometry args={[0.05, WALL_H, 0.05]} />
-        <meshStandardMaterial color="#b44dff" emissive="#b44dff" emissiveIntensity={0.7} roughness={0.3} />
+        <meshStandardMaterial color="#00e5c4" emissive="#00e5c4" emissiveIntensity={0.7} roughness={0.3} />
       </mesh>
       <mesh position={[BOX_RIGHT, 0, 0]}>
         <boxGeometry args={[0.05, WALL_H, 0.05]} />
-        <meshStandardMaterial color="#b44dff" emissive="#b44dff" emissiveIntensity={0.7} roughness={0.3} />
+        <meshStandardMaterial color="#00e5c4" emissive="#00e5c4" emissiveIntensity={0.7} roughness={0.3} />
       </mesh>
-      <pointLight position={[BOX_LEFT, 0, 0.3]} color="#b44dff" intensity={0.5} distance={1.5} />
-      <pointLight position={[BOX_RIGHT, 0, 0.3]} color="#b44dff" intensity={0.5} distance={1.5} />
+      <pointLight position={[BOX_LEFT, 0, 0.3]} color="#00e5c4" intensity={0.5} distance={1.5} />
+      <pointLight position={[BOX_RIGHT, 0, 0.3]} color="#00e5c4" intensity={0.5} distance={1.5} />
 
       {/* ── Floor ── */}
       <Line
         points={[[BOX_LEFT, -WALL_H / 2, 0], [BOX_RIGHT, -WALL_H / 2, 0]]}
-        color="#1e1640"
+        color="#162229"
         lineWidth={1}
         transparent
         opacity={0.6}
@@ -409,7 +409,7 @@ export default function ParticleInBox() {
       {/* ── Zero axis ── */}
       <Line
         points={[[BOX_LEFT, 0, 0], [BOX_RIGHT, 0, 0]]}
-        color="#1e1640"
+        color="#162229"
         lineWidth={1}
         transparent
         opacity={0.3}
