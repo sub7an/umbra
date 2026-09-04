@@ -82,6 +82,11 @@ body::after {
   to   { transform: translateX(-50%) }
 }
 
+@keyframes umbra-spin {
+  from { transform: rotate(0deg) }
+  to   { transform: rotate(360deg) }
+}
+
 @keyframes umbra-float-up {
   0%   { opacity: 1; transform: translateY(0) scale(1) }
   60%  { opacity: 1; transform: translateY(-60px) scale(1.2) }

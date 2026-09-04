@@ -14,6 +14,9 @@ import ExplainMode from './components/ExplainMode'
 import StoryMode from './components/StoryMode'
 import MultiplayerRoom from './components/MultiplayerRoom'
 import GuideModal from './components/GuideModal'
+import PhysicsTutor from './components/PhysicsTutor'
+import ProfilePanel from './components/ProfilePanel'
+import SurpriseMe from './components/SurpriseMe'
 import { GestureProvider } from './context/GestureContext'
 
 const MOD_GLOW = {
@@ -241,6 +244,19 @@ export default function App() {
       <StoryMode />
       <MultiplayerRoom />
       <GuideModal />
+      {!activeModule && <ProfilePanel />}
+      {!activeModule && <SurpriseMe />}
+      {/* PhysicsTutor: fixed bottom-right, expands upward when open */}
+      {activeModule && (
+        <div style={{
+          position: 'fixed', bottom: 72, right: 20, zIndex: 10080,
+          width: 360, maxHeight: 'calc(100vh - 120px)',
+          borderRadius: 8, overflow: 'hidden',
+          boxShadow: '0 16px 60px rgba(0,0,0,0.8)',
+        }}>
+          <PhysicsTutor />
+        </div>
+      )}
       <Challenges />
     </GestureProvider>
   )

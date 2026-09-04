@@ -280,10 +280,130 @@ function AskAction() {
   )
 }
 
+// ── Snapshot action — exports canvas as branded PNG card ─────────────────────
+function SnapshotAction({ activeModule }) {
+  const [status, setStatus] = useState('idle')
+
+  const snap = useCallback(async () => {
+    const canvas = [...document.querySelectorAll('canvas')]
+      .sort((a, b) => b.width * b.height - a.width * a.height)[0]
+    if (!canvas) return
+    setStatus('saving')
+
+    try {
+      const W = canvas.width, H = canvas.height
+      const BAR = Math.round(H * 0.065)
+      const off = Object.assign(document.createElement('canvas'), { width: W, height: H + BAR })
+      const ctx = off.getContext('2d')
+
+      // Draw simulation
+      ctx.drawImage(canvas, 0, 0)
+
+      // Footer bar
+      ctx.fillStyle = 'rgba(4,9,12,0.96)'
+      ctx.fillRect(0, H, W, BAR)
+
+      // Teal accent line
+      ctx.fillStyle = '#00e5c4'
+      ctx.fillRect(0, H, W, 2)
+
+      const scale = W / 1920
+      const fs = n => Math.round(n * scale)
+
+      // UMBRA wordmark
+      ctx.font = `700 ${fs(18)}px "JetBrains Mono", monospace`
+      ctx.fillStyle = '#00e5c4'
+      ctx.fillText('UMBRA', fs(24), H + BAR * 0.65)
+
+      // Module name
+      const label = (activeModule || '').replace(/-/g, ' ').toUpperCase()
+      ctx.font = `${fs(13)}px "JetBrains Mono", monospace`
+      ctx.fillStyle = 'rgba(220,242,235,0.75)'
+      const lw = ctx.measureText(label).width
+      ctx.fillText(label, W - lw - fs(24), H + BAR * 0.65)
+
+      // URL watermark
+      ctx.font = `${fs(10)}px "JetBrains Mono", monospace`
+      ctx.fillStyle = 'rgba(0,229,196,0.25)'
+      ctx.fillText('umbrasandbox.com', fs(24), H + BAR * 0.92)
+
+      const blob = await new Promise(res => off.toBlob(res, 'image/png'))
+      const url = URL.createObjectURL(blob)
+      const a = Object.assign(document.createElement('a'), {
+        href: url,
+        download: `umbra-${activeModule}-${Date.now()}.png`,
+      })
+      document.body.appendChild(a); a.click(); document.body.removeChild(a)
+      setTimeout(() => URL.revokeObjectURL(url), 5000)
+      setStatus('done'); setTimeout(() => setStatus('idle'), 2000)
+    } catch { setStatus('idle') }
+  }, [activeModule])
+
+  if (!activeModule) return null
+  return (
+    <Btn
+      onClick={snap}
+      active={status === 'done'}
+      color="#00e5c4"
+      title="Download simulation as PNG (with Umbra watermark)"
+      icon={
+        status === 'done'
+          ? <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7.5L8 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          : <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="1.5" y="1.5" width="7" height="5.5" rx="1" stroke="currentColor" strokeWidth="1.1"/><circle cx="5" cy="4" r="1.2" stroke="currentColor" strokeWidth="1"/><path d="M1.5 8.5h7" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg>
+      }
+      label={status === 'saving' ? '…' : status === 'done' ? 'SAVED' : 'SNAP'}
+    />
+  )
+}
+
+// ── TUTOR action — opens/closes PhysicsTutor panel ───────────────────────────
+function TutorAction() {
+  const [active, setActive] = useState(false)
+  const activeModule = useModuleStore(s => s.activeModule)
+  if (!activeModule) return null
+
+  const toggle = () => {
+    setActive(v => !v)
+    window.dispatchEvent(new CustomEvent('umbra-tutor-toggle'))
+  }
+
+  return (
+    <Btn
+      onClick={toggle}
+      active={active}
+      color="#a855f7"
+      title="Open UMBRA AI physics tutor — ask anything, control the simulation (T)"
+      icon={
+        <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+          <path d="M6 1L10.33 3.5V8.5L6 11L1.67 8.5V3.5L6 1Z"
+            stroke={active ? 'rgba(168,85,247,0.9)' : 'rgba(168,85,247,0.6)'}
+            strokeWidth="1"
+            fill={active ? 'rgba(168,85,247,0.12)' : 'none'}
+          />
+        </svg>
+      }
+      label="TUTOR"
+    />
+  )
+}
+
 // ── Main export: unified floating toolbar ─────────────────────────────────────
 export default function FloatingToolbar({ explainActive, onExplainToggle }) {
   const activeModule = useModuleStore(s => s.activeModule)
   const hasModule = Boolean(activeModule)
+
+  // T key for tutor
+  useEffect(() => {
+    const h = (e) => {
+      if (e.key !== 't' && e.key !== 'T') return
+      if (document.activeElement?.tagName === 'INPUT') return
+      if (window.__UMBRA_PALETTE_OPEN) return
+      if (!useModuleStore.getState().activeModule) return
+      window.dispatchEvent(new CustomEvent('umbra-tutor-toggle'))
+    }
+    window.addEventListener('keydown', h)
+    return () => window.removeEventListener('keydown', h)
+  }, [])
 
   return (
     <div style={{
@@ -303,6 +423,7 @@ export default function FloatingToolbar({ explainActive, onExplainToggle }) {
       overflow: 'hidden',
     }}>
       <AskAction />
+      {hasModule && <><Divider /><TutorAction /></>}
       {hasModule && (
         <>
           <Divider />
@@ -316,6 +437,7 @@ export default function FloatingToolbar({ explainActive, onExplainToggle }) {
           />
         </>
       )}
+      {hasModule && <><Divider /><SnapshotAction activeModule={activeModule} /></>}
       {hasModule && <><Divider /><RecordAction activeModule={activeModule} /></>}
       {hasModule && <><Divider /><ShareAction activeModule={activeModule} /></>}
     </div>
