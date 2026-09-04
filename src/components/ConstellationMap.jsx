@@ -76,7 +76,7 @@ export default function ConstellationMap({ onNavigate }) {
           </filter>
           <radialGradient id="bg-grad" cx="50%" cy="50%" r="60%">
             <stop offset="0%"   stopColor="#0a1a22"/>
-            <stop offset="100%" stopColor="#04090c"/>
+            <stop offset="100%" stopColor="#060404"/>
           </radialGradient>
         </defs>
 
@@ -190,7 +190,7 @@ export default function ConstellationMap({ onNavigate }) {
         fontSize: 9, letterSpacing: '0.16em',
         color: hovNode
           ? `rgba(${hovNode.col.join(',')},0.7)`
-          : 'rgba(0,229,196,0.2)',
+          : 'rgba(245,158,11,0.2)',
         transition: 'color 0.2s',
       }}>
         {hovNode ? `${hovNode.name.toUpperCase()}  ·  CLICK TO ENTER →` : 'HOVER TO EXPLORE CONNECTIONS  ·  CLICK TO ENTER'}

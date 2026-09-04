@@ -46,7 +46,7 @@ function SourceWaves() {
     return g
   }), [])
   const mats = useMemo(() => Array.from({ length: WAVE_N }, () =>
-    new THREE.LineBasicMaterial({ color: new THREE.Color('#00e5c4'), transparent: true, opacity: 0 })
+    new THREE.LineBasicMaterial({ color: new THREE.Color('#f59e0b'), transparent: true, opacity: 0 })
   ), [])
   const phases = useRef(Array.from({ length: WAVE_N }, (_, i) => i / WAVE_N))
 
@@ -86,7 +86,7 @@ const SLIT_MAX_R = SCREEN_DIST + 1.2
 
 function SlitWaves({ measured }) {
   const SEGS = 36
-  const color = measured ? '#f59e0b' : '#00e5c4'
+  const color = measured ? '#f59e0b' : '#f59e0b'
 
   // Two sets of rings (top slit + bottom slit), SLIT_WAVE_N each
   const total = SLIT_WAVE_N * 2
@@ -186,7 +186,7 @@ function Barrier({ measured }) {
   const gapY = SLIT_SEP / 2
   const barrierColor = '#0e2235'
   const edgeColor = '#1e4a60'
-  const slitGlowColor = measured ? '#f59e0b' : '#00e5c4'
+  const slitGlowColor = measured ? '#f59e0b' : '#f59e0b'
 
   return (
     <group position={[BARRIER_X, 0, 0]}>
@@ -237,7 +237,7 @@ function IntensityCurve({ lambda, measured }) {
   return (
     <Line
       points={pts}
-      color={measured ? '#f59e0b' : '#00e5c4'}
+      color={measured ? '#f59e0b' : '#f59e0b'}
       lineWidth={1.5}
       transparent
       opacity={0.5}
@@ -259,8 +259,8 @@ function ParticleCloud({ measured, lambda }) {
     }
   }, [measured, lambda])
 
-  const color = measured ? '#f59e0b' : '#00e5c4'
-  const emissive = measured ? '#f59e0b' : '#00e5c4'
+  const color = measured ? '#f59e0b' : '#f59e0b'
+  const emissive = measured ? '#f59e0b' : '#f59e0b'
 
   useFrame((_, delta) => {
     if (!instancedRef.current) return
@@ -315,21 +315,21 @@ export default function DoubleSlit() {
       {/* ── Source ── */}
       <mesh position={[SOURCE_X, 0, 0]}>
         <sphereGeometry args={[0.12, 12, 12]} />
-        <meshStandardMaterial color="#00e5c4" emissive="#00e5c4" emissiveIntensity={1.5} />
+        <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={1.5} />
       </mesh>
-      <pointLight position={[SOURCE_X, 0, 0]} color="#00e5c4" intensity={0.8} distance={2} />
+      <pointLight position={[SOURCE_X, 0, 0]} color="#f59e0b" intensity={0.8} distance={2} />
 
       {/* ── Beam lines from source to slits ── */}
       <Line
         points={[[SOURCE_X, 0, 0], [BARRIER_X - 0.1, SLIT_SEP / 2, 0]]}
-        color="#00e5c4"
+        color="#f59e0b"
         lineWidth={1}
         transparent
         opacity={0.15}
       />
       <Line
         points={[[SOURCE_X, 0, 0], [BARRIER_X - 0.1, -SLIT_SEP / 2, 0]]}
-        color="#00e5c4"
+        color="#f59e0b"
         lineWidth={1}
         transparent
         opacity={0.15}
@@ -355,8 +355,8 @@ export default function DoubleSlit() {
         <div style={{
           fontFamily: 'JetBrains Mono, monospace',
           fontSize: 10,
-          color: measured ? '#f59e0b' : '#00e5c4',
-          textShadow: measured ? '0 0 6px rgba(245,158,11,0.5)' : '0 0 6px rgba(0,229,196,0.5)',
+          color: measured ? '#f59e0b' : '#f59e0b',
+          textShadow: measured ? '0 0 6px rgba(245,158,11,0.5)' : '0 0 6px rgba(245,158,11,0.5)',
           whiteSpace: 'nowrap',
         }}>
           {measured ? 'CLASSICAL\nTWO-BAND' : 'INTERFERENCE\nFRINGES'}
