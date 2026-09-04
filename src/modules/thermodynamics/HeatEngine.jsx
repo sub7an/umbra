@@ -7,7 +7,7 @@ import * as THREE from 'three'
 const STEPS = 200
 
 const PHASE_COLORS = [
-  new THREE.Color('#00e5c4'),  // A→B isothermal expansion   (hot)
+  new THREE.Color('#b44dff'),  // A→B isothermal expansion   (hot)
   new THREE.Color('#f59e0b'),  // B→C adiabatic expansion
   new THREE.Color('#fb923c'),  // C→D isothermal compression (cold)
   new THREE.Color('#a855f7'),  // D→A adiabatic compression
@@ -225,7 +225,7 @@ export default function HeatEngine({ temperature }) {
       {/* Efficiency readout */}
       <Html position={[1.8, 4.6, 0]} center style={{ pointerEvents: 'none' }}>
         <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, textAlign: 'right', lineHeight: 1.75 }}>
-          <div style={{ color: '#00e5c4' }}>T_H = {TH.toFixed(2)}</div>
+          <div style={{ color: '#b44dff' }}>T_H = {TH.toFixed(2)}</div>
           <div style={{ color: '#fb923c' }}>T_C = 1.00</div>
           <div style={{ color: '#f59e0b', fontWeight: 700 }}>η = {(efficiency*100).toFixed(1)}%</div>
         </div>

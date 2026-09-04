@@ -58,10 +58,10 @@ function Galaxy() {
         </bufferGeometry>
         <pointsMaterial color="#7af0df" size={0.038} transparent opacity={0.72} sizeAttenuation />
       </points>
-      <pointLight color="#00e5c4" intensity={0.6} distance={1.8} />
+      <pointLight color="#b44dff" intensity={0.6} distance={1.8} />
       <mesh>
         <sphereGeometry args={[0.15, 12, 12]} />
-        <meshStandardMaterial color="#00e5c4" emissive="#00e5c4" emissiveIntensity={1.0} transparent opacity={0.5} />
+        <meshStandardMaterial color="#b44dff" emissive="#b44dff" emissiveIntensity={1.0} transparent opacity={0.5} />
       </mesh>
     </group>
   )
@@ -169,7 +169,7 @@ function OrbitalProbe({ radius }) {
 
       {/* Tangential velocity arrow */}
       <lineSegments geometry={arrowGeo}>
-        <lineBasicMaterial color="#00e5c4" transparent opacity={0.85} depthWrite={false} />
+        <lineBasicMaterial color="#b44dff" transparent opacity={0.85} depthWrite={false} />
       </lineSegments>
     </>
   )
@@ -216,7 +216,7 @@ function VelocityGraph({ radius }) {
       </div>
 
       <svg width={G_W} height={G_H}>
-        <rect x={PAD.l} y={PAD.t} width={pw} height={ph} fill="rgba(10,18,24,0.6)" />
+        <rect x={PAD.l} y={PAD.t} width={pw} height={ph} fill="rgba(13,10,34,0.6)" />
 
         {[0.25, 0.5, 0.75, 1.0].map(v => (
           <line key={v} x1={PAD.l} y1={toY(v)} x2={PAD.l + pw} y2={toY(v)} stroke="rgba(20,32,40,0.9)" strokeWidth={1} />
@@ -233,10 +233,10 @@ function VelocityGraph({ radius }) {
         )}
 
         <path d={kepPath} fill="none" stroke="#f59e0b" strokeWidth={1.5} opacity={0.82} />
-        <path d={obsPath} fill="none" stroke="#00e5c4" strokeWidth={2} />
+        <path d={obsPath} fill="none" stroke="#b44dff" strokeWidth={2} />
 
         <circle cx={rx} cy={ky} r={4.5} fill="#f59e0b" opacity={0.9} />
-        <circle cx={rx} cy={oy} r={4.5} fill="#00e5c4" />
+        <circle cx={rx} cy={oy} r={4.5} fill="#b44dff" />
 
         <line x1={PAD.l} y1={PAD.t} x2={PAD.l} y2={PAD.t + ph} stroke="#1a2e3c" strokeWidth={1} />
         <line x1={PAD.l} y1={PAD.t + ph} x2={PAD.l + pw} y2={PAD.t + ph} stroke="#1a2e3c" strokeWidth={1} />
@@ -248,8 +248,8 @@ function VelocityGraph({ radius }) {
         <text x={PAD.l + pw / 2} y={G_H - 4} textAnchor="middle" fill="#2a4a5a" fontSize={8} fontFamily="JetBrains Mono, monospace">r (orbital radius)</text>
         <text x={10} y={PAD.t + ph / 2} textAnchor="middle" fill="#2a4a5a" fontSize={8} fontFamily="JetBrains Mono, monospace" transform={`rotate(-90,10,${PAD.t + ph / 2})`}>v</text>
 
-        <line x1={PAD.l + 4} y1={PAD.t + 8} x2={PAD.l + 18} y2={PAD.t + 8} stroke="#00e5c4" strokeWidth={2} />
-        <text x={PAD.l + 22} y={PAD.t + 11} fill="#00e5c4" fontSize={8} fontFamily="JetBrains Mono, monospace">measured</text>
+        <line x1={PAD.l + 4} y1={PAD.t + 8} x2={PAD.l + 18} y2={PAD.t + 8} stroke="#b44dff" strokeWidth={2} />
+        <text x={PAD.l + 22} y={PAD.t + 11} fill="#b44dff" fontSize={8} fontFamily="JetBrains Mono, monospace">measured</text>
         <line x1={PAD.l + 4} y1={PAD.t + 19} x2={PAD.l + 18} y2={PAD.t + 19} stroke="#f59e0b" strokeWidth={1.5} opacity={0.85} />
         <text x={PAD.l + 22} y={PAD.t + 22} fill="#f59e0b" fontSize={8} fontFamily="JetBrains Mono, monospace" opacity={0.85}>keplerian</text>
         <line x1={PAD.l + 4} y1={PAD.t + 30} x2={PAD.l + 18} y2={PAD.t + 30} stroke="rgba(112,48,200,0.7)" strokeWidth={2} />
@@ -257,7 +257,7 @@ function VelocityGraph({ radius }) {
       </svg>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 10px 7px', fontFamily: 'JetBrains Mono, monospace', fontSize: 9 }}>
-        <span style={{ color: '#00e5c4' }}>v_obs {vObs.toFixed(3)}</span>
+        <span style={{ color: '#b44dff' }}>v_obs {vObs.toFixed(3)}</span>
         <span style={{ color: '#f59e0b', opacity: 0.85 }}>v_kep {vKep.toFixed(3)}</span>
         <span style={{ color: 'rgba(130,60,220,0.85)' }}>Δv +{Math.max(0, disc).toFixed(3)}</span>
       </div>

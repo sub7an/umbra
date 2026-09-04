@@ -181,7 +181,7 @@ function ClockFace({ position, color, tRef, label, sublabel }) {
 
       {/* Bezel */}
       <RoundedBox args={[1.7, 1.7, 0.12]} radius={0.08} smoothness={4}>
-        <meshStandardMaterial color="#0c1419" emissive={color} emissiveIntensity={0.06} roughness={0.8} metalness={0.3} />
+        <meshStandardMaterial color="#0d0b22" emissive={color} emissiveIntensity={0.06} roughness={0.8} metalness={0.3} />
       </RoundedBox>
 
       {/* Face disc */}
@@ -251,7 +251,7 @@ const LAB_RATE = 0.6  // rad/s
 function LabClock({ position }) {
   const tRef = useRef(0)
   useFrame((_, delta) => { tRef.current += delta * LAB_RATE })
-  return <ClockFace position={position} color="#00e5c4" tRef={tRef} label="LAB FRAME" sublabel="stationary" />
+  return <ClockFace position={position} color="#b44dff" tRef={tRef} label="LAB FRAME" sublabel="stationary" />
 }
 
 function MovingClock({ position, velocity, gamma }) {
@@ -282,11 +282,11 @@ export default function TimeDilation() {
       </Html>
 
       {/* ── Tick rings ── */}
-      <TickRings position={[-2.2, 0, -0.1]} color="#00e5c4" rate={labRate} />
+      <TickRings position={[-2.2, 0, -0.1]} color="#b44dff" rate={labRate} />
       <TickRings position={[2.2, 0, -0.1]} color="#e040fb" rate={movRate} />
 
       {/* ── Elapsed tick counters ── */}
-      <TickCounter position={[-3.3, -1.3, 0]} color="#00e5c4" rate={labRate * 2} />
+      <TickCounter position={[-3.3, -1.3, 0]} color="#b44dff" rate={labRate * 2} />
       <TickCounter position={[3.0, -1.3, 0]} color="#e040fb" rate={(labRate * 2) / gamma} />
 
       {/* ── Clock faces ── */}

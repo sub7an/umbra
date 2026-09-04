@@ -204,7 +204,7 @@ function PreviewRelativity() {
         const geo = new THREE.BufferGeometry().setFromPoints(pts)
         return (
           <line key={`f${ri}`} geometry={geo}>
-            <lineBasicMaterial color="#00e5c4" transparent opacity={0.25 + ri * 0.05} />
+            <lineBasicMaterial color="#b44dff" transparent opacity={0.25 + ri * 0.05} />
           </line>
         )
       })}
@@ -219,16 +219,16 @@ function PreviewRelativity() {
         const geo = new THREE.BufferGeometry().setFromPoints(pts)
         return (
           <line key={`p${ri}`} geometry={geo}>
-            <lineBasicMaterial color="#00e5c4" transparent opacity={0.12 + ri * 0.03} />
+            <lineBasicMaterial color="#b44dff" transparent opacity={0.12 + ri * 0.03} />
           </line>
         )
       })}
       {/* Time axis */}
       <line geometry={new THREE.BufferGeometry().setFromPoints([
         new THREE.Vector3(0,-1.1,0), new THREE.Vector3(0,1.1,0)])}>
-        <lineBasicMaterial color="#00e5c4" transparent opacity={0.6} />
+        <lineBasicMaterial color="#b44dff" transparent opacity={0.6} />
       </line>
-      <pointLight position={[0, 0, 0]} color="#00e5c4" intensity={1} distance={3} />
+      <pointLight position={[0, 0, 0]} color="#b44dff" intensity={1} distance={3} />
     </group>
   )
 }

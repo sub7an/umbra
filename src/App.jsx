@@ -70,7 +70,7 @@ function ModuleFallback() {
   return (
     <div style={{
       width: '100%', height: '100%',
-      background: '#04090c',
+      background: '#07041a',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
       <div style={{

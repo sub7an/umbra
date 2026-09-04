@@ -242,7 +242,7 @@ function ProgressDots({ total, current }) {
           width: i === current ? 18 : 6,
           height: 6,
           borderRadius: 3,
-          background: i < current ? 'rgba(0,229,196,0.5)' : i === current ? '#00e5c4' : 'rgba(255,255,255,0.12)',
+          background: i < current ? 'rgba(180,77,255,0.5)' : i === current ? '#b44dff' : 'rgba(255,255,255,0.12)',
           transition: 'all 0.35s ease',
         }} />
       ))}
@@ -325,15 +325,15 @@ function JourneyCard({ journey, onStart, totalXP }) {
             {done && (
               <span style={{
                 fontFamily: 'JetBrains Mono, monospace', fontSize: 9,
-                letterSpacing: '0.10em', color: '#00e5c4',
-                background: 'rgba(0,229,196,0.1)', border: '1px solid rgba(0,229,196,0.25)',
+                letterSpacing: '0.10em', color: '#b44dff',
+                background: 'rgba(180,77,255,0.1)', border: '1px solid rgba(180,77,255,0.25)',
                 borderRadius: 3, padding: '2px 6px',
               }}>DONE</span>
             )}
           </div>
           <div style={{
             fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12,
-            color: 'rgba(215,238,232,0.62)', letterSpacing: 'normal', marginBottom: 8,
+            color: 'rgba(237,233,255,0.62)', letterSpacing: 'normal', marginBottom: 8,
           }}>{journey.subtitle} · {journey.era}</div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -370,7 +370,7 @@ function JourneyCard({ journey, onStart, totalXP }) {
         <div style={{ marginTop: 12, height: 2, background: 'rgba(255,255,255,0.06)', borderRadius: 1, overflow: 'hidden' }}>
           <div style={{
             height: '100%', borderRadius: 1,
-            background: done ? '#00e5c4' : journey.color,
+            background: done ? '#b44dff' : journey.color,
             width: done ? '100%' : `${((stepsDone + 1) / journey.steps.length) * 100}%`,
             transition: 'width 0.4s ease',
           }} />
@@ -466,7 +466,7 @@ function JourneyOverlay({ journey, onClose, onComplete }) {
         {/* Completion card */}
         {completed ? (
           <div style={{
-            background: 'rgba(6,10,16,0.98)',
+            background: 'rgba(9,6,22,0.98)',
             border: `1px solid rgba(${journey.glow},0.35)`,
             borderRadius: 8,
             overflow: 'hidden',
@@ -512,7 +512,7 @@ function JourneyOverlay({ journey, onClose, onComplete }) {
         ) : (
           /* Step card */
           <div style={{
-            background: 'rgba(6,10,16,0.97)',
+            background: 'rgba(9,6,22,0.97)',
             border: `1px solid rgba(${journey.glow},0.22)`,
             borderRadius: 8,
             overflow: 'hidden',
@@ -574,7 +574,7 @@ function JourneyOverlay({ journey, onClose, onComplete }) {
                 style={{
                   width: '100%', padding: '10px 0',
                   fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.12em',
-                  color: '#04090c', background: journey.color,
+                  color: '#07041a', background: journey.color,
                   border: 'none', borderRadius: 5, cursor: 'pointer',
                   fontWeight: 700,
                   boxShadow: `0 4px 16px rgba(${journey.glow},0.35)`,
@@ -647,8 +647,8 @@ export default function StoryMode() {
             padding: '7px 13px',
             fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.14em',
             color: open ? '#e8f4f0' : 'rgba(200,230,220,0.58)',
-            background: open ? 'rgba(0,229,196,0.08)' : 'rgba(4,9,12,0.72)',
-            border: `1px solid ${open ? 'rgba(0,229,196,0.3)' : 'rgba(0,229,196,0.12)'}`,
+            background: open ? 'rgba(180,77,255,0.08)' : 'rgba(7,4,26,0.72)',
+            border: `1px solid ${open ? 'rgba(180,77,255,0.3)' : 'rgba(180,77,255,0.12)'}`,
             borderRadius: 5,
             backdropFilter: 'blur(10px)',
             WebkitBackdropFilter: 'blur(10px)',
@@ -661,7 +661,7 @@ export default function StoryMode() {
           </svg>
           JOURNEYS
           {totalXP > 0 && (
-            <span style={{ color: '#00e5c4', marginLeft: 2 }}>{totalXP} XP</span>
+            <span style={{ color: '#b44dff', marginLeft: 2 }}>{totalXP} XP</span>
           )}
         </button>
       )}
@@ -671,8 +671,8 @@ export default function StoryMode() {
         <div style={{
           position: 'fixed', top: 56, left: 20, zIndex: 10100,
           width: 380,
-          background: 'rgba(4,9,12,0.96)',
-          border: '1px solid rgba(0,229,196,0.12)',
+          background: 'rgba(7,4,26,0.96)',
+          border: '1px solid rgba(180,77,255,0.12)',
           borderRadius: 10,
           boxShadow: '0 24px 80px rgba(0,0,0,0.85)',
           backdropFilter: 'blur(20px)',
@@ -684,8 +684,8 @@ export default function StoryMode() {
           {/* Header */}
           <div style={{
             padding: '16px 18px 12px',
-            borderBottom: '1px solid rgba(0,229,196,0.07)',
-            background: 'rgba(0,229,196,0.02)',
+            borderBottom: '1px solid rgba(180,77,255,0.07)',
+            background: 'rgba(180,77,255,0.02)',
             position: 'sticky', top: 0,
             backdropFilter: 'blur(10px)',
             WebkitBackdropFilter: 'blur(10px)',
@@ -693,15 +693,15 @@ export default function StoryMode() {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.16em', color: 'rgba(0,229,196,0.65)', marginBottom: 4 }}>STORY MODE</div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.16em', color: 'rgba(180,77,255,0.65)', marginBottom: 4 }}>STORY MODE</div>
                 <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 14, fontWeight: 700, color: '#e8f4f0' }}>Guided Journeys</div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: 'rgba(0,229,196,0.60)', letterSpacing: '0.12em' }}>TOTAL XP</div>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 16, fontWeight: 700, color: '#00e5c4' }}>{totalXP}</div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: 'rgba(180,77,255,0.60)', letterSpacing: '0.12em' }}>TOTAL XP</div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 16, fontWeight: 700, color: '#b44dff' }}>{totalXP}</div>
               </div>
             </div>
-            <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, color: 'rgba(215,238,232,0.65)', lineHeight: 1.6, margin: '8px 0 0', letterSpacing: '-0.01em' }}>
+            <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, color: 'rgba(237,233,255,0.65)', lineHeight: 1.6, margin: '8px 0 0', letterSpacing: '-0.01em' }}>
               Five narrative arcs through physics history. Each journey spans 4 modules with guided insights and unlockable badges.
             </p>
           </div>
@@ -724,7 +724,7 @@ export default function StoryMode() {
           {/* Footer */}
           <div style={{
             padding: '10px 18px',
-            borderTop: '1px solid rgba(0,229,196,0.07)',
+            borderTop: '1px solid rgba(180,77,255,0.07)',
             fontFamily: 'JetBrains Mono, monospace', fontSize: 10,
             color: 'rgba(200,230,220,0.38)', letterSpacing: '0.10em', textAlign: 'center',
           }}>

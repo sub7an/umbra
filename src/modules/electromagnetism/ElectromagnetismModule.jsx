@@ -284,7 +284,7 @@ export default function ElectromagnetismModule() {
             </span>
           </div>
           <div className="absolute bottom-4 left-4 flex items-center gap-1.5 px-2.5 py-1 rounded border pointer-events-none"
-            style={{ borderColor: 'rgba(168,85,247,0.18)', background: 'rgba(4,9,12,0.85)' }}>
+            style={{ borderColor: 'rgba(168,85,247,0.18)', background: 'rgba(7,4,26,0.85)' }}>
             <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#a855f7', boxShadow: '0 0 4px #a855f7' }} />
             <span className="font-mono-data text-[8px] tracking-[0.2em]" style={{ color: 'rgba(168,85,247,0.5)' }}>SIM ACTIVE</span>
           </div>
@@ -324,8 +324,8 @@ export default function ElectromagnetismModule() {
                   onChange={setBStrength} />
                 <div className="h-px bg-border-subtle my-1" />
                 <div className="font-mono-data text-[9px] text-text-dim space-y-1.5">
-                  <p style={{ color: '#00e5c4' }}>─ particle trail</p>
-                  <p style={{ color: '#00e5c4' }}>↗ Lorentz force F</p>
+                  <p style={{ color: '#b44dff' }}>─ particle trail</p>
+                  <p style={{ color: '#b44dff' }}>↗ Lorentz force F</p>
                   <p style={{ color: '#a855f7' }}>↑ B field arrows</p>
                 </div>
               </>
