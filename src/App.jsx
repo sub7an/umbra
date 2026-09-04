@@ -12,6 +12,7 @@ import FloatingToolbar from './components/FloatingToolbar'
 import Challenges from './components/Challenges'
 import ExplainMode from './components/ExplainMode'
 import StoryMode from './components/StoryMode'
+import MultiplayerRoom from './components/MultiplayerRoom'
 import { GestureProvider } from './context/GestureContext'
 
 const MOD_GLOW = {
@@ -237,6 +238,7 @@ export default function App() {
       <FloatingToolbar explainActive={explainOn} onExplainToggle={() => setExplainOn(v => !v)} />
       <ExplainMode active={explainOn} onToggle={() => setExplainOn(v => !v)} />
       <StoryMode />
+      <MultiplayerRoom />
       <Challenges />
     </GestureProvider>
   )
