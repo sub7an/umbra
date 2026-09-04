@@ -140,7 +140,7 @@ export default function SceneWrapper({ children, cameraPosition, showGrid = true
     <div className="relative w-full h-full scanlines" style={{ minHeight: 0 }}>
       <Canvas
         camera={{ position: cameraPosition || [4, 3, 7], fov: 45, near: 0.1, far: 100 }}
-        gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
+        gl={{ antialias: true, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: true }}
         performance={{ min: 0.5 }}
         style={{ width: '100%', height: '100%', display: 'block', background: '#070b0d' }}
       >
