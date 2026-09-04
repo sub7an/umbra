@@ -219,8 +219,8 @@ function EventPoint({ position, onDrag, region }) {
   const dragPlane = useRef(new THREE.Plane())
   const intersection = useRef(new THREE.Vector3())
 
-  const colorMap = { timelike: '#f59e0b', spacelike: '#e040fb', lightlike: '#f59e0b' }
-  const color = colorMap[region] ?? '#fef9ec'
+  const colorMap = { timelike: '#00e5c4', spacelike: '#e040fb', lightlike: '#f59e0b' }
+  const color = colorMap[region] ?? '#dff2ed'
 
   const handlePointerDown = useCallback((e) => {
     e.stopPropagation()
@@ -300,15 +300,15 @@ export default function LightCone() {
     setSrEvent(Math.max(-4, Math.min(4, x)), Math.max(-4, Math.min(4, t)))
   }, [setSrEvent])
 
-  const regionColor = { timelike: '#f59e0b', spacelike: '#e040fb', lightlike: '#f59e0b' }[region]
+  const regionColor = { timelike: '#00e5c4', spacelike: '#e040fb', lightlike: '#f59e0b' }[region]
 
   return (
     <group>
       {/* ── Solid transparent cone volumes ── */}
       {/* Future cone: ConeGeometry apex at +h/2 local → flip with rotX=PI + position at h/2 */}
-      <SolidCone posY={height / 2} rotX={Math.PI} h={height} color="#f59e0b" opacity={0.06} />
+      <SolidCone posY={height / 2} rotX={Math.PI} h={height} color="#00e5c4" opacity={0.06} />
       {/* Past cone: apex at +h/2 local → position at -h/2 gives apex at origin */}
-      <SolidCone posY={-height / 2} rotX={0} h={height} color="#b45309" opacity={0.04} />
+      <SolidCone posY={-height / 2} rotX={0} h={height} color="#007a6a" opacity={0.04} />
 
       {/* ── Minkowski spatial slices (time cross-sections) ── */}
       {[1, 2, 3, -1, -2, -3].map((t) => (
@@ -316,12 +316,12 @@ export default function LightCone() {
       ))}
 
       {/* ── Light pulse rings traveling along cone surface ── */}
-      <PulseRings height={height} color="#f59e0b" dir={1} speed={0.14} />
-      <PulseRings height={height} color="#b45309" dir={-1} speed={0.11} />
+      <PulseRings height={height} color="#00e5c4" dir={1} speed={0.14} />
+      <PulseRings height={height} color="#007a6a" dir={-1} speed={0.11} />
 
       {/* ── Wireframe cone lines ── */}
-      <ConeLines apex={0} height={height} radius={height} color="#f59e0b" opacity={0.6} />
-      <ConeLines apex={0} height={-height} radius={height} color="#b45309" opacity={0.35} />
+      <ConeLines apex={0} height={height} radius={height} color="#00e5c4" opacity={0.6} />
+      <ConeLines apex={0} height={-height} radius={height} color="#007a6a" opacity={0.35} />
 
       {/* ── Null geodesics (x = ±ct) ── */}
       <Line points={[[-height, -height, 0], [height, height, 0]]} color="#f59e0b" lineWidth={1.5} transparent opacity={0.55} />
@@ -339,10 +339,10 @@ export default function LightCone() {
         <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 12, color: '#4a7a74', whiteSpace: 'nowrap' }}>x</span>
       </Html>
       <Html position={[0, 2.4, 0]} center style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 10, color: '#d97706', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>FUTURE</span>
+        <span style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 10, color: '#00b89e', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>FUTURE</span>
       </Html>
       <Html position={[0, -2.4, 0]} center style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 10, color: '#b45309', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>PAST</span>
+        <span style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 10, color: '#007a6a', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>PAST</span>
       </Html>
 
       {/* ── Origin event ── */}

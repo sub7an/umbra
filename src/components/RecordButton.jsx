@@ -163,7 +163,7 @@ export default function RecordButton() {
           : 'rgba(239,68,68,0.45)',
         background: done
           ? 'rgba(239,68,68,0.08)'
-          : 'rgba(8,6,4,0.72)',
+          : 'rgba(4,9,12,0.72)',
         border: `1px solid ${done ? 'rgba(239,68,68,0.38)' : error ? 'rgba(239,68,68,0.22)' : 'rgba(239,68,68,0.14)'}`,
         borderRadius: 4,
         backdropFilter: 'blur(8px)',

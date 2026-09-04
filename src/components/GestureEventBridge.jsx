@@ -8,7 +8,7 @@ const PINCH_MOVE_THR = 55     // px
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function spawnRipple(sx, sy, color = '#f59e0b') {
+function spawnRipple(sx, sy, color = '#00e5c4') {
   const el = document.createElement('div')
   Object.assign(el.style, {
     position:     'fixed',
@@ -221,13 +221,13 @@ export default function GestureEventBridge() {
                   // Background ring
                   c.beginPath()
                   c.arc(32, 32, 27, 0, Math.PI * 2)
-                  c.strokeStyle = 'rgba(245,158,11,0.08)'
+                  c.strokeStyle = 'rgba(0,229,196,0.08)'
                   c.lineWidth   = 3
                   c.stroke()
                   // Progress arc
                   c.beginPath()
                   c.arc(32, 32, 27, -Math.PI / 2, -Math.PI / 2 + progress * Math.PI * 2, false)
-                  c.strokeStyle = `rgba(245,158,11,${0.45 + progress * 0.5})`
+                  c.strokeStyle = `rgba(0,229,196,${0.45 + progress * 0.5})`
                   c.lineWidth   = 3
                   c.lineCap     = 'round'
                   c.stroke()

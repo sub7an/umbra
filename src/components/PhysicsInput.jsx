@@ -148,7 +148,7 @@ export default function PhysicsInput() {
           fontSize: 10,
           letterSpacing: '0.12em',
           color: 'rgba(168,85,247,0.55)',
-          background: 'rgba(8,6,4,0.72)',
+          background: 'rgba(4,9,12,0.72)',
           border: '1px solid rgba(168,85,247,0.16)',
           borderRadius: 4,
           backdropFilter: 'blur(8px)',
@@ -174,7 +174,7 @@ export default function PhysicsInput() {
     <div
       style={{
         position: 'fixed', inset: 0, zIndex: 10001,
-        background: 'rgba(8,6,4,0.78)',
+        background: 'rgba(4,9,12,0.78)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
         display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
@@ -185,7 +185,7 @@ export default function PhysicsInput() {
       <div
         style={{
           width: '100%', maxWidth: 620, margin: '0 16px',
-          background: 'rgba(10,7,4,0.98)',
+          background: 'rgba(6,10,16,0.98)',
           border: '1px solid rgba(168,85,247,0.22)',
           boxShadow: '0 0 0 1px rgba(168,85,247,0.05), 0 32px 80px rgba(0,0,0,0.8)',
           borderRadius: 6, overflow: 'hidden',
@@ -221,7 +221,7 @@ export default function PhysicsInput() {
             style={{
               width: '100%', background: 'none', border: 'none', outline: 'none',
               fontFamily: 'JetBrains Mono, monospace', fontSize: 13,
-              color: '#fef9ec', letterSpacing: '0.02em',
+              color: '#dff2ed', letterSpacing: '0.02em',
               opacity: loading ? 0.5 : 1,
             }}
           />
