@@ -75,7 +75,7 @@ function ExplainCard({ text, position, loading, onClose }) {
             ))}
           </div>
         ) : (
-          <p style={{ fontFamily:'JetBrains Mono, monospace', fontSize:10, color:'rgba(223,242,237,0.82)', lineHeight:1.7, margin:0 }}>
+          <p style={{ fontFamily:"'Inter', system-ui, sans-serif", fontSize:13, color:'rgba(223,242,237,0.9)', lineHeight:1.65, margin:0 }}>
             {text}
           </p>
         )}

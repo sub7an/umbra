@@ -123,13 +123,13 @@ function FeatureCard({ f, index }) {
             color: '#e8f4f0', marginBottom: 5, letterSpacing: '0.02em',
           }}>{f.label}</div>
           <div style={{
-            fontFamily: 'JetBrains Mono, monospace', fontSize: 9,
-            color: 'rgba(200,230,220,0.6)', lineHeight: 1.7,
+            fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13,
+            color: 'rgba(200,230,220,0.6)', lineHeight: 1.7, letterSpacing: '-0.01em',
           }}>{f.desc}</div>
           <div style={{
             marginTop: 7,
-            fontFamily: 'JetBrains Mono, monospace', fontSize: 8,
-            color: `rgba(${f.color},0.55)`, letterSpacing: '0.08em',
+            fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11,
+            color: `rgba(${f.color},0.55)`, letterSpacing: 'normal',
           }}>{f.hint}</div>
         </div>
       </div>
@@ -164,8 +164,8 @@ function ShortcutRow({ keys, desc, index }) {
         ))}
       </div>
       <div style={{
-        fontFamily: 'JetBrains Mono, monospace', fontSize: 9,
-        color: 'rgba(200,230,220,0.55)', lineHeight: 1.5,
+        fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12,
+        color: 'rgba(200,230,220,0.55)', lineHeight: 1.5, letterSpacing: '-0.01em',
       }}>{desc}</div>
     </div>
   )
@@ -293,8 +293,8 @@ export default function GuideModal() {
                   </div>
                   {firstRun && (
                     <div style={{
-                      fontFamily: 'JetBrains Mono, monospace', fontSize: 9,
-                      color: 'rgba(200,230,220,0.4)', marginTop: 6, lineHeight: 1.6,
+                      fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13,
+                      color: 'rgba(200,230,220,0.4)', marginTop: 6, lineHeight: 1.6, letterSpacing: '-0.01em',
                     }}>
                       12 live physics simulations · AI-powered tools · multiplayer · guided journeys
                     </div>

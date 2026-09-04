@@ -130,10 +130,10 @@ function VerifyPanel({ challenge, onSuccess, onDismiss }) {
         <button onClick={onDismiss} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,229,196,0.3)', fontSize: 16, lineHeight: 1, padding: 0 }}>×</button>
       </div>
 
-      <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: 'rgba(255,255,255,0.38)', lineHeight: 1.6, marginBottom: 10 }}>
+      <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, color: 'rgba(255,255,255,0.38)', lineHeight: 1.6, marginBottom: 10, letterSpacing: '-0.01em' }}>
         {challenge.description}
       </p>
-      <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 8, color: 'rgba(0,229,196,0.3)', lineHeight: 1.5, marginBottom: 12 }}>
+      <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12, color: 'rgba(0,229,196,0.3)', lineHeight: 1.5, marginBottom: 12, letterSpacing: '-0.01em' }}>
         HINT: {challenge.hint}
       </p>
 
@@ -310,7 +310,7 @@ export default function Challenges() {
                         <span style={{ fontFamily:'Chakra Petch, sans-serif',fontSize:12,fontWeight:600,color:done?'rgba(16,185,129,0.7)':'#dff2ed' }}>{ch.title}</span>
                         <span style={{ fontFamily:'JetBrains Mono, monospace',fontSize:7,letterSpacing:'0.1em',padding:'2px 6px',borderRadius:3,background:diff.bg,color:diff.color,border:`1px solid ${diff.color}30` }}>{ch.difficulty}</span>
                       </div>
-                      <div style={{ fontFamily:'JetBrains Mono, monospace',fontSize:9,color:'rgba(255,255,255,0.32)',lineHeight:1.5 }}>{ch.description}</div>
+                      <div style={{ fontFamily:"'Inter', system-ui, sans-serif",fontSize:13,color:'rgba(255,255,255,0.32)',lineHeight:1.5,letterSpacing:'-0.01em' }}>{ch.description}</div>
                     </div>
                     {/* Points + action */}
                     <div style={{ flexShrink:0,textAlign:'right' }}>
@@ -341,7 +341,7 @@ export default function Challenges() {
 
             {/* Footer */}
             <div style={{ padding:'12px 20px',borderTop:'1px solid rgba(0,229,196,0.06)',display:'flex',alignItems:'center',gap:12 }}>
-              <span style={{ fontFamily:'JetBrains Mono, monospace',fontSize:8,color:'rgba(0,229,196,0.22)',letterSpacing:'0.1em' }}>
+              <span style={{ fontFamily:"'Inter', system-ui, sans-serif",fontSize:12,color:'rgba(0,229,196,0.22)',letterSpacing:'-0.01em' }}>
                 Complete all 5 daily challenges to extend your streak
               </span>
               <kbd style={{ marginLeft:'auto',fontFamily:'JetBrains Mono, monospace',fontSize:8,color:'rgba(0,229,196,0.25)',border:'1px solid rgba(0,229,196,0.12)',borderRadius:3,padding:'2px 5px' }}>SHIFT+C</kbd>
