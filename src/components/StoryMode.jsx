@@ -332,8 +332,8 @@ function JourneyCard({ journey, onStart, totalXP }) {
             )}
           </div>
           <div style={{
-            fontFamily: 'JetBrains Mono, monospace', fontSize: 9,
-            color: 'rgba(200,230,220,0.45)', letterSpacing: '0.1em', marginBottom: 8,
+            fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12,
+            color: 'rgba(200,230,220,0.45)', letterSpacing: 'normal', marginBottom: 8,
           }}>{journey.subtitle} · {journey.era}</div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -489,7 +489,7 @@ function JourneyOverlay({ journey, onClose, onComplete }) {
             </div>
 
             <div style={{ padding: '14px 16px' }}>
-              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: 'rgba(200,230,220,0.7)', lineHeight: 1.7, margin: '0 0 14px' }}>
+              <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, color: 'rgba(200,230,220,0.7)', lineHeight: 1.7, margin: '0 0 14px', letterSpacing: '-0.01em' }}>
                 {journey.completion.body}
               </p>
 
@@ -549,7 +549,7 @@ function JourneyOverlay({ journey, onClose, onComplete }) {
               <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, fontWeight: 700, color: '#e8f4f0', marginBottom: 8, lineHeight: 1.4 }}>
                 {current.title}
               </div>
-              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9.5, color: 'rgba(200,230,220,0.7)', lineHeight: 1.75, margin: '0 0 12px' }}>
+              <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, color: 'rgba(200,230,220,0.7)', lineHeight: 1.75, margin: '0 0 12px', letterSpacing: '-0.01em' }}>
                 {current.body}
               </p>
 
@@ -563,7 +563,7 @@ function JourneyOverlay({ journey, onClose, onComplete }) {
                 marginBottom: 14,
               }}>
                 <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 7, letterSpacing: '0.16em', color: `rgba(${journey.glow},0.5)`, marginBottom: 4 }}>TRY THIS</div>
-                <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: `rgba(${journey.color.replace('#','')},0.85)`, lineHeight: 1.65, margin: 0 }}>
+                <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12, color: `rgba(${journey.color.replace('#','')},0.85)`, lineHeight: 1.65, margin: 0, letterSpacing: '-0.01em' }}>
                   {current.insight}
                 </p>
               </div>
@@ -701,7 +701,7 @@ export default function StoryMode() {
                 <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 16, fontWeight: 700, color: '#00e5c4' }}>{totalXP}</div>
               </div>
             </div>
-            <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: 'rgba(200,230,220,0.4)', lineHeight: 1.6, margin: '8px 0 0' }}>
+            <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12, color: 'rgba(200,230,220,0.4)', lineHeight: 1.6, margin: '8px 0 0', letterSpacing: '-0.01em' }}>
               Five narrative arcs through physics history. Each journey spans 4 modules with guided insights and unlockable badges.
             </p>
           </div>

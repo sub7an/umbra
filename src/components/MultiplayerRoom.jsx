@@ -454,7 +454,7 @@ export default function MultiplayerRoom() {
                 background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)',
                 borderRadius: 5, padding: '8px 10px', marginBottom: 14,
               }}>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 8, color: 'rgba(200,230,220,0.3)', lineHeight: 1.7 }}>
+                <div style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11, color: 'rgba(200,230,220,0.3)', lineHeight: 1.7, letterSpacing: '-0.01em' }}>
                   All participants see the same simulation in real-time. Module switches and parameter changes sync instantly across all connected tabs.
                 </div>
               </div>
@@ -477,7 +477,7 @@ export default function MultiplayerRoom() {
           ) : (
             /* ── Lobby view ── */
             <div style={{ padding: '14px 16px' }}>
-              <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: 'rgba(200,230,220,0.45)', lineHeight: 1.7, margin: '0 0 16px' }}>
+              <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, color: 'rgba(200,230,220,0.45)', lineHeight: 1.7, margin: '0 0 16px', letterSpacing: '-0.01em' }}>
                 Create a room and share the link. Anyone who opens it joins your session — all parameter changes and module switches sync in real-time.
               </p>
 
@@ -545,7 +545,7 @@ export default function MultiplayerRoom() {
                 {['Create a room — get a 6-character code', 'Share the link — anyone can join by clicking it', 'Explore together — all changes sync instantly', 'React with emoji — visible to all participants'].map((line, i) => (
                   <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
                     <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 8, color: 'rgba(0,229,196,0.4)', flexShrink: 0 }}>{i + 1}.</span>
-                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 8, color: 'rgba(200,230,220,0.4)', lineHeight: 1.5 }}>{line}</span>
+                    <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12, color: 'rgba(200,230,220,0.4)', lineHeight: 1.5, letterSpacing: '-0.01em' }}>{line}</span>
                   </div>
                 ))}
               </div>

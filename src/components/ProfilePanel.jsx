@@ -117,7 +117,7 @@ function StatBlock({ label, value, color = '#00e5c4' }) {
       borderRadius: 6, padding: '10px 12px', textAlign: 'center',
     }}>
       <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 20, fontWeight: 700, color, lineHeight: 1 }}>{value}</div>
-      <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 7, color: 'rgba(200,230,220,0.3)', letterSpacing: '0.12em', marginTop: 4 }}>{label}</div>
+      <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: 'rgba(200,230,220,0.3)', letterSpacing: '0.12em', marginTop: 4 }}>{label}</div>
     </div>
   )
 }
@@ -240,7 +240,7 @@ export default function ProfilePanel() {
                   <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 7, letterSpacing: '0.18em', color: `${levelColor}80`, marginBottom: 3 }}>LEVEL {level} · {levelTitle}</div>
                   <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, fontWeight: 700, color: '#e8f4f0' }}>{totalXP} XP</div>
                   <XPBar xp={totalXP} color={levelColor} />
-                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 7, color: 'rgba(200,230,220,0.3)', marginTop: 3 }}>
+                  <div style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11, color: 'rgba(200,230,220,0.3)', marginTop: 3, letterSpacing: '-0.01em' }}>
                     {levelXP} / {XP_PER_LEVEL} to Lv {level + 1}
                   </div>
                 </div>
@@ -298,7 +298,7 @@ export default function ProfilePanel() {
                 }} />
               </div>
               {streak > 0 && (
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 8, color: '#f59e0b', marginTop: 8 }}>
+                <div style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12, color: '#f59e0b', marginTop: 8, letterSpacing: '-0.01em' }}>
                   🔥 {streak}-day streak — keep it going!
                 </div>
               )}
