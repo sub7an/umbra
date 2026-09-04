@@ -13,6 +13,7 @@ import Challenges from './components/Challenges'
 import ExplainMode from './components/ExplainMode'
 import StoryMode from './components/StoryMode'
 import MultiplayerRoom from './components/MultiplayerRoom'
+import GuideModal from './components/GuideModal'
 import { GestureProvider } from './context/GestureContext'
 
 const MOD_GLOW = {
@@ -239,6 +240,7 @@ export default function App() {
       <ExplainMode active={explainOn} onToggle={() => setExplainOn(v => !v)} />
       <StoryMode />
       <MultiplayerRoom />
+      <GuideModal />
       <Challenges />
     </GestureProvider>
   )
