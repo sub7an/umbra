@@ -333,6 +333,13 @@ export default function PhysicsTutor() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, streamText, derivVisible])
 
+  // ── External open via custom event (FloatingToolbar TUTOR button) ───────────
+  useEffect(() => {
+    const h = () => { setOpen(o => !o); setTimeout(() => inputRef.current?.focus(), 60) }
+    window.addEventListener('umbra-tutor-toggle', h)
+    return () => window.removeEventListener('umbra-tutor-toggle', h)
+  }, [])
+
   // ── '/' shortcut ─────────────────────────────────────────────────────────────
   useEffect(() => {
     const handler = (e) => {
@@ -534,7 +541,7 @@ export default function PhysicsTutor() {
   const hexFilter = `drop-shadow(0 0 ${2 + glowIntensity * 9}px rgba(${glowRGB},${glowIntensity}))`
 
   return (
-    <div style={{ borderTop: '1px solid rgba(0,229,196,0.07)', background: 'rgba(1,6,12,0.97)', flexShrink: 0 }}>
+    <div style={{ borderTop: '1px solid rgba(0,229,196,0.07)', background: 'rgba(1,6,12,0.97)', flexShrink: 0, display: 'flex', flexDirection: 'column-reverse' }}>
       <style>{`
         @keyframes umbra-fade-in { from { opacity:0; transform:translateY(3px) } to { opacity:1; transform:translateY(0) } }
         @keyframes umbra-pulse { 0%,100%{opacity:.3} 50%{opacity:1} }
