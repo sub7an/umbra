@@ -77,6 +77,11 @@ body::after {
   100% { transform: translate(0, 0) }
 }
 
+@keyframes umbra-ticker {
+  from { transform: translateX(0) }
+  to   { transform: translateX(-50%) }
+}
+
 /* Oscilloscope measurement grid — applied to panel backgrounds */
 .osc-grid {
   background-image:
