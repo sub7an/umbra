@@ -8,8 +8,8 @@ import BootScreen from './components/BootScreen'
 import CursorAura from './components/CursorAura'
 import CommandPalette from './components/CommandPalette'
 import ShareButton, { decodeShareState, applySharedState } from './components/ShareButton'
-import PhysicsInput from './components/PhysicsInput'
-import RecordButton from './components/RecordButton'
+import FloatingToolbar from './components/FloatingToolbar'
+import Challenges from './components/Challenges'
 import { GestureProvider } from './context/GestureContext'
 
 const MOD_GLOW = {
@@ -227,9 +227,8 @@ export default function App() {
       {!booted && <BootScreen onComplete={handleBoot} />}
       <CursorAura />
       <CommandPalette />
-      <ShareButton />
-      <PhysicsInput />
-      <RecordButton />
+      <FloatingToolbar />
+      <Challenges />
     </GestureProvider>
   )
 }
