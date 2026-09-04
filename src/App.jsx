@@ -9,6 +9,7 @@ import CursorAura from './components/CursorAura'
 import CommandPalette from './components/CommandPalette'
 import ShareButton, { decodeShareState, applySharedState } from './components/ShareButton'
 import PhysicsInput from './components/PhysicsInput'
+import RecordButton from './components/RecordButton'
 import { GestureProvider } from './context/GestureContext'
 
 const MOD_GLOW = {
@@ -228,6 +229,7 @@ export default function App() {
       <CommandPalette />
       <ShareButton />
       <PhysicsInput />
+      <RecordButton />
     </GestureProvider>
   )
 }
