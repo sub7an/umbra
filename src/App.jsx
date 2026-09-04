@@ -11,6 +11,7 @@ import ShareButton, { decodeShareState, applySharedState } from './components/Sh
 import FloatingToolbar from './components/FloatingToolbar'
 import Challenges from './components/Challenges'
 import ExplainMode from './components/ExplainMode'
+import StoryMode from './components/StoryMode'
 import { GestureProvider } from './context/GestureContext'
 
 const MOD_GLOW = {
@@ -235,6 +236,7 @@ export default function App() {
       <CommandPalette />
       <FloatingToolbar explainActive={explainOn} onExplainToggle={() => setExplainOn(v => !v)} />
       <ExplainMode active={explainOn} onToggle={() => setExplainOn(v => !v)} />
+      <StoryMode />
       <Challenges />
     </GestureProvider>
   )
