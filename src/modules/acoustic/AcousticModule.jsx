@@ -494,7 +494,7 @@ export default function AcousticModule() {
 
   return (
     <div style={{
-      width:'100%', height:'100%', background:'#07041a',
+      width:'100%', height:'100%', background:'#04090c',
       display:'flex', flexDirection:'column',
       fontFamily:'JetBrains Mono, monospace',
     }}>
@@ -516,7 +516,7 @@ export default function AcousticModule() {
         .tone-pad{
           font-family:'JetBrains Mono',monospace;cursor:pointer;
           border:1px solid rgba(168,85,247,.18);border-radius:3px;
-          background:rgba(7,4,26,.85);transition:all .1s;user-select:none;
+          background:rgba(4,9,12,.85);transition:all .1s;user-select:none;
           display:flex;flex-direction:column;align-items:center;
           justify-content:center;gap:2px;padding:6px 0;
         }
@@ -543,7 +543,7 @@ export default function AcousticModule() {
         display:'flex',alignItems:'center',gap:14,
         padding:'11px 18px',flexShrink:0,
         borderBottom:'1px solid rgba(168,85,247,.10)',
-        background:'rgba(7,4,26,.97)',
+        background:'rgba(4,9,12,.97)',
       }}>
         <button onClick={() => setActiveModule(null)} style={{
           fontFamily:'JetBrains Mono,monospace',fontSize:10,
@@ -604,7 +604,7 @@ export default function AcousticModule() {
             <div style={{
               position:'absolute',bottom:10,left:12,display:'flex',alignItems:'center',gap:7,
               padding:'4px 10px',border:'1px solid rgba(168,85,247,.18)',borderRadius:2,
-              background:'rgba(7,4,26,.88)',pointerEvents:'none',
+              background:'rgba(4,9,12,.88)',pointerEvents:'none',
             }}>
               <div style={{width:4,height:4,borderRadius:'50%',background:ACCENT,boxShadow:`0 0 4px ${ACCENT}`}}/>
               <span style={{fontSize:8,letterSpacing:'.2em',color:'rgba(168,85,247,.55)'}}>SIM ACTIVE</span>

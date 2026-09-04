@@ -181,7 +181,7 @@ export default function FluidModule() {
             </span>
           </div>
           <div className="absolute bottom-4 left-4 flex items-center gap-1.5 px-2.5 py-1 rounded border pointer-events-none"
-            style={{ borderColor: 'rgba(45,212,191,0.18)', background: 'rgba(7,4,26,0.85)' }}>
+            style={{ borderColor: 'rgba(45,212,191,0.18)', background: 'rgba(4,9,12,0.85)' }}>
             <div style={{ width: 4, height: 4, borderRadius: '50%', background: ACCENT, boxShadow: `0 0 4px ${ACCENT}` }} />
             <span className="font-mono-data text-[8px] tracking-[0.2em]" style={{ color: 'rgba(45,212,191,0.5)' }}>SIM ACTIVE</span>
           </div>

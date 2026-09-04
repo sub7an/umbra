@@ -90,7 +90,7 @@ function buildEquations(view, fpRadius, hubble, vo, vk, bhMass) {
     case 'rotationcurve':
       return {
         domain: 'GALACTIC KINEMATICS · MISSING MASS',
-        primaryEq: `\\textcolor{#b44dff}{v_{\\mathrm{obs}}} \\gg \\textcolor{#f59e0b}{v_{\\mathrm{kep}}}`,
+        primaryEq: `\\textcolor{#00e5c4}{v_{\\mathrm{obs}}} \\gg \\textcolor{#f59e0b}{v_{\\mathrm{kep}}}`,
         derivedEqs: [
           {
             label: 'Keplerian (visible mass)',
@@ -98,7 +98,7 @@ function buildEquations(view, fpRadius, hubble, vo, vk, bhMass) {
           },
           {
             label: `r = ${fpRadius.toFixed(2)}`,
-            eq: `\\textcolor{#b44dff}{v_{\\mathrm{obs}}} = ${vo.toFixed(3)},\\;\\textcolor{#f59e0b}{v_{\\mathrm{kep}}} = ${vk.toFixed(3)}`,
+            eq: `\\textcolor{#00e5c4}{v_{\\mathrm{obs}}} = ${vo.toFixed(3)},\\;\\textcolor{#f59e0b}{v_{\\mathrm{kep}}} = ${vk.toFixed(3)}`,
           },
         ],
       }

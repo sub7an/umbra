@@ -99,7 +99,7 @@ export default function InfoPanel({
             <div className="px-3 py-4 border-b border-border-subtle">
               <div
                 className="flex justify-center overflow-x-auto"
-                style={{ fontSize: '13px', color: '#ede9ff', lineHeight: 1.5 }}
+                style={{ fontSize: '13px', color: '#dff2ed', lineHeight: 1.5 }}
               >
                 <KatexMath tex={primaryEq} block />
               </div>
@@ -111,7 +111,7 @@ export default function InfoPanel({
             <div className="px-4 py-3 border-b border-border-subtle">
               <p
                 className="font-mono-data text-[11px] leading-relaxed text-cyan-glow text-center"
-                style={{ textShadow: '0 0 8px rgba(180,77,255,0.45)' }}
+                style={{ textShadow: '0 0 8px rgba(0,229,196,0.45)' }}
               >
                 {formula}
               </p>
@@ -130,7 +130,7 @@ export default function InfoPanel({
                   )}
                   <div
                     className="overflow-x-auto"
-                    style={{ fontSize: '11px', color: '#ede9ff', lineHeight: 1.7 }}
+                    style={{ fontSize: '11px', color: '#dff2ed', lineHeight: 1.7 }}
                   >
                     <KatexMath tex={d.eq} block={false} />
                   </div>

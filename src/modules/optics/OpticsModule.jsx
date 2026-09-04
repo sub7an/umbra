@@ -83,7 +83,7 @@ export default function OpticsModule() {
   return (
     <div style={{
       width: '100%', height: '100%',
-      background: '#07041a',
+      background: '#04090c',
       display: 'flex', flexDirection: 'column',
       fontFamily: 'JetBrains Mono, monospace',
     }}>
@@ -98,7 +98,7 @@ export default function OpticsModule() {
         display: 'flex', alignItems: 'center', gap: 14,
         padding: '11px 18px',
         borderBottom: '1px solid rgba(252,211,77,0.10)',
-        background: 'rgba(7,4,26,0.97)',
+        background: 'rgba(4,9,12,0.97)',
         flexShrink: 0,
       }}>
         <button
@@ -186,7 +186,7 @@ export default function OpticsModule() {
             padding: '4px 10px',
             border: '1px solid rgba(252,211,77,0.18)',
             borderRadius: 2,
-            background: 'rgba(7,4,26,0.88)',
+            background: 'rgba(4,9,12,0.88)',
             pointerEvents: 'none',
           }}>
             <div style={{ width: 4, height: 4, borderRadius: '50%', background: ACCENT, boxShadow: `0 0 4px ${ACCENT}` }} />
@@ -207,7 +207,7 @@ export default function OpticsModule() {
         {view === 'lens' && (
           <div style={{
             width: 180, flexShrink: 0,
-            background: 'rgba(7,4,26,0.97)',
+            background: 'rgba(4,9,12,0.97)',
             borderLeft: '1px solid rgba(252,211,77,0.08)',
             display: 'flex', flexDirection: 'column',
           }}>
