@@ -120,7 +120,7 @@ export default function SabrinaModule() {
 
       <Canvas
         camera={{ position: [0, 0, 8], fov: 45, near: 0.1, far: 100 }}
-        gl={{ antialias: true, alpha: false }}
+        gl={{ antialias: true, alpha: false, preserveDrawingBuffer: true }}
         style={{ width: '100%', height: '100%', display: 'block' }}
       >
         <color attach="background" args={['#070b0d']} />
