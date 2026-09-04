@@ -7,6 +7,7 @@ import TransitionOverlay from './components/TransitionOverlay'
 import BootScreen from './components/BootScreen'
 import CursorAura from './components/CursorAura'
 import CommandPalette from './components/CommandPalette'
+import ShareButton, { decodeShareState, applySharedState } from './components/ShareButton'
 import { GestureProvider } from './context/GestureContext'
 
 const MOD_GLOW = {
@@ -129,8 +130,19 @@ export default function App() {
     setBooted(true)
   }, [])
 
-  // ── URL routing: init from hash on mount ───────────────────────────────────
+  // ── URL routing: init from hash on mount, or from shared ?s= state ────────
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const shared = params.get('s')
+    if (shared) {
+      const decoded = decodeShareState(shared)
+      if (decoded) {
+        applySharedState(decoded)
+        // Clean the ?s= from the URL so refreshes don't re-apply it
+        window.history.replaceState(null, '', window.location.pathname + '#' + decoded.m)
+        return
+      }
+    }
     const hash = window.location.hash.slice(1)
     if (ROUTABLE.includes(hash)) {
       setModule(hash)
@@ -213,6 +225,7 @@ export default function App() {
       {!booted && <BootScreen onComplete={handleBoot} />}
       <CursorAura />
       <CommandPalette />
+      <ShareButton />
     </GestureProvider>
   )
 }
