@@ -114,9 +114,10 @@ function DustField({ count = 240 }) {
 // Tremor deadzone: ignore sub-threshold jitters so the camera holds steady
 const CAM_DEADZONE  = 0.0022
 const CAM_PINCH_AGE = 180 // ms a pinch must live before it drives the camera
+const CAM_PEACE_AGE = 280 // ms peace must be held — pinch approach/release flickers as peace
 
 function GestureCamera({ orbitRef, minDist, maxDist }) {
-  const { enabled, pointerRef, pinchingRef, pinchStartAtRef, uiBusyRef, twoPinchRef, peaceRef } = useGesture()
+  const { enabled, pointerRef, pinchingRef, pinchStartAtRef, peaceStartAtRef, uiBusyRef, twoPinchRef, peaceRef } = useGesture()
   const { camera } = useThree()
 
   const prevNDC   = useRef(null)
@@ -126,7 +127,8 @@ function GestureCamera({ orbitRef, minDist, maxDist }) {
     if (!enabled) return
 
     const ptr      = pointerRef.current
-    const peace    = peaceRef?.current
+    const peace    = peaceRef?.current &&
+      performance.now() - (peaceStartAtRef?.current ?? 0) > CAM_PEACE_AGE
     const twoPinch = twoPinchRef?.current
 
     // A pinch only drives the camera if the event bridge hasn't claimed it for
