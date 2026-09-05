@@ -173,7 +173,7 @@ export default function ProfilePanel() {
         onClick={() => setOpen(v => !v)}
         title="Your profile — level, XP, badges, progress (P)"
         style={{
-          position: 'fixed', top: 20, right: 20, zIndex: 10100,
+          position: 'fixed', top: 64, right: 20, zIndex: 10100,
           display: 'flex', alignItems: 'center', gap: 7,
           padding: '7px 13px',
           fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.14em',
@@ -203,7 +203,7 @@ export default function ProfilePanel() {
       {/* Panel */}
       {open && (
         <div style={{
-          position: 'fixed', top: 56, right: 20, zIndex: 10100,
+          position: 'fixed', top: 104, right: 20, zIndex: 10100,
           width: 320,
           background: 'rgba(8,9,10,0.97)',
           border: '1px solid rgba(94,106,210,0.12)',

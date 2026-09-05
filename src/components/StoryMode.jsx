@@ -642,7 +642,7 @@ export default function StoryMode() {
           onClick={() => setOpen(v => !v)}
           title="Story Mode — guided journeys through physics (J)"
           style={{
-            position: 'fixed', top: 20, left: 20, zIndex: 10100,
+            position: 'fixed', top: 64, left: 20, zIndex: 10100,
             display: 'flex', alignItems: 'center', gap: 7,
             padding: '7px 13px',
             fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.14em',
@@ -669,7 +669,7 @@ export default function StoryMode() {
       {/* Journey selection panel */}
       {open && !activeModule && (
         <div style={{
-          position: 'fixed', top: 56, left: 20, zIndex: 10100,
+          position: 'fixed', top: 104, left: 20, zIndex: 10100,
           width: 380,
           background: 'rgba(8,9,10,0.96)',
           border: '1px solid rgba(94,106,210,0.12)',

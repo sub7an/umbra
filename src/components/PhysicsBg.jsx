@@ -2,15 +2,32 @@ import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
+// Soft circular sprite — without it, points render as hard squares
+let _sprite = null
+function softSprite() {
+  if (_sprite) return _sprite
+  const c = document.createElement('canvas')
+  c.width = c.height = 64
+  const ctx = c.getContext('2d')
+  const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32)
+  g.addColorStop(0, 'rgba(255,255,255,1)')
+  g.addColorStop(0.35, 'rgba(255,255,255,0.5)')
+  g.addColorStop(1, 'rgba(255,255,255,0)')
+  ctx.fillStyle = g
+  ctx.fillRect(0, 0, 64, 64)
+  _sprite = new THREE.CanvasTexture(c)
+  return _sprite
+}
+
 const N = 1200
 
 // Per-module accent colors (rgb 0-1)
 const MOD_COLORS = {
-  null:                  [0.0,  0.85, 0.77],
+  null:                  [0.37, 0.42, 0.82],
   'physics-sandbox':     [0.52, 0.80, 0.09],
   'wave-mechanics':      [0.13, 0.83, 0.93],
   'optics':              [0.99, 0.83, 0.30],
-  'special-relativity':  [0.0,  0.90, 0.77],
+  'special-relativity':  [0.37, 0.42, 0.82],
   'quantum-mechanics':   [0.96, 0.62, 0.04],
   'frontier-physics':    [0.88, 0.25, 0.98],
   'dynamical-systems':   [0.06, 0.73, 0.50],
@@ -170,10 +187,11 @@ export default function PhysicsBg({ mouseRef, hoveredModule }) {
         <bufferAttribute attach="attributes-color"    args={[col, 3]} />
       </bufferGeometry>
       <pointsMaterial
-        size={0.18}
+        map={softSprite()}
+        size={0.11}
         vertexColors
         transparent
-        opacity={0.8}
+        opacity={0.45}
         blending={THREE.AdditiveBlending}
         depthWrite={false}
         sizeAttenuation
