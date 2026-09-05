@@ -4,6 +4,7 @@ import { OrbitControls } from '@react-three/drei'
 import useModuleStore from '../../store/useModuleStore'
 import InfoPanel from '../../components/InfoPanel'
 import SandboxScene, { SOURCE_DEFS } from './SandboxScene'
+import CinematicEffects from '../../components/CinematicEffects'
 
 const ACCENT = '#84cc16'
 
@@ -238,6 +239,7 @@ export default function SandboxModule() {
               minDistance={4}
               maxDistance={28}
             />
+            <CinematicEffects dof={false} bloomIntensity={1.0} />
           </Canvas>
 
           {/* Mode overlay */}
