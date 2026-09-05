@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Anthropic from '@anthropic-ai/sdk'
+import { track } from '@vercel/analytics'
 import useModuleStore from '../store/useModuleStore'
 import { encodeShareState, decodeShareState, applySharedState } from './ShareButton'
 
@@ -81,6 +82,7 @@ function ShareAction({ activeModule }) {
     url.search = `?s=${encoded}`; url.hash = ''
     try {
       await navigator.clipboard.writeText(url.toString())
+      track('share_copied', {})
       setStatus('copied'); setTimeout(() => setStatus('idle'), 2000)
     } catch { setStatus('error'); setTimeout(() => setStatus('idle'), 2000) }
   }, [])
@@ -109,6 +111,7 @@ function EmbedAction({ activeModule }) {
     const snippet = `<iframe src="https://umbrasandbox.com/?embed=1#${activeModule}" width="800" height="520" style="border:0;border-radius:8px;overflow:hidden" title="Umbra — interactive physics simulation" allowfullscreen></iframe>`
     try {
       await navigator.clipboard.writeText(snippet)
+      track('embed_copied', { module: activeModule })
       setStatus('copied'); setTimeout(() => setStatus('idle'), 2000)
     } catch { setStatus('error'); setTimeout(() => setStatus('idle'), 2000) }
   }, [activeModule])
@@ -352,7 +355,7 @@ function SnapshotAction({ activeModule }) {
 
       // URL watermark
       ctx.font = `${fs(10)}px "JetBrains Mono", monospace`
-      ctx.fillStyle = 'rgba(94,106,210,0.25)'
+      ctx.fillStyle = 'rgba(125,138,242,0.65)'
       ctx.fillText('umbrasandbox.com', fs(24), H + BAR * 0.92)
 
       const blob = await new Promise(res => off.toBlob(res, 'image/png'))
@@ -364,6 +367,7 @@ function SnapshotAction({ activeModule }) {
       document.body.appendChild(a); a.click(); document.body.removeChild(a)
       setTimeout(() => URL.revokeObjectURL(url), 5000)
       setStatus('done'); setTimeout(() => setStatus('idle'), 2000)
+      track('snapshot', { module: activeModule })
     } catch { setStatus('idle') }
   }, [activeModule])
 
