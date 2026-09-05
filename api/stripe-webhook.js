@@ -9,8 +9,28 @@
 // JSON body parsing is disabled below.
 
 import Stripe from 'stripe'
+import { createClient } from '@supabase/supabase-js'
 
 export const config = { api: { bodyParser: false } }
+
+// Server-side Supabase client using the SERVICE ROLE key (bypasses RLS so the
+// webhook can update any user's profile). Null if not configured yet.
+function admin() {
+  const url = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !key) return null
+  return createClient(url, key, { auth: { persistSession: false } })
+}
+
+async function setPro(userId, customerId, isPro) {
+  const db = admin()
+  if (!db) { console.log('[stripe/webhook] Supabase not configured; skipping profile update'); return }
+  if (userId) {
+    await db.from('profiles').update({ is_pro: isPro, stripe_customer_id: customerId }).eq('id', userId)
+  } else if (customerId) {
+    await db.from('profiles').update({ is_pro: isPro }).eq('stripe_customer_id', customerId)
+  }
+}
 
 function readRawBody(req) {
   return new Promise((resolve, reject) => {
@@ -47,15 +67,15 @@ export default async function handler(req, res) {
   switch (event.type) {
     case 'checkout.session.completed': {
       const s = event.data.object
-      // s.customer_details.email is the buyer; s.customer is the Stripe customer id.
-      // TODO: when accounts exist, mark this user as Pro here (DB write).
-      console.log('[stripe/webhook] Pro subscription started:', s.customer_details?.email, s.customer)
+      const userId = s.client_reference_id || s.subscription_data?.metadata?.umbra_user_id
+      console.log('[stripe/webhook] Pro started:', s.customer_details?.email, 'user:', userId)
+      await setPro(userId, s.customer, true)
       break
     }
     case 'customer.subscription.deleted': {
       const sub = event.data.object
-      // TODO: revoke Pro access for sub.customer here.
       console.log('[stripe/webhook] subscription cancelled:', sub.customer)
+      await setPro(sub.metadata?.umbra_user_id, sub.customer, false)
       break
     }
     case 'invoice.paid':

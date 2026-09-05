@@ -6,6 +6,7 @@ import PhysicsBg from './PhysicsBg'
 import CardPreview from './CardPreview'
 import ConstellationMap from './ConstellationMap'
 import { useGesture } from '../context/GestureContext'
+import { useAuth } from '../context/AuthContext'
 import DecodeText from './DecodeText'
 import { getTheme, toggleTheme } from '../lib/theme'
 
@@ -34,6 +35,76 @@ const SECRET_PHRASE = 'sabrina'
 const STORE_KEY     = 'umbra_unlocked'
 
 // ── Theme toggle (sun/moon) ───────────────────────────────────────────────────
+// ── Account chip: Sign in when logged out, email + PRO badge + menu in ────────
+function AccountButton() {
+  const { configured, user, isPro, signOut } = useAuth()
+  const [menu, setMenu] = useState(false)
+  if (!configured) return null
+
+  if (!user) {
+    return (
+      <button
+        onClick={() => window.dispatchEvent(new CustomEvent('umbra-auth-open'))}
+        className="font-mono-data text-[10px] tracking-[0.14em] uppercase"
+        style={{
+          color: 'rgba(94,106,210,0.60)', background: 'transparent',
+          border: '1px solid rgba(94,106,210,0.18)', borderRadius: 3,
+          cursor: 'pointer', padding: '4px 8px', transition: 'color 0.15s, border-color 0.15s',
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.color = '#5e6ad2'; e.currentTarget.style.borderColor = 'rgba(94,106,210,0.4)' }}
+        onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(94,106,210,0.60)'; e.currentTarget.style.borderColor = 'rgba(94,106,210,0.18)' }}
+      >
+        Sign in
+      </button>
+    )
+  }
+
+  const initial = (user.email || '?')[0].toUpperCase()
+  return (
+    <div style={{ position: 'relative' }}>
+      <button
+        onClick={() => setMenu(v => !v)}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer',
+          background: 'transparent', border: '1px solid rgba(94,106,210,0.2)',
+          borderRadius: 3, padding: '3px 8px 3px 4px',
+        }}
+      >
+        <span style={{
+          width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(94,106,210,0.18)', color: '#8b9cf7',
+          fontFamily: 'Chakra Petch, sans-serif', fontSize: 11, fontWeight: 700,
+        }}>{initial}</span>
+        {isPro && (
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 8, letterSpacing: '0.12em', color: '#08090a', background: '#5e6ad2', borderRadius: 2, padding: '1px 4px' }}>PRO</span>
+        )}
+        <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 3L4 5.5L6.5 3" stroke="rgba(94,106,210,0.7)" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      </button>
+      {menu && (
+        <div style={{
+          position: 'absolute', top: 30, right: 0, zIndex: 30, minWidth: 190,
+          background: 'rgba(17,17,19,0.98)', border: '1px solid rgba(94,106,210,0.25)',
+          borderRadius: 5, padding: 8, boxShadow: '0 12px 40px rgba(0,0,0,0.6)',
+        }}>
+          <div style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11, color: 'rgba(247,248,248,0.6)', padding: '4px 6px 8px', wordBreak: 'break-all' }}>
+            {user.email}
+          </div>
+          {!isPro && (
+            <button onClick={() => { setMenu(false); window.dispatchEvent(new CustomEvent('umbra-pricing-open')) }}
+              style={{ width: '100%', textAlign: 'left', padding: '6px', borderRadius: 3, cursor: 'pointer', background: 'rgba(94,106,210,0.1)', border: 'none', color: '#8b9cf7', fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.1em', marginBottom: 4 }}>
+              ↑ UPGRADE TO PRO
+            </button>
+          )}
+          <button onClick={() => { setMenu(false); signOut() }}
+            style={{ width: '100%', textAlign: 'left', padding: '6px', borderRadius: 3, cursor: 'pointer', background: 'transparent', border: 'none', color: 'rgba(247,248,248,0.6)', fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.1em' }}>
+            SIGN OUT
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function ThemeButton() {
   const [theme, setTheme] = useState(getTheme())
   return (
@@ -868,6 +939,7 @@ export default function ModulePicker() {
               Pricing
             </button>
             <ThemeButton />
+            <AccountButton />
             <button
               onClick={() => window.dispatchEvent(new CustomEvent('umbra-palette-open'))}
               style={{

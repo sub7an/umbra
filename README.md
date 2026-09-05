@@ -75,3 +75,26 @@ Set these environment variables in Vercel (Project → Settings → Environment 
 The Pro button falls back to the contact/email flow until these are set, so the
 site never breaks mid-setup. School/Classroom licensing stays a contact flow
 (invoiced manually in the Stripe dashboard).
+
+## Accounts (Supabase)
+
+Auth + profiles run on Supabase. Sign-in (magic link / Google / password) is in
+`AuthPanel`; `AuthContext` exposes `{ user, isPro, ... }`. The Stripe webhook
+flips `is_pro` on the user's profile via the service-role key, so Pro unlocks
+automatically after checkout.
+
+1. Create a Supabase project, then run `supabase-schema.sql` in the SQL Editor.
+2. Set env vars in Vercel:
+
+| Variable | Scope | Value |
+|---|---|---|
+| `VITE_SUPABASE_URL` | all | Project URL (public) |
+| `VITE_SUPABASE_ANON_KEY` | all | anon/public key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Production | service-role key (SECRET — webhook only) |
+
+3. In Supabase → Authentication → URL Configuration, set Site URL to
+   `https://umbrasandbox.com` and add it to Redirect URLs.
+4. (Optional) enable the Google provider under Authentication → Providers.
+
+Until these are set, auth UI shows "accounts aren't enabled yet" and the rest of
+the app runs normally.

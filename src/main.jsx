@@ -4,7 +4,12 @@ import 'katex/dist/katex.min.css'
 import './index.css'
 import App from './App.jsx'
 import { initTheme } from './lib/theme'
+import { AuthProvider } from './context/AuthContext'
 
 inject()
 initTheme()
-createRoot(document.getElementById('root')).render(<App />)
+createRoot(document.getElementById('root')).render(
+  <AuthProvider>
+    <App />
+  </AuthProvider>
+)

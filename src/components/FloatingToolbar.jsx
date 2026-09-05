@@ -4,6 +4,7 @@ import { track } from '@vercel/analytics'
 import useModuleStore from '../store/useModuleStore'
 import { encodeShareState, decodeShareState, applySharedState } from './ShareButton'
 import { isMuted, setMuted, tick as sndTick, click as sndClick } from '../lib/sound'
+import { useAuth } from '../context/AuthContext'
 import { getTheme, toggleTheme } from '../lib/theme'
 
 // ── Physics scenario AI client ────────────────────────────────────────────────
@@ -360,6 +361,7 @@ function AskAction() {
 // ── Snapshot action — exports canvas as branded PNG card ─────────────────────
 function SnapshotAction({ activeModule }) {
   const [status, setStatus] = useState('idle')
+  const { isPro } = useAuth()
 
   const snap = useCallback(async () => {
     const canvas = [...document.querySelectorAll('canvas')]
@@ -369,40 +371,43 @@ function SnapshotAction({ activeModule }) {
 
     try {
       const W = canvas.width, H = canvas.height
-      const BAR = Math.round(H * 0.065)
+      // Pro exports are clean (no branded footer / watermark).
+      const BAR = isPro ? 0 : Math.round(H * 0.065)
       const off = Object.assign(document.createElement('canvas'), { width: W, height: H + BAR })
       const ctx = off.getContext('2d')
 
       // Draw simulation
       ctx.drawImage(canvas, 0, 0)
 
-      // Footer bar
-      ctx.fillStyle = 'rgba(8,9,10,0.96)'
-      ctx.fillRect(0, H, W, BAR)
+      if (!isPro) {
+        // Footer bar
+        ctx.fillStyle = 'rgba(8,9,10,0.96)'
+        ctx.fillRect(0, H, W, BAR)
 
-      // Teal accent line
-      ctx.fillStyle = '#5e6ad2'
-      ctx.fillRect(0, H, W, 2)
+        // Accent line
+        ctx.fillStyle = '#5e6ad2'
+        ctx.fillRect(0, H, W, 2)
 
-      const scale = W / 1920
-      const fs = n => Math.round(n * scale)
+        const scale = W / 1920
+        const fs = n => Math.round(n * scale)
 
-      // UMBRA wordmark
-      ctx.font = `700 ${fs(18)}px "JetBrains Mono", monospace`
-      ctx.fillStyle = '#5e6ad2'
-      ctx.fillText('UMBRA', fs(24), H + BAR * 0.65)
+        // UMBRA wordmark
+        ctx.font = `700 ${fs(18)}px "JetBrains Mono", monospace`
+        ctx.fillStyle = '#5e6ad2'
+        ctx.fillText('UMBRA', fs(24), H + BAR * 0.65)
 
-      // Module name
-      const label = (activeModule || '').replace(/-/g, ' ').toUpperCase()
-      ctx.font = `${fs(13)}px "JetBrains Mono", monospace`
-      ctx.fillStyle = 'rgba(220,242,235,0.75)'
-      const lw = ctx.measureText(label).width
-      ctx.fillText(label, W - lw - fs(24), H + BAR * 0.65)
+        // Module name
+        const label = (activeModule || '').replace(/-/g, ' ').toUpperCase()
+        ctx.font = `${fs(13)}px "JetBrains Mono", monospace`
+        ctx.fillStyle = 'rgba(220,242,235,0.75)'
+        const lw = ctx.measureText(label).width
+        ctx.fillText(label, W - lw - fs(24), H + BAR * 0.65)
 
-      // URL watermark
-      ctx.font = `${fs(10)}px "JetBrains Mono", monospace`
-      ctx.fillStyle = 'rgba(125,138,242,0.65)'
-      ctx.fillText('umbrasandbox.com', fs(24), H + BAR * 0.92)
+        // URL watermark
+        ctx.font = `${fs(10)}px "JetBrains Mono", monospace`
+        ctx.fillStyle = 'rgba(125,138,242,0.65)'
+        ctx.fillText('umbrasandbox.com', fs(24), H + BAR * 0.92)
+      }
 
       const blob = await new Promise(res => off.toBlob(res, 'image/png'))
       const url = URL.createObjectURL(blob)
@@ -413,9 +418,9 @@ function SnapshotAction({ activeModule }) {
       document.body.appendChild(a); a.click(); document.body.removeChild(a)
       setTimeout(() => URL.revokeObjectURL(url), 5000)
       setStatus('done'); setTimeout(() => setStatus('idle'), 2000)
-      track('snapshot', { module: activeModule })
+      track('snapshot', { module: activeModule, pro: isPro })
     } catch { setStatus('idle') }
-  }, [activeModule])
+  }, [activeModule, isPro])
 
   if (!activeModule) return null
   return (
@@ -423,7 +428,7 @@ function SnapshotAction({ activeModule }) {
       onClick={snap}
       active={status === 'done'}
       color="#5e6ad2"
-      title="Download simulation as PNG (with Umbra watermark)"
+      title={isPro ? 'Download clean PNG (Pro — no watermark)' : 'Download simulation as PNG (with Umbra watermark)'}
       icon={
         status === 'done'
           ? <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7.5L8 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
