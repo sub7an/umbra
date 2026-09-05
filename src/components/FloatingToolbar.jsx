@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { track } from '@vercel/analytics'
 import useModuleStore from '../store/useModuleStore'
 import { encodeShareState, decodeShareState, applySharedState } from './ShareButton'
+import { isMuted, setMuted, tick as sndTick, click as sndClick } from '../lib/sound'
 
 // ── Physics scenario AI client ────────────────────────────────────────────────
 const client = new Anthropic({
@@ -99,6 +100,33 @@ function ShareAction({ activeModule }) {
         : <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M4 2.5H3C2.45 2.5 2 2.95 2 3.5V7.5C2 8.05 2.45 8.5 3 8.5H7C7.55 8.5 8 8.05 8 7.5V6.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/><path d="M5.5 1.5H8.5V4.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/><path d="M8.5 1.5L5 5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg>
       }
       label={status === 'copied' ? 'COPIED' : status === 'error' ? 'ERROR' : 'SHARE'}
+    />
+  )
+}
+
+// ── Sound toggle + global UI sound wiring ────────────────────────────────────
+function SoundAction() {
+  const [muted, set] = useState(isMuted())
+
+  useEffect(() => {
+    const onOver  = (e) => { if (e.target.closest?.('button, [role="button"], a')) sndTick() }
+    const onClick = (e) => { if (e.target.closest?.('button, [role="button"], a')) sndClick() }
+    document.addEventListener('pointerover', onOver,  { passive: true })
+    document.addEventListener('pointerdown', onClick, { passive: true })
+    return () => {
+      document.removeEventListener('pointerover', onOver)
+      document.removeEventListener('pointerdown', onClick)
+    }
+  }, [])
+
+  return (
+    <Btn
+      onClick={() => { const m = !muted; setMuted(m); set(m) }}
+      active={false}
+      color="#5e6ad2"
+      title={muted ? 'Unmute interface sounds' : 'Mute interface sounds'}
+      icon={<svg width="10" height="10" viewBox="0 0 11 11" fill="none"><path d="M1.5 4V7H3.5L6 9.5V1.5L3.5 4H1.5Z" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round"/>{muted ? <path d="M7.5 4L10 6.5M10 4L7.5 6.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/> : <path d="M7.5 3.5C8.3 4.3 8.3 6.7 7.5 7.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>}</svg>}
+      label={muted ? 'MUTED' : 'SND'}
     />
   )
 }
@@ -454,6 +482,8 @@ export default function FloatingToolbar({ explainActive, onExplainToggle }) {
       boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
       overflow: 'hidden',
     }}>
+      <SoundAction />
+      <Divider />
       <AskAction />
       {hasModule && <><Divider /><TutorAction /></>}
       {hasModule && (
