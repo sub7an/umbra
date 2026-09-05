@@ -844,6 +844,18 @@ export default function ModulePicker() {
 
           <div className="flex items-center gap-3">
             <button
+              onClick={() => window.dispatchEvent(new CustomEvent('umbra-about-open'))}
+              className="font-mono-data text-[10px] tracking-[0.14em] uppercase"
+              style={{
+                color: 'rgba(94,106,210,0.60)', background: 'transparent', border: 'none',
+                cursor: 'pointer', padding: '4px 6px', transition: 'color 0.15s',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = '#5e6ad2' }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(94,106,210,0.60)' }}
+            >
+              About
+            </button>
+            <button
               onClick={() => window.dispatchEvent(new CustomEvent('umbra-pricing-open'))}
               className="font-mono-data text-[10px] tracking-[0.14em] uppercase"
               style={{
