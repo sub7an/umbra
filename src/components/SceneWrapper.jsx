@@ -111,18 +111,12 @@ function DustField({ count = 240 }) {
   )
 }
 
-function isPeaceSign(lms) {
-  if (!lms || lms.length < 21) return false
-  const w    = lms[0]
-  const dist = (a) => Math.hypot(lms[a].x - w.x, lms[a].y - w.y)
-  return dist(8)  > dist(6)  * 1.12 &&
-         dist(12) > dist(10) * 1.12 &&
-         dist(16) < dist(14) * 1.05 &&
-         dist(20) < dist(18) * 1.05
-}
+// Tremor deadzone: ignore sub-threshold jitters so the camera holds steady
+const CAM_DEADZONE  = 0.0022
+const CAM_PINCH_AGE = 180 // ms a pinch must live before it drives the camera
 
 function GestureCamera({ orbitRef, minDist, maxDist }) {
-  const { enabled, pointerRef, pinchingRef, landmarksRef, twoPinchRef, peaceRef } = useGesture()
+  const { enabled, pointerRef, pinchingRef, pinchStartAtRef, uiBusyRef, twoPinchRef, peaceRef } = useGesture()
   const { camera } = useThree()
 
   const prevNDC   = useRef(null)
@@ -131,10 +125,15 @@ function GestureCamera({ orbitRef, minDist, maxDist }) {
   useFrame(() => {
     if (!enabled) return
 
-    const ptr       = pointerRef.current
-    const pinching  = pinchingRef.current
-    const peace     = peaceRef?.current ?? isPeaceSign(landmarksRef.current)
-    const twoPinch  = twoPinchRef?.current
+    const ptr      = pointerRef.current
+    const peace    = peaceRef?.current
+    const twoPinch = twoPinchRef?.current
+
+    // A pinch only drives the camera if the event bridge hasn't claimed it for
+    // UI (button/slider) and it has lived long enough to not be a click.
+    const pinching = pinchingRef.current &&
+      !uiBusyRef?.current &&
+      performance.now() - (pinchStartAtRef?.current ?? 0) > CAM_PINCH_AGE
 
     // ── Two-hand pinch zoom takes priority ───────────────────────────────────
     if (twoPinch?.active) {
@@ -162,25 +161,29 @@ function GestureCamera({ orbitRef, minDist, maxDist }) {
     }
 
     if (ptr && prevNDC.current) {
-      const dx = ptr.x - prevNDC.current.x
-      const dy = ptr.y - prevNDC.current.y
+      let dx = ptr.x - prevNDC.current.x
+      let dy = ptr.y - prevNDC.current.y
+      if (Math.abs(dx) < CAM_DEADZONE) dx = 0
+      if (Math.abs(dy) < CAM_DEADZONE) dy = 0
 
-      if (pinching) {
-        spherical.current.theta -= dx * 3.2
+      if (pinching && (dx || dy)) {
+        spherical.current.theta -= dx * 2.6
         spherical.current.phi    = THREE.MathUtils.clamp(
-          spherical.current.phi - dy * 2.4,
+          spherical.current.phi - dy * 2.0,
           0.08, Math.PI - 0.08,
         )
-      } else if (peace) {
+      } else if (peace && dy) {
         spherical.current.radius = THREE.MathUtils.clamp(
-          spherical.current.radius * (1 - dy * 4),
+          spherical.current.radius * (1 - dy * 2.6),
           minDist, maxDist,
         )
       }
 
-      spherical.current.makeSafe()
-      camera.position.setFromSpherical(spherical.current)
-      camera.lookAt(0, 0, 0)
+      if (dx || dy) {
+        spherical.current.makeSafe()
+        camera.position.setFromSpherical(spherical.current)
+        camera.lookAt(0, 0, 0)
+      }
     }
 
     prevNDC.current = ptr ? { x: ptr.x, y: ptr.y } : null

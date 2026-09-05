@@ -45,12 +45,14 @@ function clickResetButton() {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function GestureEventBridge() {
-  const { enabled, pointerRef, pinchingRef, fistRef } = useGesture()
+  const { enabled, pointerRef, pinchingRef, fistRef, uiBusyRef } = useGesture()
 
   const wasPinchRef      = useRef(false)
   const pinchStartRef    = useRef(0)
   const pinchStartPosRef = useRef(null)
-  const wasFistRef       = useRef(false)
+  const pinchTargetRef   = useRef(null)   // clickable captured at pinch START
+  const fistSinceRef     = useRef(null)
+  const fistFiredAtRef   = useRef(0)
 
   // Dwell state
   const dwellTargetRef   = useRef(null)
@@ -114,7 +116,8 @@ export default function GestureEventBridge() {
   useEffect(() => {
     if (!enabled) {
       wasPinchRef.current = false
-      wasFistRef.current  = false
+      fistSinceRef.current = null
+      pinchTargetRef.current = null
       dwellTargetRef.current = null
       sliderDragRef.current  = null
       if (dwellCanvasRef.current) dwellCanvasRef.current.style.opacity = '0'
@@ -127,10 +130,19 @@ export default function GestureEventBridge() {
       const ptr      = pointerRef.current
       const pinching = pinchingRef.current
       const fist     = fistRef.current
+      const now      = performance.now()
 
-      // ── Fist: click Reset on leading edge ─────────────────────────────────
-      if (fist && !wasFistRef.current) clickResetButton()
-      wasFistRef.current = fist
+      // ── Fist: must be HELD 450ms, then fires once with a long cooldown ────
+      // (a leading-edge trigger meant one noisy frame wiped the user's params)
+      if (fist) {
+        if (!fistSinceRef.current) fistSinceRef.current = now
+        else if (now - fistSinceRef.current > 450 && now - fistFiredAtRef.current > 2500) {
+          fistFiredAtRef.current = now
+          clickResetButton()
+        }
+      } else {
+        fistSinceRef.current = null
+      }
 
       // ── Pointer-dependent logic ───────────────────────────────────────────
       if (ptr) {
@@ -140,13 +152,18 @@ export default function GestureEventBridge() {
         // ── Pinch-drag for range sliders ───────────────────────────────────
         if (pinching) {
           if (!wasPinchRef.current) {
-            // Pinch started — check for slider under cursor
+            // Pinch started — capture the target NOW (fingers drift on release)
             wasPinchRef.current      = true
             pinchStartRef.current    = performance.now()
             pinchStartPosRef.current = { x: sx, y: sy }
 
             const el = document.elementFromPoint(sx, sy)
             const slider = el?.closest('input[type="range"]') ?? (el?.type === 'range' ? el : null)
+            pinchTargetRef.current = findClickable(el)
+
+            // Claim this pinch for UI so the camera doesn't orbit during it
+            if (uiBusyRef) uiBusyRef.current = !!(slider || pinchTargetRef.current)
+
             if (slider) {
               sliderDragRef.current = {
                 el,
@@ -177,14 +194,18 @@ export default function GestureEventBridge() {
             const start    = pinchStartPosRef.current
             const moved    = start ? Math.hypot(sx - start.x, sy - start.y) : 999
 
+            // Click the element that was under the pinch when it STARTED —
+            // release positions drift as the fingers separate.
             if (!sliderDragRef.current && duration < PINCH_CLICK_MS && moved < PINCH_MOVE_THR) {
-              const target = findClickable(document.elementFromPoint(sx, sy))
-              if (target) {
-                target.dispatchEvent(new MouseEvent('click', { clientX: sx, clientY: sy, bubbles: true, cancelable: true }))
-                spawnRipple(sx, sy)
+              const target = pinchTargetRef.current
+              if (target && document.contains(target)) {
+                target.dispatchEvent(new MouseEvent('click', { clientX: start.x, clientY: start.y, bubbles: true, cancelable: true }))
+                spawnRipple(start.x, start.y)
               }
             }
             sliderDragRef.current = null
+            pinchTargetRef.current = null
+            if (uiBusyRef) uiBusyRef.current = false
           }
 
           // ── Dwell-click: hover 1.5s over a button ────────────────────────
@@ -259,6 +280,8 @@ export default function GestureEventBridge() {
       } else {
         // No hand detected
         wasPinchRef.current = false
+        fistSinceRef.current = null
+        pinchTargetRef.current = null
         sliderDragRef.current = null
         dwellTargetRef.current = null
         if (dwellCanvasRef.current) dwellCanvasRef.current.style.opacity = '0'
@@ -269,7 +292,7 @@ export default function GestureEventBridge() {
 
     rafId = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(rafId)
-  }, [enabled, pointerRef, pinchingRef, fistRef])
+  }, [enabled, pointerRef, pinchingRef, fistRef, uiBusyRef])
 
   return null
 }
