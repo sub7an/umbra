@@ -19,6 +19,8 @@ import ProfilePanel from './components/ProfilePanel'
 import SurpriseMe from './components/SurpriseMe'
 import { GestureProvider } from './context/GestureContext'
 import SoundToggle from './components/SoundToggle'
+import PricingPanel from './components/PricingPanel'
+import { track } from '@vercel/analytics'
 import { warp, startDrone, stopDrone } from './lib/sound'
 
 // Ambient drone base frequency per module — each world has its own tone
@@ -263,6 +265,7 @@ export default function App() {
       if (dest) startDrone(MOD_DRONE[dest] ?? 55)
       else stopDrone()
     }
+    if (dest) track('module_enter', { module: dest })
     const t1 = setTimeout(() => { setRendered(dest); setPhase('in') }, OUT_MS)
     const t2 = setTimeout(() => { setPhase('idle') }, OUT_MS + IN_MS)
     return () => { clearTimeout(t1); clearTimeout(t2) }
@@ -326,6 +329,7 @@ export default function App() {
         </div>
       )}
       {!present && <Challenges />}
+      <PricingPanel />
       {present && (
         <div style={{
           position: 'fixed', bottom: 14, left: '50%', transform: 'translateX(-50%)',
