@@ -86,6 +86,7 @@ const SHORTCUTS = [
   { keys: ['J'], desc: 'Open Guided Journeys panel (home screen)' },
   { keys: ['M'], desc: 'Open Multiplayer Rooms panel' },
   { keys: ['Shift+C'], desc: 'Open Daily Challenges' },
+  { keys: ['P'], desc: 'Presentation mode — fullscreen, all panels hidden (inside a module)' },
   { keys: ['Esc'], desc: 'Return to module picker from any simulation' },
   { keys: ['?'], desc: 'Open this guide' },
 ]

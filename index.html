@@ -4,13 +4,51 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Umbra</title>
-    <meta name="description" content="Interactive 3D physics visualizer — special relativity, quantum mechanics, and frontier physics." />
+
+    <title>Umbra — Interactive 3D Physics, In Real Time</title>
+    <meta name="description" content="Explore 13 physics worlds in your browser: black holes, quantum tunneling, chaos theory, electromagnetism. GPU-accelerated, gesture-controlled, AI-guided. No downloads, no account." />
+    <meta name="keywords" content="physics simulator, 3D physics, interactive physics, special relativity, quantum mechanics, general relativity, chaos theory, physics education, WebGL physics" />
+    <link rel="canonical" href="https://umbrasandbox.com/" />
+    <meta name="theme-color" content="#08090a" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://umbrasandbox.com/" />
+    <meta property="og:title" content="Umbra — Interactive 3D Physics, In Real Time" />
+    <meta property="og:description" content="Black holes, quantum tunneling, chaos theory — 13 GPU-accelerated physics worlds running live in your browser. No downloads." />
+    <meta property="og:image" content="https://umbrasandbox.com/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="Umbra" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Umbra — Interactive 3D Physics, In Real Time" />
+    <meta name="twitter:description" content="Black holes, quantum tunneling, chaos theory — 13 GPU-accelerated physics worlds running live in your browser." />
+    <meta name="twitter:image" content="https://umbrasandbox.com/og.png" />
+
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Structured data for education-intent search -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Umbra",
+      "url": "https://umbrasandbox.com/",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Any (browser-based)",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "description": "Interactive 3D physics visualizer: special relativity, quantum mechanics, general relativity, chaos, electromagnetism, thermodynamics, fluid dynamics and more — real-time and GPU-accelerated in the browser.",
+      "featureList": "13 interactive modules, AI physics tutor, gesture control, multiplayer rooms, guided story journeys, daily challenges"
+    }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   </head>
-  <body style="margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#070b0d;">
+  <body style="margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#08090a;">
     <div id="root" style="width:100%;height:100vh;"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

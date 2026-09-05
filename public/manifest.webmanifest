@@ -1,0 +1,12 @@
+{
+  "name": "Umbra — Interactive 3D Physics",
+  "short_name": "Umbra",
+  "description": "13 GPU-accelerated physics worlds running live in your browser.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#08090a",
+  "theme_color": "#08090a",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

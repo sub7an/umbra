@@ -98,6 +98,9 @@ function ModuleFallback() {
 const OUT_MS = 520
 const IN_MS  = 560
 
+// ?embed=1 → bare simulation for iframe embedding (LMS, Notion, blogs)
+const IS_EMBED = new URLSearchParams(window.location.search).get('embed') === '1'
+
 // Modules that can be deep-linked via URL hash
 const ROUTABLE = [
   'physics-sandbox', 'wave-mechanics', 'optics',
@@ -137,6 +140,8 @@ export default function App() {
   const [rendered,    setRendered]  = useState(activeModule)
   const [phase,       setPhase]     = useState('idle')
   const [explainOn,   setExplainOn] = useState(false)
+  const [present,     setPresent]   = useState(false)
+  const presentRef = useRef(false)
   const [transTarget, setTarget]    = useState(activeModule)
   const [booted,      setBooted]    = useState(
     () => sessionStorage.getItem('umbra_booted') === '1'
@@ -215,15 +220,36 @@ export default function App() {
       if (document.activeElement?.tagName === 'INPUT') return
       if (e.key === 'Escape') {
         if (window.__UMBRA_PALETTE_OPEN) return
+        if (presentRef.current) { setPresent(false); return }
         if (useModuleStore.getState().activeModule) setModule(null)
       } else if (e.key === 'e' || e.key === 'E') {
         if (window.__UMBRA_PALETTE_OPEN) return
         if (useModuleStore.getState().activeModule) setExplainOn(v => !v)
+      } else if (e.key === 'p' || e.key === 'P') {
+        if (window.__UMBRA_PALETTE_OPEN) return
+        if (useModuleStore.getState().activeModule) setPresent(v => !v)
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [setModule])
+
+  // ── Presentation mode: fullscreen, chrome hidden ───────────────────────────
+  useEffect(() => {
+    presentRef.current = present
+    if (present) {
+      document.documentElement.requestFullscreen?.().catch(() => {})
+    } else if (document.fullscreenElement) {
+      document.exitFullscreen?.().catch(() => {})
+    }
+  }, [present])
+
+  // Exiting browser fullscreen (F11 chrome, Esc) drops presentation mode too
+  useEffect(() => {
+    const h = () => { if (!document.fullscreenElement) setPresent(false) }
+    document.addEventListener('fullscreenchange', h)
+    return () => document.removeEventListener('fullscreenchange', h)
+  }, [])
 
   // ── Transition orchestration ───────────────────────────────────────────────
   useEffect(() => {
@@ -232,13 +258,41 @@ export default function App() {
     prevRef.current = dest
     setTarget(dest)
     setPhase('out')
-    warp()
-    if (dest) startDrone(MOD_DRONE[dest] ?? 55)
-    else stopDrone()
+    if (!IS_EMBED) {
+      warp()
+      if (dest) startDrone(MOD_DRONE[dest] ?? 55)
+      else stopDrone()
+    }
     const t1 = setTimeout(() => { setRendered(dest); setPhase('in') }, OUT_MS)
     const t2 = setTimeout(() => { setPhase('idle') }, OUT_MS + IN_MS)
     return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [activeModule])
+
+  // ── Embed mode: bare simulation + attribution badge, no app chrome ────────
+  if (IS_EMBED) {
+    return (
+      <GestureProvider>
+        <div style={{ width: '100%', height: '100%', position: 'relative', zIndex: 1 }}>
+          {renderModule(rendered)}
+        </div>
+        <a
+          href={`https://umbrasandbox.com/${ROUTABLE.includes(activeModule) ? '#' + activeModule : ''}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            position: 'fixed', bottom: 10, right: 12, zIndex: 10000,
+            display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none',
+            fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.14em',
+            color: 'rgba(94,106,210,0.85)', background: 'rgba(8,9,10,0.8)',
+            border: '1px solid rgba(94,106,210,0.3)', borderRadius: 4, padding: '5px 10px',
+            backdropFilter: 'blur(8px)',
+          }}
+        >
+          ⬡ UMBRA
+        </a>
+      </GestureProvider>
+    )
+  }
 
   return (
     <GestureProvider>
@@ -251,17 +305,17 @@ export default function App() {
       <TransitionOverlay phase={phase} targetModule={transTarget} />
       {!booted && <BootScreen onComplete={handleBoot} />}
       <CursorAura />
-      <SoundToggle />
+      {!present && <SoundToggle />}
       <CommandPalette />
-      <FloatingToolbar explainActive={explainOn} onExplainToggle={() => setExplainOn(v => !v)} />
+      {!present && <FloatingToolbar explainActive={explainOn} onExplainToggle={() => setExplainOn(v => !v)} />}
       <ExplainMode active={explainOn} onToggle={() => setExplainOn(v => !v)} />
-      <StoryMode />
-      <MultiplayerRoom />
-      <GuideModal />
+      {!present && <StoryMode />}
+      {!present && <MultiplayerRoom />}
+      {!present && <GuideModal />}
       {!activeModule && <ProfilePanel />}
       {!activeModule && <SurpriseMe />}
       {/* PhysicsTutor: fixed bottom-right, expands upward when open */}
-      {activeModule && (
+      {activeModule && !present && (
         <div style={{
           position: 'fixed', bottom: 72, right: 20, zIndex: 10080,
           width: 360, maxHeight: 'calc(100vh - 120px)',
@@ -271,7 +325,17 @@ export default function App() {
           <PhysicsTutor />
         </div>
       )}
-      <Challenges />
+      {!present && <Challenges />}
+      {present && (
+        <div style={{
+          position: 'fixed', bottom: 14, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 10000, fontFamily: 'JetBrains Mono, monospace', fontSize: 10,
+          letterSpacing: '0.14em', color: 'rgba(255,255,255,0.30)',
+          pointerEvents: 'none', animation: 'umbra-slide-up 0.4s ease',
+        }}>
+          PRESENTATION MODE · P TO EXIT
+        </div>
+      )}
     </GestureProvider>
   )
 }
