@@ -20,6 +20,7 @@ import { GestureProvider } from './context/GestureContext'
 import PricingPanel from './components/PricingPanel'
 import AboutPanel from './components/AboutPanel'
 import CheckoutBanner from './components/CheckoutBanner'
+import AuthPanel from './components/AuthPanel'
 import { track } from '@vercel/analytics'
 import { warp, startDrone, stopDrone } from './lib/sound'
 
@@ -316,6 +317,7 @@ export default function App() {
       <PricingPanel />
       <AboutPanel />
       <CheckoutBanner />
+      <AuthPanel />
       {present && (
         <div style={{
           position: 'fixed', bottom: 14, left: '50%', transform: 'translateX(-50%)',

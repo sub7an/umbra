@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { track } from '@vercel/analytics'
+import { useAuth } from '../context/AuthContext'
 
 const TIERS = [
   {
@@ -60,6 +61,7 @@ export default function PricingPanel() {
   const [open, setOpen] = useState(false)
   const [copiedTier, setCopiedTier] = useState(null)
   const [proLoading, setProLoading] = useState(false)
+  const { configured: authConfigured, user, refreshUntilPro } = useAuth()
 
   useEffect(() => {
     const h = () => { setOpen(true); track('pricing_opened') }
@@ -88,11 +90,21 @@ export default function PricingPanel() {
   const onCta = useCallback(async (tier) => {
     if (tier.id === 'pro') {
       track('pro_checkout_click')
+      // If accounts are enabled, require sign-in so Pro can unlock automatically.
+      if (authConfigured && !user) {
+        window.dispatchEvent(new CustomEvent('umbra-auth-open'))
+        return
+      }
       setProLoading(true)
       try {
-        const r = await fetch('/api/checkout', { method: 'POST' })
+        const r = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: user?.email, userId: user?.id }),
+        })
         const data = await r.json().catch(() => ({}))
         if (r.ok && data.url) {
+          refreshUntilPro?.()               // poll so Pro reflects on return
           window.location.href = data.url   // → Stripe Checkout
           return
         }
@@ -107,7 +119,7 @@ export default function PricingPanel() {
       track('school_license_click')
       await contactFallback(tier)
     }
-  }, [contactFallback])
+  }, [authConfigured, user, refreshUntilPro, contactFallback])
 
   if (!open) return null
 
