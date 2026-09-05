@@ -109,7 +109,7 @@ function HeatmapPlane({ magnetType, visible }) {
 
 // ── Particle stream: points flowing along precomputed field line paths ─────────
 function ParticleStream({ lines, visible }) {
-  const PER_LINE = 5
+  const PER_LINE = 8
   const total    = lines.length * PER_LINE
   const stateRef = useRef(null)
 
@@ -156,7 +156,7 @@ function ParticleStream({ lines, visible }) {
   return (
     <points geometry={geometry} renderOrder={2}>
       <pointsMaterial
-        color="#c084fc"
+        color="#e2b8ff"
         size={0.11}
         transparent
         opacity={0.90}
