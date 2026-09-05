@@ -23,21 +23,6 @@ export default async function handler(req, res) {
   const stripe = new Stripe(secret)
   const origin = process.env.PUBLIC_BASE_URL || req.headers.origin || 'https://umbrasandbox.com'
 
-  // Temporary diagnostic: GET/POST /api/checkout?debug=1 reports which prices
-  // the configured key can actually see (no secrets exposed). Remove after setup.
-  if (req.query?.debug === '1') {
-    try {
-      const prices = await stripe.prices.list({ limit: 10 })
-      return res.status(200).json({
-        configured_price: price,
-        key_livemode: prices.data[0]?.livemode ?? null,
-        visible_prices: prices.data.map(p => ({ id: p.id, product: p.product, amount: p.unit_amount, interval: p.recurring?.interval })),
-      })
-    } catch (err) {
-      return res.status(500).json({ debug_error: err.message })
-    }
-  }
-
   try {
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
