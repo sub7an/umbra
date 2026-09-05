@@ -16,24 +16,26 @@ function DefaultLighting() {
   )
 }
 
-// ── Black-mirror floor + faint measurement grid ───────────────────────────────
+// ── Distant black-mirror void floor + faint measurement grid ─────────────────
+// The mirror sits well below the scene so content that extends under y=0
+// (past light cones, funnels, lower halves of spheres) is never occluded.
 function CinematicFloor() {
   return (
     <>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.06, 0]}>
-        <planeGeometry args={[70, 70]} />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -6.5, 0]}>
+        <planeGeometry args={[90, 90]} />
         <MeshReflectorMaterial
-          blur={[280, 90]}
-          resolution={720}
-          mixBlur={0.9}
-          mixStrength={2.4}
-          roughness={0.85}
+          blur={[320, 110]}
+          resolution={512}
+          mixBlur={1}
+          mixStrength={1.6}
+          roughness={0.9}
           depthScale={1.1}
           minDepthThreshold={0.4}
           maxDepthThreshold={1.3}
           color="#0a0a0e"
-          metalness={0.55}
-          mirror={0.6}
+          metalness={0.5}
+          mirror={0.45}
         />
       </mesh>
       <Grid
