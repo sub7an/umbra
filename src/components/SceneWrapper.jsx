@@ -111,13 +111,13 @@ function DustField({ count = 240 }) {
   )
 }
 
-// Tremor deadzone: ignore sub-threshold jitters so the camera holds steady
-const CAM_DEADZONE  = 0.0022
-const CAM_PINCH_AGE = 180 // ms a pinch must live before it drives the camera
-const CAM_PEACE_AGE = 280 // ms peace must be held — pinch approach/release flickers as peace
+// Virtual-mouse camera: a pinch on empty space orbits (UI pinches are claimed
+// by the event bridge and skipped); two simultaneous pinches zoom.
+const CAM_DEADZONE  = 0.0022 // tremor floor
+const CAM_PINCH_AGE = 140    // ms — lets the bridge claim UI pinches first
 
 function GestureCamera({ orbitRef, minDist, maxDist }) {
-  const { enabled, pointerRef, pinchingRef, pinchStartAtRef, peaceStartAtRef, uiBusyRef, twoPinchRef, peaceRef } = useGesture()
+  const { enabled, pointerRef, pinchingRef, pinchStartAtRef, uiBusyRef, twoPinchRef } = useGesture()
   const { camera } = useThree()
 
   const prevNDC   = useRef(null)
@@ -127,13 +127,8 @@ function GestureCamera({ orbitRef, minDist, maxDist }) {
     if (!enabled) return
 
     const ptr      = pointerRef.current
-    const peace    = peaceRef?.current &&
-      performance.now() - (peaceStartAtRef?.current ?? 0) > CAM_PEACE_AGE
     const twoPinch = twoPinchRef?.current
-
-    // A pinch only drives the camera if the event bridge hasn't claimed it for
-    // UI (button/slider) and it has lived long enough to not be a click.
-    const pinching = pinchingRef.current &&
+    const orbiting = pinchingRef.current &&
       !uiBusyRef?.current &&
       performance.now() - (pinchStartAtRef?.current ?? 0) > CAM_PINCH_AGE
 
@@ -141,11 +136,10 @@ function GestureCamera({ orbitRef, minDist, maxDist }) {
     if (twoPinch?.active) {
       if (orbitRef.current) orbitRef.current.enabled = false
       spherical.current.setFromVector3(camera.position)
-      const clamped = THREE.MathUtils.clamp(
+      spherical.current.radius = THREE.MathUtils.clamp(
         spherical.current.radius * (twoPinch.delta ?? 1),
         minDist, maxDist,
       )
-      spherical.current.radius = clamped
       spherical.current.makeSafe()
       camera.position.setFromSpherical(spherical.current)
       camera.lookAt(0, 0, 0)
@@ -153,10 +147,9 @@ function GestureCamera({ orbitRef, minDist, maxDist }) {
       return
     }
 
-    const active = pinching || peace
-    if (orbitRef.current) orbitRef.current.enabled = !active
+    if (orbitRef.current) orbitRef.current.enabled = !orbiting
 
-    if (!active) {
+    if (!orbiting) {
       spherical.current.setFromVector3(camera.position)
       prevNDC.current = null
       return
@@ -168,20 +161,12 @@ function GestureCamera({ orbitRef, minDist, maxDist }) {
       if (Math.abs(dx) < CAM_DEADZONE) dx = 0
       if (Math.abs(dy) < CAM_DEADZONE) dy = 0
 
-      if (pinching && (dx || dy)) {
+      if (dx || dy) {
         spherical.current.theta -= dx * 2.6
         spherical.current.phi    = THREE.MathUtils.clamp(
           spherical.current.phi - dy * 2.0,
           0.08, Math.PI - 0.08,
         )
-      } else if (peace && dy) {
-        spherical.current.radius = THREE.MathUtils.clamp(
-          spherical.current.radius * (1 - dy * 2.6),
-          minDist, maxDist,
-        )
-      }
-
-      if (dx || dy) {
         spherical.current.makeSafe()
         camera.position.setFromSpherical(spherical.current)
         camera.lookAt(0, 0, 0)
