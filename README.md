@@ -55,3 +55,23 @@ npm run dev      # local dev server
 npm run build    # production build
 node scripts/make-og.mjs  # regenerate the social card
 ```
+
+## Payments (Stripe)
+
+Umbra Pro checkout runs through Stripe Checkout via two Vercel serverless
+functions in `/api`:
+
+- `POST /api/checkout` — creates a subscription Checkout Session (Stripe Tax on)
+- `POST /api/stripe-webhook` — verifies signature, handles subscription lifecycle
+
+Set these environment variables in Vercel (Project → Settings → Environment Variables):
+
+| Variable | Value |
+|---|---|
+| `STRIPE_SECRET_KEY` | `sk_test_…` then `sk_live_…` (secret — never client-side) |
+| `STRIPE_PRICE_PRO` | `price_…` for the $6/mo recurring Pro price |
+| `STRIPE_WEBHOOK_SECRET` | `whsec_…` from the webhook endpoint |
+
+The Pro button falls back to the contact/email flow until these are set, so the
+site never breaks mid-setup. School/Classroom licensing stays a contact flow
+(invoiced manually in the Stripe dashboard).

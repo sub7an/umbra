@@ -19,6 +19,7 @@ import SurpriseMe from './components/SurpriseMe'
 import { GestureProvider } from './context/GestureContext'
 import PricingPanel from './components/PricingPanel'
 import AboutPanel from './components/AboutPanel'
+import CheckoutBanner from './components/CheckoutBanner'
 import { track } from '@vercel/analytics'
 import { warp, startDrone, stopDrone } from './lib/sound'
 
@@ -314,6 +315,7 @@ export default function App() {
       {!present && <Challenges />}
       <PricingPanel />
       <AboutPanel />
+      <CheckoutBanner />
       {present && (
         <div style={{
           position: 'fixed', bottom: 14, left: '50%', transform: 'translateX(-50%)',
