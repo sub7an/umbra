@@ -101,6 +101,34 @@ function ShareAction({ activeModule }) {
   )
 }
 
+// ── Embed action: copy an <iframe> snippet for LMS / Notion / blogs ──────────
+function EmbedAction({ activeModule }) {
+  const [status, setStatus] = useState('idle')
+
+  const handle = useCallback(async () => {
+    const snippet = `<iframe src="https://umbrasandbox.com/?embed=1#${activeModule}" width="800" height="520" style="border:0;border-radius:8px;overflow:hidden" title="Umbra — interactive physics simulation" allowfullscreen></iframe>`
+    try {
+      await navigator.clipboard.writeText(snippet)
+      setStatus('copied'); setTimeout(() => setStatus('idle'), 2000)
+    } catch { setStatus('error'); setTimeout(() => setStatus('idle'), 2000) }
+  }, [activeModule])
+
+  if (!activeModule) return null
+  return (
+    <Btn
+      onClick={handle}
+      active={status === 'copied'}
+      color="#5e6ad2"
+      title="Copy iframe embed code — paste into Notion, Canvas, Moodle, or any web page"
+      icon={status === 'copied'
+        ? <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7.5L8 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        : <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3.5 3L1.5 5L3.5 7M6.5 3L8.5 5L6.5 7" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      }
+      label={status === 'copied' ? 'COPIED' : 'EMBED'}
+    />
+  )
+}
+
 // ── Record action ─────────────────────────────────────────────────────────────
 function RecordAction({ activeModule }) {
   const [recording, setRecording] = useState(false)
@@ -440,6 +468,7 @@ export default function FloatingToolbar({ explainActive, onExplainToggle }) {
       {hasModule && <><Divider /><SnapshotAction activeModule={activeModule} /></>}
       {hasModule && <><Divider /><RecordAction activeModule={activeModule} /></>}
       {hasModule && <><Divider /><ShareAction activeModule={activeModule} /></>}
+      {hasModule && <><Divider /><EmbedAction activeModule={activeModule} /></>}
     </div>
   )
 }

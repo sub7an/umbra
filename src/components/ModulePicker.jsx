@@ -1050,6 +1050,59 @@ export default function ModulePicker() {
           )}
         </main>
 
+        {/* ── For educators / use-cases strip ── */}
+        <section className="shrink-0 px-8 lg:px-14 pt-16 pb-14" style={{ borderTop: '1px solid rgba(94,106,210,0.07)' }}>
+          <p className="font-mono-data text-[11px] tracking-[0.28em] uppercase mb-3" style={{ color: 'rgba(94,106,210,0.65)' }}>
+            For classrooms · For the curious
+          </p>
+          <h2 className="font-display font-bold text-white mb-10" style={{ fontSize: 'clamp(26px, 3vw, 40px)' }}>
+            Physics you can hand to a student.
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-[1100px]">
+            {[
+              {
+                title: 'Teach with it',
+                desc: 'Every simulation embeds in Canvas, Moodle, Notion, or any webpage with one copied line. Project it, let students drive it, set the daily challenges as homework.',
+                accent: '#5e6ad2',
+                tag: 'EMBED ANYWHERE',
+              },
+              {
+                title: 'Learn with it',
+                desc: 'Guided story journeys walk you from Galileo to Hawking. The built-in AI tutor answers questions about exactly what is on screen — no context switching.',
+                accent: '#10b981',
+                tag: 'AI-GUIDED',
+              },
+              {
+                title: 'Explore with it',
+                desc: 'Multiplayer rooms sync the simulation for everyone in them. Record clips, share exact parameter states by link, control the camera with hand gestures.',
+                accent: '#f59e0b',
+                tag: 'REAL-TIME · TOGETHER',
+              },
+            ].map((c) => (
+              <div key={c.title} className="p-6 rounded-sm" style={{
+                background: 'rgba(17,17,19,0.72)', border: `1px solid ${c.accent}26`,
+                backdropFilter: 'blur(10px)',
+              }}>
+                <div className="font-mono-data text-[10px] tracking-[0.2em] mb-3" style={{ color: c.accent }}>{c.tag}</div>
+                <div className="font-display font-bold text-[17px] text-white mb-2">{c.title}</div>
+                <p className="font-body text-[13px] leading-relaxed m-0" style={{ color: 'rgba(247,248,248,0.60)' }}>{c.desc}</p>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-4 mt-10">
+            <a
+              href="mailto:hamzahatef09@gmail.com?subject=Umbra%20school%20license"
+              className="inline-flex items-center gap-2 font-mono-data text-[11px] tracking-[0.14em] uppercase px-6 py-3 rounded no-underline transition-all duration-200"
+              style={{ border: '1px solid rgba(94,106,210,0.45)', background: 'rgba(94,106,210,0.07)', color: '#5e6ad2' }}
+            >
+              School & university licensing →
+            </a>
+            <span className="font-mono-data text-[10px] tracking-wider" style={{ color: 'rgba(255,255,255,0.42)' }}>
+              Free for individual learners, forever
+            </span>
+          </div>
+        </section>
+
         {/* ── Physics intel ticker ── */}
         <div className="shrink-0 overflow-hidden" style={{ borderTop: '1px solid rgba(94,106,210,0.07)', background: 'rgba(0,0,0,0.22)' }}>
           <div style={{ display: 'flex', alignItems: 'center', padding: '7px 16px', gap: 10 }}>
