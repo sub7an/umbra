@@ -119,7 +119,7 @@ export default function SabrinaModule() {
   return (
     <div className="relative w-full h-full" style={{ background: '#08090a', overflow: 'hidden' }}>
 
-      <Canvas
+      <Canvas className="sim-dark"
         camera={{ position: [0, 0, 8], fov: 45, near: 0.1, far: 100 }}
         gl={{ antialias: true, alpha: false, preserveDrawingBuffer: true }}
         style={{ width: '100%', height: '100%', display: 'block' }}

@@ -7,6 +7,7 @@ import CardPreview from './CardPreview'
 import ConstellationMap from './ConstellationMap'
 import { useGesture } from '../context/GestureContext'
 import DecodeText from './DecodeText'
+import { getTheme, toggleTheme } from '../lib/theme'
 
 // ── Scroll-reveal: fade-up cards as they enter the viewport ───────────────────
 function useReveal(idx = 0) {
@@ -31,6 +32,31 @@ function useReveal(idx = 0) {
 
 const SECRET_PHRASE = 'sabrina'
 const STORE_KEY     = 'umbra_unlocked'
+
+// ── Theme toggle (sun/moon) ───────────────────────────────────────────────────
+function ThemeButton() {
+  const [theme, setTheme] = useState(getTheme())
+  return (
+    <button
+      onClick={() => setTheme(toggleTheme())}
+      title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+      className="font-mono-data text-[10px] tracking-[0.14em] uppercase"
+      style={{
+        display: 'flex', alignItems: 'center', gap: 5,
+        color: 'rgba(94,106,210,0.60)', background: 'transparent',
+        border: '1px solid rgba(94,106,210,0.18)', borderRadius: 3,
+        cursor: 'pointer', padding: '4px 8px', transition: 'color 0.15s, border-color 0.15s',
+      }}
+      onMouseEnter={(e) => { e.currentTarget.style.color = '#5e6ad2'; e.currentTarget.style.borderColor = 'rgba(94,106,210,0.4)' }}
+      onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(94,106,210,0.60)'; e.currentTarget.style.borderColor = 'rgba(94,106,210,0.18)' }}
+    >
+      {theme === 'light'
+        ? <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M9 6.5A4 4 0 1 1 4.5 2 3.2 3.2 0 0 0 9 6.5Z" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round"/></svg>
+        : <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><circle cx="5.5" cy="5.5" r="2.2" stroke="currentColor" strokeWidth="1.1"/><path d="M5.5 1V2M5.5 9V10M1 5.5H2M9 5.5H10M2.3 2.3L3 3M8 8L8.7 8.7M8.7 2.3L8 3M3 8L2.3 8.7" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg>}
+      {theme === 'light' ? 'Dark' : 'Light'}
+    </button>
+  )
+}
 
 // ── Live particle counter ─────────────────────────────────────────────────────
 function LiveParticleCount() {
@@ -829,9 +855,7 @@ export default function ModulePicker() {
             >
               Pricing
             </button>
-            <div className="font-mono-data text-[10px] text-text-dim tracking-wider hidden md:block">
-              NATURAL UNITS · c = ℏ = G = 1
-            </div>
+            <ThemeButton />
             <button
               onClick={() => window.dispatchEvent(new CustomEvent('umbra-palette-open'))}
               style={{
@@ -1129,24 +1153,6 @@ export default function ModulePicker() {
             </span>
           </div>
         </section>
-
-        {/* ── Physics intel ticker ── */}
-        <div className="shrink-0 overflow-hidden" style={{ borderTop: '1px solid rgba(94,106,210,0.07)', background: 'rgba(0,0,0,0.22)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', padding: '7px 16px', gap: 10 }}>
-            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.18em', color: '#5e6ad2', flexShrink: 0, opacity: 0.7 }}>
-              UMBRA INTEL
-            </span>
-            <div style={{ flex: 1, overflow: 'hidden' }}>
-              <div style={{ display: 'inline-block', animation: 'umbra-ticker 90s linear infinite', whiteSpace: 'nowrap' }}>
-                {[...TICKER_FACTS, ...TICKER_FACTS].map((fact, i) => (
-                  <span key={i} style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11, color: 'rgba(94,106,210,0.60)', letterSpacing: '0.01em', marginRight: '4em' }}>
-                    {fact}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* ── Footer ── */}
         <footer className="shrink-0 px-8 pb-6 pt-2">
