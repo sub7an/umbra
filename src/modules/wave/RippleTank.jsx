@@ -28,10 +28,10 @@ const FRAG = /* glsl */`
     float t = clamp(vH * 1.5 + 0.5, 0.0, 1.0);
     vec3 deep = vec3(0.00, 0.03, 0.14);
     vec3 mid  = vec3(0.03, 0.48, 0.85);
-    vec3 peak = vec3(0.75, 0.97, 1.00);
+    vec3 peak = vec3(1.35, 1.75, 1.90);
     vec3 col = t < 0.5
       ? mix(deep, mid, t * 2.0)
-      : mix(mid, peak, (t - 0.5) * 2.0);
+      : mix(mid, peak, pow((t - 0.5) * 2.0, 1.4));
     gl_FragColor = vec4(col, 0.97);
   }
 `

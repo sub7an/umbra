@@ -1,4 +1,4 @@
-import { useRef, useMemo } from 'react'
+import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
@@ -29,6 +29,71 @@ const FRAG = `
     gl_FragColor = vec4(col, 0.94);
   }
 `
+
+// ── Infalling matter: particles spiral down the funnel, white-hot at centre ──
+const PN = 1400
+
+function InfallSwirl({ massRef }) {
+  const sim = useMemo(() => {
+    const r  = new Float32Array(PN)
+    const th = new Float32Array(PN)
+    const sp = new Float32Array(PN)
+    for (let i = 0; i < PN; i++) {
+      r[i]  = 1.2 + Math.random() * 6.5
+      th[i] = Math.random() * Math.PI * 2
+      sp[i] = 0.5 + Math.random() * 0.9
+    }
+    const posAttr = new THREE.BufferAttribute(new Float32Array(PN * 3), 3)
+    const colAttr = new THREE.BufferAttribute(new Float32Array(PN * 3), 3)
+    const geo = new THREE.BufferGeometry()
+    geo.setAttribute('position', posAttr)
+    geo.setAttribute('color', colAttr)
+    return { r, th, sp, posAttr, colAttr, geo }
+  }, [])
+
+  useEffect(() => () => sim.geo.dispose(), [sim.geo])
+
+  useFrame((_, dt) => {
+    const m = massRef.current
+    const d = Math.min(dt, 0.05)
+    const { r, th, sp, posAttr, colAttr } = sim
+    const horizon = 0.22 + m * 0.1
+
+    for (let i = 0; i < PN; i++) {
+      // Keplerian-flavoured: angular speed rises sharply as radius shrinks
+      th[i] += ((sp[i] * m * 1.2) / (r[i] * r[i] * 0.5 + 0.3)) * d
+      r[i]  -= ((m * 0.24) / (r[i] + 0.4)) * sp[i] * d
+      if (r[i] < horizon) {
+        r[i]  = 5.5 + Math.random() * 2.2
+        th[i] = Math.random() * Math.PI * 2
+      }
+      const x = Math.cos(th[i]) * r[i]
+      const z = Math.sin(th[i]) * r[i]
+      posAttr.setXYZ(i, x, warpY(x, z, m) + 0.07, z)
+
+      // Heat gradient: cool indigo at rim → beyond-white at the throat (blooms)
+      const heat = Math.max(0, Math.min(1, 1 - (r[i] - horizon) / 6))
+      const h2 = heat * heat
+      colAttr.setXYZ(i, 0.22 + h2 * 1.6, 0.3 + h2 * 1.1, 0.8 + h2 * 0.4)
+    }
+    posAttr.needsUpdate = true
+    colAttr.needsUpdate = true
+  })
+
+  return (
+    <points geometry={sim.geo} renderOrder={2}>
+      <pointsMaterial
+        vertexColors
+        size={0.05}
+        sizeAttenuation
+        transparent
+        opacity={0.85}
+        depthWrite={false}
+        blending={THREE.AdditiveBlending}
+      />
+    </points>
+  )
+}
 
 export default function SpacetimeCurvature({ mass }) {
   const meshRef = useRef()
@@ -130,22 +195,32 @@ export default function SpacetimeCurvature({ mass }) {
         <lineBasicMaterial color="#5e6ad2" transparent opacity={0.22} />
       </lineSegments>
 
-      {/* Central mass */}
+      {/* Infalling matter swirl */}
+      <InfallSwirl massRef={massRef} />
+
+      {/* Central mass — hot enough for bloom to halo it */}
       <mesh position={[0, centerY + mass * 0.22, 0]}>
         <sphereGeometry args={[mass * 0.18, 32, 32]} />
         <meshStandardMaterial
           color="#fb923c"
-          emissive="#fb923c"
-          emissiveIntensity={1.5}
+          emissive="#ffb066"
+          emissiveIntensity={2.8}
           roughness={0.1}
           metalness={0.5}
         />
       </mesh>
 
-      {/* Photon-sphere ring */}
+      {/* Photon-sphere ring — additive so it burns */}
       <mesh ref={ringRef} position={[0, centerY + 0.3, 0]}>
         <torusGeometry args={[mass * 0.55, 0.03, 8, 64]} />
-        <meshBasicMaterial color="#fb923c" transparent opacity={0.7} side={THREE.DoubleSide} />
+        <meshBasicMaterial
+          color="#ffc080"
+          transparent
+          opacity={0.9}
+          side={THREE.DoubleSide}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+        />
       </mesh>
     </group>
   )

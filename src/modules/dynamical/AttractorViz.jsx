@@ -104,7 +104,8 @@ export default function AttractorViz({ attractorType, params, speedMultiplier = 
         posArr[dst + 1] = ty * sc + oy
         posArr[dst + 2] = tz * sc + oz
 
-        const brightness = Math.pow((T - age) / T, 1.7)
+        let brightness = Math.pow((T - age) / T, 1.7)
+        if (age < 4) brightness *= 2.1 // hot leading edge — bloom catches it
         let cr, cg, cb
 
         if (isLorenz) {
@@ -148,7 +149,7 @@ export default function AttractorViz({ attractorType, params, speedMultiplier = 
     <points geometry={sim.geo} renderOrder={1}>
       <pointsMaterial
         vertexColors
-        size={0.016}
+        size={0.019}
         transparent
         opacity={0.9}
         sizeAttenuation
