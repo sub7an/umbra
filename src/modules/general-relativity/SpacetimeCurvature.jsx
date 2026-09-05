@@ -115,7 +115,7 @@ export default function SpacetimeCurvature({ mass }) {
     <group>
       <ambientLight intensity={0.6} />
       <pointLight position={[0, 6, 0]} intensity={2.0} color="#fb923c" />
-      <pointLight position={[4, 3, 4]} intensity={0.5} color="#00e5c4" />
+      <pointLight position={[4, 3, 4]} intensity={0.5} color="#5e6ad2" />
 
       <mesh ref={meshRef} geometry={surfaceGeo} frustumCulled={false}>
         <shaderMaterial
@@ -127,7 +127,7 @@ export default function SpacetimeCurvature({ mass }) {
       </mesh>
 
       <lineSegments ref={wireRef} geometry={wireGeo} frustumCulled={false}>
-        <lineBasicMaterial color="#00e5c4" transparent opacity={0.22} />
+        <lineBasicMaterial color="#5e6ad2" transparent opacity={0.22} />
       </lineSegments>
 
       {/* Central mass */}

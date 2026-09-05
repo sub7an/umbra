@@ -60,11 +60,11 @@ function buildEquations(view, velocity, gamma, Lc) {
         derivedEqs: [
           {
             label: 'Lorentz factor',
-            eq: `\\textcolor{#00e5c4}{\\gamma} = \\dfrac{1}{\\sqrt{1-\\textcolor{#f59e0b}{\\beta}^2}}`,
+            eq: `\\textcolor{#5e6ad2}{\\gamma} = \\dfrac{1}{\\sqrt{1-\\textcolor{#f59e0b}{\\beta}^2}}`,
           },
           {
             label: 'Current',
-            eq: `\\textcolor{#f59e0b}{\\beta} = ${b},\\;\\textcolor{#00e5c4}{\\gamma} = ${g}`,
+            eq: `\\textcolor{#f59e0b}{\\beta} = ${b},\\;\\textcolor{#5e6ad2}{\\gamma} = ${g}`,
           },
         ],
       }
@@ -72,15 +72,15 @@ function buildEquations(view, velocity, gamma, Lc) {
     case 'timedilation':
       return {
         domain: 'LORENTZ TRANSFORM · TIME DILATION',
-        primaryEq: `\\textcolor{#f59e0b}{t'} = \\textcolor{#00e5c4}{\\gamma}\\,t_0`,
+        primaryEq: `\\textcolor{#f59e0b}{t'} = \\textcolor{#5e6ad2}{\\gamma}\\,t_0`,
         derivedEqs: [
           {
             label: 'Lorentz factor',
-            eq: `\\textcolor{#00e5c4}{\\gamma} = \\dfrac{1}{\\sqrt{1-\\textcolor{#f59e0b}{\\beta}^2}}`,
+            eq: `\\textcolor{#5e6ad2}{\\gamma} = \\dfrac{1}{\\sqrt{1-\\textcolor{#f59e0b}{\\beta}^2}}`,
           },
           {
             label: 'Live values',
-            eq: `\\textcolor{#f59e0b}{\\beta}=${b},\\;\\textcolor{#00e5c4}{\\gamma}=${g}`,
+            eq: `\\textcolor{#f59e0b}{\\beta}=${b},\\;\\textcolor{#5e6ad2}{\\gamma}=${g}`,
           },
         ],
       }
@@ -88,7 +88,7 @@ function buildEquations(view, velocity, gamma, Lc) {
     case 'lengthcontraction':
       return {
         domain: 'LORENTZ TRANSFORM · LENGTH CONTRACTION',
-        primaryEq: `\\textcolor{#e040fb}{L'} = \\dfrac{L_0}{\\textcolor{#00e5c4}{\\gamma}}`,
+        primaryEq: `\\textcolor{#e040fb}{L'} = \\dfrac{L_0}{\\textcolor{#5e6ad2}{\\gamma}}`,
         derivedEqs: [
           {
             label: 'Proper length',
@@ -146,7 +146,7 @@ function drawDiagGraph(ctx, w, h, history) {
   }
 
   trace('rgba(245,158,11,0.72)', 'p')         // amber: momentum p = γβ
-  trace('rgba(0,229,196,0.88)', 'E')           // cyan: energy E = γ
+  trace('rgba(94,106,210,0.88)', 'E')           // cyan: energy E = γ
   trace('rgba(106,173,165,0.65)', 'm2', 1, [2, 5])  // dim dashed: invariant m²
 }
 
@@ -257,7 +257,7 @@ function DiagnosticsPanel({ velocity, gamma }) {
             </div>
             <div className="flex gap-4 mt-2">
               <span className="flex items-center gap-1.5 font-mono-data text-[9px] text-text-dim">
-                <span className="inline-block w-3 rounded" style={{ height: 1.5, background: 'rgba(0,229,196,0.88)' }} />
+                <span className="inline-block w-3 rounded" style={{ height: 1.5, background: 'rgba(94,106,210,0.88)' }} />
                 E = γ
               </span>
               <span className="flex items-center gap-1.5 font-mono-data text-[9px] text-text-dim">

@@ -5,7 +5,7 @@ const PALETTE_MODULES = [
   { id: 'physics-sandbox',    name: 'Physics Sandbox',    abbr: 'Σ',  color: '#84cc16', formula: 'F = Σ G·M/r²',           tags: ['sandbox','particles','field','attractor','gravity'] },
   { id: 'wave-mechanics',     name: 'Wave Mechanics',     abbr: '≋',  color: '#22d3ee', formula: '∂²u/∂t² = c²∇²u',       tags: ['wave','ripple','interference','diffraction','schrodinger'] },
   { id: 'optics',             name: 'Optics',             abbr: '◈',  color: '#fcd34d', formula: 'n₁sinθ₁ = n₂sinθ₂',     tags: ['light','prism','lens','refraction','snell'] },
-  { id: 'special-relativity', name: 'Special Relativity', abbr: 'SR', color: '#00e5c4', formula: 'γ = 1/√(1−β²)',          tags: ['relativity','lorentz','time dilation','length contraction','minkowski'] },
+  { id: 'special-relativity', name: 'Special Relativity', abbr: 'SR', color: '#5e6ad2', formula: 'γ = 1/√(1−β²)',          tags: ['relativity','lorentz','time dilation','length contraction','minkowski'] },
   { id: 'quantum-mechanics',  name: 'Quantum Mechanics',  abbr: 'QM', color: '#f59e0b', formula: 'iℏ ∂ψ/∂t = Ĥψ',         tags: ['quantum','wave function','uncertainty','schrodinger','tunneling','bloch'] },
   { id: 'frontier-physics',   name: 'Frontier Physics',   abbr: 'FP', color: '#e040fb', formula: 'v_obs ≫ v_kep',          tags: ['dark matter','galaxy','frontier','hubble','rotation curves'] },
   { id: 'dynamical-systems',  name: 'Dynamical Systems',  abbr: 'DS', color: '#10b981', formula: 'dX/dt = F(X)',           tags: ['chaos','lorenz','attractor','bifurcation','rossler'] },
@@ -102,7 +102,7 @@ export default function CommandPalette() {
     <div
       style={{
         position: 'fixed', inset: 0, zIndex: 10000,
-        background: 'rgba(4,9,12,0.82)',
+        background: 'rgba(8,9,10,0.82)',
         backdropFilter: 'blur(10px)',
         WebkitBackdropFilter: 'blur(10px)',
         display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
@@ -114,8 +114,8 @@ export default function CommandPalette() {
         style={{
           width: '100%', maxWidth: 580, margin: '0 16px',
           background: 'rgba(6,12,16,0.98)',
-          border: '1px solid rgba(0,229,196,0.2)',
-          boxShadow: '0 0 0 1px rgba(0,229,196,0.05), 0 32px 80px rgba(0,0,0,0.75)',
+          border: '1px solid rgba(94,106,210,0.2)',
+          boxShadow: '0 0 0 1px rgba(94,106,210,0.05), 0 32px 80px rgba(0,0,0,0.75)',
           borderRadius: 6, overflow: 'hidden',
           display: 'flex', flexDirection: 'column',
           maxHeight: '65vh',
@@ -126,11 +126,11 @@ export default function CommandPalette() {
         <div style={{
           display: 'flex', alignItems: 'center', gap: 10,
           padding: '13px 16px',
-          borderBottom: '1px solid rgba(0,229,196,0.09)',
+          borderBottom: '1px solid rgba(94,106,210,0.09)',
         }}>
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style={{ flexShrink: 0, opacity: 0.38 }}>
-            <circle cx="5.5" cy="5.5" r="4" stroke="#00e5c4" strokeWidth="1.4"/>
-            <path d="M9 9L11.5 11.5" stroke="#00e5c4" strokeWidth="1.4" strokeLinecap="round"/>
+            <circle cx="5.5" cy="5.5" r="4" stroke="#5e6ad2" strokeWidth="1.4"/>
+            <path d="M9 9L11.5 11.5" stroke="#5e6ad2" strokeWidth="1.4" strokeLinecap="round"/>
           </svg>
           <input
             ref={inputRef}
@@ -140,13 +140,13 @@ export default function CommandPalette() {
             style={{
               flex: 1, background: 'none', border: 'none', outline: 'none',
               fontFamily: 'JetBrains Mono, monospace',
-              fontSize: 13, color: '#dff2ed', letterSpacing: '0.02em',
+              fontSize: 13, color: '#f7f8f8', letterSpacing: '0.02em',
             }}
           />
           <kbd style={{
             fontFamily: 'JetBrains Mono, monospace', fontSize: 9,
-            color: 'rgba(0,229,196,0.32)',
-            border: '1px solid rgba(0,229,196,0.13)',
+            color: 'rgba(94,106,210,0.32)',
+            border: '1px solid rgba(94,106,210,0.13)',
             borderRadius: 3, padding: '2px 6px', flexShrink: 0,
           }}>ESC</kbd>
         </div>
@@ -157,7 +157,7 @@ export default function CommandPalette() {
             <div style={{
               padding: '28px 16px', textAlign: 'center',
               fontFamily: 'JetBrains Mono, monospace', fontSize: 10,
-              color: 'rgba(0,229,196,0.22)', letterSpacing: '0.12em',
+              color: 'rgba(94,106,210,0.22)', letterSpacing: '0.12em',
             }}>
               NO MODULES MATCH
             </div>
@@ -169,7 +169,7 @@ export default function CommandPalette() {
               style={{
                 display: 'flex', alignItems: 'center', gap: 12,
                 padding: '9px 16px', cursor: 'pointer',
-                background: i === sel ? 'rgba(0,229,196,0.045)' : 'transparent',
+                background: i === sel ? 'rgba(94,106,210,0.045)' : 'transparent',
                 borderLeft: `2px solid ${i === sel ? mod.color : 'transparent'}`,
                 transition: 'background 0.06s',
               }}
@@ -188,7 +188,7 @@ export default function CommandPalette() {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{
                   fontFamily: 'Chakra Petch, sans-serif', fontSize: 12, fontWeight: 600,
-                  color: i === sel ? '#dff2ed' : 'rgba(223,242,237,0.6)',
+                  color: i === sel ? '#f7f8f8' : 'rgba(223,242,237,0.6)',
                   letterSpacing: '0.04em',
                 }}>
                   {mod.name}
@@ -203,8 +203,8 @@ export default function CommandPalette() {
               {i === sel && (
                 <kbd style={{
                   fontFamily: 'JetBrains Mono, monospace', fontSize: 9,
-                  color: 'rgba(0,229,196,0.32)',
-                  border: '1px solid rgba(0,229,196,0.13)',
+                  color: 'rgba(94,106,210,0.32)',
+                  border: '1px solid rgba(94,106,210,0.13)',
                   borderRadius: 3, padding: '2px 5px', flexShrink: 0,
                 }}>↵</kbd>
               )}
@@ -215,20 +215,20 @@ export default function CommandPalette() {
         {/* Footer */}
         <div style={{
           padding: '8px 16px',
-          borderTop: '1px solid rgba(0,229,196,0.07)',
+          borderTop: '1px solid rgba(94,106,210,0.07)',
           display: 'flex', alignItems: 'center', gap: 14,
         }}>
           {[['↑↓', 'navigate'], ['↵', 'open'], ['⌘K', 'close']].map(([key, lbl]) => (
             <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <kbd style={{
                 fontFamily: 'JetBrains Mono, monospace', fontSize: 8,
-                color: 'rgba(0,229,196,0.32)',
-                border: '1px solid rgba(0,229,196,0.12)',
+                color: 'rgba(94,106,210,0.32)',
+                border: '1px solid rgba(94,106,210,0.12)',
                 borderRadius: 3, padding: '2px 5px',
               }}>{key}</kbd>
               <span style={{
                 fontFamily: 'JetBrains Mono, monospace', fontSize: 8,
-                color: 'rgba(0,229,196,0.2)', letterSpacing: '0.09em',
+                color: 'rgba(94,106,210,0.2)', letterSpacing: '0.09em',
               }}>{lbl}</span>
             </div>
           ))}
