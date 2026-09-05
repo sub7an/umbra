@@ -87,7 +87,7 @@ export default function Hero({ onScrollDown }) {
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'radial-gradient(ellipse 75% 65% at 50% 42%, transparent 15%, rgba(7,11,13,0.75) 65%, #070b0d 90%)',
+            'radial-gradient(ellipse 75% 65% at 50% 42%, transparent 15%, rgba(7,11,13,0.75) 65%, #08090a 90%)',
         }}
       />
 
@@ -95,7 +95,7 @@ export default function Hero({ onScrollDown }) {
       <div
         aria-hidden="true"
         className="absolute bottom-0 left-0 right-0 h-36 pointer-events-none"
-        style={{ background: 'linear-gradient(to bottom, transparent, #070b0d)' }}
+        style={{ background: 'linear-gradient(to bottom, transparent, #08090a)' }}
       />
 
       {/* Content */}
@@ -121,7 +121,7 @@ export default function Hero({ onScrollDown }) {
           className="mb-8 h-px w-20"
           style={{
             background:
-              'linear-gradient(to right, transparent, rgba(0,229,196,0.45), transparent)',
+              'linear-gradient(to right, transparent, rgba(94,106,210,0.45), transparent)',
           }}
         />
 

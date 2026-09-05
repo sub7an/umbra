@@ -38,7 +38,7 @@ function getLevelXP(xp) { return xp % XP_PER_LEVEL }
 function getLevelColor(level) {
   if (level >= 15) return '#f59e0b'  // gold
   if (level >= 10) return '#a855f7'  // purple
-  if (level >= 5)  return '#00e5c4'  // cyan
+  if (level >= 5)  return '#5e6ad2'  // cyan
   return 'rgba(200,230,220,0.5)'      // white
 }
 function getLevelTitle(level) {
@@ -72,11 +72,11 @@ function ModuleDot({ id, visited }) {
       title={MODULE_LABELS[id] || id}
       style={{
         width: 28, height: 28, borderRadius: 6,
-        background: isVisited ? 'rgba(0,229,196,0.1)' : 'rgba(255,255,255,0.03)',
-        border: `1px solid ${isVisited ? 'rgba(0,229,196,0.35)' : 'rgba(255,255,255,0.07)'}`,
+        background: isVisited ? 'rgba(94,106,210,0.1)' : 'rgba(255,255,255,0.03)',
+        border: `1px solid ${isVisited ? 'rgba(94,106,210,0.35)' : 'rgba(255,255,255,0.07)'}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontFamily: 'JetBrains Mono, monospace', fontSize: 9, fontWeight: 700,
-        color: isVisited ? '#00e5c4' : 'rgba(255,255,255,0.15)',
+        color: isVisited ? '#5e6ad2' : 'rgba(255,255,255,0.15)',
         cursor: 'default',
       }}
     >{firstChar}</div>
@@ -110,7 +110,7 @@ function JourneyBubble({ id, data, color }) {
   )
 }
 
-function StatBlock({ label, value, color = '#00e5c4' }) {
+function StatBlock({ label, value, color = '#5e6ad2' }) {
   return (
     <div style={{
       background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)',
@@ -177,9 +177,9 @@ export default function ProfilePanel() {
           display: 'flex', alignItems: 'center', gap: 7,
           padding: '7px 13px',
           fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.14em',
-          color: open ? '#00e5c4' : 'rgba(200,230,220,0.55)',
-          background: open ? 'rgba(0,229,196,0.07)' : 'rgba(4,9,12,0.72)',
-          border: `1px solid ${open ? 'rgba(0,229,196,0.28)' : 'rgba(255,255,255,0.07)'}`,
+          color: open ? '#5e6ad2' : 'rgba(200,230,220,0.55)',
+          background: open ? 'rgba(94,106,210,0.07)' : 'rgba(8,9,10,0.72)',
+          border: `1px solid ${open ? 'rgba(94,106,210,0.28)' : 'rgba(255,255,255,0.07)'}`,
           borderRadius: 5,
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
@@ -205,8 +205,8 @@ export default function ProfilePanel() {
         <div style={{
           position: 'fixed', top: 56, right: 20, zIndex: 10100,
           width: 320,
-          background: 'rgba(4,9,12,0.97)',
-          border: '1px solid rgba(0,229,196,0.12)',
+          background: 'rgba(8,9,10,0.97)',
+          border: '1px solid rgba(94,106,210,0.12)',
           borderRadius: 10,
           boxShadow: '0 24px 80px rgba(0,0,0,0.85)',
           backdropFilter: 'blur(20px)',
@@ -219,7 +219,7 @@ export default function ProfilePanel() {
           <div style={{
             padding: '20px 20px 16px',
             background: `linear-gradient(135deg, ${levelColor}10 0%, transparent 60%)`,
-            borderBottom: '1px solid rgba(0,229,196,0.07)',
+            borderBottom: '1px solid rgba(94,106,210,0.07)',
             position: 'sticky', top: 0, backdropFilter: 'blur(10px)',
             WebkitBackdropFilter: 'blur(10px)', zIndex: 1,
           }}>
@@ -253,13 +253,13 @@ export default function ProfilePanel() {
             {/* Stats row */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
               <StatBlock label="BADGES" value={badgeCount} color={levelColor} />
-              <StatBlock label="JOURNEYS" value={`${completedJourneys}/5`} color="#00e5c4" />
+              <StatBlock label="JOURNEYS" value={`${completedJourneys}/5`} color="#5e6ad2" />
               <StatBlock label="STREAK" value={streak > 0 ? `🔥${streak}` : '—'} color="#f59e0b" />
             </div>
 
             {/* Journeys */}
             <div>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.14em', color: 'rgba(0,229,196,0.60)', marginBottom: 10 }}>GUIDED JOURNEYS</div>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.14em', color: 'rgba(94,106,210,0.60)', marginBottom: 10 }}>GUIDED JOURNEYS</div>
               <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between' }}>
                 {journeyIds.map(id => (
                   <JourneyBubble key={id} id={id} data={storyData[id]} color={JOURNEY_COLORS[id]} />
@@ -270,7 +270,7 @@ export default function ProfilePanel() {
             {/* Modules explored */}
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.14em', color: 'rgba(0,229,196,0.60)' }}>MODULES EXPLORED</div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.14em', color: 'rgba(94,106,210,0.60)' }}>MODULES EXPLORED</div>
                 <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: 'rgba(200,230,220,0.50)' }}>{recent.length} / {moduleIds.length}</div>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
@@ -280,12 +280,12 @@ export default function ProfilePanel() {
 
             {/* Today's challenges */}
             <div style={{
-              background: 'rgba(0,229,196,0.03)', border: '1px solid rgba(0,229,196,0.08)',
+              background: 'rgba(94,106,210,0.03)', border: '1px solid rgba(94,106,210,0.08)',
               borderRadius: 6, padding: '10px 12px',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.14em', color: 'rgba(0,229,196,0.60)' }}>TODAY'S CHALLENGES</div>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fontWeight: 700, color: challengesDoneToday === 5 ? '#22c55e' : '#00e5c4' }}>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.14em', color: 'rgba(94,106,210,0.60)' }}>TODAY'S CHALLENGES</div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fontWeight: 700, color: challengesDoneToday === 5 ? '#22c55e' : '#5e6ad2' }}>
                   {challengesDoneToday}/5
                 </div>
               </div>
@@ -293,7 +293,7 @@ export default function ProfilePanel() {
                 <div style={{
                   height: '100%', borderRadius: 2,
                   width: `${(challengesDoneToday / 5) * 100}%`,
-                  background: challengesDoneToday === 5 ? '#22c55e' : '#00e5c4',
+                  background: challengesDoneToday === 5 ? '#22c55e' : '#5e6ad2',
                   transition: 'width 0.4s ease',
                 }} />
               </div>
@@ -307,7 +307,7 @@ export default function ProfilePanel() {
 
           {/* Footer */}
           <div style={{
-            padding: '10px 16px', borderTop: '1px solid rgba(0,229,196,0.07)',
+            padding: '10px 16px', borderTop: '1px solid rgba(94,106,210,0.07)',
             fontFamily: 'JetBrains Mono, monospace', fontSize: 10,
             color: 'rgba(200,230,220,0.38)', letterSpacing: '0.10em', textAlign: 'center',
           }}>PRESS P TO TOGGLE · PROGRESS AUTO-SAVED</div>

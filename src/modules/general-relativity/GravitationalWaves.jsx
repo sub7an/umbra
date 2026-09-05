@@ -132,7 +132,7 @@ export default function GravitationalWaves({ mass }) {
     <group>
       <ambientLight intensity={0.2} color="#0a1020" />
       <pointLight position={[0, 4, 0]} intensity={0.8} color="#a855f7" />
-      <pointLight position={[4, 3, 4]} intensity={0.4} color="#00e5c4" />
+      <pointLight position={[4, 3, 4]} intensity={0.4} color="#5e6ad2" />
 
       {/* Wave surface */}
       <mesh geometry={geo} frustumCulled={false}>
@@ -151,7 +151,7 @@ export default function GravitationalWaves({ mass }) {
       </mesh>
       <mesh ref={body2Ref}>
         <sphereGeometry args={[0.18, 16, 16]} />
-        <meshStandardMaterial color="#00e5c4" emissive="#00e5c4" emissiveIntensity={2} />
+        <meshStandardMaterial color="#5e6ad2" emissive="#5e6ad2" emissiveIntensity={2} />
       </mesh>
     </group>
   )

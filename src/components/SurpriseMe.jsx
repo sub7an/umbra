@@ -35,8 +35,8 @@ function Toast({ scene }) {
     <div style={{
       position: 'fixed', top: 60, left: '50%', transform: 'translateX(-50%)',
       zIndex: 10500,
-      background: 'rgba(4,9,12,0.96)',
-      border: '1px solid rgba(0,229,196,0.25)',
+      background: 'rgba(8,9,10,0.96)',
+      border: '1px solid rgba(94,106,210,0.25)',
       borderRadius: 8,
       padding: '10px 18px',
       display: 'flex', alignItems: 'center', gap: 10,
@@ -48,7 +48,7 @@ function Toast({ scene }) {
     }}>
       <span style={{
         width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
-        background: '#00e5c4', boxShadow: '0 0 8px #00e5c4',
+        background: '#5e6ad2', boxShadow: '0 0 8px #5e6ad2',
         animation: 'umbra-pulse 1s ease-in-out infinite',
       }} />
       <div>
@@ -96,9 +96,9 @@ export default function SurpriseMe() {
           display: 'flex', alignItems: 'center', gap: 7,
           padding: '7px 14px',
           fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.16em',
-          color: spinning ? 'rgba(0,229,196,0.3)' : 'rgba(0,229,196,0.55)',
-          background: 'rgba(4,9,12,0.72)',
-          border: '1px solid rgba(0,229,196,0.12)',
+          color: spinning ? 'rgba(94,106,210,0.3)' : 'rgba(94,106,210,0.55)',
+          background: 'rgba(8,9,10,0.72)',
+          border: '1px solid rgba(94,106,210,0.12)',
           borderRadius: 5,
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
@@ -106,8 +106,8 @@ export default function SurpriseMe() {
           transition: 'all 0.15s',
           userSelect: 'none',
         }}
-        onMouseEnter={e => { if (!spinning) { e.currentTarget.style.color = 'rgba(0,229,196,0.9)'; e.currentTarget.style.borderColor = 'rgba(0,229,196,0.3)' }}}
-        onMouseLeave={e => { e.currentTarget.style.color = 'rgba(0,229,196,0.55)'; e.currentTarget.style.borderColor = 'rgba(0,229,196,0.12)' }}
+        onMouseEnter={e => { if (!spinning) { e.currentTarget.style.color = 'rgba(94,106,210,0.9)'; e.currentTarget.style.borderColor = 'rgba(94,106,210,0.3)' }}}
+        onMouseLeave={e => { e.currentTarget.style.color = 'rgba(94,106,210,0.55)'; e.currentTarget.style.borderColor = 'rgba(94,106,210,0.12)' }}
       >
         <svg width="11" height="11" viewBox="0 0 11 11" fill="none"
           style={{ animation: spinning ? 'umbra-spin 0.6s linear infinite' : 'none' }}>

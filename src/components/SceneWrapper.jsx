@@ -9,7 +9,7 @@ function DefaultLighting() {
     <>
       <ambientLight intensity={0.15} color="#0a2030" />
       <directionalLight position={[5, 8, 5]} intensity={0.6} color="#c0f0e8" castShadow />
-      <pointLight position={[-4, 4, -4]} intensity={0.3} color="#00e5c4" />
+      <pointLight position={[-4, 4, -4]} intensity={0.3} color="#5e6ad2" />
       <pointLight position={[4, -2, 4]} intensity={0.15} color="#f59e0b" />
     </>
   )
@@ -142,7 +142,7 @@ export default function SceneWrapper({ children, cameraPosition, showGrid = true
         camera={{ position: cameraPosition || [4, 3, 7], fov: 45, near: 0.1, far: 100 }}
         gl={{ antialias: true, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: true }}
         performance={{ min: 0.5 }}
-        style={{ width: '100%', height: '100%', display: 'block', background: '#070b0d' }}
+        style={{ width: '100%', height: '100%', display: 'block', background: '#08090a' }}
       >
         <CameraRig position={cameraPosition || [4, 3, 7]} />
         <DefaultLighting />
@@ -160,8 +160,8 @@ export default function SceneWrapper({ children, cameraPosition, showGrid = true
         <GestureCamera orbitRef={orbitRef} minDist={minDist} maxDist={maxDist} />
         <GizmoHelper alignment="bottom-right" margin={[60, 60]}>
           <GizmoViewport
-            axisColors={['#e040fb', '#00e5c4', '#f59e0b']}
-            labelColor="#dff2ed"
+            axisColors={['#e040fb', '#5e6ad2', '#f59e0b']}
+            labelColor="#f7f8f8"
           />
         </GizmoHelper>
       </Canvas>

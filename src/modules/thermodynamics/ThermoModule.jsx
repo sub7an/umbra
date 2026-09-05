@@ -216,7 +216,7 @@ export default function ThermoModule() {
             </span>
           </div>
           <div className="absolute bottom-4 left-4 flex items-center gap-1.5 px-2.5 py-1 rounded border pointer-events-none"
-            style={{ borderColor: 'rgba(56,189,248,0.18)', background: 'rgba(4,9,12,0.85)' }}>
+            style={{ borderColor: 'rgba(56,189,248,0.18)', background: 'rgba(8,9,10,0.85)' }}>
             <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#38bdf8', boxShadow: '0 0 4px #38bdf8' }} />
             <span className="font-mono-data text-[8px] tracking-[0.2em]" style={{ color: 'rgba(56,189,248,0.5)' }}>SIM ACTIVE</span>
           </div>
