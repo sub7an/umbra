@@ -164,6 +164,29 @@ body::after {
   background: #8b9cf7;
 }
 
+/* ── Light mode ──────────────────────────────────────────────────────────────
+   The whole app inverts at the root (dark chrome becomes light, indigo hue
+   preserved via hue-rotate). Simulation canvases and the webcam preview are
+   re-inverted so physics renders stay true dark — a dark viewport inside
+   light chrome, like every pro 3D tool. Film grain and scanlines are off in
+   light mode: they read as dirt on white. */
+html.light {
+  filter: invert(1) hue-rotate(180deg);
+  background: #eceaf4;
+}
+html.light .scanlines canvas,
+html.light .sim-dark canvas,
+html.light video {
+  filter: invert(1) hue-rotate(180deg);
+}
+html.light body::before,
+html.light body::after {
+  display: none;
+}
+html.light .scanlines::after {
+  display: none;
+}
+
 @layer utilities {
   .font-display {
     font-family: 'Chakra Petch', sans-serif;

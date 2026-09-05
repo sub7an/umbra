@@ -19,7 +19,7 @@ function softSprite() {
   return _sprite
 }
 
-const N = 1200
+const N = 520
 
 // Per-module accent colors (rgb 0-1)
 const MOD_COLORS = {
@@ -191,7 +191,7 @@ export default function PhysicsBg({ mouseRef, hoveredModule }) {
         size={0.11}
         vertexColors
         transparent
-        opacity={0.45}
+        opacity={0.35}
         blending={THREE.AdditiveBlending}
         depthWrite={false}
         sizeAttenuation

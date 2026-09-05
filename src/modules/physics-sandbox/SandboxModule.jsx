@@ -217,7 +217,7 @@ export default function SandboxModule() {
 
         {/* ── Center: Canvas ── */}
         <main className="flex-1 relative overflow-hidden" style={{ minHeight: 0 }}>
-          <Canvas
+          <Canvas className="sim-dark"
             camera={{ position: [0, 0, 12], fov: 55, near: 0.1, far: 100 }}
             gl={{ antialias: false, alpha: false, preserveDrawingBuffer: true }}
             style={{ width: '100%', height: '100%', display: 'block', background: '#08090a' }}

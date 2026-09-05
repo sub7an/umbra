@@ -4,6 +4,7 @@ import { track } from '@vercel/analytics'
 import useModuleStore from '../store/useModuleStore'
 import { encodeShareState, decodeShareState, applySharedState } from './ShareButton'
 import { isMuted, setMuted, tick as sndTick, click as sndClick } from '../lib/sound'
+import { getTheme, toggleTheme } from '../lib/theme'
 
 // ── Physics scenario AI client ────────────────────────────────────────────────
 const client = new Anthropic({
@@ -127,6 +128,23 @@ function SoundAction() {
       title={muted ? 'Unmute interface sounds' : 'Mute interface sounds'}
       icon={<svg width="10" height="10" viewBox="0 0 11 11" fill="none"><path d="M1.5 4V7H3.5L6 9.5V1.5L3.5 4H1.5Z" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round"/>{muted ? <path d="M7.5 4L10 6.5M10 4L7.5 6.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/> : <path d="M7.5 3.5C8.3 4.3 8.3 6.7 7.5 7.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>}</svg>}
       label={muted ? 'MUTED' : 'SND'}
+    />
+  )
+}
+
+// ── Theme action ─────────────────────────────────────────────────────────────
+function ThemeAction() {
+  const [theme, setTheme] = useState(getTheme())
+  return (
+    <Btn
+      onClick={() => setTheme(toggleTheme())}
+      active={false}
+      color="#5e6ad2"
+      title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+      icon={theme === 'light'
+        ? <svg width="10" height="10" viewBox="0 0 11 11" fill="none"><path d="M9 6.5A4 4 0 1 1 4.5 2 3.2 3.2 0 0 0 9 6.5Z" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round"/></svg>
+        : <svg width="10" height="10" viewBox="0 0 11 11" fill="none"><circle cx="5.5" cy="5.5" r="2.2" stroke="currentColor" strokeWidth="1.1"/><path d="M5.5 1V2M5.5 9V10M1 5.5H2M9 5.5H10" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg>}
+      label={theme === 'light' ? 'DARK' : 'LIGHT'}
     />
   )
 }
@@ -483,6 +501,7 @@ export default function FloatingToolbar({ explainActive, onExplainToggle }) {
       overflow: 'hidden',
     }}>
       <SoundAction />
+      <ThemeAction />
       <Divider />
       <AskAction />
       {hasModule && <><Divider /><TutorAction /></>}
