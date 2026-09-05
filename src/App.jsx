@@ -18,6 +18,16 @@ import PhysicsTutor from './components/PhysicsTutor'
 import ProfilePanel from './components/ProfilePanel'
 import SurpriseMe from './components/SurpriseMe'
 import { GestureProvider } from './context/GestureContext'
+import SoundToggle from './components/SoundToggle'
+import { warp, startDrone, stopDrone } from './lib/sound'
+
+// Ambient drone base frequency per module — each world has its own tone
+const MOD_DRONE = {
+  'special-relativity': 49, 'quantum-mechanics': 55, 'frontier-physics': 41.2,
+  'dynamical-systems': 61.7, 'electromagnetism': 46.2, 'general-relativity': 36.7,
+  'thermodynamics': 65.4, 'fluid-dynamics': 51.9, 'acoustic-physics': 82.4,
+  'wave-mechanics': 58.3, 'optics': 73.4, 'physics-sandbox': 55, 'sabrina': 87.3,
+}
 
 const MOD_GLOW = {
   'special-relativity':  '245,166,35',
@@ -85,8 +95,8 @@ function ModuleFallback() {
   )
 }
 
-const OUT_MS = 380
-const IN_MS  = 400
+const OUT_MS = 520
+const IN_MS  = 560
 
 // Modules that can be deep-linked via URL hash
 const ROUTABLE = [
@@ -222,6 +232,9 @@ export default function App() {
     prevRef.current = dest
     setTarget(dest)
     setPhase('out')
+    warp()
+    if (dest) startDrone(MOD_DRONE[dest] ?? 55)
+    else stopDrone()
     const t1 = setTimeout(() => { setRendered(dest); setPhase('in') }, OUT_MS)
     const t2 = setTimeout(() => { setPhase('idle') }, OUT_MS + IN_MS)
     return () => { clearTimeout(t1); clearTimeout(t2) }
@@ -238,6 +251,7 @@ export default function App() {
       <TransitionOverlay phase={phase} targetModule={transTarget} />
       {!booted && <BootScreen onComplete={handleBoot} />}
       <CursorAura />
+      <SoundToggle />
       <CommandPalette />
       <FloatingToolbar explainActive={explainOn} onExplainToggle={() => setExplainOn(v => !v)} />
       <ExplainMode active={explainOn} onToggle={() => setExplainOn(v => !v)} />
