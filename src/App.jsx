@@ -14,11 +14,11 @@ import ExplainMode from './components/ExplainMode'
 import StoryMode from './components/StoryMode'
 import MultiplayerRoom from './components/MultiplayerRoom'
 import GuideModal from './components/GuideModal'
-import PhysicsTutor from './components/PhysicsTutor'
 import ProfilePanel from './components/ProfilePanel'
 import SurpriseMe from './components/SurpriseMe'
 import { GestureProvider } from './context/GestureContext'
 import PricingPanel from './components/PricingPanel'
+import AboutPanel from './components/AboutPanel'
 import { track } from '@vercel/analytics'
 import { warp, startDrone, stopDrone } from './lib/sound'
 
@@ -308,19 +308,12 @@ export default function App() {
       {!present && <GuideModal />}
       {!activeModule && <ProfilePanel />}
       {!activeModule && <SurpriseMe />}
-      {/* PhysicsTutor: fixed bottom-right, expands upward when open */}
-      {activeModule && !present && (
-        <div style={{
-          position: 'fixed', bottom: 72, right: 20, zIndex: 10080,
-          width: 360, maxHeight: 'calc(100vh - 120px)',
-          borderRadius: 8, overflow: 'hidden',
-          boxShadow: '0 16px 60px rgba(0,0,0,0.8)',
-        }}>
-          <PhysicsTutor />
-        </div>
-      )}
+      {/* PhysicsTutor lives docked in each module's InfoPanel (left column) —
+          the TUTOR toolbar button and click-to-explain both drive it there.
+          No floating copy: it used to overlap the right-side controls. */}
       {!present && <Challenges />}
       <PricingPanel />
+      <AboutPanel />
       {present && (
         <div style={{
           position: 'fixed', bottom: 14, left: '50%', transform: 'translateX(-50%)',
