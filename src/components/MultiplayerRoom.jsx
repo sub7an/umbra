@@ -303,7 +303,7 @@ export default function MultiplayerRoom() {
           onClick={() => setPanelOpen(v => !v)}
           title="Multiplayer rooms — collaborate in real-time (M)"
           style={{
-            position: 'fixed', top: 64, left: 132, zIndex: 10100,
+            position: 'fixed', top: 64, left: 158, zIndex: 10100,
             display: 'flex', alignItems: 'center', gap: 7,
             padding: '7px 13px',
             fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.16em',

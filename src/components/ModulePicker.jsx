@@ -221,11 +221,12 @@ const H_VERT = `
   attribute float aAge;
   varying vec3 vC;
   void main() {
-    vC = mix(vec3(0.02,0.22,0.12), vec3(0.05,0.95,0.55), aAge);
+    vC = mix(vec3(0.18,0.22,0.62), vec3(0.55,0.75,1.0), aAge);
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.);
+    gl_PointSize = 2.2;
   }
 `
-const H_FRAG = `varying vec3 vC; void main() { gl_FragColor = vec4(vC, 0.9); }`
+const H_FRAG = `varying vec3 vC; void main() { gl_FragColor = vec4(vC, 0.95); }`
 
 function HeroLorenz() {
   const groupRef = useRef()
@@ -264,8 +265,17 @@ function HeroLorenz() {
   return (
     <group ref={groupRef}>
       <line geometry={geo} material={mat} />
-      <pointLight color="#10b981" intensity={1.0} distance={7} decay={2} />
-      <ambientLight intensity={0.04} color="#020a04" />
+      <points geometry={geo}>
+        <shaderMaterial
+          vertexShader={H_VERT}
+          fragmentShader={H_FRAG}
+          transparent
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+        />
+      </points>
+      <pointLight color="#5e6ad2" intensity={1.0} distance={7} decay={2} />
+      <ambientLight intensity={0.04} color="#04040a" />
     </group>
   )
 }

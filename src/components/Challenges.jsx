@@ -213,7 +213,7 @@ export default function Challenges() {
         <button
           onClick={() => setOpen(true)}
           style={{
-            position: 'fixed', top: 16, right: 16, zIndex: 10050,
+            position: 'fixed', top: 64, right: 172, zIndex: 10050,
             display: 'flex', alignItems: 'center', gap: 7,
             padding: '7px 14px',
             fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.14em',
