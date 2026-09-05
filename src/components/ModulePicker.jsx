@@ -7,6 +7,28 @@ import CardPreview from './CardPreview'
 import ConstellationMap from './ConstellationMap'
 import { useGesture } from '../context/GestureContext'
 import CinematicEffects from './CinematicEffects'
+import DecodeText from './DecodeText'
+
+// ── Scroll-reveal: fade-up cards as they enter the viewport ───────────────────
+function useReveal(idx = 0) {
+  const ref = useRef()
+  const [vis, setVis] = useState(false)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { setVis(true); io.disconnect() }
+    }, { threshold: 0.12 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+  const delay = (idx % 4) * 90
+  return [ref, {
+    opacity: vis ? 1 : 0,
+    transform: vis ? 'none' : 'translateY(24px)',
+    transition: `opacity 0.65s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.65s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
+  }]
+}
 
 const SECRET_PHRASE = 'sabrina'
 const STORE_KEY     = 'umbra_unlocked'
@@ -508,20 +530,22 @@ const STATS = [
 ]
 
 // ── Module card ────────────────────────────────────────────────────────────────
-function ModuleCard({ module, onEnter, onHoverIn, onHoverOut, cardRef }) {
+function ModuleCard({ module, onEnter, onHoverIn, onHoverOut, cardRef, idx = 0 }) {
   const hex    = ACCENT_HEX[module.color]
   const hexRgb = parseInt(hex.slice(1), 16)
   const r = (hexRgb >> 16) & 0xff
   const g = (hexRgb >>  8) & 0xff
   const b =  hexRgb        & 0xff
+  const [revealRef, revealStyle] = useReveal(idx)
 
   return (
+    <div ref={revealRef} style={revealStyle} className="flex">
     <button
       ref={cardRef}
       onClick={onEnter}
       onMouseEnter={(e) => onHoverIn(e.currentTarget)}
       onMouseLeave={onHoverOut}
-      className="group relative flex flex-col text-left p-5 rounded-sm cursor-pointer focus:outline-none focus-visible:ring-1"
+      className="group relative flex flex-col flex-1 text-left p-5 rounded-sm cursor-pointer focus:outline-none focus-visible:ring-1"
       style={{
         background: 'rgba(17,17,19, 0.72)',
         backdropFilter: 'blur(14px)',
@@ -588,6 +612,7 @@ function ModuleCard({ module, onEnter, onHoverIn, onHoverOut, cardRef }) {
       {/* Glare overlay */}
       <div data-glare="1" className="absolute inset-0 rounded-sm pointer-events-none" style={{ transition: 'background 0.08s' }} />
     </button>
+    </div>
   )
 }
 
@@ -829,19 +854,25 @@ export default function ModulePicker() {
             </p>
 
             <h1 className="font-display font-bold leading-[1.05] mb-6">
-              <span className="block text-white" style={{ fontSize: 'clamp(40px, 5.5vw, 74px)' }}>
-                Explore physics.
-              </span>
-              <span
+              <DecodeText
+                text="Explore physics."
+                duration={950}
+                as="span"
+                className="block text-white"
+                style={{ fontSize: 'clamp(40px, 5.5vw, 74px)' }}
+              />
+              <DecodeText
+                text="In real time."
+                delay={350}
+                duration={950}
+                as="span"
                 className="block"
                 style={{
                   fontSize: 'clamp(40px, 5.5vw, 74px)',
                   color: '#5e6ad2',
                   textShadow: '0 0 40px rgba(94,106,210,0.28), 0 0 80px rgba(94,106,210,0.10)',
                 }}
-              >
-                In real time.
-              </span>
+              />
             </h1>
 
             <p className="font-body leading-relaxed mb-10 max-w-[400px]"
@@ -995,9 +1026,10 @@ export default function ModulePicker() {
             <ConstellationMap onNavigate={setActiveModule} />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {MODULES.map((mod) => (
+              {MODULES.map((mod, mi) => (
                 <ModuleCard
                   key={mod.id}
+                  idx={mi}
                   module={mod}
                   cardRef={(el) => { cardRefs.current[mod.id] = el }}
                   onEnter={() => setActiveModule(mod.id)}
