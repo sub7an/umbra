@@ -54,8 +54,11 @@ const TIERS = [
   },
 ]
 
+const CONTACT_EMAIL = 'hamzahatef09@gmail.com'
+
 export default function PricingPanel() {
   const [open, setOpen] = useState(false)
+  const [copiedTier, setCopiedTier] = useState(null)
 
   useEffect(() => {
     const h = () => { setOpen(true); track('pricing_opened') }
@@ -70,14 +73,18 @@ export default function PricingPanel() {
     return () => window.removeEventListener('keydown', h)
   }, [open])
 
-  const onCta = useCallback((tier) => {
-    if (tier.id === 'pro') {
-      track('pro_waitlist_click')
-      window.location.href = 'mailto:hamzahatef09@gmail.com?subject=Umbra%20Pro%20waitlist&body=Put%20me%20on%20the%20Pro%20waitlist%20—%20I%20want%204K%20export%20and%20unlimited%20recording.%0A%0A(Sent%20from%20the%20pricing%20page)'
-    } else if (tier.id === 'school') {
-      track('school_license_click')
-      window.location.href = 'mailto:hamzahatef09@gmail.com?subject=Umbra%20Classroom%20license&body=School%20%2F%20institution%3A%0ANumber%20of%20students%3A%0AWhat%20are%20you%20teaching%3F%3A%0A'
-    }
+  // mailto silently does nothing when no mail client is configured, so the
+  // copy-to-clipboard is the primary path and mailto is a best-effort bonus.
+  const onCta = useCallback(async (tier) => {
+    if (tier.id !== 'pro' && tier.id !== 'school') return
+    track(tier.id === 'pro' ? 'pro_waitlist_click' : 'school_license_click')
+
+    const subject = tier.id === 'pro' ? 'Umbra Pro waitlist' : 'Umbra Classroom license'
+    try { await navigator.clipboard.writeText(CONTACT_EMAIL) } catch { /* clipboard denied */ }
+    setCopiedTier(tier.id)
+    setTimeout(() => setCopiedTier(null), 5000)
+
+    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}`
   }, [])
 
   if (!open) return null
@@ -156,8 +163,17 @@ export default function PricingPanel() {
                 onMouseEnter={(e) => { if (!t.ctaDisabled) e.currentTarget.style.filter = 'brightness(1.2)' }}
                 onMouseLeave={(e) => { e.currentTarget.style.filter = 'none' }}
               >
-                {t.cta}
+                {copiedTier === t.id ? '✓ EMAIL COPIED' : t.cta}
               </button>
+              {copiedTier === t.id && (
+                <div style={{
+                  marginTop: 8, textAlign: 'center',
+                  fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12,
+                  color: 'rgba(247,248,248,0.70)', animation: 'umbra-slide-up 0.25s ease',
+                }}>
+                  Email <span style={{ color: t.accent, fontWeight: 600 }}>{CONTACT_EMAIL}</span> — it's on your clipboard
+                </div>
+              )}
             </div>
           ))}
         </div>

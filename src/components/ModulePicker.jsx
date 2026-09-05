@@ -1102,13 +1102,21 @@ export default function ModulePicker() {
             ))}
           </div>
           <div className="flex flex-wrap items-center gap-4 mt-10">
-            <a
-              href="mailto:hamzahatef09@gmail.com?subject=Umbra%20school%20license"
-              className="inline-flex items-center gap-2 font-mono-data text-[11px] tracking-[0.14em] uppercase px-6 py-3 rounded no-underline transition-all duration-200"
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('umbra-pricing-open'))}
+              className="inline-flex items-center gap-2 font-mono-data text-[11px] tracking-[0.14em] uppercase px-6 py-3 rounded cursor-pointer transition-all duration-200"
               style={{ border: '1px solid rgba(94,106,210,0.45)', background: 'rgba(94,106,210,0.07)', color: '#5e6ad2' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(94,106,210,0.14)'
+                e.currentTarget.style.borderColor = 'rgba(94,106,210,0.75)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(94,106,210,0.07)'
+                e.currentTarget.style.borderColor = 'rgba(94,106,210,0.45)'
+              }}
             >
               School & university licensing →
-            </a>
+            </button>
             <span className="font-mono-data text-[10px] tracking-wider" style={{ color: 'rgba(255,255,255,0.42)' }}>
               Free for individual learners, forever
             </span>
