@@ -18,7 +18,6 @@ import PhysicsTutor from './components/PhysicsTutor'
 import ProfilePanel from './components/ProfilePanel'
 import SurpriseMe from './components/SurpriseMe'
 import { GestureProvider } from './context/GestureContext'
-import SoundToggle from './components/SoundToggle'
 import PricingPanel from './components/PricingPanel'
 import { track } from '@vercel/analytics'
 import { warp, startDrone, stopDrone } from './lib/sound'
@@ -301,7 +300,6 @@ export default function App() {
       <TransitionOverlay phase={phase} targetModule={transTarget} />
       {!booted && <BootScreen onComplete={handleBoot} />}
       <CursorAura />
-      {!present && <SoundToggle />}
       <CommandPalette />
       {!present && <FloatingToolbar explainActive={explainOn} onExplainToggle={() => setExplainOn(v => !v)} />}
       <ExplainMode active={explainOn} onToggle={() => setExplainOn(v => !v)} />
