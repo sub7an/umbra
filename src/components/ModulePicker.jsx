@@ -6,7 +6,6 @@ import PhysicsBg from './PhysicsBg'
 import CardPreview from './CardPreview'
 import ConstellationMap from './ConstellationMap'
 import { useGesture } from '../context/GestureContext'
-import CinematicEffects from './CinematicEffects'
 import DecodeText from './DecodeText'
 
 // ── Scroll-reveal: fade-up cards as they enter the viewport ───────────────────
@@ -483,7 +482,6 @@ function HeroCanvas() {
       >
         <HeroCameraRig idx={idx} />
         <HeroActiveScene idx={idx} />
-        <CinematicEffects dof={false} bloomIntensity={1.2} />
       </Canvas>
 
       {/* Bottom formula bar */}
@@ -782,7 +780,6 @@ export default function ModulePicker() {
       >
         <color attach="background" args={['#08090a']} />
         <PhysicsBg mouseRef={mouseRef} hoveredModule={hoveredModule} />
-        <CinematicEffects dof={false} bloomIntensity={0.8} />
       </Canvas>
 
       {/* ── Content layer ── */}
