@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import SceneWrapper from '../../components/SceneWrapper'
 import InfoPanel from '../../components/InfoPanel'
 import AttractorViz from './AttractorViz'
@@ -208,6 +208,32 @@ export default function DynamicalModule() {
   const setPhaseMu       = useModuleStore((s) => s.setDsPhaseMu)
   const setActiveModule  = useModuleStore((s) => s.setActiveModule)
 
+  // ── Sabrina unlock: hidden unless the site-wide secret has been triggered ──
+  // (type "sabrina" anywhere — here or on the picker — or tap UMBRA 5×)
+  const [unlocked, setUnlocked] = useState(
+    () => sessionStorage.getItem('umbra_unlocked') === '1'
+  )
+  useEffect(() => {
+    if (unlocked) return
+    let typed = ''
+    const h = (e) => {
+      if (document.activeElement?.tagName === 'INPUT' || e.key.length !== 1) return
+      typed = (typed + e.key.toLowerCase()).slice(-14)
+      if (typed.includes('sabrina')) {
+        sessionStorage.setItem('umbra_unlocked', '1')
+        setUnlocked(true)
+        setAttractorType('sabrina')
+      }
+    }
+    window.addEventListener('keydown', h)
+    return () => window.removeEventListener('keydown', h)
+  }, [unlocked, setAttractorType])
+
+  const visibleAttractors = useMemo(
+    () => (unlocked ? ATTRACTORS : ATTRACTORS.filter((a) => a.id !== 'sabrina')),
+    [unlocked],
+  )
+
   // Lorenz params
   const [sigma, setSigma] = useState(10)
   const [rho,   setRho]   = useState(28)
@@ -327,7 +353,7 @@ export default function DynamicalModule() {
 
         {/* Attractor nav */}
         <nav className="flex gap-1" aria-label="Attractor type">
-          {ATTRACTORS.map((a) => {
+          {visibleAttractors.map((a) => {
             const active = attractorType === a.id
             return (
               <button
@@ -429,7 +455,7 @@ export default function DynamicalModule() {
                 Attractor
               </p>
               <div className="flex flex-col gap-1.5">
-                {ATTRACTORS.map((a) => (
+                {visibleAttractors.map((a) => (
                   <div key={a.id}>
                     {a.separator && <div className="h-px bg-border-subtle my-1" />}
                     <button
