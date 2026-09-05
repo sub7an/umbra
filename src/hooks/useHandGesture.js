@@ -11,10 +11,11 @@ const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/hand_landmark
 const PINCH_ENTER      = 0.38   // × hand size
 const PINCH_EXIT       = 0.55
 const GRACE_MS         = 450    // ignore action gestures right after hand appears
+const PINCH_REFRACTORY = 800    // ms after a pinch ends: hand is relaxing, no other gesture may start
 const SWIPE_FRAMES     = 4      // consecutive directional frames required
 const SWIPE_VEL_THR    = 0.030
 const SWIPE_COOLDOWN   = 900
-const PALM_HOLD_MS     = 1150
+const PALM_HOLD_MS     = 1500
 const PALM_STILL_THR   = 0.010  // palm must be still to count as "hold"
 const THUMBS_HOLD_MS   = 350
 const THUMBS_COOLDOWN  = 2000
@@ -118,6 +119,8 @@ export default function useHandGesture() {
   const pinchingRef      = useRef(false)
   const justPinchedRef   = useRef(false)
   const pinchStartAtRef  = useRef(0)      // when the current pinch began
+  const pinchEndAtRef    = useRef(0)      // when the last pinch ended
+  const peaceStartAtRef  = useRef(0)      // when the current peace pose began
   const uiBusyRef        = useRef(false)  // event bridge claims the pinch for UI
   const velocityRef      = useRef({ x: 0, y: 0 })
   const swipeRef         = useRef(null)
@@ -259,16 +262,24 @@ export default function useHandGesture() {
 
       justPinchedRef.current = pinching && !prevPinchRef.current
       if (justPinchedRef.current) pinchStartAtRef.current = now
+      if (!pinching && prevPinchRef.current) pinchEndAtRef.current = now
       prevPinchRef.current   = pinching
       pinchingRef.current    = pinching
       if (!pinching) uiBusyRef.current = false
 
+      // Refractory: right after a pinch the hand relaxes open — that natural
+      // motion must never read as palm/peace/fist/swipe.
+      const postPinch = now - pinchEndAtRef.current < PINCH_REFRACTORY
+
       // ── Pose gestures: mutually exclusive after debounce ───────────────────
       // A pinching hand can't also be a fist/palm — suppress at the source.
-      const peace    = stab.current.peace.update(!pinching && rawPeace(lms))
-      const fist     = stab.current.fist.update(!pinching && rawFist(lms))
-      const openPalm = stab.current.palm.update(!pinching && !fist && rawOpenPalm(lms))
-      const thumbsUp = stab.current.thumbs.update(!pinching && !openPalm && rawThumbsUp(lms))
+      const calm     = !pinching && !postPinch
+      const prevPeace = peaceRef.current
+      const peace    = stab.current.peace.update(calm && rawPeace(lms))
+      const fist     = stab.current.fist.update(calm && rawFist(lms))
+      const openPalm = stab.current.palm.update(calm && !fist && rawOpenPalm(lms))
+      const thumbsUp = stab.current.thumbs.update(calm && !openPalm && rawThumbsUp(lms))
+      if (peace && !prevPeace) peaceStartAtRef.current = now
 
       peaceRef.current    = peace
       fistRef.current     = fist
@@ -316,7 +327,7 @@ export default function useHandGesture() {
       // ── Swipe: sustained directional motion in a neutral pose only ─────────
       // Requires N consecutive fast frames agreeing on direction — a hand
       // drifting into frame or twitching once can no longer switch tabs.
-      const neutral = !pinching && !fist && !openPalm && !twoActive
+      const neutral = !pinching && !postPinch && !fist && !openPalm && !twoActive
       if (neutral && settled && !edgy) {
         swipeHist.current.push({ vx, vy })
         if (swipeHist.current.length > SWIPE_FRAMES) swipeHist.current.shift()
@@ -403,7 +414,7 @@ export default function useHandGesture() {
   return {
     enabled, status, initError, toggle, videoRef,
     pointerRef, landmarksRef, allHandsRef, hand2LandmarksRef,
-    pinchingRef, justPinchedRef, pinchStartAtRef, uiBusyRef,
+    pinchingRef, justPinchedRef, pinchStartAtRef, peaceStartAtRef, uiBusyRef,
     velocityRef, swipeRef, fistRef, openPalmRef, peaceRef,
     thumbsUpRef, twoPinchRef,
   }
