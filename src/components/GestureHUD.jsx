@@ -10,7 +10,7 @@ const P_EMBER  = '#FF6B35'
 const P_DIM    = 'rgba(0,180,220,0.18)'
 const P_BG     = 'rgba(0,2,10,0.94)'
 
-const PALM_HOLD_MS      = 820
+const PALM_HOLD_MS      = 1150
 const TRAIL_LEN         = 11
 const TIP_TRAIL_LEN     = 36
 const ECHO_FRAMES       = 6
