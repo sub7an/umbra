@@ -59,6 +59,7 @@ const CONTACT_EMAIL = 'hamzahatef09@gmail.com'
 export default function PricingPanel() {
   const [open, setOpen] = useState(false)
   const [copiedTier, setCopiedTier] = useState(null)
+  const [proLoading, setProLoading] = useState(false)
 
   useEffect(() => {
     const h = () => { setOpen(true); track('pricing_opened') }
@@ -73,19 +74,40 @@ export default function PricingPanel() {
     return () => window.removeEventListener('keydown', h)
   }, [open])
 
-  // mailto silently does nothing when no mail client is configured, so the
-  // copy-to-clipboard is the primary path and mailto is a best-effort bonus.
-  const onCta = useCallback(async (tier) => {
-    if (tier.id !== 'pro' && tier.id !== 'school') return
-    track(tier.id === 'pro' ? 'pro_waitlist_click' : 'school_license_click')
-
-    const subject = tier.id === 'pro' ? 'Umbra Pro waitlist' : 'Umbra Classroom license'
+  // Fall back to the email/clipboard flow (school tier, or Pro before Stripe
+  // is fully configured). mailto silently no-ops without a mail client, so the
+  // copied email is the reliable path and mailto is a best-effort bonus.
+  const contactFallback = useCallback(async (tier) => {
+    const subject = tier.id === 'pro' ? 'Umbra Pro' : 'Umbra Classroom license'
     try { await navigator.clipboard.writeText(CONTACT_EMAIL) } catch { /* clipboard denied */ }
     setCopiedTier(tier.id)
     setTimeout(() => setCopiedTier(null), 5000)
-
     window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}`
   }, [])
+
+  const onCta = useCallback(async (tier) => {
+    if (tier.id === 'pro') {
+      track('pro_checkout_click')
+      setProLoading(true)
+      try {
+        const r = await fetch('/api/checkout', { method: 'POST' })
+        const data = await r.json().catch(() => ({}))
+        if (r.ok && data.url) {
+          window.location.href = data.url   // → Stripe Checkout
+          return
+        }
+        // Stripe not configured yet — fall back to contact so nothing breaks.
+        await contactFallback(tier)
+      } catch {
+        await contactFallback(tier)
+      } finally {
+        setProLoading(false)
+      }
+    } else if (tier.id === 'school') {
+      track('school_license_click')
+      await contactFallback(tier)
+    }
+  }, [contactFallback])
 
   if (!open) return null
 
@@ -163,7 +185,7 @@ export default function PricingPanel() {
                 onMouseEnter={(e) => { if (!t.ctaDisabled) e.currentTarget.style.filter = 'brightness(1.2)' }}
                 onMouseLeave={(e) => { e.currentTarget.style.filter = 'none' }}
               >
-                {copiedTier === t.id ? '✓ EMAIL COPIED' : t.cta}
+                {t.id === 'pro' && proLoading ? 'STARTING CHECKOUT…' : copiedTier === t.id ? '✓ EMAIL COPIED' : t.cta}
               </button>
               {copiedTier === t.id && (
                 <div style={{
