@@ -3,6 +3,7 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import useModuleStore from '../../store/useModuleStore'
+import CinematicEffects from '../../components/CinematicEffects'
 
 const PINK = '#ff69b4'
 const DEEP = '#ff1493'
@@ -127,6 +128,7 @@ export default function SabrinaModule() {
         <HeartCloud />
         <Sparkles />
         <OrbitControls enablePan={false} enableDamping dampingFactor={0.08} minDistance={3} maxDistance={16} />
+        <CinematicEffects dof={false} bloomIntensity={1.1} />
       </Canvas>
 
       <button
