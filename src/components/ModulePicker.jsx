@@ -927,6 +927,20 @@ export default function ModulePicker() {
               About
             </button>
             <button
+              onClick={() => window.dispatchEvent(new CustomEvent('umbra-telescopes-open'))}
+              className="font-mono-data text-[10px] tracking-[0.14em] uppercase"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                color: 'rgba(94,106,210,0.60)', background: 'transparent', border: 'none',
+                cursor: 'pointer', padding: '4px 6px', transition: 'color 0.15s',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = '#5e6ad2' }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(94,106,210,0.60)' }}
+            >
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 5px #22c55e', display: 'inline-block' }} />
+              Live
+            </button>
+            <button
               onClick={() => window.dispatchEvent(new CustomEvent('umbra-pricing-open'))}
               className="font-mono-data text-[10px] tracking-[0.14em] uppercase"
               style={{
