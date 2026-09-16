@@ -1,7 +1,12 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
+import Anthropic from '@anthropic-ai/sdk'
 import { track } from '@vercel/analytics'
 import useModuleStore from '../store/useModuleStore'
 import DecodeText from './DecodeText'
+
+const ai = import.meta.env.VITE_ANTHROPIC_API_KEY
+  ? new Anthropic({ apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY, dangerouslyAllowBrowser: true })
+  : null
 
 // ── The Umbra differentiator: map a live observation to a playable module ─────
 // Checks keywords first (richer), then the science category. Returns the module
@@ -77,6 +82,8 @@ export default function TelescopeLive() {
   const [open, setOpen] = useState(false)
   const [data, setData] = useState(null)
   const [err, setErr] = useState(null)
+  const [explain, setExplain] = useState({ text: '', loading: false, target: null })
+  const explainCache = useRef({})
   const setModule = useModuleStore(s => s.setActiveModule)
 
   const load = useCallback(async () => {
@@ -115,12 +122,28 @@ export default function TelescopeLive() {
     setOpen(false)
     setModule(b.module)
   }
-  const lookUp = () => {
-    if (!cur) return
-    track('telescope_lookup', { target: cur.target })
-    const q = encodeURIComponent(`${cur.target} James Webb Space Telescope`)
-    window.open(`https://www.google.com/search?q=${q}`, '_blank', 'noopener')
+  const explainTarget = async () => {
+    if (!cur || !ai) return
+    track('telescope_explain', { target: cur.target })
+    if (explainCache.current[cur.target]) {
+      setExplain({ text: explainCache.current[cur.target], loading: false, target: cur.target })
+      return
+    }
+    setExplain({ text: '', loading: true, target: cur.target })
+    try {
+      const prompt = `The James Webb Space Telescope is currently observing "${cur.target}" (category: ${cur.category || 'unknown'}; keywords: ${cur.keywords || 'none'}) using ${cur.instrument || 'one of its instruments'}. In 2–3 short sentences, explain what this object likely is and why it's scientifically interesting to observe in infrared. Be concrete and vivid; no preamble.`
+      const msg = await ai.messages.create({
+        model: 'claude-haiku-4-5-20251001', max_tokens: 220,
+        messages: [{ role: 'user', content: prompt }],
+      })
+      const text = msg.content?.[0]?.text?.trim() || 'No explanation available.'
+      explainCache.current[cur.target] = text
+      setExplain({ text, loading: false, target: cur.target })
+    } catch (e) {
+      setExplain({ text: `Couldn't generate an explanation (${e.message}).`, loading: false, target: cur.target })
+    }
   }
+  const showExplain = explain.target === cur?.target && (explain.loading || explain.text)
 
   return (
     <div
@@ -195,16 +218,37 @@ export default function TelescopeLive() {
                   ⚛ {b.label.toUpperCase()} →
                 </button>
               )}
-              <button
-                onClick={lookUp}
-                style={{
-                  width: '100%', padding: '10px', borderRadius: 6, cursor: 'pointer',
-                  fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.1em',
-                  color: '#8b9cf7', background: 'rgba(94,106,210,0.08)', border: '1px solid rgba(94,106,210,0.3)',
-                }}
-              >
-                LOOK UP THIS TARGET ↗
-              </button>
+              {ai && (
+                <button
+                  onClick={explainTarget}
+                  disabled={explain.loading}
+                  style={{
+                    width: '100%', padding: '10px', borderRadius: 6, cursor: explain.loading ? 'default' : 'pointer',
+                    fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.1em',
+                    color: '#8b9cf7', background: 'rgba(94,106,210,0.08)', border: '1px solid rgba(94,106,210,0.3)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  }}
+                >
+                  {explain.loading
+                    ? <><span style={{ width: 6, height: 6, borderRadius: '50%', background: '#8b9cf7', animation: 'umbra-pulse 0.8s ease-in-out infinite' }} /> UMBRA AI IS THINKING…</>
+                    : <>✦ EXPLAIN THIS TARGET</>}
+                </button>
+              )}
+
+              {showExplain && explain.text && (
+                <div style={{
+                  marginTop: 10, padding: '12px 14px', borderRadius: 6,
+                  background: 'rgba(94,106,210,0.06)', border: '1px solid rgba(94,106,210,0.18)',
+                  borderLeft: '3px solid rgba(94,106,210,0.5)',
+                }}>
+                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.14em', color: 'rgba(94,106,210,0.7)', marginBottom: 6 }}>
+                    ✦ UMBRA AI
+                  </div>
+                  <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, lineHeight: 1.6, color: 'rgba(247,248,248,0.82)', margin: 0 }}>
+                    {explain.text}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Running feed */}
