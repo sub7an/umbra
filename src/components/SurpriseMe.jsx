@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import useModuleStore from '../store/useModuleStore'
 
 // Curated cinematic physics scenes
@@ -80,6 +80,11 @@ export default function SurpriseMe() {
       setTimeout(() => setToast(null), 2800)
     }, 350)
   }, [spinning, setModule, store])
+
+  useEffect(() => {
+    window.addEventListener('umbra-surprise', go)
+    return () => window.removeEventListener('umbra-surprise', go)
+  }, [go])
 
   return (
     <>

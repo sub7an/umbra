@@ -35,6 +35,13 @@ export default function GestureHUD() {
     return () => clearTimeout(t)
   }, [enabled])
 
+  // Allow the home feature rail to turn gesture control on
+  useEffect(() => {
+    const onOpen = () => { if (!enabled) toggle() }
+    window.addEventListener('umbra-gesture-open', onOpen)
+    return () => window.removeEventListener('umbra-gesture-open', onOpen)
+  }, [enabled, toggle])
+
   // Skeleton overlay on the camera chip
   useEffect(() => {
     if (!enabled) return
