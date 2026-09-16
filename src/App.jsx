@@ -22,6 +22,7 @@ import AboutPanel from './components/AboutPanel'
 import CheckoutBanner from './components/CheckoutBanner'
 import AuthPanel from './components/AuthPanel'
 import TelescopeLive from './components/TelescopeLive'
+import TelescopeContextBanner from './components/TelescopeContextBanner'
 import { track } from '@vercel/analytics'
 import { warp, startDrone, stopDrone } from './lib/sound'
 
@@ -320,6 +321,7 @@ export default function App() {
       <CheckoutBanner />
       <AuthPanel />
       <TelescopeLive />
+      <TelescopeContextBanner />
       {present && (
         <div style={{
           position: 'fixed', bottom: 14, left: '50%', transform: 'translateX(-50%)',

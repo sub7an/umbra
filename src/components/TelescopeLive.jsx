@@ -1,12 +1,8 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
-import Anthropic from '@anthropic-ai/sdk'
 import { track } from '@vercel/analytics'
 import useModuleStore from '../store/useModuleStore'
 import DecodeText from './DecodeText'
-
-const ai = import.meta.env.VITE_ANTHROPIC_API_KEY
-  ? new Anthropic({ apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY, dangerouslyAllowBrowser: true })
-  : null
+import { ai, quickAI } from '../lib/ai'
 
 // ── The Umbra differentiator: map a live observation to a playable module ─────
 // Checks keywords first (richer), then the science category. Returns the module
@@ -119,6 +115,14 @@ export default function TelescopeLive() {
   const simulate = () => {
     if (!b) return
     track('telescope_simulate', { module: b.module, category: cur?.category })
+    // Hand the live target's context to the module so it can greet the user.
+    window.dispatchEvent(new CustomEvent('umbra-telescope-jump', {
+      detail: {
+        target: cur.target, category: cur.category, keywords: cur.keywords,
+        instrument: cur.instrument, module: b.module,
+        explainText: explainCache.current[cur.target] || '',
+      },
+    }))
     setOpen(false)
     setModule(b.module)
   }
@@ -271,13 +275,11 @@ export default function TelescopeLive() {
           </>
         )}
 
-        {/* Hubble handoff + footer */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          <a href="https://spacetelescopelive.org/hubble" target="_blank" rel="noopener noreferrer"
-            onClick={() => track('hubble_handoff')}
-            style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.1em', color: 'rgba(94,106,210,0.7)', textDecoration: 'none', border: '1px solid rgba(94,106,210,0.25)', borderRadius: 4, padding: '6px 10px' }}>
-            HUBBLE LIVE ↗
-          </a>
+        {/* Footer — everything stays in-site */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.08em', color: 'rgba(247,248,248,0.35)', border: '1px solid rgba(247,248,248,0.1)', borderRadius: 4, padding: '5px 9px' }}>
+            HUBBLE — no public live feed
+          </span>
           <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11, color: 'rgba(247,248,248,0.35)' }}>
             Live from STScI schedules{data?.jwst?.weekOf ? ` · week of ${data.jwst.weekOf}` : ''} · ESC to close
           </span>
