@@ -12,12 +12,13 @@ export default async function handler(req, res) {
   try {
     for (const url of LIVE_PAGES) {
       const html = await fetch(url, { headers: { 'User-Agent': ua, 'Accept-Language': 'en-US,en' } }).then(r => r.text())
-      // Only treat as live if the page reports an active broadcast.
+      // The canonical link on a /live page points at the actual live video —
+      // the first "videoId" in the HTML is often an unrelated recommendation.
+      const canon = html.match(/<link rel="canonical" href="https:\/\/www\.youtube\.com\/watch\?v=([A-Za-z0-9_-]{11})">/)
       const live = /"isLive(?:Now)?":true/.test(html)
-      const m = html.match(/"videoId":"([A-Za-z0-9_-]{11})"/)
-      if (live && m) {
+      if (canon && live) {
         res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600')
-        return res.status(200).json({ videoId: m[1] })
+        return res.status(200).json({ videoId: canon[1] })
       }
     }
     res.setHeader('Cache-Control', 's-maxage=120')
