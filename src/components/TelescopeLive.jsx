@@ -80,6 +80,7 @@ export default function TelescopeLive() {
   const [err, setErr] = useState(null)
   const [explain, setExplain] = useState({ text: '', loading: false, target: null })
   const [shots, setShots] = useState([])       // latest real Webb imagery
+  const [videoId, setVideoId] = useState(undefined) // undefined=loading, null=offline
   const explainCache = useRef({})
   const setModule = useModuleStore(s => s.setActiveModule)
 
@@ -115,6 +116,7 @@ export default function TelescopeLive() {
     if (!open) return
     load()
     loadShots()
+    fetch('/api/livestream').then(r => r.json()).then(d => setVideoId(d.videoId ?? null)).catch(() => setVideoId(null))
     const iv = setInterval(load, 60000) // refresh every minute while open
     const esc = (e) => { if (e.key === 'Escape') setOpen(false) }
     window.addEventListener('keydown', esc)
@@ -182,19 +184,30 @@ export default function TelescopeLive() {
           </span>
         </div>
 
-        {/* Live video from orbit — NASA's official 24/7 stream (ISS cameras + NASA TV) */}
+        {/* Live video from orbit — NASA's current live broadcast (resolved server-side) */}
         <div style={{
           position: 'relative', width: '100%', paddingTop: '56.25%',
           borderRadius: 8, overflow: 'hidden', marginBottom: 8,
-          border: '1px solid rgba(94,106,210,0.25)', background: '#000',
+          border: '1px solid rgba(94,106,210,0.25)', background: '#05060a',
         }}>
-          <iframe
-            title="NASA Live"
-            src="https://www.youtube.com/embed/live_stream?channel=UCLA_DiR1FfKNvjuUpBHmylQ&autoplay=1&mute=1"
-            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
-          />
+          {videoId ? (
+            <iframe
+              title="NASA Live"
+              src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1`}
+              allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
+            />
+          ) : (
+            <div style={{
+              position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.16em',
+              color: 'rgba(94,106,210,0.55)', textAlign: 'center', padding: 20,
+              animation: videoId === undefined ? 'umbra-pulse 1.4s ease-in-out infinite' : 'none',
+            }}>
+              {videoId === undefined ? 'CONNECTING TO NASA LIVE…' : 'NASA IS NOT BROADCASTING LIVE RIGHT NOW — CHECK BACK SOON'}
+            </div>
+          )}
         </div>
         <div style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11, color: 'rgba(247,248,248,0.4)', marginBottom: 18 }}>
           NASA’s live broadcast — ISS Earth cameras & mission coverage. (Hubble & JWST are deep-space instruments with no live camera — their imagery, below, is released after processing.)
