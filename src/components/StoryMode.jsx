@@ -908,8 +908,10 @@ export default function StoryMode() {
       if (activeJourney) return
       setOpen(v => !v)
     }
+    const openEv = () => { if (!activeJourney) setOpen(true) }
     window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
+    window.addEventListener('umbra-journeys-open', openEv)
+    return () => { window.removeEventListener('keydown', handler); window.removeEventListener('umbra-journeys-open', openEv) }
   }, [activeJourney])
 
   const totalXP = parseInt(localStorage.getItem('umbra_story_xp') || '0', 10)

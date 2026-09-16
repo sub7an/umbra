@@ -5,6 +5,7 @@ import useModuleStore from '../store/useModuleStore'
 import PhysicsBg from './PhysicsBg'
 import CardPreview from './CardPreview'
 import ConstellationMap from './ConstellationMap'
+import FeatureRail from './FeatureRail'
 import { useGesture } from '../context/GestureContext'
 import { useAuth } from '../context/AuthContext'
 import DecodeText from './DecodeText'
@@ -1061,6 +1062,9 @@ export default function ModulePicker() {
             <HeroCanvas />
           </div>
         </section>
+
+        {/* ── Ways to explore ── */}
+        <FeatureRail />
 
         {/* ── Stats strip ── */}
         <div

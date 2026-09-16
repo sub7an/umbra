@@ -250,8 +250,10 @@ export default function MultiplayerRoom() {
       if (window.__UMBRA_PALETTE_OPEN) return
       setPanelOpen(v => !v)
     }
+    const openEv = () => setPanelOpen(true)
     window.addEventListener('keydown', h)
-    return () => window.removeEventListener('keydown', h)
+    window.addEventListener('umbra-rooms-open', openEv)
+    return () => { window.removeEventListener('keydown', h); window.removeEventListener('umbra-rooms-open', openEv) }
   }, [])
 
   return (

@@ -202,8 +202,10 @@ export default function Challenges() {
   // Keyboard shortcut: Shift+C
   useEffect(() => {
     const h = (e) => { if (e.key === 'C' && e.shiftKey && !window.__UMBRA_PALETTE_OPEN) { e.preventDefault(); setOpen(o => !o) } }
+    const openEv = () => setOpen(true)
     window.addEventListener('keydown', h)
-    return () => window.removeEventListener('keydown', h)
+    window.addEventListener('umbra-challenges-open', openEv)
+    return () => { window.removeEventListener('keydown', h); window.removeEventListener('umbra-challenges-open', openEv) }
   }, [])
 
   return (
