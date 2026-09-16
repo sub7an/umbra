@@ -79,6 +79,7 @@ export default function TelescopeLive() {
   const [data, setData] = useState(null)
   const [err, setErr] = useState(null)
   const [explain, setExplain] = useState({ text: '', loading: false, target: null })
+  const [shots, setShots] = useState([])       // latest real Webb imagery
   const explainCache = useRef({})
   const setModule = useModuleStore(s => s.setActiveModule)
 
@@ -90,6 +91,20 @@ export default function TelescopeLive() {
     } catch (e) { setErr(e.message) }
   }, [])
 
+  // Latest genuine Webb imagery from NASA's public library (CORS-enabled).
+  const loadShots = useCallback(async () => {
+    try {
+      const r = await fetch('https://images-api.nasa.gov/search?q=James%20Webb%20Space%20Telescope&media_type=image&page_size=60')
+      const d = await r.json()
+      const items = (d?.collection?.items || [])
+        .filter(it => it.links?.[0]?.href && it.data?.[0]?.date_created)
+        .sort((a, bb) => new Date(bb.data[0].date_created) - new Date(a.data[0].date_created))
+        .slice(0, 6)
+        .map(it => ({ img: it.links[0].href, title: it.data[0].title, date: it.data[0].date_created?.slice(0, 10) }))
+      setShots(items)
+    } catch { /* leave empty */ }
+  }, [])
+
   useEffect(() => {
     const h = () => { setOpen(true); track('telescopes_opened') }
     window.addEventListener('umbra-telescopes-open', h)
@@ -99,11 +114,12 @@ export default function TelescopeLive() {
   useEffect(() => {
     if (!open) return
     load()
+    loadShots()
     const iv = setInterval(load, 60000) // refresh every minute while open
     const esc = (e) => { if (e.key === 'Escape') setOpen(false) }
     window.addEventListener('keydown', esc)
     return () => { clearInterval(iv); window.removeEventListener('keydown', esc) }
-  }, [open, load])
+  }, [open, load, loadShots])
 
   if (!open) return null
 
@@ -159,11 +175,29 @@ export default function TelescopeLive() {
       }}
     >
       <div style={{ width: '100%', maxWidth: 620, animation: 'umbra-slide-up 0.35s cubic-bezier(0.16,1,0.3,1)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
           <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 8px #22c55e', animation: 'umbra-pulse 1.4s ease-in-out infinite' }} />
           <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.28em', color: 'rgba(94,106,210,0.75)' }}>
-            LIVE FROM ORBIT · JWST
+            LIVE FROM SPACE
           </span>
+        </div>
+
+        {/* Live video from orbit — NASA's official 24/7 stream (ISS cameras + NASA TV) */}
+        <div style={{
+          position: 'relative', width: '100%', paddingTop: '56.25%',
+          borderRadius: 8, overflow: 'hidden', marginBottom: 8,
+          border: '1px solid rgba(94,106,210,0.25)', background: '#000',
+        }}>
+          <iframe
+            title="NASA Live"
+            src="https://www.youtube.com/embed/live_stream?channel=UCLA_DiR1FfKNvjuUpBHmylQ&autoplay=1&mute=1"
+            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
+          />
+        </div>
+        <div style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11, color: 'rgba(247,248,248,0.4)', marginBottom: 18 }}>
+          NASA’s live broadcast — ISS Earth cameras & mission coverage. (Hubble & JWST are deep-space instruments with no live camera — their imagery, below, is released after processing.)
         </div>
 
         {err && (
@@ -273,6 +307,23 @@ export default function TelescopeLive() {
               </div>
             )}
           </>
+        )}
+
+        {/* Latest real Webb imagery (updates as NASA releases new images) */}
+        {shots.length > 0 && (
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.2em', color: 'rgba(94,106,210,0.6)', marginBottom: 8 }}>
+              LATEST WEBB IMAGERY
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+              {shots.map((s, i) => (
+                <div key={i} title={s.title} style={{ position: 'relative', paddingTop: '100%', borderRadius: 6, overflow: 'hidden', border: '1px solid rgba(94,106,210,0.15)' }}>
+                  <img src={s.img} alt={s.title} loading="lazy"
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
         {/* Footer — everything stays in-site */}
