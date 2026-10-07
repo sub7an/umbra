@@ -19,42 +19,78 @@ function buildEquations(magnetType) {
     case 'dipole':
       return {
         domain: 'ELECTROMAGNETISM · MAGNETIC DIPOLE',
+        syllabus: 'A-level · IB 5.4 · magnetic field patterns',
         primaryEq: `\\mathbf{B} = \\dfrac{\\mu_0}{4\\pi} \\cdot \\dfrac{3(\\mathbf{m}\\cdot\\hat{r})\\hat{r} - \\mathbf{m}}{r^3}`,
         derivedEqs: [
           { label: 'Dipole moment',    eq: `\\mathbf{m} = I\\,A\\,\\hat{n}` },
           { label: 'On-axis (θ=0)',    eq: `B_{\\rm axis} = \\tfrac{\\mu_0}{4\\pi}\\dfrac{2m}{r^3}` },
           { label: 'Equatorial (θ=π/2)', eq: `B_{\\rm eq} = -\\tfrac{\\mu_0}{4\\pi}\\dfrac{m}{r^3}` },
         ],
+        tryThis: [
+          'Trace one field line out of the north pole and follow it right back to the south — every line is a closed loop.',
+          'Notice how fast the field dies with distance: 1/r³, far quicker than gravity’s 1/r².',
+        ],
+        checkpoint: {
+          q: 'Why can you never isolate a single north magnetic pole?',
+          a: 'Because ∇·B = 0 — magnetic field lines are always closed loops with no start or end. Every N is paired with an S; isolated monopoles have never been found.',
+        },
       }
     case 'bar':
       return {
         domain: 'ELECTROMAGNETISM · BAR MAGNET',
+        syllabus: 'AQA 3.7.5.1 · IB 5.4 · bar magnet field',
         primaryEq: `\\mathbf{B} = \\dfrac{\\mu_0 q_m}{4\\pi}\\!\\left(\\dfrac{\\hat{r}_N}{r_N^2} - \\dfrac{\\hat{r}_S}{r_S^2}\\right)`,
         derivedEqs: [
           { label: 'Far field',   eq: `r \\gg \\ell \\implies \\mathbf{B} \\to \\text{dipole}` },
           { label: 'Interior',    eq: `\\mathbf{B}_{\\rm int} = \\mu_0(\\mathbf{H}+\\mathbf{M})` },
           { label: 'Pole strength', eq: `q_m = \\mu_0^{-1}\\oint \\mathbf{B}\\cdot d\\mathbf{A}` },
         ],
+        tryThis: [
+          'Compare the field far from the magnet with the dipole view — they converge.',
+          'Look near the poles, where the simple two-pole model works best.',
+        ],
+        checkpoint: {
+          q: 'Far from a bar magnet, which simpler field does it resemble?',
+          a: 'A dipole field, falling off as 1/r³. Up close the pole structure matters, but at a distance any magnet looks like a point dipole.',
+        },
       }
     case 'solenoid':
       return {
         domain: 'ELECTROMAGNETISM · SOLENOID',
+        syllabus: 'A-level · IB 5.4 · solenoid field',
         primaryEq: `\\mathbf{B}_{\\rm int} = \\mu_0\\,n\\,I\\,\\hat{z}`,
         derivedEqs: [
           { label: 'Biot-Savart', eq: `d\\mathbf{B} = \\dfrac{\\mu_0 I}{4\\pi}\\dfrac{d\\boldsymbol{\\ell}\\times\\hat{r}}{r^2}` },
           { label: 'End field',   eq: `B_{\\rm end} = \\tfrac{1}{2}\\mu_0 n I` },
           { label: 'Inductance',  eq: `L = \\mu_0 n^2 V` },
         ],
+        tryThis: [
+          'See that the field inside is uniform and parallel to the axis — that’s B = μ₀nI.',
+          'Watch the fringe field curl outward and drop to half strength at each end.',
+        ],
+        checkpoint: {
+          q: 'Which two quantities set the field strength inside a long solenoid?',
+          a: 'Turns per metre n and current I: B = μ₀nI. Length and diameter don’t matter for a long solenoid, and the field outside is almost zero.',
+        },
       }
     case 'halbach':
       return {
         domain: 'ELECTROMAGNETISM · HALBACH ARRAY',
+        syllabus: 'Enrichment · field superposition / maglev',
         primaryEq: `|\\mathbf{B}_{\\rm above}| \\approx B_r\\!\\left(1-e^{-kd}\\right)`,
         derivedEqs: [
           { label: 'Moment rotation', eq: `\\theta_k = \\dfrac{2\\pi k}{N},\\; k=0,\\ldots,N-1` },
           { label: 'Below side',      eq: `\\mathbf{B}_{\\rm below} \\approx 0 \\;\\text{(ideal)}` },
           { label: 'Enhancement',     eq: `\\approx 2\\times \\text{ vs. uniform array}` },
         ],
+        tryThis: [
+          'See the field pile up on one face and almost vanish on the other.',
+          'That one-sided flux is exactly what maglev tracks and fridge magnets exploit.',
+        ],
+        checkpoint: {
+          q: 'A Halbach array is strong on one side and ~zero on the other. How is that possible?',
+          a: 'Each magnet’s direction is rotated in sequence so the fields add on one face and cancel on the other — pure field superposition, no special materials required.',
+        },
       }
     default:
       return { domain: '', primaryEq: '', derivedEqs: [] }
@@ -83,12 +119,21 @@ function buildExplanation(magnetType) {
 function buildLorentzEquations() {
   return {
     domain: 'ELECTROMAGNETISM · LORENTZ FORCE',
+    syllabus: 'AQA 3.7.5.1 · IB 5.4 · F = BQv',
     primaryEq: `\\mathbf{F} = q(\\mathbf{E} + \\mathbf{v} \\times \\mathbf{B})`,
     derivedEqs: [
       { label: 'Cyclotron radius', eq: `r = \\dfrac{mv_\\perp}{|q|B}` },
       { label: 'Cyclotron freq',   eq: `\\omega_c = \\dfrac{|q|B}{m}` },
       { label: 'Helical pitch',    eq: `p = v_\\parallel \\cdot T_c = \\dfrac{2\\pi m v_\\parallel}{|q|B}` },
     ],
+    tryThis: [
+      'Increase B and watch the circular radius tighten — r = mv⊥/(qB).',
+      'Give the charge some velocity along B and the circle stretches into a helix.',
+    ],
+    checkpoint: {
+      q: 'The magnetic force on a moving charge is always perpendicular to its velocity. What does that mean for its speed?',
+      a: 'The speed never changes — a perpendicular force does no work. B only bends the path into a circle or helix; it can’t speed the charge up or slow it down.',
+    },
   }
 }
 
@@ -185,7 +230,7 @@ export default function ElectromagnetismModule() {
   const explanation = isLorentz ? buildLorentzExplanation() : buildExplanation(magnetType)
   const metrics     = isLorentz ? buildLorentzMetrics(bStrength) : buildMetrics(magnetType)
 
-  const { domain, primaryEq, derivedEqs } = activeEq
+  const { domain, primaryEq, derivedEqs, syllabus, tryThis, checkpoint } = activeEq
   const activeType = MAGNET_TYPES.find((m) => m.id === magnetType)
 
   return (
@@ -255,9 +300,12 @@ export default function ElectromagnetismModule() {
           <InfoPanel
             title="Field Analysis"
             domain={domain}
+            syllabus={syllabus}
             primaryEq={primaryEq}
             derivedEqs={derivedEqs}
             explanation={explanation}
+            tryThis={tryThis}
+            checkpoint={checkpoint}
             metrics={metrics}
             footer="ELECTROMAGNETISM · BIOT-SAVART LAW"
             accentColor="rose"

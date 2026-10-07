@@ -73,6 +73,7 @@ function buildEquations(view, fpRadius, hubble, vo, vk, bhMass) {
       const rPh   = (bhMass * 0.5 * 1.5).toFixed(3)
       return {
         domain: 'GENERAL RELATIVITY · GRAVITATIONAL LENSING',
+        syllabus: 'AQA Astrophysics · IB D.3 · black holes',
         // Show the actual shader formula, not the true Schwarzschild formula
         primaryEq: `\\delta \\approx \\dfrac{4\\,b_{\\rm crit}^2}{b^2}\\quad\\textcolor{#f59e0b}{(\\text{approx.})}`,
         derivedEqs: [
@@ -84,12 +85,21 @@ function buildEquations(view, fpRadius, hubble, vo, vk, bhMass) {
           { label: 'Photon sphere', eq: `r_{\\rm ph} = \\tfrac{3}{2}R_s = ${rPh}\\text{ u}` },
           { label: 'Event horizon', eq: `R_s = ${Rs}\\text{ u} = 2GM/c^2` },
         ],
+        tryThis: [
+          'Raise the mass and watch the shadow and photon ring grow in step with Rₛ.',
+          'Find the photon sphere at 1.5 Rₛ — the radius where light itself can orbit.',
+        ],
+        checkpoint: {
+          q: 'What does the Schwarzschild radius Rₛ = 2GM/c² physically mark?',
+          a: 'The event horizon — where the escape velocity reaches c. Once inside, no signal, not even light, can ever reach the outside.',
+        },
       }
     }
 
     case 'rotationcurve':
       return {
         domain: 'GALACTIC KINEMATICS · MISSING MASS',
+        syllabus: 'IB D.4 · dark matter (enrichment)',
         primaryEq: `\\textcolor{#5e6ad2}{v_{\\mathrm{obs}}} \\gg \\textcolor{#f59e0b}{v_{\\mathrm{kep}}}`,
         derivedEqs: [
           {
@@ -101,12 +111,21 @@ function buildEquations(view, fpRadius, hubble, vo, vk, bhMass) {
             eq: `\\textcolor{#5e6ad2}{v_{\\mathrm{obs}}} = ${vo.toFixed(3)},\\;\\textcolor{#f59e0b}{v_{\\mathrm{kep}}} = ${vk.toFixed(3)}`,
           },
         ],
+        tryThis: [
+          'Drag the radius outward: v_obs stays flat while v_kep falls away — that gap is the puzzle.',
+          'Ask what extra mass would be needed to make the Keplerian curve match what we see.',
+        ],
+        checkpoint: {
+          q: 'Newtonian gravity predicts orbital speed drops as √(1/r) far from the centre, yet real galaxies stay flat. What does that imply?',
+          a: 'There is far more mass than we can see, extending well past the visible disc — an unseen dark-matter halo. The flat rotation curve is the primary evidence for dark matter.',
+        },
       }
 
     case 'expansion': {
       const H_km = toHubbleUnits(hubble)
       return {
         domain: 'COSMOLOGY · HUBBLE FLOW',
+        syllabus: 'AQA Astrophysics · IB D.3 · Hubble’s law',
         primaryEq: `v = \\textcolor{#f59e0b}{H_0}\\,\\textcolor{#e040fb}{d}`,
         derivedEqs: [
           {
@@ -118,18 +137,35 @@ function buildEquations(view, fpRadius, hubble, vo, vk, bhMass) {
             eq: `|\\Delta H_0| \\approx 5\\sigma\\;\\text{(unresolved)}`,
           },
         ],
+        tryThis: [
+          'Raise H₀ and watch distant galaxies recede faster than near ones — v = H₀d.',
+          'Notice there is no centre: every observer sees the same recession in all directions.',
+        ],
+        checkpoint: {
+          q: 'A galaxy twice as far away — how much faster does it recede?',
+          a: 'Twice as fast. v = H₀d is linear, so doubling the distance doubles the recession speed. That is Hubble’s law and the headline evidence for an expanding universe.',
+        },
       }
     }
 
     case 'nbody':
       return {
         domain: 'CELESTIAL MECHANICS · CHAOS THEORY',
+        syllabus: 'A-level gravitation · chaos (enrichment)',
         primaryEq: `\\mathbf{F}_i = G\\sum_{j\\neq i}\\dfrac{m_j(\\mathbf{r}_j-\\mathbf{r}_i)}{|\\mathbf{r}_j-\\mathbf{r}_i|^3+\\varepsilon^3}`,
         derivedEqs: [
           { label: 'Energy (conserved)', eq: `E = \\tfrac{1}{2}\\sum m_i v_i^2 - G\\sum_{i<j}\\dfrac{m_im_j}{r_{ij}}` },
           { label: 'RK4 update', eq: `\\mathbf{r}_{n+1}=\\mathbf{r}_n+\\tfrac{h}{6}(k_1+2k_2+2k_3+k_4)` },
           { label: 'Figure-8 period', eq: `T \\approx 6.3259\\;\\text{(Chenciner 2000)}` },
         ],
+        tryThis: [
+          'Nudge one body’s starting point a hair and watch the whole system diverge — sensitive dependence.',
+          'Hunt for the figure-8: three equal masses chasing each other along a single shared orbit.',
+        ],
+        checkpoint: {
+          q: 'The three-body problem is deterministic but has no general closed-form solution. Why simulate it numerically?',
+          a: 'Because it is chaotic — tiny differences in starting conditions grow exponentially, so no formula predicts the long-term path. Step-by-step RK4 integration is the only way to trace it.',
+        },
       }
 
     default:
@@ -205,7 +241,7 @@ export default function FrontierModule() {
   }
 
   const explanation = buildExplanation(activeView, fpRadius, hubble, bhMass)
-  const { domain, primaryEq, derivedEqs } = buildEquations(activeView, fpRadius, hubble, vo, vk, bhMass)
+  const { domain, primaryEq, derivedEqs, syllabus, tryThis, checkpoint } = buildEquations(activeView, fpRadius, hubble, vo, vk, bhMass)
   const camPos = CAMERA_POSITIONS[activeView]
   const isBlackHole = activeView === 'blackhole'
   const isNBody     = activeView === 'nbody'
@@ -263,9 +299,12 @@ export default function FrontierModule() {
           <InfoPanel
             title="Analysis"
             domain={domain}
+            syllabus={syllabus}
             primaryEq={primaryEq}
             derivedEqs={derivedEqs}
             explanation={explanation}
+            tryThis={tryThis}
+            checkpoint={checkpoint}
             metrics={metricsByView[activeView]}
             footer="FRONTIER PHYSICS · OBSERVED ≠ EXPLAINED"
           />

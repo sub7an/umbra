@@ -38,27 +38,54 @@ function buildEquations(view) {
   switch (view) {
     case 'prism': return {
       domain: 'OPTICS · SNELL\'S LAW & DISPERSION',
+      syllabus: 'AQA 3.3.2.3 · IB 4.4 · refraction & TIR',
       primaryEq: `n_1 \\sin\\theta_1 = n_2 \\sin\\theta_2`,
       derivedEqs: [
         { label: 'Cauchy (glass)', eq: `n(\\lambda) = A + B/\\lambda^2` },
         { label: 'Deviation',     eq: `\\delta = (n-1)A \\text{ (thin prism)}` },
       ],
+      tryThis: [
+        'Steepen the prism angle until violet undergoes total internal reflection — you have passed the critical angle θ_c = arcsin(1/n).',
+        'Compare where red and violet land: the shorter wavelength bends more.',
+      ],
+      checkpoint: {
+        q: 'As white light enters the glass, which colour bends the most — red or violet?',
+        a: 'Violet. Shorter wavelength → higher n by Cauchy n(λ)=A+B/λ², and a higher n means a larger bend at the surface.',
+      },
     }
     case 'lens': return {
       domain: 'OPTICS · THIN LENS EQUATION',
+      syllabus: 'IB Topic 4 · OCR optics · thin lens',
       primaryEq: `\\frac{1}{f} = \\frac{1}{d_o} + \\frac{1}{d_i}`,
       derivedEqs: [
         { label: 'Magnification', eq: `m = -d_i/d_o` },
         { label: 'Power',         eq: `P = 1/f \\text{ (diopters)}` },
       ],
+      tryThis: [
+        'Place the object at 2f — the image lands at 2f, same size, inverted (m = −1).',
+        'Slide the object toward f and watch the image distance race off to infinity.',
+      ],
+      checkpoint: {
+        q: 'The object sits just inside the focal length (d₀ < f). Is the image real or virtual?',
+        a: 'Virtual, upright and magnified — this is the magnifying-glass case. 1/f = 1/d₀ + 1/dᵢ gives a negative dᵢ, so the image forms on the same side as the object.',
+      },
     }
     case 'grating': return {
       domain: 'OPTICS · DIFFRACTION GRATING',
+      syllabus: 'AQA 3.3.2.3 · IB 9.3 · diffraction grating',
       primaryEq: `d\\sin\\theta_m = m\\lambda`,
       derivedEqs: [
         { label: 'Resolving power', eq: `\\mathcal{R} = mN` },
         { label: 'Free spectral range', eq: `\\Delta\\lambda_{\\rm FSR} = \\lambda/m` },
       ],
+      tryThis: [
+        'Work out how many orders exist: with d = 1.67 µm, m stops when sinθ = mλ/d exceeds 1.',
+        'Switch to a finer grating (more lines/mm, smaller d) — the orders fan out wider.',
+      ],
+      checkpoint: {
+        q: 'Use a grating with more lines per mm (smaller d). Do the bright orders spread apart or bunch together?',
+        a: 'Spread apart. d·sinθ = mλ, so a smaller d forces a larger diffraction angle θ for every order.',
+      },
     }
     default: return { domain: '', primaryEq: '', derivedEqs: [] }
   }
@@ -158,9 +185,12 @@ export default function OpticsModule() {
           <InfoPanel
             title="Optics"
             domain={eq.domain}
+            syllabus={eq.syllabus}
             primaryEq={eq.primaryEq}
             derivedEqs={eq.derivedEqs}
             explanation={buildExplanation(view)}
+            tryThis={eq.tryThis}
+            checkpoint={eq.checkpoint}
             accentColor="amber"
             footer="OPTICS · UMBRA"
           />

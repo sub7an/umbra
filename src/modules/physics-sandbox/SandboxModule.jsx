@@ -84,11 +84,20 @@ const PRESETS = [
 
 const EQUATIONS = {
   domain: 'PHYSICS SANDBOX · INTERACTIVE FIELD',
+  syllabus: 'A-level fields · inverse-square superposition',
   primaryEq: `\\mathbf{F}_i = \\sum_k \\frac{G_k\\,\\hat{r}_{ik} + \\Gamma_k\\,\\hat{r}_{ik}^\\perp}{|r_{ik}|^2 + \\varepsilon^2}`,
   derivedEqs: [
     { label: 'Attractor',  eq: `G > 0:\\; \\mathbf{a} = G\\,\\mathbf{r}/r^3` },
     { label: 'Vortex',     eq: `\\mathbf{a} = \\Gamma\\,\\mathbf{r}^\\perp/r^2` },
   ],
+  tryThis: [
+    'Drop one attractor, then add a vortex beside it — the particles wind up into a spiral galaxy.',
+    'Place two attractors and watch particles thread orbits between them, like a two-body field.',
+  ],
+  checkpoint: {
+    q: 'Each attractor pulls with an inverse-square force. Move a particle twice as far away — what happens to the pull?',
+    a: 'It drops to a quarter. F ∝ 1/r², so doubling r divides the force by 2² = 4. The same law governs both gravity and electrostatics.',
+  },
 }
 
 const EXPLANATION =
@@ -206,9 +215,12 @@ export default function SandboxModule() {
           <InfoPanel
             title="Physics Sandbox"
             domain={EQUATIONS.domain}
+            syllabus={EQUATIONS.syllabus}
             primaryEq={EQUATIONS.primaryEq}
             derivedEqs={EQUATIONS.derivedEqs}
             explanation={EXPLANATION}
+            tryThis={EQUATIONS.tryThis}
+            checkpoint={EQUATIONS.checkpoint}
             metrics={metrics}
             footer="SANDBOX · INTERACTIVE · 900 PARTICLES"
             accentColor="cyan"

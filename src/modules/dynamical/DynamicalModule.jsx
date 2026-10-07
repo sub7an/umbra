@@ -23,60 +23,114 @@ function buildEquations(type) {
     case 'lorenz':
       return {
         domain: 'DYNAMICAL SYSTEMS · LORENZ ATTRACTOR',
+        syllabus: 'Enrichment · chaos & the butterfly effect',
         primaryEq: `\\dot{\\mathbf{X}} = \\mathbf{F}(\\mathbf{X},\\boldsymbol{\\theta})`,
         derivedEqs: [
           { label: 'ẋ', eq: `\\dot{x} = \\sigma(y-x)` },
           { label: 'ẏ', eq: `\\dot{y} = x(\\rho-z)-y` },
           { label: 'ż', eq: `\\dot{z} = xy - \\beta z` },
         ],
+        tryThis: [
+          'Drag ρ up past ≈ 24.74 — the steady spiral tips over into full chaos.',
+          'Follow two nearby particles: they track together, then split onto different wings.',
+        ],
+        checkpoint: {
+          q: 'The Lorenz system is fully deterministic. Why can’t we predict its state far ahead?',
+          a: 'Sensitive dependence on initial conditions — the butterfly effect. Tiny differences grow exponentially, so any rounding error eventually takes over. Deterministic does not mean predictable.',
+        },
       }
     case 'rossler':
       return {
         domain: 'DYNAMICAL SYSTEMS · RÖSSLER ATTRACTOR',
+        syllabus: 'Enrichment · chaos theory',
         primaryEq: `\\dot{x} = -y - z`,
         derivedEqs: [
           { label: 'ẏ', eq: `\\dot{y} = x + ay` },
           { label: 'ż', eq: `\\dot{z} = b + z(x-c)` },
           { label: 'Default', eq: `a = b = 0.2,\\; c = 5.7` },
         ],
+        tryThis: [
+          'Raise c and watch the single loop period-double, then break into a chaotic ribbon.',
+          'Spot the stretch-and-fold: trajectories spiral outward, then get folded back in.',
+        ],
+        checkpoint: {
+          q: 'Rössler’s system has just one nonlinear term (z·x). Is that enough for chaos?',
+          a: 'Yes. Chaos needs only a nonlinearity and three continuous dimensions — not complexity. One nonlinear term in 3D suffices.',
+        },
       }
     case 'thomas':
       return {
         domain: 'DYNAMICAL SYSTEMS · THOMAS ATTRACTOR',
+        syllabus: 'Enrichment · chaos theory',
         primaryEq: `\\dot{x} = \\sin y - bx`,
         derivedEqs: [
           { label: 'ẏ', eq: `\\dot{y} = \\sin z - by` },
           { label: 'ż', eq: `\\dot{z} = \\sin x - bz` },
           { label: 'Labyrinth', eq: `b = 0.19` },
         ],
+        tryThis: [
+          'Lower the damping b toward 0 and watch the maze spread to fill more space.',
+          'Notice all three equations share the same cyclic form x→y→z→x.',
+        ],
+        checkpoint: {
+          q: 'Thomas’ system is called “cyclically symmetric”. What does that mean?',
+          a: 'Each equation is the same shape under the relabelling x→y→z→x, so the dynamics are unchanged by that cyclic swap — which is what gives the attractor its symmetric labyrinth.',
+        },
       }
     case 'aizawa':
       return {
         domain: 'DYNAMICAL SYSTEMS · AIZAWA ATTRACTOR',
+        syllabus: 'Enrichment · chaos theory',
         primaryEq: `\\dot{z} = c + az - \\tfrac{z^3}{3} - r^2(1+ez)`,
         derivedEqs: [
           { label: 'ẋ', eq: `\\dot{x} = (z-b)x - dy` },
           { label: 'ẏ', eq: `\\dot{y} = dx + (z-b)y` },
           { label: 'Default', eq: `a=0.95,\\,b=0.7,\\,d=3.5` },
         ],
+        tryThis: [
+          'Watch the trajectory thread through the hole at the top of the shell.',
+          'Small parameter nudges reshape the whole figure — these systems are finely tuned, not generic.',
+        ],
+        checkpoint: {
+          q: 'The Aizawa trajectory fills a 3D shell rather than a thin sheet. What does that say about its dimension?',
+          a: 'It has a fractal, non-integer dimension between 2 and 3 — more than a surface, less than a solid. Strange attractors are fractals.',
+        },
       }
     case 'phasespace':
       return {
         domain: 'NONLINEAR DYNAMICS · VAN DER POL',
+        syllabus: 'A-level SHM extension · self-sustained oscillation',
         primaryEq: `\\ddot{x} - \\textcolor{#f59e0b}{\\mu}(1-x^2)\\dot{x} + x = 0`,
         derivedEqs: [
           { label: 'Phase plane form', eq: `\\dot{x} = v,\\;\\dot{v} = \\textcolor{#f59e0b}{\\mu}(1-x^2)v - x` },
           { label: 'Limit cycle exists for', eq: `\\textcolor{#f59e0b}{\\mu} > 0` },
         ],
+        tryThis: [
+          'Raise μ and watch the smooth circle distort into sharp relaxation oscillations.',
+          'Start from different points — every trajectory spirals onto the same closed loop.',
+        ],
+        checkpoint: {
+          q: 'However you start it, the Van der Pol oscillator settles onto one fixed loop. What is that loop called?',
+          a: 'A limit cycle — a stable, self-sustaining oscillation. Unlike SHM, whose amplitude depends on the starting energy, here the amplitude is set by the system itself.',
+        },
       }
     case 'pendulum':
       return {
         domain: 'DYNAMICAL SYSTEMS · DOUBLE PENDULUM',
+        syllabus: 'A-level SHM · deterministic chaos',
         primaryEq: `\\ddot{\\theta}_1 = \\frac{-3g\\sin\\theta_1 - g\\sin(\\theta_1-2\\theta_2) - 2\\sin\\delta(\\dot{\\theta}_2^2 + \\dot{\\theta}_1^2\\cos\\delta)}{L(3-\\cos 2\\delta)}`,
         derivedEqs: [
           { label: 'δ',        eq: `\\delta = \\theta_1 - \\theta_2` },
           { label: 'Lyapunov', eq: `\\lambda > 0 \\;\\Rightarrow\\; \\text{chaos}` },
         ],
+        tryThis: [
+          'Release from almost-identical angles twice — the two pendulums soon diverge completely.',
+          'Small swings look regular; add energy and the motion turns chaotic.',
+        ],
+        checkpoint: {
+          q: 'A single pendulum at small angles is perfectly predictable (SHM). Why is the double pendulum chaotic?',
+          a: 'The coupling makes the equations nonlinear, giving a positive Lyapunov exponent — small differences grow exponentially. Adding one joint turns regular motion into chaos.',
+        },
       }
     case 'sabrina':
       return {
@@ -264,7 +318,7 @@ export default function DynamicalModule() {
     }
   }, [attractorType, sigma, rho, beta, rossA, rossC, thomB, aizA, aizB, phaseMu])
 
-  const { domain, primaryEq, derivedEqs } = buildEquations(attractorType)
+  const { domain, primaryEq, derivedEqs, syllabus, tryThis, checkpoint } = buildEquations(attractorType)
   const explanation = buildExplanation(attractorType)
   const metrics     = buildMetrics(attractorType, params)
 
@@ -388,9 +442,12 @@ export default function DynamicalModule() {
           <InfoPanel
             title="Phase Space"
             domain={domain}
+            syllabus={syllabus}
             primaryEq={primaryEq}
             derivedEqs={derivedEqs}
             explanation={explanation}
+            tryThis={tryThis}
+            checkpoint={checkpoint}
             metrics={metrics}
             footer="DYNAMICAL SYSTEMS · CHAOS THEORY"
             accentColor="cyan"

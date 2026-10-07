@@ -22,29 +22,56 @@ function buildEquations(view) {
     case 'streamlines':
       return {
         domain: 'FLUID DYNAMICS · POTENTIAL FLOW',
+        syllabus: 'IB B.3 (HL) · Bernoulli & fluid flow',
         primaryEq: `\\nabla^2 \\phi = 0,\\quad \\mathbf{u} = \\nabla\\phi`,
         derivedEqs: [
           { label: 'Stream function', eq: `\\phi = U\\!\\left(r + \\frac{R^2}{r}\\right)\\cos\\theta` },
           { label: 'Bernoulli', eq: `p + \\tfrac{1}{2}\\rho u^2 = {\\rm const}` },
         ],
+        tryThis: [
+          'Find where streamlines bunch tightest around the cylinder — that’s where the flow speeds up.',
+          'That same speed-up over a wing’s curved top is what generates lift.',
+        ],
+        checkpoint: {
+          q: 'Where the streamlines crowd closest around the cylinder, is the pressure higher or lower?',
+          a: 'Lower. Crowded streamlines mean faster flow, and by Bernoulli p + ½ρu² = const, faster flow goes hand-in-hand with lower pressure.',
+        },
       }
     case 'vortex':
       return {
         domain: 'FLUID DYNAMICS · DISCRETE VORTEX METHOD',
+        syllabus: 'Enrichment · Kármán vortex street',
         primaryEq: `\\mathbf{u}(\\mathbf{x}) = \\frac{1}{2\\pi}\\sum_k \\frac{\\Gamma_k\\,(\\mathbf{x}-\\mathbf{x}_k)^\\perp}{|\\mathbf{x}-\\mathbf{x}_k|^2 + \\sigma^2}`,
         derivedEqs: [
           { label: 'Biot-Savart (2D)', eq: `\\mathbf{u} = -\\frac{\\Gamma}{2\\pi r^2}(y\\hat x - x\\hat y)` },
           { label: 'Strouhal number', eq: `St = \\frac{fD}{U} \\approx 0.20` },
         ],
+        tryThis: [
+          'Watch vortices peel off alternately from each side — the Kármán vortex street.',
+          'The shedding frequency tracks St = fD/U ≈ 0.2 across a huge range of flow speeds.',
+        ],
+        checkpoint: {
+          q: 'Why does a flag flap and why do power lines hum in a steady wind?',
+          a: 'Vortex shedding. Vortices peel off alternately from each side of the obstacle at f ≈ 0.2 U/D, driving a periodic side-to-side force — the Kármán vortex street.',
+        },
       }
     case 'sph':
       return {
         domain: 'FLUID DYNAMICS · SPH (NAVIER-STOKES)',
+        syllabus: 'Enrichment · Navier–Stokes / SPH',
         primaryEq: `\\rho\\!\\left(\\frac{D\\mathbf{u}}{Dt}\\right) = -\\nabla p + \\mu\\nabla^2\\mathbf{u} + \\rho\\mathbf{g}`,
         derivedEqs: [
           { label: 'SPH density', eq: `\\rho_i = \\sum_j m_j W(|\\mathbf{r}_{ij}|,h)` },
           { label: 'Pressure', eq: `p_i = k(\\rho_i - \\rho_0)` },
         ],
+        tryThis: [
+          'Release the dam and watch the fluid splash and settle — each dot is a particle carrying mass.',
+          'Raise the stiffness k and the fluid resists compression more strongly.',
+        ],
+        checkpoint: {
+          q: 'SPH uses no grid — the fluid is thousands of particles. So how is the density at a point worked out?',
+          a: 'By summing a smoothing kernel W over nearby particles: ρᵢ = Σ mⱼ W(rᵢⱼ, h). The fluid’s properties emerge from how tightly the particles cluster.',
+        },
       }
     default:
       return { domain: '', primaryEq: '', derivedEqs: [] }
@@ -118,7 +145,7 @@ export default function FluidModule() {
   const setFluidReynolds  = useModuleStore((s) => s.setFluidReynolds)
   const resetFluid        = useModuleStore((s) => s.resetFluid)
 
-  const { domain, primaryEq, derivedEqs } = buildEquations(fluidView)
+  const { domain, primaryEq, derivedEqs, syllabus, tryThis, checkpoint } = buildEquations(fluidView)
   const explanation = buildExplanation(fluidView)
   const metrics     = buildMetrics(fluidView, reynolds)
 
@@ -162,8 +189,8 @@ export default function FluidModule() {
 
       <div className="flex flex-1 overflow-hidden" style={{ minHeight: 0 }}>
         <div className="w-72 shrink-0 flex flex-col overflow-hidden">
-          <InfoPanel title="Fluid Dynamics" domain={domain} primaryEq={primaryEq}
-            derivedEqs={derivedEqs} explanation={explanation} metrics={metrics}
+          <InfoPanel title="Fluid Dynamics" domain={domain} syllabus={syllabus} primaryEq={primaryEq}
+            derivedEqs={derivedEqs} explanation={explanation} tryThis={tryThis} checkpoint={checkpoint} metrics={metrics}
             footer="FLUID DYNAMICS · INCOMPRESSIBLE" accentColor="cyan" />
         </div>
 

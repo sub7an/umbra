@@ -23,29 +23,56 @@ function buildEquations(view) {
     case 'curvature':
       return {
         domain: 'GENERAL RELATIVITY · EINSTEIN FIELD EQUATIONS',
+        syllabus: 'Enrichment · IB A.5 · spacetime curvature',
         primaryEq: `G_{\\mu\\nu} + \\Lambda g_{\\mu\\nu} = \\dfrac{8\\pi G}{c^4}\\,T_{\\mu\\nu}`,
         derivedEqs: [
           { label: 'Schwarzschild metric', eq: `ds^2 = -\\!\\left(1-\\tfrac{r_s}{r}\\right)c^2 dt^2 + \\dfrac{dr^2}{1-r_s/r}` },
           { label: 'Curvature depth', eq: `y \\propto -\\dfrac{GM}{r}` },
         ],
+        tryThis: [
+          'Add mass and watch the sheet dimple deeper — more mass, more curvature.',
+          'Send a test particle past the well: it bends with no force acting — just curved space.',
+        ],
+        checkpoint: {
+          q: 'In general relativity, what actually keeps a planet orbiting the Sun — a force, or something else?',
+          a: 'Something else. Mass curves spacetime, and the planet simply follows the straightest available path (a geodesic) through that curved geometry. Gravity is geometry, not a pulling force.',
+        },
       }
     case 'geodesics':
       return {
         domain: 'GR · GEODESIC EQUATION',
+        syllabus: 'Enrichment · Mercury’s perihelion precession',
         primaryEq: `\\frac{d^2u}{d\\phi^2} = -u + 3Mu^2`,
         derivedEqs: [
           { label: 'u = 1/r, Newtonian', eq: `\\frac{d^2u}{d\\phi^2} = -u` },
           { label: 'Orbital precession', eq: `\\Delta\\phi = \\frac{6\\pi GM}{c^2 a(1-e^2)}` },
         ],
+        tryThis: [
+          'Compare the GR orbit (with the 3Mu² term) to the Newtonian ellipse — the GR one slowly rotates.',
+          'That slow rotation is precession — the thing that first confirmed GR using Mercury.',
+        ],
+        checkpoint: {
+          q: 'A GR orbit doesn’t close into a fixed ellipse — it slowly rotates. What is this, and where was it first seen?',
+          a: 'Perihelion precession. The extra 3Mu² term advances the orbit a little each cycle. Mercury’s unexplained 43″ per century was general relativity’s first observational win.',
+        },
       }
     case 'waves':
       return {
         domain: 'GR · GRAVITATIONAL WAVES',
+        syllabus: 'Enrichment · LIGO · gravitational waves',
         primaryEq: `\\square\\,\\bar{h}_{\\mu\\nu} = -\\frac{16\\pi G}{c^4}\\,T_{\\mu\\nu}`,
         derivedEqs: [
           { label: 'h₊ strain', eq: `h_+ = \\frac{2G}{c^4 r}\\ddot{Q}_{xx}` },
           { label: 'Power radiated', eq: `P = \\frac{32G^4}{5c^5}\\frac{m_1^2 m_2^2(m_1+m_2)}{r^5}` },
         ],
+        tryThis: [
+          'Bring the two masses closer: the strain h and radiated power climb steeply.',
+          'Power scales as 1/r⁵ — binaries blaze brightest in the final moments before merger.',
+        ],
+        checkpoint: {
+          q: 'Gravitational waves stretch and squeeze space itself. Why are they so hard to detect?',
+          a: 'The strain is minuscule — h ~ 10⁻²¹, far smaller than a proton’s width across kilometres. LIGO needs km-long laser interferometers just to catch a merger’s ripple.',
+        },
       }
     default:
       return { domain: '', primaryEq: '', derivedEqs: [] }
@@ -116,7 +143,7 @@ export default function GRModule() {
   const setGrView       = useModuleStore((s) => s.setGrView)
   const resetGr         = useModuleStore((s) => s.resetGr)
 
-  const { domain, primaryEq, derivedEqs } = buildEquations(grView)
+  const { domain, primaryEq, derivedEqs, syllabus, tryThis, checkpoint } = buildEquations(grView)
   const explanation = buildExplanation(grView)
   const metrics     = buildMetrics(grView, grMass)
 
@@ -160,8 +187,8 @@ export default function GRModule() {
 
       <div className="flex flex-1 overflow-hidden" style={{ minHeight: 0 }}>
         <div className="w-72 shrink-0 flex flex-col overflow-hidden">
-          <InfoPanel title="Spacetime" domain={domain} primaryEq={primaryEq}
-            derivedEqs={derivedEqs} explanation={explanation} metrics={metrics}
+          <InfoPanel title="Spacetime" domain={domain} syllabus={syllabus} primaryEq={primaryEq}
+            derivedEqs={derivedEqs} explanation={explanation} tryThis={tryThis} checkpoint={checkpoint} metrics={metrics}
             footer="GENERAL RELATIVITY · c = G = 1" accentColor="cyan" />
         </div>
 

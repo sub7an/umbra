@@ -27,38 +27,74 @@ function buildEquations(view) {
     case 'gas':
       return {
         domain: 'THERMODYNAMICS · KINETIC THEORY',
+        syllabus: 'AQA 3.6.2 · IB 3.1 · kinetic theory',
         primaryEq: `f(v) = 4\\pi n\\!\\left(\\frac{m}{2\\pi k_B T}\\right)^{3/2}\\!v^2 e^{-mv^2/2k_BT}`,
         derivedEqs: [
           { label: 'Mean kinetic energy', eq: `\\langle E_k \\rangle = \\tfrac{3}{2}k_BT` },
           { label: 'RMS speed',           eq: `v_{\\rm rms} = \\sqrt{\\dfrac{3k_BT}{m}}` },
         ],
+        tryThis: [
+          'Raise T and watch the Maxwell-Boltzmann curve flatten and slide to higher speeds.',
+          'Note v_rms grows only as √T — you must quadruple T to double the typical speed.',
+        ],
+        checkpoint: {
+          q: 'You double the absolute temperature of a gas. What happens to the mean kinetic energy of its molecules?',
+          a: 'It doubles. ⟨E_k⟩ = (3/2)k_BT is proportional to absolute temperature. But v_rms rises only by √2, because energy depends on v².',
+        },
       }
     case 'entropy':
       return {
         domain: 'THERMODYNAMICS · ENTROPY',
+        syllabus: 'A-level thermal · IB B.2 · entropy',
         primaryEq: `S = k_B \\ln \\Omega`,
         derivedEqs: [
           { label: 'Second law',   eq: `\\Delta S_{\\rm univ} \\geq 0` },
           { label: 'Gibbs entropy', eq: `S = -k_B \\sum_i p_i \\ln p_i` },
         ],
+        tryThis: [
+          'Start the gas all in one corner and watch it spread — entropy climbing as it fills the box.',
+          'Try to make it gather back into the corner on its own. It won’t.',
+        ],
+        checkpoint: {
+          q: 'Why does gas released in a corner always spread to fill the box, but never spontaneously gather back?',
+          a: 'There are vastly more microstates for “spread out” than “in a corner”, so S = k_B ln Ω rises. The second law (ΔS ≥ 0) makes the reverse overwhelmingly improbable — not forbidden, just astronomically unlikely.',
+        },
       }
     case 'engine':
       return {
         domain: 'THERMODYNAMICS · CARNOT CYCLE',
+        syllabus: 'AQA engines option · IB B.2 · Carnot',
         primaryEq: `\\eta_{\\rm Carnot} = 1 - \\frac{T_C}{T_H}`,
         derivedEqs: [
           { label: 'First law',  eq: `\\Delta U = Q - W` },
           { label: 'Adiabatic', eq: `PV^\\gamma = {\\rm const}` },
         ],
+        tryThis: [
+          'Raise T_H or lower T_C and watch efficiency climb toward 1 — η = 1 − T_C/T_H.',
+          'Set T_C = T_H: efficiency falls to zero. No temperature difference means no work.',
+        ],
+        checkpoint: {
+          q: 'A Carnot engine runs between 600 K and 300 K. What is its maximum possible efficiency?',
+          a: '50%. η = 1 − T_C/T_H = 1 − 300/600 = 0.5. No real engine working between these two temperatures can beat this ideal limit.',
+        },
       }
     case 'ising':
       return {
         domain: 'STATISTICAL MECHANICS · PHASE TRANSITION',
+        syllabus: 'Enrichment · ferromagnetism & phase transitions',
         primaryEq: `\\mathcal{H} = -J\\sum_{\\langle i,j\\rangle} s_i s_j,\\quad s_i = \\pm 1`,
         derivedEqs: [
           { label: 'Curie temp (exact)', eq: `T_c = \\dfrac{2J}{k_B\\ln(1+\\sqrt{2})} \\approx 2.269\\,\\tfrac{J}{k_B}` },
           { label: 'Metropolis rule', eq: `P(\\text{flip}) = \\min\\!\\left(1,\\,e^{-\\Delta E/k_BT}\\right)` },
         ],
+        tryThis: [
+          'Cool below T_c ≈ 2.27 J/k_B and watch the spins snap into aligned domains.',
+          'Heat back above T_c and the order dissolves into random noise.',
+        ],
+        checkpoint: {
+          q: 'As you cool the lattice through its Curie temperature, magnetization appears abruptly. What is happening?',
+          a: 'A phase transition — spontaneous magnetization. Below T_c, spin alignment wins over thermal disorder and the material becomes a ferromagnet.',
+        },
       }
     default:
       return { domain: '', primaryEq: '', derivedEqs: [] }
@@ -149,7 +185,7 @@ export default function ThermoModule() {
   const setThermoView    = useModuleStore((s) => s.setThermoView)
   const resetThermo      = useModuleStore((s) => s.resetThermo)
 
-  const { domain, primaryEq, derivedEqs } = buildEquations(thermoView)
+  const { domain, primaryEq, derivedEqs, syllabus, tryThis, checkpoint } = buildEquations(thermoView)
   const explanation = buildExplanation(thermoView)
   const metrics     = buildMetrics(thermoView, temperature)
 
@@ -195,8 +231,8 @@ export default function ThermoModule() {
 
       <div className="flex flex-1 overflow-hidden" style={{ minHeight: 0 }}>
         <div className="w-72 shrink-0 flex flex-col overflow-hidden">
-          <InfoPanel title="Thermodynamics" domain={domain} primaryEq={primaryEq}
-            derivedEqs={derivedEqs} explanation={explanation} metrics={metrics}
+          <InfoPanel title="Thermodynamics" domain={domain} syllabus={syllabus} primaryEq={primaryEq}
+            derivedEqs={derivedEqs} explanation={explanation} tryThis={tryThis} checkpoint={checkpoint} metrics={metrics}
             footer="THERMODYNAMICS · k_B = 1 (units)" accentColor="cyan" />
         </div>
 
