@@ -515,7 +515,7 @@ function JourneyCard({ journey, onStart, totalXP }) {
             }}>{journey.title}</span>
             {done && (
               <span style={{
-                fontFamily: 'JetBrains Mono, monospace', fontSize: 9,
+                fontFamily: 'JetBrains Mono, monospace', fontSize: 11,
                 letterSpacing: '0.10em', color: '#5e6ad2',
                 background: 'rgba(94,106,210,0.1)', border: '1px solid rgba(94,106,210,0.25)',
                 borderRadius: 3, padding: '2px 6px',
@@ -524,24 +524,24 @@ function JourneyCard({ journey, onStart, totalXP }) {
           </div>
           <div style={{
             fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12,
-            color: 'rgba(247,248,248,0.62)', letterSpacing: 'normal', marginBottom: 8,
+            color: 'rgba(247,248,248,0.75)', letterSpacing: 'normal', marginBottom: 8,
           }}>{journey.subtitle} · {journey.era}</div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{
-              fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.10em',
+              fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.10em',
               color: DIFF_COLOR[journey.difficulty],
               background: `${DIFF_COLOR[journey.difficulty]}18`,
               border: `1px solid ${DIFF_COLOR[journey.difficulty]}40`,
               borderRadius: 3, padding: '2px 7px',
             }}>{journey.difficulty}</span>
             <span style={{
-              fontFamily: 'JetBrains Mono, monospace', fontSize: 10,
-              color: 'rgba(200,230,220,0.50)', letterSpacing: '0.08em',
+              fontFamily: 'JetBrains Mono, monospace', fontSize: 12,
+              color: 'rgba(200,230,220,0.75)', letterSpacing: '0.08em',
             }}>{journey.steps.length} MODULES · {journey.completion.xp} XP</span>
             {stepsDone >= 0 && !done && (
               <span style={{
-                fontFamily: 'JetBrains Mono, monospace', fontSize: 10,
+                fontFamily: 'JetBrains Mono, monospace', fontSize: 12,
                 color: journey.color, letterSpacing: '0.08em',
               }}>{stepsDone + 1}/{journey.steps.length} DONE</span>
             )}
@@ -654,7 +654,7 @@ function JourneyOverlay({ journey, onClose, onComplete }) {
           }}>
             <span style={{ fontSize: 18 }}>🏅</span>
             <div>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.12em', color: journey.color }}>BADGE EARNED</div>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.12em', color: journey.color }}>BADGE EARNED</div>
               <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: '#e8f4f0', marginTop: 1 }}>{current?.badge}</div>
             </div>
           </div>
@@ -679,14 +679,14 @@ function JourneyOverlay({ journey, onClose, onComplete }) {
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
               <div>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.14em', color: `rgba(${journey.glow},0.75)`, marginBottom: 4 }}>JOURNEY COMPLETE</div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.14em', color: `rgba(${journey.glow},0.75)`, marginBottom: 4 }}>JOURNEY COMPLETE</div>
                 <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, fontWeight: 700, color: '#e8f4f0' }}>{journey.completion.title}</div>
               </div>
               <span style={{ fontSize: 22 }}>🎓</span>
             </div>
 
             <div style={{ padding: '14px 16px' }}>
-              <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, color: 'rgba(200,230,220,0.7)', lineHeight: 1.7, margin: '0 0 14px', letterSpacing: '-0.01em' }}>
+              <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, color: 'rgba(200,230,220,0.75)', lineHeight: 1.7, margin: '0 0 14px', letterSpacing: '-0.01em' }}>
                 {journey.completion.body}
               </p>
 
@@ -697,7 +697,7 @@ function JourneyOverlay({ journey, onClose, onComplete }) {
                   onClick={onClose}
                   style={{
                     flex: 1, padding: '9px 0',
-                    fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.12em',
+                    fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.12em',
                     color: journey.color, background: `rgba(${journey.glow},0.08)`,
                     border: `1px solid rgba(${journey.glow},0.25)`, borderRadius: 5,
                     cursor: 'pointer',
@@ -727,7 +727,7 @@ function JourneyOverlay({ journey, onClose, onComplete }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ color: journey.color, fontSize: 13 }}>{journey.icon}</span>
                 <div>
-                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.14em', color: `rgba(${journey.glow},0.70)` }}>
+                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.14em', color: `rgba(${journey.glow},0.70)` }}>
                     {journey.title.toUpperCase()}
                   </div>
                 </div>
@@ -736,7 +736,7 @@ function JourneyOverlay({ journey, onClose, onComplete }) {
                 <ProgressDots total={journey.steps.length} current={step} />
                 <button
                   onClick={onClose}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.25)', fontSize: 16, lineHeight: 1, padding: 0 }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.75)', fontSize: 16, lineHeight: 1, padding: 0 }}
                 >×</button>
               </div>
             </div>
@@ -747,11 +747,11 @@ function JourneyOverlay({ journey, onClose, onComplete }) {
                 {current.title}
               </div>
               {current.figure && (
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.1em', color: `rgba(${journey.glow},0.6)`, marginBottom: 10 }}>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.1em', color: `rgba(${journey.glow},0.6)`, marginBottom: 10 }}>
                   {current.figure.toUpperCase()}
                 </div>
               )}
-              <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, color: 'rgba(200,230,220,0.7)', lineHeight: 1.75, margin: '0 0 12px', letterSpacing: '-0.01em' }}>
+              <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, color: 'rgba(200,230,220,0.75)', lineHeight: 1.75, margin: '0 0 12px', letterSpacing: '-0.01em' }}>
                 {current.body}
               </p>
 
@@ -776,7 +776,7 @@ function JourneyOverlay({ journey, onClose, onComplete }) {
                     style={{
                       display: 'flex', alignItems: 'center', gap: 6, width: '100%',
                       background: 'none', border: 'none', cursor: 'pointer', padding: '2px 0',
-                      fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.14em',
+                      fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.14em',
                       color: `rgba(${journey.glow},0.70)`,
                     }}
                   >
@@ -784,7 +784,7 @@ function JourneyOverlay({ journey, onClose, onComplete }) {
                     GO DEEPER
                   </button>
                   {showDeeper && (
-                    <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12.5, color: 'rgba(200,230,220,0.62)', lineHeight: 1.7, margin: '8px 0 0', letterSpacing: '-0.01em' }}>
+                    <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12.5, color: 'rgba(200,230,220,0.75)', lineHeight: 1.7, margin: '8px 0 0', letterSpacing: '-0.01em' }}>
                       {current.deeper}
                     </p>
                   )}
@@ -800,7 +800,7 @@ function JourneyOverlay({ journey, onClose, onComplete }) {
                 padding: '8px 10px',
                 marginBottom: 14,
               }}>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.14em', color: `rgba(${journey.glow},0.70)`, marginBottom: 5 }}>TRY THIS</div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.14em', color: `rgba(${journey.glow},0.70)`, marginBottom: 5 }}>TRY THIS</div>
                 <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12, color: `rgba(${journey.color.replace('#','')},0.85)`, lineHeight: 1.65, margin: 0, letterSpacing: '-0.01em' }}>
                   {current.insight}
                 </p>
@@ -812,7 +812,7 @@ function JourneyOverlay({ journey, onClose, onComplete }) {
                   border: `1px solid rgba(${journey.glow},0.15)`,
                   borderRadius: 6, padding: '11px 12px', marginBottom: 14,
                 }}>
-                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.14em', color: `rgba(${journey.glow},0.70)`, marginBottom: 8 }}>
+                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.14em', color: `rgba(${journey.glow},0.70)`, marginBottom: 8 }}>
                     CHECK YOUR UNDERSTANDING
                   </div>
                   <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12.5, color: '#e8f4f0', lineHeight: 1.55, margin: '0 0 10px' }}>
@@ -845,7 +845,7 @@ function JourneyOverlay({ journey, onClose, onComplete }) {
                   </div>
                   {quizPick !== null && (
                     <p style={{
-                      fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11.5,
+                      fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13.5,
                       color: quizCorrect ? 'rgba(134,239,172,0.85)' : 'rgba(252,165,165,0.85)',
                       lineHeight: 1.6, margin: '9px 0 0',
                     }}>
@@ -862,7 +862,7 @@ function JourneyOverlay({ journey, onClose, onComplete }) {
                 title={quizCorrect ? '' : 'Answer the check above to continue'}
                 style={{
                   width: '100%', padding: '10px 0',
-                  fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.12em',
+                  fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.12em',
                   color: quizCorrect ? '#08090a' : 'rgba(255,255,255,0.35)',
                   background: quizCorrect ? journey.color : 'rgba(255,255,255,0.06)',
                   border: 'none', borderRadius: 5, cursor: quizCorrect ? 'pointer' : 'not-allowed',
@@ -878,10 +878,10 @@ function JourneyOverlay({ journey, onClose, onComplete }) {
 
               {/* Step / badge */}
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10 }}>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: 'rgba(255,255,255,0.40)', letterSpacing: '0.08em' }}>
+                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: 'rgba(255,255,255,0.75)', letterSpacing: '0.08em' }}>
                   MODULE {step + 1} / {journey.steps.length}
                 </span>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: `rgba(${journey.glow},0.60)`, letterSpacing: '0.08em' }}>
+                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: `rgba(${journey.glow},0.60)`, letterSpacing: '0.08em' }}>
                   BADGE: {current.badge.toUpperCase()}
                 </span>
               </div>
@@ -937,7 +937,7 @@ export default function StoryMode() {
             position: 'fixed', top: 64, left: 20, zIndex: 10100,
             display: 'flex', alignItems: 'center', gap: 7,
             padding: '7px 13px',
-            fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.14em',
+            fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.14em',
             color: open ? '#e8f4f0' : 'rgba(200,230,220,0.58)',
             background: open ? 'rgba(94,106,210,0.08)' : 'rgba(8,9,10,0.72)',
             border: `1px solid ${open ? 'rgba(94,106,210,0.3)' : 'rgba(94,106,210,0.12)'}`,
@@ -985,15 +985,15 @@ export default function StoryMode() {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.16em', color: 'rgba(94,106,210,0.65)', marginBottom: 4 }}>STORY MODE</div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.16em', color: 'rgba(94,106,210,0.75)', marginBottom: 4 }}>STORY MODE</div>
                 <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 14, fontWeight: 700, color: '#e8f4f0' }}>Guided Journeys</div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: 'rgba(94,106,210,0.60)', letterSpacing: '0.12em' }}>TOTAL XP</div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: 'rgba(94,106,210,0.75)', letterSpacing: '0.12em' }}>TOTAL XP</div>
                 <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 16, fontWeight: 700, color: '#5e6ad2' }}>{totalXP}</div>
               </div>
             </div>
-            <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, color: 'rgba(247,248,248,0.65)', lineHeight: 1.6, margin: '8px 0 0', letterSpacing: '-0.01em' }}>
+            <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, color: 'rgba(247,248,248,0.75)', lineHeight: 1.6, margin: '8px 0 0', letterSpacing: '-0.01em' }}>
               Five narrative arcs through physics history. Each journey spans 4 modules with guided insights and unlockable badges.
             </p>
           </div>
@@ -1017,8 +1017,8 @@ export default function StoryMode() {
           <div style={{
             padding: '10px 18px',
             borderTop: '1px solid rgba(94,106,210,0.07)',
-            fontFamily: 'JetBrains Mono, monospace', fontSize: 10,
-            color: 'rgba(200,230,220,0.38)', letterSpacing: '0.10em', textAlign: 'center',
+            fontFamily: 'JetBrains Mono, monospace', fontSize: 12,
+            color: 'rgba(200,230,220,0.75)', letterSpacing: '0.10em', textAlign: 'center',
           }}>
             PRESS J TO TOGGLE · PROGRESS AUTO-SAVED
           </div>

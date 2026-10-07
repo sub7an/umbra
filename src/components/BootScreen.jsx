@@ -101,7 +101,7 @@ export default function BootScreen({ onComplete }) {
           {lines.map((l, i) => (
             <div key={i} style={{
               fontFamily:    'JetBrains Mono, monospace',
-              fontSize:       11,
+              fontSize:       13,
               letterSpacing: '0.10em',
               color:          l.bright ? '#5e6ad2' : 'rgba(255,255,255,0.26)',
               animation:     'boot-line 0.18s ease both',
@@ -115,7 +115,7 @@ export default function BootScreen({ onComplete }) {
           {lines.length > 0 && lines.length < LINES.length && (
             <div style={{
               fontFamily: 'JetBrains Mono, monospace',
-              fontSize: 11, color: '#5e6ad2',
+              fontSize: 13, color: '#5e6ad2',
               animation: 'cursor-blink 0.9s step-end infinite',
             }}>▋</div>
           )}
@@ -138,10 +138,10 @@ export default function BootScreen({ onComplete }) {
             <div style={{
               marginTop:     14,
               fontFamily:    'JetBrains Mono, monospace',
-              fontSize:       10,
+              fontSize:       12,
               letterSpacing: '0.38em',
               textTransform: 'uppercase',
-              color:         'rgba(255,255,255,0.30)',
+              color:         'rgba(255,255,255,0.75)',
               animation:     'sub-in 0.5s ease 0.3s both',
             }}>
               Physics Visualizer · Interactive 3D
@@ -154,10 +154,10 @@ export default function BootScreen({ onComplete }) {
           <div style={{
             position:      'absolute', bottom: 48,
             fontFamily:    'JetBrains Mono, monospace',
-            fontSize:       10,
+            fontSize:       12,
             letterSpacing: '0.30em',
             textTransform: 'uppercase',
-            color:         'rgba(94,106,210,0.55)',
+            color:         'rgba(94,106,210,0.75)',
             animation:     'ready-pulse 1.3s ease-in-out infinite',
             zIndex:         2,
           }}>
@@ -169,9 +169,9 @@ export default function BootScreen({ onComplete }) {
         <div style={{
           position:      'absolute', bottom: 44, right: 52,
           fontFamily:    'JetBrains Mono, monospace',
-          fontSize:       9,
+          fontSize:       11,
           letterSpacing: '0.18em',
-          color:         'rgba(255,255,255,0.10)',
+          color:         'rgba(255,255,255,0.75)',
           zIndex:         2,
         }}>
           BUILD 2026 · SUB7AN

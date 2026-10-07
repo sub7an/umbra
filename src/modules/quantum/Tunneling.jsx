@@ -166,16 +166,16 @@ export default function Tunneling() {
           border: '1px solid rgba(56,189,248,0.20)',
           borderRadius: 3, padding: '7px 10px', minWidth: 132,
         }}>
-          <div style={{ fontSize: 8, color: 'rgba(56,189,248,0.45)', letterSpacing: '0.14em', marginBottom: 5 }}>
+          <div style={{ fontSize: 11, color: 'rgba(56,189,248,0.75)', letterSpacing: '0.14em', marginBottom: 5 }}>
             TUNNELING
           </div>
-          <div style={{ fontSize: 8, color: 'rgba(56,189,248,0.55)', marginBottom: 2 }}>
+          <div style={{ fontSize: 11, color: 'rgba(56,189,248,0.75)', marginBottom: 2 }}>
             T = <span ref={tDom} style={{ color: '#38bdf8' }}>—</span>
           </div>
-          <div style={{ fontSize: 8, color: 'rgba(248,113,113,0.55)', marginBottom: 2 }}>
+          <div style={{ fontSize: 11, color: 'rgba(248,113,113,0.75)', marginBottom: 2 }}>
             R = <span ref={rDom} style={{ color: '#f87171' }}>—</span>
           </div>
-          <div style={{ fontSize: 8, color: 'rgba(251,191,36,0.55)' }}>
+          <div style={{ fontSize: 11, color: 'rgba(251,191,36,0.75)' }}>
             E/V₀ = <span ref={evDom} style={{ color: '#fbbf24' }}>—</span>
           </div>
         </div>

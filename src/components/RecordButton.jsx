@@ -106,7 +106,7 @@ export default function RecordButton() {
           gap: 7,
           padding: '7px 13px',
           fontFamily: 'JetBrains Mono, monospace',
-          fontSize: 10,
+          fontSize: 12,
           letterSpacing: '0.12em',
           color: '#ef4444',
           background: 'rgba(239,68,68,0.08)',
@@ -154,7 +154,7 @@ export default function RecordButton() {
         gap: 7,
         padding: '7px 13px',
         fontFamily: 'JetBrains Mono, monospace',
-        fontSize: 10,
+        fontSize: 12,
         letterSpacing: '0.12em',
         color: done
           ? '#ef4444'

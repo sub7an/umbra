@@ -153,11 +153,11 @@ function Slider({ label, value, min, max, step, decimals, onChange }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9,
-          letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)' }}>
+        <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11,
+          letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.75)' }}>
           {label}
         </span>
-        <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: ACCENT }}>
+        <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 12, color: ACCENT }}>
           {value.toFixed(decimals)}
         </span>
       </div>
@@ -195,7 +195,7 @@ export default function ElectromagnetismModule() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => setActiveModule(null)}
-            className="font-mono-data text-[11px] tracking-widest text-text-dim hover:text-violet-glow transition-colors duration-200 uppercase flex items-center gap-1.5"
+            className="font-mono-data text-[13px] tracking-widest text-text-dim hover:text-violet-glow transition-colors duration-200 uppercase flex items-center gap-1.5"
           >
             ← MODULES
           </button>
@@ -208,7 +208,7 @@ export default function ElectromagnetismModule() {
             {[{ id: 'field', label: 'Field Lab' }, { id: 'lorentz', label: 'Lorentz' }].map(v => (
               <button key={v.id} onClick={() => setView(v.id)}
                 className={[
-                  'font-mono-data text-[10px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
+                  'font-mono-data text-[12px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
                   view === v.id
                     ? 'border-violet-glow text-violet-glow bg-violet-glow/5'
                     : 'border-border-subtle text-text-dim hover:border-violet-glow/40',
@@ -230,7 +230,7 @@ export default function ElectromagnetismModule() {
                 onClick={() => setMagnetType(mt.id)}
                 title={mt.desc}
                 className={[
-                  'font-mono-data text-[11px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
+                  'font-mono-data text-[13px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
                   active
                     ? 'border-violet-glow text-violet-glow bg-violet-glow/5 shadow-glow-violet'
                     : 'border-border-subtle text-text-dim hover:border-violet-glow/50 hover:text-text-primary',
@@ -279,17 +279,17 @@ export default function ElectromagnetismModule() {
           </SceneWrapper>
 
           <div className="absolute top-3 left-4 pointer-events-none">
-            <span className="font-display text-[10px] tracking-[0.2em] uppercase text-text-dim">
+            <span className="font-display text-[12px] tracking-[0.2em] uppercase text-text-dim">
               {isLorentz ? 'Lorentz Force · Cyclotron Motion · F = qv×B' : `MagnetLab 3D · ${activeType?.label}`}
             </span>
           </div>
           <div className="absolute bottom-4 left-4 flex items-center gap-1.5 px-2.5 py-1 rounded border pointer-events-none"
             style={{ borderColor: 'rgba(168,85,247,0.18)', background: 'rgba(8,9,10,0.85)' }}>
             <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#a855f7', boxShadow: '0 0 4px #a855f7' }} />
-            <span className="font-mono-data text-[8px] tracking-[0.2em]" style={{ color: 'rgba(168,85,247,0.5)' }}>SIM ACTIVE</span>
+            <span className="font-mono-data text-[11px] tracking-[0.2em]" style={{ color: 'rgba(168,85,247,0.75)' }}>SIM ACTIVE</span>
           </div>
-          <div className="absolute bottom-4 right-4 font-mono-data text-[8px] tracking-[0.12em] pointer-events-none"
-            style={{ color: 'rgba(168,85,247,0.28)' }}>
+          <div className="absolute bottom-4 right-4 font-mono-data text-[11px] tracking-[0.12em] pointer-events-none"
+            style={{ color: 'rgba(168,85,247,0.75)' }}>
             DRAG TO ORBIT · SCROLL TO ZOOM
           </div>
         </main>
@@ -308,7 +308,7 @@ export default function ElectromagnetismModule() {
             </div>
             <button
               onClick={resetEm}
-              className="font-mono-data text-[10px] tracking-wider text-text-dim hover:text-violet-glow transition-colors duration-200 uppercase px-2 py-1 border border-border-subtle hover:border-violet-glow/40 rounded"
+              className="font-mono-data text-[12px] tracking-wider text-text-dim hover:text-violet-glow transition-colors duration-200 uppercase px-2 py-1 border border-border-subtle hover:border-violet-glow/40 rounded"
             >
               RST
             </button>
@@ -317,13 +317,13 @@ export default function ElectromagnetismModule() {
           <div className="flex-1 px-4 py-5 flex flex-col gap-3 overflow-y-auto thin-scroll">
             {isLorentz ? (
               <>
-                <p className="font-mono-data text-[9px] tracking-[0.22em] uppercase text-text-dim mb-0.5">
+                <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase text-text-dim mb-0.5">
                   Field Strength
                 </p>
                 <Slider label="B₀  field" value={bStrength} min={0.2} max={3.0} step={0.05} decimals={2}
                   onChange={setBStrength} />
                 <div className="h-px bg-border-subtle my-1" />
-                <div className="font-mono-data text-[9px] text-text-dim space-y-1.5">
+                <div className="font-mono-data text-[11px] text-text-dim space-y-1.5">
                   <p style={{ color: '#5e6ad2' }}>─ particle trail</p>
                   <p style={{ color: '#5e6ad2' }}>↗ Lorentz force F</p>
                   <p style={{ color: '#a855f7' }}>↑ B field arrows</p>
@@ -332,7 +332,7 @@ export default function ElectromagnetismModule() {
             ) : (
               <>
                 {/* Display toggles */}
-                <p className="font-mono-data text-[9px] tracking-[0.22em] uppercase text-text-dim mb-0.5">
+                <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase text-text-dim mb-0.5">
                   Display layers
                 </p>
                 {[
@@ -342,7 +342,7 @@ export default function ElectromagnetismModule() {
                 ].map(({ label, value, set }) => (
                   <button key={label} onClick={() => set((v) => !v)}
                     className={[
-                      'w-full flex items-center justify-between px-3 py-2 rounded border font-mono-data text-[11px] tracking-wider uppercase transition-all duration-200',
+                      'w-full flex items-center justify-between px-3 py-2 rounded border font-mono-data text-[13px] tracking-wider uppercase transition-all duration-200',
                       value
                         ? 'border-violet-glow/50 text-violet-glow bg-violet-glow/5'
                         : 'border-border-subtle text-text-dim hover:border-violet-glow/30',
@@ -351,7 +351,7 @@ export default function ElectromagnetismModule() {
                   </button>
                 ))}
                 <div className="h-px bg-border-subtle my-2" />
-                <p className="font-mono-data text-[9px] tracking-[0.22em] uppercase text-text-dim mb-0.5">
+                <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase text-text-dim mb-0.5">
                   Magnet type
                 </p>
                 {MAGNET_TYPES.map((mt) => (
@@ -362,8 +362,8 @@ export default function ElectromagnetismModule() {
                         ? 'border-violet-glow/50 text-violet-glow bg-violet-glow/5'
                         : 'border-border-subtle text-text-dim hover:border-violet-glow/30',
                     ].join(' ')}>
-                    <span className="text-[11px] tracking-wider uppercase">{mt.label}</span>
-                    <span className="text-[9px] text-text-dim mt-0.5 leading-tight">{mt.desc}</span>
+                    <span className="text-[13px] tracking-wider uppercase">{mt.label}</span>
+                    <span className="text-[11px] text-text-dim mt-0.5 leading-tight">{mt.desc}</span>
                   </button>
                 ))}
               </>
@@ -371,7 +371,7 @@ export default function ElectromagnetismModule() {
           </div>
 
           <div className="px-4 py-3 border-t border-border-subtle">
-            <p className="font-mono-data text-[10px] text-text-dim leading-relaxed">
+            <p className="font-mono-data text-[12px] text-text-dim leading-relaxed">
               EM · BIOT-SAVART · RK4
             </p>
           </div>

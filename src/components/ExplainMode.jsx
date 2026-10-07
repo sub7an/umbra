@@ -58,12 +58,12 @@ function ExplainCard({ text, position, loading, onClose }) {
         background: 'rgba(94,106,210,0.04)',
       }}>
         <span style={{ display:'inline-block', width:6, height:6, borderRadius:'50%', background:'#5e6ad2', boxShadow:'0 0 6px #5e6ad2', animation: loading ? 'umbra-pulse 0.8s ease-in-out infinite' : 'none', flexShrink:0 }} />
-        <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:8, letterSpacing:'0.18em', color:'rgba(94,106,210,0.5)', flex:1 }}>
+        <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:11, letterSpacing:'0.18em', color:'rgba(94,106,210,0.75)', flex:1 }}>
           {loading ? 'ANALYZING…' : 'UMBRA EXPLAINS'}
         </span>
         <button
           onClick={onClose}
-          style={{ background:'none', border:'none', cursor:'pointer', color:'rgba(94,106,210,0.3)', fontSize:14, lineHeight:1, padding:0 }}
+          style={{ background:'none', border:'none', cursor:'pointer', color:'rgba(94,106,210,0.75)', fontSize:14, lineHeight:1, padding:0 }}
         >×</button>
       </div>
       {/* Body */}

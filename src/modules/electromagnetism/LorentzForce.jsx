@@ -264,14 +264,14 @@ export default function LorentzForce({ bStrength = 1.0 }) {
 
       {/* Field labels */}
       <Html position={[GRID_N/2 * GRID_S + 0.6, -2.8, 0]} style={{ pointerEvents: 'none' }}>
-        <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9,
+        <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11,
           color: '#a855f7', letterSpacing: '0.12em', opacity: 0.8 }}>
           B = B₀ŷ
         </div>
       </Html>
       {eOn && (
         <Html position={[GRID_S * 1.5 + 0.6, 0, -GRID_S * 2]} style={{ pointerEvents: 'none' }}>
-          <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9,
+          <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11,
             color: '#fbbf24', letterSpacing: '0.12em', opacity: 0.8 }}>
             E = E₀ẑ
           </div>
@@ -281,13 +281,13 @@ export default function LorentzForce({ bStrength = 1.0 }) {
       {/* Live readout */}
       <Html position={[4.2, 3.0, 0]} center style={{ pointerEvents: 'none' }}>
         <div style={{
-          fontFamily: 'JetBrains Mono,monospace', fontSize: 9,
+          fontFamily: 'JetBrains Mono,monospace', fontSize: 11,
           letterSpacing: '0.10em',
           background: 'rgba(4,6,14,0.88)',
           border: '1px solid rgba(94,106,210,0.18)',
           borderRadius: 3, padding: '7px 10px',
         }}>
-          <div style={{ fontSize: 8, color: 'rgba(94,106,210,0.4)', marginBottom: 5 }}>F = q(E+v×B)</div>
+          <div style={{ fontSize: 11, color: 'rgba(94,106,210,0.75)', marginBottom: 5 }}>F = q(E+v×B)</div>
           <div style={{ color: '#5e6ad2', marginBottom: 2 }}>
             <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%',
               background: '#5e6ad2', marginRight: 4, verticalAlign: 'middle' }} />
@@ -310,12 +310,12 @@ export default function LorentzForce({ bStrength = 1.0 }) {
           border: '1px solid rgba(251,191,36,0.18)',
           borderRadius: 3, padding: '7px 10px',
         }}>
-          <div style={{ fontSize: 8, color: 'rgba(251,191,36,0.45)', letterSpacing: '0.12em', marginBottom: 5 }}>
+          <div style={{ fontSize: 11, color: 'rgba(251,191,36,0.75)', letterSpacing: '0.12em', marginBottom: 5 }}>
             E×B DRIFT
           </div>
           <button onClick={() => setEOn(v => !v)} style={{
             fontFamily: 'JetBrains Mono,monospace',
-            fontSize: 8, letterSpacing: '0.12em',
+            fontSize: 11, letterSpacing: '0.12em',
             padding: '4px 10px',
             background: eOn ? 'rgba(251,191,36,0.12)' : 'rgba(4,6,14,0.6)',
             border: `1px solid ${eOn ? 'rgba(251,191,36,0.45)' : 'rgba(251,191,36,0.15)'}`,
@@ -325,7 +325,7 @@ export default function LorentzForce({ bStrength = 1.0 }) {
             {eOn ? 'E ON' : 'E OFF'}
           </button>
           {eOn && (
-            <div style={{ fontSize: 7, color: 'rgba(251,191,36,0.5)', lineHeight: 1.6 }}>
+            <div style={{ fontSize: 7, color: 'rgba(251,191,36,0.75)', lineHeight: 1.6 }}>
               v<sub>D</sub> = E×B/B²<br />charge-independent
             </div>
           )}

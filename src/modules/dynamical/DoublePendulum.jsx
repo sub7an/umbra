@@ -224,7 +224,7 @@ export default function DoublePendulum() {
       <Html position={[3.5, 2.6, 0]} style={{ pointerEvents: 'none' }}>
         <div style={{
           fontFamily: 'JetBrains Mono, monospace',
-          fontSize: 9, letterSpacing: '0.12em',
+          fontSize: 11, letterSpacing: '0.12em',
           background: 'rgba(4,6,14,0.82)',
           border: '1px solid rgba(130,140,248,0.2)',
           borderRadius: 2,
@@ -233,10 +233,10 @@ export default function DoublePendulum() {
           whiteSpace: 'nowrap',
         }}>
           <div ref={lyapRef} style={{ marginBottom: 3 }}>λ ≈ —</div>
-          <div style={{ color: 'rgba(165,180,252,0.38)', fontSize: 8 }}>
+          <div style={{ color: 'rgba(165,180,252,0.75)', fontSize: 11 }}>
             LYAPUNOV EXP
           </div>
-          <div style={{ color: 'rgba(165,180,252,0.28)', fontSize: 8, marginTop: 2 }}>
+          <div style={{ color: 'rgba(165,180,252,0.75)', fontSize: 11, marginTop: 2 }}>
             Δθ₀ = {EPS.toExponential(0)}
           </div>
         </div>
@@ -246,8 +246,8 @@ export default function DoublePendulum() {
       <Html position={[-4.8, 2.2, 0]} style={{ pointerEvents: 'none' }}>
         <div style={{
           fontFamily: 'JetBrains Mono, monospace',
-          fontSize: 8, letterSpacing: '0.1em',
-          color: 'rgba(180,180,220,0.55)',
+          fontSize: 11, letterSpacing: '0.1em',
+          color: 'rgba(180,180,220,0.75)',
         }}>
           {N_PEND} pendulums · Δθ₁ = ε each
         </div>

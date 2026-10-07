@@ -276,7 +276,7 @@ function StateArrow({ vecPos }) {
 
 const LABEL_STYLE = {
   fontFamily: 'JetBrains Mono, monospace',
-  fontSize: 11,
+  fontSize: 13,
   letterSpacing: '0.04em',
   pointerEvents: 'none',
   whiteSpace: 'nowrap',
@@ -360,7 +360,7 @@ export default function BlochSphere() {
       >
         <div style={{
           fontFamily: 'JetBrains Mono, monospace',
-          fontSize: 10,
+          fontSize: 12,
           color: '#f7f8f8',
           background: 'rgba(7,11,13,0.82)',
           padding: '2px 5px',

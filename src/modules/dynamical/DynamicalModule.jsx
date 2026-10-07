@@ -180,10 +180,10 @@ function Slider({ label, value, min, max, step, decimals, onChange }) {
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center justify-between">
-        <span className="font-mono-data text-[10px] tracking-wider uppercase text-text-dim">
+        <span className="font-mono-data text-[12px] tracking-wider uppercase text-text-dim">
           {label}
         </span>
-        <span className="font-mono-data text-[11px] text-emerald-glow tabular-nums">
+        <span className="font-mono-data text-[13px] text-emerald-glow tabular-nums">
           {value.toFixed(decimals)}
         </span>
       </div>
@@ -293,13 +293,13 @@ export default function DynamicalModule() {
             {rho > 24.74 && (
               <div className="flex items-center gap-1.5 px-2 py-1.5 rounded border border-rose-glow/40 bg-rose-glow/5">
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-glow animate-pulse-glow" />
-                <span className="font-mono-data text-[10px] tracking-wider text-rose-glow uppercase">Chaotic</span>
+                <span className="font-mono-data text-[12px] tracking-wider text-rose-glow uppercase">Chaotic</span>
               </div>
             )}
             {rho <= 24.74 && (
               <div className="flex items-center gap-1.5 px-2 py-1.5 rounded border border-cyan-glow/30 bg-cyan-glow/5">
                 <span className="w-1.5 h-1.5 rounded-full bg-cyan-glow" />
-                <span className="font-mono-data text-[10px] tracking-wider text-cyan-glow uppercase">Stable</span>
+                <span className="font-mono-data text-[12px] tracking-wider text-cyan-glow uppercase">Stable</span>
               </div>
             )}
           </>
@@ -338,7 +338,7 @@ export default function DynamicalModule() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => setActiveModule(null)}
-            className="font-mono-data text-[11px] tracking-widest text-text-dim hover:text-emerald-glow transition-colors duration-200 uppercase flex items-center gap-1.5"
+            className="font-mono-data text-[13px] tracking-widest text-text-dim hover:text-emerald-glow transition-colors duration-200 uppercase flex items-center gap-1.5"
           >
             ← MODULES
           </button>
@@ -346,7 +346,7 @@ export default function DynamicalModule() {
           <h1 className="font-display text-base font-semibold text-text-primary tracking-wide">
             Dynamical Systems
           </h1>
-          <span className="font-mono-data text-[9px] tracking-wider uppercase px-2 py-0.5 border border-emerald-glow/30 text-emerald-glow/60 rounded bg-emerald-glow/5">
+          <span className="font-mono-data text-[11px] tracking-wider uppercase px-2 py-0.5 border border-emerald-glow/30 text-emerald-glow/60 rounded bg-emerald-glow/5">
             Strange Attractors · RK4 · Phase Space
           </span>
         </div>
@@ -361,7 +361,7 @@ export default function DynamicalModule() {
                 onClick={() => setAttractorType(a.id)}
                 title={a.desc}
                 className={[
-                  'font-mono-data text-[11px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
+                  'font-mono-data text-[13px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
                   active
                     ? 'border-emerald-glow text-emerald-glow bg-emerald-glow/5 shadow-glow-emerald'
                     : 'border-border-subtle text-text-dim hover:border-emerald-glow/50 hover:text-text-primary',
@@ -419,7 +419,7 @@ export default function DynamicalModule() {
           </SceneWrapper>
 
           <div className="absolute top-3 left-4 pointer-events-none">
-            <span className="font-display text-[10px] tracking-[0.2em] uppercase text-text-dim">
+            <span className="font-display text-[12px] tracking-[0.2em] uppercase text-text-dim">
               {isSabrina    ? `Sabrina Curve · Catmull-Rom · 700 particles`
                : isPendulum  ? `Double Pendulum · 8 pendulums · RK4 × 4 · L = 1.5`
                : isPhaseSpace ? `Van der Pol · Phase Portrait · RK4 · dt = ${def.dt}`
@@ -442,7 +442,7 @@ export default function DynamicalModule() {
             </div>
             <button
               onClick={resetParams}
-              className="font-mono-data text-[10px] tracking-wider text-text-dim hover:text-emerald-glow transition-colors duration-200 uppercase px-2 py-1 border border-border-subtle hover:border-emerald-glow/40 rounded"
+              className="font-mono-data text-[12px] tracking-wider text-text-dim hover:text-emerald-glow transition-colors duration-200 uppercase px-2 py-1 border border-border-subtle hover:border-emerald-glow/40 rounded"
             >
               RST
             </button>
@@ -451,7 +451,7 @@ export default function DynamicalModule() {
           <div className="flex-1 px-4 py-4 flex flex-col gap-4 overflow-y-auto thin-scroll">
             {/* Attractor selector */}
             <div>
-              <p className="font-mono-data text-[9px] tracking-[0.22em] uppercase text-text-dim mb-2">
+              <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase text-text-dim mb-2">
                 Attractor
               </p>
               <div className="flex flex-col gap-1.5">
@@ -467,10 +467,10 @@ export default function DynamicalModule() {
                           : 'border-border-subtle text-text-dim hover:border-emerald-glow/30',
                       ].join(' ')}
                     >
-                      <span className={`text-[11px] tracking-wider uppercase ${attractorType === a.id ? 'text-emerald-glow' : ''}`}>
+                      <span className={`text-[13px] tracking-wider uppercase ${attractorType === a.id ? 'text-emerald-glow' : ''}`}>
                         {a.label}
                       </span>
-                      <span className="text-[9px] text-text-dim mt-0.5 leading-tight">{a.desc}</span>
+                      <span className="text-[11px] text-text-dim mt-0.5 leading-tight">{a.desc}</span>
                     </button>
                   </div>
                 ))}
@@ -481,7 +481,7 @@ export default function DynamicalModule() {
 
             {/* Parameter sliders for current attractor */}
             <div>
-              <p className="font-mono-data text-[9px] tracking-[0.22em] uppercase text-text-dim mb-3">
+              <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase text-text-dim mb-3">
                 ODE Parameters
               </p>
               <div className="flex flex-col gap-3">
@@ -494,7 +494,7 @@ export default function DynamicalModule() {
             {/* Speed */}
             {!isPhaseSpace && (
               <div>
-                <p className="font-mono-data text-[9px] tracking-[0.22em] uppercase text-text-dim mb-3">
+                <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase text-text-dim mb-3">
                   Simulation Speed
                 </p>
                 <Slider
@@ -511,7 +511,7 @@ export default function DynamicalModule() {
           </div>
 
           <div className="px-4 py-3 border-t border-border-subtle">
-            <p className="font-mono-data text-[10px] text-text-dim leading-relaxed">
+            <p className="font-mono-data text-[12px] text-text-dim leading-relaxed">
               {isPhaseSpace ? 'DS · VAN DER POL · RK4'
                : isPendulum ? 'DS · DOUBLE PENDULUM · RK4'
                : 'DS · 1,800 PARTICLES · TRAIL 72'}

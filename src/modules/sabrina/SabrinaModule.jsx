@@ -135,7 +135,7 @@ export default function SabrinaModule() {
         onClick={() => setActiveModule(null)}
         style={{
           position: 'absolute', top: 18, left: 22, zIndex: 20,
-          fontFamily: 'JetBrains Mono, monospace', fontSize: 11,
+          fontFamily: 'JetBrains Mono, monospace', fontSize: 13,
           letterSpacing: '0.15em', color: PINK,
           textShadow: `0 0 8px ${PINK}`,
           background: 'none', border: 'none', cursor: 'pointer',
@@ -183,7 +183,7 @@ export default function SabrinaModule() {
         </div>
         <div style={{
           fontFamily: 'Chakra Petch, sans-serif',
-          fontSize: 11, color: PINK,
+          fontSize: 13, color: PINK,
           opacity: 0, letterSpacing: '0.22em',
           textTransform: 'uppercase',
           animation: 'fadein 1.2s ease 1.6s both',

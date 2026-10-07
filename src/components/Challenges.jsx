@@ -116,34 +116,34 @@ function VerifyPanel({ challenge, onSuccess, onDismiss }) {
           width: 32, height: 32, borderRadius: 4, flexShrink: 0,
           background: `${challenge.color}14`, border: `1px solid ${challenge.color}30`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontFamily: 'Chakra Petch, sans-serif', fontSize: 10, fontWeight: 700,
+          fontFamily: 'Chakra Petch, sans-serif', fontSize: 12, fontWeight: 700,
           color: challenge.color,
         }}>{challenge.icon}</div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: 'Chakra Petch, sans-serif', fontSize: 11, fontWeight: 600, color: '#f7f8f8', marginBottom: 3 }}>
+          <div style={{ fontFamily: 'Chakra Petch, sans-serif', fontSize: 13, fontWeight: 600, color: '#f7f8f8', marginBottom: 3 }}>
             {challenge.title}
           </div>
-          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: 'rgba(94,106,210,0.4)', letterSpacing: '0.08em' }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'rgba(94,106,210,0.75)', letterSpacing: '0.08em' }}>
             {challenge.points} PTS
           </div>
         </div>
-        <button onClick={onDismiss} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(94,106,210,0.3)', fontSize: 16, lineHeight: 1, padding: 0 }}>×</button>
+        <button onClick={onDismiss} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(94,106,210,0.75)', fontSize: 16, lineHeight: 1, padding: 0 }}>×</button>
       </div>
 
-      <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, color: 'rgba(255,255,255,0.38)', lineHeight: 1.6, marginBottom: 10, letterSpacing: '-0.01em' }}>
+      <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, color: 'rgba(255,255,255,0.75)', lineHeight: 1.6, marginBottom: 10, letterSpacing: '-0.01em' }}>
         {challenge.description}
       </p>
-      <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12, color: 'rgba(94,106,210,0.3)', lineHeight: 1.5, marginBottom: 12, letterSpacing: '-0.01em' }}>
+      <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12, color: 'rgba(94,106,210,0.75)', lineHeight: 1.5, marginBottom: 12, letterSpacing: '-0.01em' }}>
         HINT: {challenge.hint}
       </p>
 
       {result === true && (
-        <div style={{ padding: '8px 12px', borderRadius: 4, background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', marginBottom: 10, fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: '#10b981', letterSpacing: '0.1em' }}>
+        <div style={{ padding: '8px 12px', borderRadius: 4, background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', marginBottom: 10, fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: '#10b981', letterSpacing: '0.1em' }}>
           ✓ CORRECT — +{challenge.points} PTS
         </div>
       )}
       {result === false && (
-        <div style={{ padding: '8px 12px', borderRadius: 4, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', marginBottom: 10, fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: 'rgba(239,68,68,0.7)', letterSpacing: '0.1em' }}>
+        <div style={{ padding: '8px 12px', borderRadius: 4, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', marginBottom: 10, fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: 'rgba(239,68,68,0.75)', letterSpacing: '0.1em' }}>
           ✗ NOT QUITE — CHECK THE HINT AND TRY AGAIN
         </div>
       )}
@@ -152,7 +152,7 @@ function VerifyPanel({ challenge, onSuccess, onDismiss }) {
         onClick={verify}
         style={{
           width: '100%', padding: '9px', borderRadius: 4, cursor: 'pointer',
-          fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.14em',
+          fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.14em',
           color: '#5e6ad2', background: 'rgba(94,106,210,0.07)',
           border: '1px solid rgba(94,106,210,0.25)',
           transition: 'background 0.15s, border-color 0.15s',
@@ -218,7 +218,7 @@ export default function Challenges() {
             position: 'fixed', top: 64, right: 172, zIndex: 10050,
             display: 'flex', alignItems: 'center', gap: 7,
             padding: '7px 14px',
-            fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.14em',
+            fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.14em',
             color: allDone ? '#10b981' : 'rgba(94,106,210,0.55)',
             background: 'rgba(8,9,10,0.75)',
             border: `1px solid ${allDone ? 'rgba(16,185,129,0.3)' : 'rgba(94,106,210,0.14)'}`,
@@ -234,7 +234,7 @@ export default function Challenges() {
           </svg>
           CHALLENGES
           {doneToday > 0 && (
-            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 8, color: '#10b981', background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 3, padding: '1px 5px' }}>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#10b981', background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 3, padding: '1px 5px' }}>
               {doneToday}/{CHALLENGES.length}
             </span>
           )}
@@ -260,18 +260,18 @@ export default function Challenges() {
             <div style={{ padding:'16px 20px',borderBottom:'1px solid rgba(94,106,210,0.08)',display:'flex',alignItems:'center',gap:12 }}>
               <div>
                 <div style={{ fontFamily:'Chakra Petch, sans-serif',fontSize:16,fontWeight:700,color:'#f7f8f8',letterSpacing:'0.06em' }}>DAILY CHALLENGES</div>
-                <div style={{ fontFamily:'JetBrains Mono, monospace',fontSize:10,color:'rgba(94,106,210,0.55)',letterSpacing:'0.14em',marginTop:2 }}>{TODAY} · RESETS MIDNIGHT</div>
+                <div style={{ fontFamily:'JetBrains Mono, monospace',fontSize:12,color:'rgba(94,106,210,0.75)',letterSpacing:'0.14em',marginTop:2 }}>{TODAY} · RESETS MIDNIGHT</div>
               </div>
               <div style={{ marginLeft:'auto',display:'flex',alignItems:'center',gap:16 }}>
                 {progress.streak > 0 && (
                   <div style={{ textAlign:'center' }}>
                     <div style={{ fontFamily:'Chakra Petch, sans-serif',fontSize:18,fontWeight:700,color:'#f59e0b' }}>{progress.streak}🔥</div>
-                    <div style={{ fontFamily:'JetBrains Mono, monospace',fontSize:10,color:'rgba(245,158,11,0.70)',letterSpacing:'0.12em' }}>DAY STREAK</div>
+                    <div style={{ fontFamily:'JetBrains Mono, monospace',fontSize:12,color:'rgba(245,158,11,0.75)',letterSpacing:'0.12em' }}>DAY STREAK</div>
                   </div>
                 )}
                 <div style={{ textAlign:'center' }}>
                   <div style={{ fontFamily:'Chakra Petch, sans-serif',fontSize:18,fontWeight:700,color:'#5e6ad2' }}>{totalPts}</div>
-                  <div style={{ fontFamily:'JetBrains Mono, monospace',fontSize:10,color:'rgba(94,106,210,0.60)',letterSpacing:'0.12em' }}>TODAY PTS</div>
+                  <div style={{ fontFamily:'JetBrains Mono, monospace',fontSize:12,color:'rgba(94,106,210,0.75)',letterSpacing:'0.12em' }}>TODAY PTS</div>
                 </div>
               </div>
             </div>
@@ -301,7 +301,7 @@ export default function Challenges() {
                       background:done?'rgba(16,185,129,0.08)':`${ch.color}0e`,
                       border:`1px solid ${done?'rgba(16,185,129,0.2)':ch.color+'28'}`,
                       display:'flex',alignItems:'center',justifyContent:'center',
-                      fontFamily:'Chakra Petch, sans-serif',fontSize:11,fontWeight:700,
+                      fontFamily:'Chakra Petch, sans-serif',fontSize:13,fontWeight:700,
                       color:done?'#10b981':ch.color,
                     }}>
                       {done ? '✓' : ch.icon}
@@ -310,21 +310,21 @@ export default function Challenges() {
                     <div style={{ flex:1,minWidth:0 }}>
                       <div style={{ display:'flex',alignItems:'center',gap:8,marginBottom:3 }}>
                         <span style={{ fontFamily:'Chakra Petch, sans-serif',fontSize:12,fontWeight:600,color:done?'rgba(16,185,129,0.7)':'#f7f8f8' }}>{ch.title}</span>
-                        <span style={{ fontFamily:'JetBrains Mono, monospace',fontSize:9,letterSpacing:'0.08em',padding:'2px 6px',borderRadius:3,background:diff.bg,color:diff.color,border:`1px solid ${diff.color}30` }}>{ch.difficulty}</span>
+                        <span style={{ fontFamily:'JetBrains Mono, monospace',fontSize:11,letterSpacing:'0.08em',padding:'2px 6px',borderRadius:3,background:diff.bg,color:diff.color,border:`1px solid ${diff.color}30` }}>{ch.difficulty}</span>
                       </div>
-                      <div style={{ fontFamily:"'Inter', system-ui, sans-serif",fontSize:13,color:'rgba(255,255,255,0.32)',lineHeight:1.5,letterSpacing:'-0.01em' }}>{ch.description}</div>
+                      <div style={{ fontFamily:"'Inter', system-ui, sans-serif",fontSize:13,color:'rgba(255,255,255,0.75)',lineHeight:1.5,letterSpacing:'-0.01em' }}>{ch.description}</div>
                     </div>
                     {/* Points + action */}
                     <div style={{ flexShrink:0,textAlign:'right' }}>
                       <div style={{ fontFamily:'Chakra Petch, sans-serif',fontSize:14,fontWeight:700,color:done?'#10b981':ch.color,marginBottom:6 }}>
-                        {done?'+'+ch.points:ch.points} <span style={{ fontSize:10,fontFamily:'JetBrains Mono, monospace',fontWeight:400 }}>PTS</span>
+                        {done?'+'+ch.points:ch.points} <span style={{ fontSize:12,fontFamily:'JetBrains Mono, monospace',fontWeight:400 }}>PTS</span>
                       </div>
                       {!done && (
                         <button
                           onClick={() => startChallenge(ch)}
                           style={{
                             padding:'5px 12px',borderRadius:3,cursor:'pointer',
-                            fontFamily:'JetBrains Mono, monospace',fontSize:10,letterSpacing:'0.08em',
+                            fontFamily:'JetBrains Mono, monospace',fontSize:12,letterSpacing:'0.08em',
                             color:ch.color,background:`${ch.color}0a`,
                             border:`1px solid ${ch.color}30`,
                             transition:'background 0.1s',
@@ -343,10 +343,10 @@ export default function Challenges() {
 
             {/* Footer */}
             <div style={{ padding:'12px 20px',borderTop:'1px solid rgba(94,106,210,0.06)',display:'flex',alignItems:'center',gap:12 }}>
-              <span style={{ fontFamily:"'Inter', system-ui, sans-serif",fontSize:12,color:'rgba(94,106,210,0.50)',letterSpacing:'-0.01em' }}>
+              <span style={{ fontFamily:"'Inter', system-ui, sans-serif",fontSize:12,color:'rgba(94,106,210,0.75)',letterSpacing:'-0.01em' }}>
                 Complete all 5 daily challenges to extend your streak
               </span>
-              <kbd style={{ marginLeft:'auto',fontFamily:'JetBrains Mono, monospace',fontSize:10,color:'rgba(94,106,210,0.45)',border:'1px solid rgba(94,106,210,0.20)',borderRadius:3,padding:'2px 5px' }}>SHIFT+C</kbd>
+              <kbd style={{ marginLeft:'auto',fontFamily:'JetBrains Mono, monospace',fontSize:12,color:'rgba(94,106,210,0.75)',border:'1px solid rgba(94,106,210,0.20)',borderRadius:3,padding:'2px 5px' }}>SHIFT+C</kbd>
             </div>
           </div>
         </div>

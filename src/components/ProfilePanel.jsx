@@ -75,7 +75,7 @@ function ModuleDot({ id, visited }) {
         background: isVisited ? 'rgba(94,106,210,0.1)' : 'rgba(255,255,255,0.03)',
         border: `1px solid ${isVisited ? 'rgba(94,106,210,0.35)' : 'rgba(255,255,255,0.07)'}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: 'JetBrains Mono, monospace', fontSize: 9, fontWeight: 700,
+        fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fontWeight: 700,
         color: isVisited ? '#5e6ad2' : 'rgba(255,255,255,0.15)',
         cursor: 'default',
       }}
@@ -99,11 +99,11 @@ function JourneyBubble({ id, data, color }) {
         {done
           ? <span style={{ fontSize: 16 }}>✓</span>
           : stepsDone >= 0
-          ? <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color, fontWeight: 700 }}>{stepsDone + 1}/{total}</span>
-          : <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: 'rgba(255,255,255,0.2)' }}>—</span>
+          ? <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color, fontWeight: 700 }}>{stepsDone + 1}/{total}</span>
+          : <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'rgba(255,255,255,0.75)' }}>—</span>
         }
       </div>
-      <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 9, color: done ? color : 'rgba(255,255,255,0.35)', letterSpacing: '0.01em', textAlign: 'center', maxWidth: 60 }}>
+      <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11, color: done ? color : 'rgba(255,255,255,0.35)', letterSpacing: '0.01em', textAlign: 'center', maxWidth: 60 }}>
         {JOURNEY_LABELS[id].split(' ').slice(0, 2).join(' ')}
       </span>
     </div>
@@ -117,7 +117,7 @@ function StatBlock({ label, value, color = '#5e6ad2' }) {
       borderRadius: 6, padding: '10px 12px', textAlign: 'center',
     }}>
       <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 20, fontWeight: 700, color, lineHeight: 1 }}>{value}</div>
-      <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: 'rgba(200,230,220,0.45)', letterSpacing: '0.10em', marginTop: 4 }}>{label}</div>
+      <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: 'rgba(200,230,220,0.75)', letterSpacing: '0.10em', marginTop: 4 }}>{label}</div>
     </div>
   )
 }
@@ -176,7 +176,7 @@ export default function ProfilePanel() {
           position: 'fixed', top: 64, right: 20, zIndex: 10100,
           display: 'flex', alignItems: 'center', gap: 7,
           padding: '7px 13px',
-          fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.14em',
+          fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.14em',
           color: open ? '#5e6ad2' : 'rgba(200,230,220,0.55)',
           background: open ? 'rgba(94,106,210,0.07)' : 'rgba(8,9,10,0.72)',
           border: `1px solid ${open ? 'rgba(94,106,210,0.28)' : 'rgba(255,255,255,0.07)'}`,
@@ -191,7 +191,7 @@ export default function ProfilePanel() {
           width: 18, height: 18, borderRadius: '50%',
           background: `${levelColor}20`, border: `1px solid ${levelColor}50`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontFamily: 'JetBrains Mono, monospace', fontSize: 8, fontWeight: 700,
+          fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fontWeight: 700,
           color: levelColor, lineHeight: 1,
         }}>{level}</div>
         PROFILE
@@ -237,15 +237,15 @@ export default function ProfilePanel() {
                   <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 18, fontWeight: 700, color: levelColor, lineHeight: 1 }}>{level}</div>
                 </div>
                 <div>
-                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.14em', color: `${levelColor}cc`, marginBottom: 4 }}>LEVEL {level} · {levelTitle}</div>
+                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.14em', color: `${levelColor}cc`, marginBottom: 4 }}>LEVEL {level} · {levelTitle}</div>
                   <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, fontWeight: 700, color: '#e8f4f0' }}>{totalXP} XP</div>
                   <XPBar xp={totalXP} color={levelColor} />
-                  <div style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11, color: 'rgba(200,230,220,0.50)', marginTop: 3, letterSpacing: '-0.01em' }}>
+                  <div style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, color: 'rgba(200,230,220,0.75)', marginTop: 3, letterSpacing: '-0.01em' }}>
                     {levelXP} / {XP_PER_LEVEL} to Lv {level + 1}
                   </div>
                 </div>
               </div>
-              <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.25)', fontSize: 18, lineHeight: 1 }}>×</button>
+              <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.75)', fontSize: 18, lineHeight: 1 }}>×</button>
             </div>
           </div>
 
@@ -259,7 +259,7 @@ export default function ProfilePanel() {
 
             {/* Journeys */}
             <div>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.14em', color: 'rgba(94,106,210,0.60)', marginBottom: 10 }}>GUIDED JOURNEYS</div>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.14em', color: 'rgba(94,106,210,0.75)', marginBottom: 10 }}>GUIDED JOURNEYS</div>
               <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between' }}>
                 {journeyIds.map(id => (
                   <JourneyBubble key={id} id={id} data={storyData[id]} color={JOURNEY_COLORS[id]} />
@@ -270,8 +270,8 @@ export default function ProfilePanel() {
             {/* Modules explored */}
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.14em', color: 'rgba(94,106,210,0.60)' }}>MODULES EXPLORED</div>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: 'rgba(200,230,220,0.50)' }}>{recent.length} / {moduleIds.length}</div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.14em', color: 'rgba(94,106,210,0.75)' }}>MODULES EXPLORED</div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: 'rgba(200,230,220,0.75)' }}>{recent.length} / {moduleIds.length}</div>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                 {moduleIds.map(id => <ModuleDot key={id} id={id} visited={recent} />)}
@@ -284,8 +284,8 @@ export default function ProfilePanel() {
               borderRadius: 6, padding: '10px 12px',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.14em', color: 'rgba(94,106,210,0.60)' }}>TODAY'S CHALLENGES</div>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fontWeight: 700, color: challengesDoneToday === 5 ? '#22c55e' : '#5e6ad2' }}>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.14em', color: 'rgba(94,106,210,0.75)' }}>TODAY'S CHALLENGES</div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, fontWeight: 700, color: challengesDoneToday === 5 ? '#22c55e' : '#5e6ad2' }}>
                   {challengesDoneToday}/5
                 </div>
               </div>
@@ -308,8 +308,8 @@ export default function ProfilePanel() {
           {/* Footer */}
           <div style={{
             padding: '10px 16px', borderTop: '1px solid rgba(94,106,210,0.07)',
-            fontFamily: 'JetBrains Mono, monospace', fontSize: 10,
-            color: 'rgba(200,230,220,0.38)', letterSpacing: '0.10em', textAlign: 'center',
+            fontFamily: 'JetBrains Mono, monospace', fontSize: 12,
+            color: 'rgba(200,230,220,0.75)', letterSpacing: '0.10em', textAlign: 'center',
           }}>PRESS P TO TOGGLE · PROGRESS AUTO-SAVED</div>
         </div>
       )}

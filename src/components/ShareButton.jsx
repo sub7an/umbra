@@ -109,7 +109,7 @@ export default function ShareButton() {
         gap: 7,
         padding: '7px 13px',
         fontFamily: 'JetBrains Mono, monospace',
-        fontSize: 10,
+        fontSize: 12,
         letterSpacing: '0.12em',
         color: status === 'copied' ? '#5e6ad2' : 'rgba(94,106,210,0.45)',
         background: status === 'copied' ? 'rgba(94,106,210,0.08)' : 'rgba(8,9,10,0.72)',

@@ -123,7 +123,7 @@ function HubbleSphere({ hubble }) {
       <Html position={[radius * 0.72, 0, radius * 0.72]} center style={{ pointerEvents: 'none' }}>
         <div style={{
           fontFamily: 'JetBrains Mono, monospace',
-          fontSize: 8, color: '#38bdf8',
+          fontSize: 11, color: '#38bdf8',
           letterSpacing: '0.12em',
           textShadow: '0 0 6px rgba(56,189,248,0.5)',
         }}>
@@ -217,7 +217,7 @@ export default function ExpansionSim() {
       <Html position={[0, 0.5, 0]} center style={{ pointerEvents: 'none' }}>
         <div style={{
           fontFamily: 'JetBrains Mono, monospace',
-          fontSize: 9, color: '#f59e0b',
+          fontSize: 11, color: '#f59e0b',
           letterSpacing: '0.10em',
           textShadow: '0 0 8px rgba(245,158,11,0.7)',
         }}>★ YOU</div>
@@ -249,10 +249,10 @@ export default function ExpansionSim() {
           border: '1px solid rgba(56,189,248,0.18)',
           borderRadius: 3, padding: '5px 10px',
         }}>
-          <div ref={scaleReadRef} style={{ fontSize: 11, color: '#38bdf8', letterSpacing: '0.1em' }}>
+          <div ref={scaleReadRef} style={{ fontSize: 13, color: '#38bdf8', letterSpacing: '0.1em' }}>
             a = 1.00
           </div>
-          <div style={{ fontSize: 8, color: 'rgba(56,189,248,0.40)', letterSpacing: '0.12em', marginTop: 2 }}>
+          <div style={{ fontSize: 11, color: 'rgba(56,189,248,0.75)', letterSpacing: '0.12em', marginTop: 2 }}>
             SCALE FACTOR
           </div>
         </div>
@@ -262,7 +262,7 @@ export default function ExpansionSim() {
       <Html position={[-3.5, 0, -3.2]} center style={{ pointerEvents: 'none' }}>
         <div style={{
           fontFamily: 'JetBrains Mono, monospace',
-          fontSize: 8, color: 'rgba(180,200,240,0.45)',
+          fontSize: 11, color: 'rgba(180,200,240,0.75)',
           lineHeight: 1.7,
           letterSpacing: '0.10em',
           background: 'rgba(4,6,14,0.75)',

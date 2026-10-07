@@ -294,7 +294,7 @@ export default function RayTracer() {
       {anyTIR && (
         <Html position={[0, 2.6, 0]} center style={{ pointerEvents: 'none' }}>
           <div style={{
-            fontFamily: 'JetBrains Mono,monospace', fontSize: 9,
+            fontFamily: 'JetBrains Mono,monospace', fontSize: 11,
             color: '#f97316', letterSpacing: '0.16em',
             background: 'rgba(4,6,14,0.80)',
             border: '1px solid rgba(249,115,22,0.35)',
@@ -314,7 +314,7 @@ export default function RayTracer() {
           border: '1px solid rgba(56,189,248,0.18)',
           borderRadius: 3, padding: '5px 12px',
         }}>
-          <span style={{ fontSize: 9, color: 'rgba(56,189,248,0.55)', letterSpacing: '0.14em' }}>
+          <span style={{ fontSize: 11, color: 'rgba(56,189,248,0.75)', letterSpacing: '0.14em' }}>
             PRISM ANGLE
           </span>
           <input
@@ -323,7 +323,7 @@ export default function RayTracer() {
             onChange={e => setPrismAngle(parseFloat(e.target.value) * Math.PI / 180)}
             style={{ width: 110, accentColor: '#38bdf8', cursor: 'pointer' }}
           />
-          <span style={{ fontSize: 10, color: '#38bdf8', minWidth: 36, textAlign: 'right' }}>
+          <span style={{ fontSize: 12, color: '#38bdf8', minWidth: 36, textAlign: 'right' }}>
             {Math.round(prismAngle * 180 / Math.PI)}°
           </span>
         </div>
@@ -332,8 +332,8 @@ export default function RayTracer() {
       {/* Screen label */}
       <Html position={[SCREEN_X, -1.05, 0]} center style={{ pointerEvents: 'none' }}>
         <div style={{
-          fontFamily: 'JetBrains Mono,monospace', fontSize: 8,
-          color: 'rgba(56,189,248,0.35)', letterSpacing: '0.14em',
+          fontFamily: 'JetBrains Mono,monospace', fontSize: 11,
+          color: 'rgba(56,189,248,0.75)', letterSpacing: '0.14em',
         }}>
           SCREEN
         </div>

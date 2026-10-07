@@ -64,7 +64,7 @@ export default function AuthPanel() {
   }
   const btn = (primary) => ({
     width: '100%', padding: '11px', borderRadius: 5, cursor: 'pointer',
-    fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.12em',
+    fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.12em',
     color: primary ? '#08090a' : '#5e6ad2',
     background: primary ? '#5e6ad2' : 'rgba(94,106,210,0.08)',
     border: primary ? 'none' : '1px solid rgba(94,106,210,0.4)', fontWeight: 700,
@@ -84,13 +84,13 @@ export default function AuthPanel() {
         border: '1px solid rgba(94,106,210,0.3)', borderRadius: 8, padding: '28px 26px',
         animation: 'umbra-slide-up 0.3s cubic-bezier(0.16,1,0.3,1)',
       }}>
-        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.28em', color: 'rgba(94,106,210,0.7)', marginBottom: 8 }}>
+        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.28em', color: 'rgba(94,106,210,0.75)', marginBottom: 8 }}>
           ⬡ UMBRA ACCOUNT
         </div>
         <div style={{ fontFamily: 'Chakra Petch, sans-serif', fontWeight: 700, fontSize: 22, color: '#f7f8f8', marginBottom: 4 }}>
           Sign in to save your progress
         </div>
-        <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12.5, color: 'rgba(247,248,248,0.55)', margin: '0 0 20px', lineHeight: 1.5 }}>
+        <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12.5, color: 'rgba(247,248,248,0.75)', margin: '0 0 20px', lineHeight: 1.5 }}>
           Sync your XP, journeys, and Pro across devices.
         </p>
 
@@ -111,7 +111,7 @@ export default function AuthPanel() {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '4px 0 14px' }}>
               <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
-              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.14em', color: 'rgba(255,255,255,0.3)' }}>OR</span>
+              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.14em', color: 'rgba(255,255,255,0.75)' }}>OR</span>
               <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
             </div>
 
@@ -145,7 +145,7 @@ export default function AuthPanel() {
             <button
               onClick={() => { setMode(mode === 'magic' ? 'password' : 'magic'); setStatus(null) }}
               style={{ width: '100%', marginTop: 14, background: 'none', border: 'none', cursor: 'pointer',
-                fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.1em', color: 'rgba(94,106,210,0.6)' }}
+                fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.1em', color: 'rgba(94,106,210,0.75)' }}
             >
               {mode === 'magic' ? 'USE EMAIL + PASSWORD INSTEAD' : 'USE A MAGIC LINK INSTEAD'}
             </button>
@@ -153,7 +153,7 @@ export default function AuthPanel() {
         )}
 
         <div style={{ textAlign: 'center', marginTop: 16 }}>
-          <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>ESC to close</span>
+          <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>ESC to close</span>
         </div>
       </div>
     </div>

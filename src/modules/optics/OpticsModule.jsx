@@ -12,8 +12,8 @@ function Slider({ label, value, min, max, step, decimals, onChange }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)' }}>{label}</span>
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: ACCENT, tabularNums: true }}>{value.toFixed(decimals)}</span>
+        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.75)' }}>{label}</span>
+        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: ACCENT, tabularNums: true }}>{value.toFixed(decimals)}</span>
       </div>
       <input type="range" min={min} max={max} step={step} value={value}
         onChange={e => onChange(parseFloat(e.target.value))}
@@ -105,15 +105,15 @@ export default function OpticsModule() {
           onClick={() => setActiveModule(null)}
           style={{
             fontFamily: 'JetBrains Mono, monospace',
-            fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase',
-            color: 'rgba(252,211,77,0.5)', background: 'none',
+            fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase',
+            color: 'rgba(252,211,77,0.75)', background: 'none',
             border: 'none', cursor: 'pointer', padding: 0,
           }}
         >← MODULES</button>
 
         <div style={{ width: 1, height: 14, background: 'rgba(252,211,77,0.12)' }} />
 
-        <span style={{ fontSize: 11, letterSpacing: '0.28em', textTransform: 'uppercase', color: ACCENT, fontWeight: 700 }}>
+        <span style={{ fontSize: 13, letterSpacing: '0.28em', textTransform: 'uppercase', color: ACCENT, fontWeight: 700 }}>
           Optics
         </span>
 
@@ -130,7 +130,7 @@ export default function OpticsModule() {
             background: ACCENT, boxShadow: `0 0 6px ${ACCENT}`,
             animation: 'umbra-pulse 1.8s ease-in-out infinite',
           }} />
-          <span style={{ fontSize: 8, letterSpacing: '0.2em', color: ACCENT }}>LIVE</span>
+          <span style={{ fontSize: 11, letterSpacing: '0.2em', color: ACCENT }}>LIVE</span>
         </div>
 
         {/* View tabs */}
@@ -138,7 +138,7 @@ export default function OpticsModule() {
           {VIEWS.map((v) => (
             <button key={v.id} onClick={() => setView(v.id)} style={{
               fontFamily: 'JetBrains Mono, monospace',
-              fontSize: 9, letterSpacing: '0.15em', textTransform: 'uppercase',
+              fontSize: 11, letterSpacing: '0.15em', textTransform: 'uppercase',
               padding: '5px 12px',
               background: view === v.id ? 'rgba(252,211,77,0.09)' : 'transparent',
               border: `1px solid ${view === v.id ? 'rgba(252,211,77,0.33)' : 'rgba(255,255,255,0.07)'}`,
@@ -190,13 +190,13 @@ export default function OpticsModule() {
             pointerEvents: 'none',
           }}>
             <div style={{ width: 4, height: 4, borderRadius: '50%', background: ACCENT, boxShadow: `0 0 4px ${ACCENT}` }} />
-            <span style={{ fontSize: 8, letterSpacing: '0.2em', color: 'rgba(252,211,77,0.55)' }}>SIM ACTIVE</span>
+            <span style={{ fontSize: 11, letterSpacing: '0.2em', color: 'rgba(252,211,77,0.75)' }}>SIM ACTIVE</span>
           </div>
 
           {/* Orbit hint */}
           <div style={{
             position: 'absolute', bottom: 16, right: 16,
-            fontSize: 8, letterSpacing: '0.12em', color: 'rgba(252,211,77,0.28)',
+            fontSize: 11, letterSpacing: '0.12em', color: 'rgba(252,211,77,0.75)',
             pointerEvents: 'none',
           }}>
             DRAG TO ORBIT · SCROLL TO ZOOM
@@ -215,8 +215,8 @@ export default function OpticsModule() {
               padding: '10px 14px',
               borderBottom: '1px solid rgba(252,211,77,0.08)',
               fontFamily: 'JetBrains Mono, monospace',
-              fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase',
-              color: 'rgba(255,255,255,0.30)',
+              fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase',
+              color: 'rgba(255,255,255,0.75)',
             }}>
               Parameters
             </div>
@@ -228,7 +228,7 @@ export default function OpticsModule() {
                 onChange={setFocalLength}
               />
               <div style={{ height: 1, background: 'rgba(252,211,77,0.08)' }} />
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 8, color: 'rgba(255,255,255,0.22)', lineHeight: 1.6 }}>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'rgba(255,255,255,0.75)', lineHeight: 1.6 }}>
                 <p style={{ color: ACCENT, marginBottom: 4 }}>● focal pts: ±{focalLength.toFixed(1)}</p>
                 <p>Power: {(1/focalLength).toFixed(2)} D</p>
                 <p>Magnification varies</p>

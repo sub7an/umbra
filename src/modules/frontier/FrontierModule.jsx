@@ -217,7 +217,7 @@ export default function FrontierModule() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => setActiveModule(null)}
-            className="font-mono-data text-[11px] tracking-widest text-text-dim hover:text-amber-glow transition-colors duration-200 uppercase flex items-center gap-1.5"
+            className="font-mono-data text-[13px] tracking-widest text-text-dim hover:text-amber-glow transition-colors duration-200 uppercase flex items-center gap-1.5"
           >
             ← MODULES
           </button>
@@ -225,7 +225,7 @@ export default function FrontierModule() {
           <h1 className="font-display text-base font-semibold text-text-primary tracking-wide">
             Frontier Physics
           </h1>
-          <span className="font-mono-data text-[9px] tracking-wider uppercase px-2 py-0.5 border border-amber-glow/30 text-amber-glow/60 rounded bg-amber-glow/5">
+          <span className="font-mono-data text-[11px] tracking-wider uppercase px-2 py-0.5 border border-amber-glow/30 text-amber-glow/60 rounded bg-amber-glow/5">
             Evidence-based · mechanism unconfirmed
           </span>
         </div>
@@ -240,7 +240,7 @@ export default function FrontierModule() {
                 aria-selected={isActive}
                 onClick={() => setActiveView(v.id)}
                 className={[
-                  'font-mono-data text-[11px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
+                  'font-mono-data text-[13px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
                   isActive
                     ? 'border-amber-glow text-amber-glow shadow-glow-amber bg-amber-glow/5'
                     : 'border-border-subtle text-text-dim hover:border-amber-mid hover:text-text-primary',
@@ -280,7 +280,7 @@ export default function FrontierModule() {
           </SceneWrapper>
 
           <div className="absolute top-3 left-4 pointer-events-none">
-            <span className="font-display text-[10px] tracking-[0.2em] uppercase text-text-dim">
+            <span className="font-display text-[12px] tracking-[0.2em] uppercase text-text-dim">
               {VIEWS.find((v) => v.id === activeView)?.label}
             </span>
           </div>
@@ -290,7 +290,7 @@ export default function FrontierModule() {
               <button
                 onClick={() => setBhHiRes((v) => !v)}
                 className={[
-                  'font-mono-data text-[10px] tracking-[0.12em] uppercase px-2.5 py-1 rounded border transition-all duration-200',
+                  'font-mono-data text-[12px] tracking-[0.12em] uppercase px-2.5 py-1 rounded border transition-all duration-200',
                   bhHiRes
                     ? 'border-cyan-glow/50 text-cyan-glow bg-cyan-glow/5'
                     : 'border-border-subtle text-text-dim hover:border-amber-glow/40 hover:text-text-primary',

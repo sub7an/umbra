@@ -10,7 +10,7 @@ export default {
         'border-subtle': '#222226',
         'border-active': '#5e6ad2',
         'text-primary': '#f7f8f8',
-        'text-dim': '#8d8d96',
+        'text-dim': '#a6a6b0',
         'text-accent': '#5e6ad2',
         'cyan-glow': '#5e6ad2',
         'cyan-mid': '#8b9cf7',

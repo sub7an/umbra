@@ -48,7 +48,7 @@ function fmtWhen(iso, status) {
 function Chip({ text, color }) {
   return (
     <span style={{
-      fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.06em',
+      fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.06em',
       color, background: `${color}1a`, border: `1px solid ${color}40`,
       borderRadius: 3, padding: '2px 7px', whiteSpace: 'nowrap',
     }}>{text}</span>
@@ -64,10 +64,10 @@ function TimelineRow({ obs, dim }) {
       <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12.5, color: '#f7f8f8', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {obs.target}
       </span>
-      <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: 'rgba(247,248,248,0.4)', whiteSpace: 'nowrap' }}>
+      <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'rgba(247,248,248,0.75)', whiteSpace: 'nowrap' }}>
         {obs.instrument?.split(' ')[0]}
       </span>
-      <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: 'rgba(247,248,248,0.35)', whiteSpace: 'nowrap' }}>
+      <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'rgba(247,248,248,0.75)', whiteSpace: 'nowrap' }}>
         {fmtWhen(obs.startTime, obs.status)}
       </span>
     </div>
@@ -179,7 +179,7 @@ export default function TelescopeLive() {
       <div style={{ width: '100%', maxWidth: 620, animation: 'umbra-slide-up 0.35s cubic-bezier(0.16,1,0.3,1)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
           <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 8px #22c55e', animation: 'umbra-pulse 1.4s ease-in-out infinite' }} />
-          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.28em', color: 'rgba(94,106,210,0.75)' }}>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.28em', color: 'rgba(94,106,210,0.75)' }}>
             LIVE FROM SPACE
           </span>
         </div>
@@ -201,15 +201,15 @@ export default function TelescopeLive() {
           ) : (
             <div style={{
               position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.16em',
-              color: 'rgba(94,106,210,0.55)', textAlign: 'center', padding: 20,
+              fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.16em',
+              color: 'rgba(94,106,210,0.75)', textAlign: 'center', padding: 20,
               animation: videoId === undefined ? 'umbra-pulse 1.4s ease-in-out infinite' : 'none',
             }}>
               {videoId === undefined ? 'CONNECTING TO NASA LIVE…' : 'NASA IS NOT BROADCASTING LIVE RIGHT NOW — CHECK BACK SOON'}
             </div>
           )}
         </div>
-        <div style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11, color: 'rgba(247,248,248,0.4)', marginBottom: 18 }}>
+        <div style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, color: 'rgba(247,248,248,0.75)', marginBottom: 18 }}>
           NASA’s live broadcast — ISS Earth cameras & mission coverage. (Hubble & JWST are deep-space instruments with no live camera — their imagery, below, is released after processing.)
         </div>
 
@@ -220,7 +220,7 @@ export default function TelescopeLive() {
         )}
 
         {!data && !err && (
-          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.2em', color: 'rgba(94,106,210,0.5)', padding: '20px 0', animation: 'umbra-pulse 1.4s ease-in-out infinite' }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.2em', color: 'rgba(94,106,210,0.75)', padding: '20px 0', animation: 'umbra-pulse 1.4s ease-in-out infinite' }}>
             CONTACTING WEBB…
           </div>
         )}
@@ -234,10 +234,10 @@ export default function TelescopeLive() {
               boxShadow: `0 0 40px ${catColor}14`,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.14em', color: cur.status === 'observing' ? '#22c55e' : 'rgba(247,248,248,0.5)' }}>
+                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.14em', color: cur.status === 'observing' ? '#22c55e' : 'rgba(247,248,248,0.5)' }}>
                   {cur.status === 'observing' ? '● OBSERVING NOW' : '● MOST RECENT'}
                 </span>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: 'rgba(247,248,248,0.4)', marginLeft: 'auto' }}>
+                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'rgba(247,248,248,0.75)', marginLeft: 'auto' }}>
                   {fmtWhen(cur.startTime, cur.status)}
                 </span>
               </div>
@@ -261,7 +261,7 @@ export default function TelescopeLive() {
                   onClick={simulate}
                   style={{
                     width: '100%', padding: '12px', borderRadius: 6, cursor: 'pointer', marginBottom: 8,
-                    fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.1em', fontWeight: 700,
+                    fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.1em', fontWeight: 700,
                     color: '#08090a', background: b.color, border: 'none',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                   }}
@@ -275,7 +275,7 @@ export default function TelescopeLive() {
                   disabled={explain.loading}
                   style={{
                     width: '100%', padding: '10px', borderRadius: 6, cursor: explain.loading ? 'default' : 'pointer',
-                    fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.1em',
+                    fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.1em',
                     color: '#8b9cf7', background: 'rgba(94,106,210,0.08)', border: '1px solid rgba(94,106,210,0.3)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                   }}
@@ -292,7 +292,7 @@ export default function TelescopeLive() {
                   background: 'rgba(94,106,210,0.06)', border: '1px solid rgba(94,106,210,0.18)',
                   borderLeft: '3px solid rgba(94,106,210,0.5)',
                 }}>
-                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.14em', color: 'rgba(94,106,210,0.7)', marginBottom: 6 }}>
+                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.14em', color: 'rgba(94,106,210,0.75)', marginBottom: 6 }}>
                     ✦ UMBRA AI
                   </div>
                   <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, lineHeight: 1.6, color: 'rgba(247,248,248,0.82)', margin: 0 }}>
@@ -305,13 +305,13 @@ export default function TelescopeLive() {
             {/* Running feed */}
             {(data.jwst.upcoming?.length > 0 || data.jwst.recent?.length > 0) && (
               <div style={{ background: 'rgba(17,17,19,0.7)', border: '1px solid rgba(94,106,210,0.14)', borderRadius: 8, padding: '14px 18px', marginBottom: 14 }}>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.2em', color: 'rgba(94,106,210,0.6)', marginBottom: 4 }}>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.2em', color: 'rgba(94,106,210,0.75)', marginBottom: 4 }}>
                   UP NEXT
                 </div>
                 {(data.jwst.upcoming || []).map((o, i) => <TimelineRow key={'u' + i} obs={o} dim={i > 1} />)}
                 {data.jwst.recent?.length > 0 && (
                   <>
-                    <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.2em', color: 'rgba(247,248,248,0.35)', margin: '10px 0 2px' }}>
+                    <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.2em', color: 'rgba(247,248,248,0.75)', margin: '10px 0 2px' }}>
                       JUST OBSERVED
                     </div>
                     {data.jwst.recent.map((o, i) => <TimelineRow key={'r' + i} obs={o} dim />)}
@@ -325,7 +325,7 @@ export default function TelescopeLive() {
         {/* Latest real Webb imagery (updates as NASA releases new images) */}
         {shots.length > 0 && (
           <div style={{ marginBottom: 14 }}>
-            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.2em', color: 'rgba(94,106,210,0.6)', marginBottom: 8 }}>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.2em', color: 'rgba(94,106,210,0.75)', marginBottom: 8 }}>
               LATEST WEBB IMAGERY
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
@@ -341,10 +341,10 @@ export default function TelescopeLive() {
 
         {/* Footer — everything stays in-site */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.08em', color: 'rgba(247,248,248,0.35)', border: '1px solid rgba(247,248,248,0.1)', borderRadius: 4, padding: '5px 9px' }}>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.08em', color: 'rgba(247,248,248,0.75)', border: '1px solid rgba(247,248,248,0.1)', borderRadius: 4, padding: '5px 9px' }}>
             HUBBLE — no public live feed
           </span>
-          <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11, color: 'rgba(247,248,248,0.35)' }}>
+          <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, color: 'rgba(247,248,248,0.75)' }}>
             Live from STScI schedules{data?.jwst?.weekOf ? ` · week of ${data.jwst.weekOf}` : ''} · ESC to close
           </span>
         </div>

@@ -46,8 +46,8 @@ function Slider({ label, min, max, step, value, onChange, unit = '' }) {
 
       {/* Min / max ticks */}
       <div className="flex justify-between">
-        <span className="font-mono-data text-[10px] text-text-dim">{min}</span>
-        <span className="font-mono-data text-[10px] text-text-dim">{max}</span>
+        <span className="font-mono-data text-[12px] text-text-dim">{min}</span>
+        <span className="font-mono-data text-[12px] text-text-dim">{max}</span>
       </div>
     </div>
   )
@@ -67,7 +67,7 @@ export default function ControlPanel({ title = 'Controls', controls = [], onRese
         {onReset && (
           <button
             onClick={onReset}
-            className="font-mono-data text-[10px] tracking-wider text-text-dim hover:text-cyan-glow transition-colors duration-200 uppercase px-2 py-1 border border-border-subtle hover:border-cyan-dim rounded"
+            className="font-mono-data text-[12px] tracking-wider text-text-dim hover:text-cyan-glow transition-colors duration-200 uppercase px-2 py-1 border border-border-subtle hover:border-cyan-dim rounded"
             aria-label="Reset controls"
           >
             RST
@@ -99,7 +99,7 @@ export default function ControlPanel({ title = 'Controls', controls = [], onRese
 
       {/* Footer */}
       <div className="px-4 py-3 border-t border-border-subtle">
-        <p className="font-mono-data text-[10px] text-text-dim leading-relaxed">
+        <p className="font-mono-data text-[12px] text-text-dim leading-relaxed">
           NATURAL UNITS · c = 1
         </p>
       </div>

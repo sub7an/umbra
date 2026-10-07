@@ -46,7 +46,7 @@ function VizModeToggle({ mode, onChange }) {
             key={m.id}
             onClick={() => onChange(m.id)}
             className={[
-              'font-mono-data text-[10px] tracking-wider uppercase px-2.5 py-1 rounded border transition-all duration-200',
+              'font-mono-data text-[12px] tracking-wider uppercase px-2.5 py-1 rounded border transition-all duration-200',
               active
                 ? 'border-rose-glow text-rose-glow bg-rose-glow/5 shadow-glow-rose'
                 : 'border-border-subtle text-text-dim hover:border-rose-mid hover:text-text-primary',
@@ -67,7 +67,7 @@ function MeasureToggle({ active, onToggle }) {
     <button
       onClick={onToggle}
       className={[
-        'font-mono-data text-[11px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
+        'font-mono-data text-[13px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
         active
           ? 'border-amber-glow text-amber-glow shadow-glow-amber bg-amber-glow/5'
           : 'border-border-subtle text-text-dim hover:border-amber-mid hover:text-text-primary',
@@ -364,7 +364,7 @@ export default function QuantumModule() {
         <div className="flex items-center gap-3 shrink-0">
           <button
             onClick={() => setActiveModule(null)}
-            className="font-mono-data text-[11px] tracking-widest text-text-dim hover:text-cyan-glow transition-colors duration-200 uppercase flex items-center gap-1.5"
+            className="font-mono-data text-[13px] tracking-widest text-text-dim hover:text-cyan-glow transition-colors duration-200 uppercase flex items-center gap-1.5"
           >
             ← MODULES
           </button>
@@ -375,7 +375,7 @@ export default function QuantumModule() {
           {/* LIVE badge */}
           <div className="flex items-center gap-1.5 px-2 py-0.5 rounded border border-rose-glow/25 bg-rose-glow/5 shrink-0">
             <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#e040fb', boxShadow: '0 0 6px #e040fb', animation: 'umbra-pulse 1.8s ease-in-out infinite' }} />
-            <span className="font-mono-data text-[8px] tracking-[0.2em] text-rose-glow/70">LIVE</span>
+            <span className="font-mono-data text-[11px] tracking-[0.2em] text-rose-glow/70">LIVE</span>
           </div>
         </div>
 
@@ -390,7 +390,7 @@ export default function QuantumModule() {
                 aria-selected={isActive}
                 onClick={() => setActiveView(v.id)}
                 className={[
-                  'font-mono-data text-[11px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
+                  'font-mono-data text-[13px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
                   isActive
                     ? 'border-rose-glow text-rose-glow shadow-glow-rose bg-rose-glow/5'
                     : 'border-border-subtle text-text-dim hover:border-rose-mid hover:text-text-primary',
@@ -422,7 +422,7 @@ export default function QuantumModule() {
                     setBlochTheta(nt)
                     setBlochPhi(np)
                   }}
-                  className="font-mono-data text-[10px] tracking-wider uppercase px-2 py-1 rounded border border-rose-glow/35 text-rose-glow/75 hover:border-rose-glow hover:text-rose-glow hover:bg-rose-glow/5 transition-all duration-150"
+                  className="font-mono-data text-[12px] tracking-wider uppercase px-2 py-1 rounded border border-rose-glow/35 text-rose-glow/75 hover:border-rose-glow hover:text-rose-glow hover:bg-rose-glow/5 transition-all duration-150"
                 >
                   {gate}
                 </button>
@@ -467,7 +467,7 @@ export default function QuantumModule() {
 
           {/* View label top-left */}
           <div className="absolute top-3 left-4 pointer-events-none">
-            <span className="font-display text-[10px] tracking-[0.2em] uppercase text-text-dim">
+            <span className="font-display text-[12px] tracking-[0.2em] uppercase text-text-dim">
               {VIEWS.find((v) => v.id === activeView)?.label}
             </span>
           </div>
@@ -475,29 +475,29 @@ export default function QuantumModule() {
           {/* Bloch sphere state readout top-right */}
           {activeView === 'blochsphere' && (
             <div className="absolute top-3 right-4 flex flex-col items-end gap-0.5 pointer-events-none">
-              <span className="font-mono-data text-[8px] tracking-[0.15em] text-rose-glow/55">θ {theta.toFixed(3)} rad</span>
-              <span className="font-mono-data text-[8px] tracking-[0.15em] text-rose-glow/55">φ {phi.toFixed(3)} rad</span>
-              <span className="font-mono-data text-[8px] tracking-[0.15em] text-amber-glow/65">P(0) {(prob0(theta) * 100).toFixed(1)}%</span>
+              <span className="font-mono-data text-[11px] tracking-[0.15em] text-rose-glow/55">θ {theta.toFixed(3)} rad</span>
+              <span className="font-mono-data text-[11px] tracking-[0.15em] text-rose-glow/55">φ {phi.toFixed(3)} rad</span>
+              <span className="font-mono-data text-[11px] tracking-[0.15em] text-amber-glow/65">P(0) {(prob0(theta) * 100).toFixed(1)}%</span>
             </div>
           )}
 
           {/* Particle in box readout */}
           {activeView === 'particleinbox' && (
             <div className="absolute top-3 right-4 flex flex-col items-end gap-0.5 pointer-events-none">
-              <span className="font-mono-data text-[8px] tracking-[0.15em] text-rose-glow/55">n = {n}</span>
-              <span className="font-mono-data text-[8px] tracking-[0.15em] text-amber-glow/65">E = {particleInBoxEnergy(n).toFixed(2)} E₁</span>
-              <span className="font-mono-data text-[8px] tracking-[0.15em] text-text-dim/45">NODES: {n - 1}</span>
+              <span className="font-mono-data text-[11px] tracking-[0.15em] text-rose-glow/55">n = {n}</span>
+              <span className="font-mono-data text-[11px] tracking-[0.15em] text-amber-glow/65">E = {particleInBoxEnergy(n).toFixed(2)} E₁</span>
+              <span className="font-mono-data text-[11px] tracking-[0.15em] text-text-dim/45">NODES: {n - 1}</span>
             </div>
           )}
 
           {/* SIM ACTIVE badge */}
           <div className="absolute bottom-4 left-4 flex items-center gap-1.5 px-2.5 py-1 rounded border border-rose-glow/18 bg-ground/85 pointer-events-none">
             <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#e040fb', boxShadow: '0 0 4px #e040fb' }} />
-            <span className="font-mono-data text-[8px] tracking-[0.2em] text-rose-glow/50">SIM ACTIVE</span>
+            <span className="font-mono-data text-[11px] tracking-[0.2em] text-rose-glow/50">SIM ACTIVE</span>
           </div>
 
           {/* Orbit hint */}
-          <div className="absolute bottom-4 right-4 font-mono-data text-[8px] tracking-[0.12em] text-text-dim/40 pointer-events-none">
+          <div className="absolute bottom-4 right-4 font-mono-data text-[11px] tracking-[0.12em] text-text-dim/40 pointer-events-none">
             DRAG TO ORBIT · SCROLL TO ZOOM
           </div>
         </main>

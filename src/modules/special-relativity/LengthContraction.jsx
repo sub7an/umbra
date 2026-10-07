@@ -221,7 +221,7 @@ export default function LengthContraction() {
         />
         <RulerTicks length={PROPER_LENGTH} color="#1a3545" />
         <Html position={[0, 0.32, 0]} center style={{ pointerEvents: 'none' }}>
-          <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: '#4a7a74', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>
+          <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 12, color: '#4a7a74', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>
             REST  L₀ = {PROPER_LENGTH.toFixed(1)}
           </span>
         </Html>
@@ -256,7 +256,7 @@ export default function LengthContraction() {
           <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 13, color: rodColor, textShadow: `0 0 8px ${rodColor}`, whiteSpace: 'nowrap', letterSpacing: '0.04em' }}>
             L′ = {Lc.toFixed(3)}
           </div>
-          <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: '#4a7a74', marginTop: 4, whiteSpace: 'nowrap' }}>
+          <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 12, color: '#4a7a74', marginTop: 4, whiteSpace: 'nowrap' }}>
             L₀ / γ = {PROPER_LENGTH} / {gamma.toFixed(3)}
           </div>
         </Html>
@@ -271,7 +271,7 @@ export default function LengthContraction() {
             <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={2} />
           </mesh>
           <Html position={[0, 0.35, 0]} center style={{ pointerEvents: 'none' }}>
-            <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: '#f59e0b', whiteSpace: 'nowrap' }}>v →</span>
+            <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 12, color: '#f59e0b', whiteSpace: 'nowrap' }}>v →</span>
           </Html>
         </group>
       )}
@@ -281,7 +281,7 @@ export default function LengthContraction() {
         <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 16, color: '#f59e0b', textShadow: '0 0 10px rgba(245,158,11,0.6)', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
           γ = {gamma.toFixed(4)}
         </div>
-        <div style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 10, color: '#4a7a74', marginTop: 5, letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>
+        <div style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 12, color: '#4a7a74', marginTop: 5, letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>
           CONTRACTED BY {contractionPct}%
         </div>
       </Html>
