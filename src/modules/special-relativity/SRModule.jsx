@@ -56,6 +56,7 @@ function buildEquations(view, velocity, gamma, Lc) {
     case 'lightcone':
       return {
         domain: 'MINKOWSKI SPACETIME · CAUSALITY',
+        syllabus: 'AQA (turning points) · IB A.1 · spacetime',
         primaryEq: `ds^2 = -(c\\,dt)^2 + dx^2 + dy^2 + dz^2`,
         derivedEqs: [
           {
@@ -67,11 +68,20 @@ function buildEquations(view, velocity, gamma, Lc) {
             eq: `\\textcolor{#f59e0b}{\\beta} = ${b},\\;\\textcolor{#5e6ad2}{\\gamma} = ${g}`,
           },
         ],
+        tryThis: [
+          'Push β toward 1 and watch the light cone close in — nothing can leave the cone.',
+          'Pick two events: are they inside the cone (causally linked) or outside (no signal can connect them)?',
+        ],
+        checkpoint: {
+          q: 'Two events lie outside each other’s light cones. Can one have caused the other?',
+          a: 'No. A cause-and-effect link needs a signal travelling at ≤ c, which stays inside the light cone. Spacelike-separated events cannot influence each other.',
+        },
       }
 
     case 'timedilation':
       return {
         domain: 'LORENTZ TRANSFORM · TIME DILATION',
+        syllabus: 'AQA (turning points) · IB A.1 · time dilation',
         primaryEq: `\\textcolor{#f59e0b}{t'} = \\textcolor{#5e6ad2}{\\gamma}\\,t_0`,
         derivedEqs: [
           {
@@ -83,11 +93,20 @@ function buildEquations(view, velocity, gamma, Lc) {
             eq: `\\textcolor{#f59e0b}{\\beta}=${b},\\;\\textcolor{#5e6ad2}{\\gamma}=${g}`,
           },
         ],
+        tryThis: [
+          'Set β = 0.87 — γ ≈ 2, so the moving clock ticks at half the rate of yours.',
+          'This is real: muons from the upper atmosphere only reach the ground because their clocks run slow.',
+        ],
+        checkpoint: {
+          q: 'A ship flies past at β = 0.6 (γ = 1.25). Whose clock runs slow — yours or the ship’s?',
+          a: 'Each sees the other’s clock run slow. t′ = γt₀ applies to whichever clock is moving in your frame; there is no absolute “slow” clock — that is the heart of relativity.',
+        },
       }
 
     case 'lengthcontraction':
       return {
         domain: 'LORENTZ TRANSFORM · LENGTH CONTRACTION',
+        syllabus: 'AQA (turning points) · IB A.1 · length contraction',
         primaryEq: `\\textcolor{#e040fb}{L'} = \\dfrac{L_0}{\\textcolor{#5e6ad2}{\\gamma}}`,
         derivedEqs: [
           {
@@ -99,6 +118,14 @@ function buildEquations(view, velocity, gamma, Lc) {
             eq: `\\textcolor{#e040fb}{L'} = ${l}\\text{ u}`,
           },
         ],
+        tryThis: [
+          'Raise β and watch the rod shrink along its direction of motion — never sideways.',
+          'At β = 0.99 the 3 u rod measures under 0.5 u in your frame.',
+        ],
+        checkpoint: {
+          q: 'Does the moving rod contract in all directions, or only one?',
+          a: 'Only along the direction of motion. Dimensions perpendicular to the velocity are unchanged — L′ = L₀/γ applies to the length parallel to v.',
+        },
       }
 
     default:
@@ -332,7 +359,7 @@ export default function SRModule() {
   ]
 
   const explanation = buildExplanation(activeView, velocity, gamma, eventX, eventT)
-  const { domain, primaryEq, derivedEqs } = buildEquations(activeView, velocity, gamma, Lc)
+  const { domain, primaryEq, derivedEqs, syllabus, tryThis, checkpoint } = buildEquations(activeView, velocity, gamma, Lc)
   const camPos = CAMERA_POSITIONS[activeView]
 
   return (
@@ -387,9 +414,12 @@ export default function SRModule() {
           <InfoPanel
             title="Analysis"
             domain={domain}
+            syllabus={syllabus}
             primaryEq={primaryEq}
             derivedEqs={derivedEqs}
             explanation={explanation}
+            tryThis={tryThis}
+            checkpoint={checkpoint}
             metrics={metrics}
           />
           <DiagnosticsPanel velocity={velocity} gamma={gamma} />

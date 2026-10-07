@@ -320,27 +320,54 @@ function buildEquations(view) {
   switch (view) {
     case 'cymatics': return {
       domain: 'ACOUSTIC PHYSICS · CHLADNI FIGURES',
+      syllabus: 'A-level standing waves · 2D Chladni plate',
       primaryEq: `u(x,y)=\\sin(m\\pi x)\\sin(n\\pi y)\\cos(\\omega_{mn}t)`,
       derivedEqs: [
         { label:'Eigenfreq.', eq:`f_{mn}=\\tfrac{c}{2L}\\sqrt{m^2+n^2}` },
         { label:'Force',      eq:`F=-\\operatorname{sgn}(u)\\nabla|u|`   },
       ],
+      tryThis: [
+        'Step through the modes and watch the sand collect on the still nodal lines.',
+        'Higher (m, n) means more nodal lines — and a higher driving frequency.',
+      ],
+      checkpoint: {
+        q: 'On a vibrating Chladni plate, why does the sand gather into sharp lines instead of spreading evenly?',
+        a: 'It bounces off the moving antinodes and settles on the nodal lines, where the plate is motionless. Those lines map out the standing-wave pattern of that mode.',
+      },
     }
     case 'harmonics': return {
       domain: 'ACOUSTIC PHYSICS · STANDING WAVES',
+      syllabus: 'AQA 3.3.1.3 · IB 4.5 · harmonic series',
       primaryEq: `y_n(x,t)=A\\sin\\!\\tfrac{n\\pi x}{L}\\cos(\\omega_n t)`,
       derivedEqs: [
         { label:'Harmonics', eq:`f_n = n\\,f_0 = \\tfrac{nv}{2L}` },
         { label:'Nodes',     eq:`x_k = \\tfrac{kL}{n},\\;k=0\\ldots n` },
       ],
+      tryThis: [
+        'Play the fundamental, then the 2nd harmonic — double the frequency, one extra node.',
+        'Notice f_n = n·f₀: every harmonic is a whole-number multiple of the fundamental.',
+      ],
+      checkpoint: {
+        q: 'A string’s fundamental is 220 Hz. What is the frequency of its 3rd harmonic?',
+        a: '660 Hz. Harmonics are integer multiples: f_n = n·f₀, so the 3rd is 3 × 220 = 660 Hz, with two nodes between the fixed ends.',
+      },
     }
     case 'lissajous': return {
       domain: 'ACOUSTIC PHYSICS · LISSAJOUS',
+      syllabus: 'Enrichment · frequency ratios & phase',
       primaryEq: `x=\\sin(at),\\quad y=\\sin(bt+\\delta)`,
       derivedEqs: [
         { label:'Closed if', eq:`a/b\\in\\mathbb{Q}` },
         { label:'Phase',     eq:`\\delta\\in[0,2\\pi]\\text{ morphs figure}` },
       ],
+      tryThis: [
+        'Set the frequency ratio to 2:3 and watch a stable closed figure lock into place.',
+        'Nudge the phase δ and the same figure morphs and rotates.',
+      ],
+      checkpoint: {
+        q: 'When do two perpendicular oscillations trace a stable, closed Lissajous figure?',
+        a: 'When their frequency ratio a/b is a simple whole-number ratio. Irrational ratios never close — the curve drifts and fills the box. It turns a ratio you can hear into one you can see.',
+      },
     }
     default: return { domain:'', primaryEq:'', derivedEqs:[] }
   }
@@ -582,9 +609,12 @@ export default function AcousticModule() {
           <InfoPanel
             title={view==='cymatics'?'Chladni Figures':view==='harmonics'?'Standing Waves':'Lissajous'}
             domain={eq.domain}
+            syllabus={eq.syllabus}
             primaryEq={eq.primaryEq}
             derivedEqs={eq.derivedEqs}
             explanation={buildExplanation(view)}
+            tryThis={eq.tryThis}
+            checkpoint={eq.checkpoint}
             accentColor="violet"
             footer="ACOUSTIC PHYSICS · UMBRA"
           />

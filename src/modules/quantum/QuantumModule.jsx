@@ -168,6 +168,7 @@ function buildEquations(view, theta, phi, n, lambda, measured, entAlpha = 0) {
     case 'blochsphere':
       return {
         domain: 'QUANTUM STATE SPACE · BLOCH SPHERE',
+        syllabus: 'IB C.3 (HL) · qubits & superposition',
         primaryEq: `|\\psi\\rangle = \\cos\\tfrac{\\theta}{2}|0\\rangle + e^{i\\phi}\\sin\\tfrac{\\theta}{2}|1\\rangle`,
         derivedEqs: [
           {
@@ -179,11 +180,20 @@ function buildEquations(view, theta, phi, n, lambda, measured, entAlpha = 0) {
             eq: `P(|1\\rangle) = \\sin^2\\!\\tfrac{\\textcolor{#f59e0b}{\\theta}}{2} = ${(p1 * 100).toFixed(1)}\\%`,
           },
         ],
+        tryThis: [
+          'Rotate to the equator (θ = 90°): a perfect 50/50 superposition of |0⟩ and |1⟩.',
+          'Apply the H then X gate and watch the state vector rotate on the sphere.',
+        ],
+        checkpoint: {
+          q: 'The state sits on the equator pointing along +x. What is the probability of measuring |0⟩?',
+          a: '50%. On the equator θ = 90°, so P(|0⟩) = cos²(45°) = ½. The phase φ only sets the equatorial direction, not the 0/1 odds.',
+        },
       }
 
     case 'particleinbox':
       return {
         domain: 'SCHRÖDINGER EQ · PARTICLE IN BOX',
+        syllabus: 'AQA 3.2.1 · IB 7.3 · quantised energy levels',
         primaryEq: `\\psi_{\\textcolor{#f59e0b}{n}}(x) = \\sqrt{\\tfrac{2}{L}}\\sin\\tfrac{\\textcolor{#f59e0b}{n}\\pi x}{L}`,
         derivedEqs: [
           {
@@ -195,17 +205,34 @@ function buildEquations(view, theta, phi, n, lambda, measured, entAlpha = 0) {
             eq: `E_{${n}} = ${En.toFixed(2)}\\,E_1,\\;\\text{nodes: }${n - 1}`,
           },
         ],
+        tryThis: [
+          'Step n up and count the antinodes — n antinodes, n−1 nodes inside the box.',
+          'Notice energy climbs as n²: E₃ is 9× E₁, not 3×.',
+        ],
+        checkpoint: {
+          q: 'Why can’t a particle confined in a box ever have exactly zero energy?',
+          a: 'The ground state n = 1 already has E₁ = π²ℏ²/2mL² > 0. Zero energy needs a flat ψ, which violates the walls’ boundary conditions and the uncertainty principle — confinement forces a minimum zero-point energy.',
+        },
       }
 
     case 'doubleslit':
       return {
         domain: measured ? 'WHICH-PATH · DECOHERENCE' : 'WAVE–PARTICLE DUALITY · INTERFERENCE',
+        syllabus: 'AQA 3.2.1.3 · IB 12.1 · electron diffraction',
         primaryEq: measured
           ? `|\\psi|^2 = |\\psi_1|^2 + |\\psi_2|^2`
           : `I(y) = \\cos^2\\!\\left(\\dfrac{\\pi\\,d\\,y}{\\textcolor{#f59e0b}{\\lambda}\\,D}\\right)`,
         derivedEqs: measured
           ? [{ label: 'Cross-term (interference)', eq: `2\\,\\mathrm{Re}[\\psi_1^\\ast\\psi_2] = 0` }]
           : [{ label: 'Fringe spacing', eq: `\\Delta y = \\dfrac{\\textcolor{#f59e0b}{\\lambda}\\,D}{d} = ${(lambda * SCREEN_X / 1.0).toFixed(3)}\\text{ u}` }],
+        tryThis: [
+          'Send particles one at a time — the interference pattern still builds up dot by dot.',
+          'Switch on the which-path detector and watch the fringes collapse to two blobs.',
+        ],
+        checkpoint: {
+          q: 'You detect which slit each electron passes through. What happens to the interference fringes?',
+          a: 'They disappear. Which-path information destroys the coherence between the two paths — the interference cross-term goes to zero, leaving just the sum of two single-slit patterns.',
+        },
       }
 
     case 'entanglement': {
@@ -213,6 +240,7 @@ function buildEquations(view, theta, phi, n, lambda, measured, entAlpha = 0) {
       const r = Math.cos(2 * entAlpha).toFixed(4)
       return {
         domain: 'QUANTUM ENTANGLEMENT · BELL STATES',
+        syllabus: 'IB C.3 (HL) · Bell states (enrichment)',
         primaryEq: `|\\psi\\rangle = \\cos\\textcolor{#f59e0b}{\\alpha}|00\\rangle + \\sin\\textcolor{#f59e0b}{\\alpha}|11\\rangle`,
         derivedEqs: [
           {
@@ -224,18 +252,35 @@ function buildEquations(view, theta, phi, n, lambda, measured, entAlpha = 0) {
             eq: `|\\mathbf{r}| = \\cos(2\\textcolor{#f59e0b}{\\alpha}) = ${r}`,
           },
         ],
+        tryThis: [
+          'Set α = 45° for a maximally entangled Bell state — concurrence C = 1.',
+          'Measure one qubit and see the partner’s outcome snap to a fixed value.',
+        ],
+        checkpoint: {
+          q: 'In the Bell state you measure qubit A and get |0⟩. What will qubit B be?',
+          a: 'Also |0⟩. For |ψ⟩ = cosα|00⟩ + sinα|11⟩ the two qubits are perfectly correlated — each outcome is random, but A and B always match, however far apart they are.',
+        },
       }
     }
 
     case 'tunneling':
       return {
         domain: 'QUANTUM TUNNELING · WKB · SCHRÖDINGER',
+        syllabus: 'IB 12.1 (HL) · alpha decay · STM',
         primaryEq: `T = \\dfrac{1}{1 + \\dfrac{V_0^2\\sinh^2(\\kappa a)}{4E(V_0-E)}}`,
         derivedEqs: [
           { label: 'Evanescent wave', eq: `\\kappa = \\sqrt{\\dfrac{2m(V_0-E)}{\\hbar^2}}` },
           { label: 'WKB approx.', eq: `T \\approx e^{-2\\kappa a}\\;\\text{(thick barrier)}` },
           { label: 'Conservation', eq: `T + R = 1` },
         ],
+        tryThis: [
+          'Thin the barrier and watch transmission T shoot up — it falls off exponentially with width.',
+          'Keep E below V₀: classically forbidden, yet the wave still leaks through.',
+        ],
+        checkpoint: {
+          q: 'The particle’s energy is below the barrier (E < V₀), so classically it’s trapped. Can it still get through?',
+          a: 'Yes — quantum tunneling. The wavefunction decays exponentially inside the barrier but is non-zero on the far side, so T > 0. This drives alpha decay and the scanning tunneling microscope.',
+        },
       }
 
     default:
@@ -348,7 +393,7 @@ export default function QuantumModule() {
   }
 
   const explanation = buildExplanation(activeView, theta, phi, n, lambda, measured, entangleAlpha)
-  const { domain, primaryEq, derivedEqs } = buildEquations(activeView, theta, phi, n, lambda, measured, entangleAlpha)
+  const { domain, primaryEq, derivedEqs, syllabus, tryThis, checkpoint } = buildEquations(activeView, theta, phi, n, lambda, measured, entangleAlpha)
   const camPos = CAMERA_POSITIONS[activeView]
 
   const activeVizMode  = activeView === 'blochsphere' ? blochVizMode : boxVizMode
@@ -447,9 +492,12 @@ export default function QuantumModule() {
           <InfoPanel
             title="Analysis"
             domain={domain}
+            syllabus={syllabus}
             primaryEq={primaryEq}
             derivedEqs={derivedEqs}
             explanation={explanation}
+            tryThis={tryThis}
+            checkpoint={checkpoint}
             metrics={metricsByView[activeView]}
             footer="QUANTUM MECHANICS · QM MODULE"
             accentColor="rose"
