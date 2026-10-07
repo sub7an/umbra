@@ -212,10 +212,10 @@ function Barrier({ measured }) {
       {measured && (
         <>
           <Html position={[0.35, gapY, 0]} center style={{ pointerEvents: 'none' }}>
-            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#f59e0b', whiteSpace: 'nowrap' }}>DET</span>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#f59e0b', whiteSpace: 'nowrap' }}>DET</span>
           </Html>
           <Html position={[0.35, -gapY, 0]} center style={{ pointerEvents: 'none' }}>
-            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#f59e0b', whiteSpace: 'nowrap' }}>DET</span>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#f59e0b', whiteSpace: 'nowrap' }}>DET</span>
           </Html>
         </>
       )}
@@ -342,19 +342,19 @@ export default function DoubleSlit() {
 
       {/* ── Labels ── */}
       <Html position={[SOURCE_X, -0.55, 0]} center style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#4a7a74', whiteSpace: 'nowrap' }}>SOURCE</span>
+        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#4a7a74', whiteSpace: 'nowrap' }}>SOURCE</span>
       </Html>
       <Html position={[BARRIER_X, SCREEN_HALF_H + 0.25, 0]} center style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#4a7a74', whiteSpace: 'nowrap' }}>BARRIER</span>
+        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#4a7a74', whiteSpace: 'nowrap' }}>BARRIER</span>
       </Html>
       <Html position={[SCREEN_X, SCREEN_HALF_H + 0.25, 0]} center style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#4a7a74', whiteSpace: 'nowrap' }}>DETECTOR</span>
+        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#4a7a74', whiteSpace: 'nowrap' }}>DETECTOR</span>
       </Html>
 
       <Html position={[SCREEN_X + 1.0, 0, 0]} center style={{ pointerEvents: 'none', textAlign: 'center' }}>
         <div style={{
           fontFamily: 'JetBrains Mono, monospace',
-          fontSize: 10,
+          fontSize: 12,
           color: measured ? '#f59e0b' : '#5e6ad2',
           textShadow: measured ? '0 0 6px rgba(245,158,11,0.5)' : '0 0 6px rgba(94,106,210,0.5)',
           whiteSpace: 'nowrap',

@@ -359,7 +359,7 @@ export default function PhaseDiagram() {
               fill="none" stroke={accentColor} strokeWidth="1.2" />
           </svg>
           <span style={{
-            fontFamily:'JetBrains Mono,monospace', fontSize:8,
+            fontFamily:'JetBrains Mono,monospace', fontSize:11,
             letterSpacing:'.2em', color: accentColor, userSelect:'none',
           }}>
             PHASE DIAGRAM{!cfg ? ' — N/A' : ''}
@@ -377,12 +377,12 @@ export default function PhaseDiagram() {
         <div style={{ padding:'0 14px 14px' }}>
 
           {/* Title */}
-          <p style={{ fontFamily:'JetBrains Mono,monospace', fontSize:9,
+          <p style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11,
             letterSpacing:'.18em', color:'rgba(94,106,210,0.9)', margin:'0 0 3px' }}>
             {cfg.title}
           </p>
-          <p style={{ fontFamily:'JetBrains Mono,monospace', fontSize:8,
-            color:'rgba(255,255,255,0.3)', margin:'0 0 10px', lineHeight:1.5 }}>
+          <p style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11,
+            color:'rgba(255,255,255,0.75)', margin:'0 0 10px', lineHeight:1.5 }}>
             {cfg.subtitle}
           </p>
 
@@ -396,7 +396,7 @@ export default function PhaseDiagram() {
                 background: state === 'computing' ? 'rgba(94,106,210,0.06)' : 'rgba(94,106,210,0.09)',
                 border:'1px solid rgba(94,106,210,0.25)',
                 color:'rgba(94,106,210,0.9)', fontFamily:'JetBrains Mono,monospace',
-                fontSize:9, letterSpacing:'.2em', cursor: state === 'computing' ? 'default' : 'pointer',
+                fontSize:11, letterSpacing:'.2em', cursor: state === 'computing' ? 'default' : 'pointer',
                 borderRadius:2, transition:'all .15s',
               }}
             >
@@ -428,27 +428,27 @@ export default function PhaseDiagram() {
 
               {/* Axis labels */}
               <div style={{ position:'absolute', bottom:3, left:'50%', transform:'translateX(-50%)',
-                fontFamily:'JetBrains Mono,monospace', fontSize:7, color:'rgba(255,255,255,0.4)',
+                fontFamily:'JetBrains Mono,monospace', fontSize:7, color:'rgba(255,255,255,0.75)',
                 letterSpacing:'.1em', pointerEvents:'none', whiteSpace:'nowrap' }}>
                 {cfg.xLabel}
               </div>
               <div style={{ position:'absolute', top:'50%', left:-2, transform:'translateY(-50%) rotate(-90deg)',
-                fontFamily:'JetBrains Mono,monospace', fontSize:7, color:'rgba(255,255,255,0.4)',
+                fontFamily:'JetBrains Mono,monospace', fontSize:7, color:'rgba(255,255,255,0.75)',
                 letterSpacing:'.1em', pointerEvents:'none', whiteSpace:'nowrap', transformOrigin:'left center' }}>
                 {cfg.yLabel}
               </div>
 
               {/* Corner values */}
               <span style={{ position:'absolute', top:3, left:4, fontFamily:'JetBrains Mono,monospace',
-                fontSize:7, color:'rgba(255,255,255,0.25)', pointerEvents:'none' }}>
+                fontSize:7, color:'rgba(255,255,255,0.75)', pointerEvents:'none' }}>
                 {cfg.yMax.toFixed(1)}
               </span>
               <span style={{ position:'absolute', bottom:14, left:4, fontFamily:'JetBrains Mono,monospace',
-                fontSize:7, color:'rgba(255,255,255,0.25)', pointerEvents:'none' }}>
+                fontSize:7, color:'rgba(255,255,255,0.75)', pointerEvents:'none' }}>
                 {cfg.yMin.toFixed(1)}
               </span>
               <span style={{ position:'absolute', bottom:14, left:4, fontFamily:'JetBrains Mono,monospace',
-                fontSize:7, color:'rgba(255,255,255,0.25)', pointerEvents:'none',
+                fontSize:7, color:'rgba(255,255,255,0.75)', pointerEvents:'none',
                 transform:'translateX(0)' }}>
               </span>
 
@@ -456,8 +456,8 @@ export default function PhaseDiagram() {
               {state === 'computing' && (
                 <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center',
                   justifyContent:'center', background:'rgba(1,6,12,0.75)' }}>
-                  <span style={{ fontFamily:'JetBrains Mono,monospace', fontSize:9,
-                    color:'rgba(94,106,210,0.7)', letterSpacing:'.2em',
+                  <span style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11,
+                    color:'rgba(94,106,210,0.75)', letterSpacing:'.2em',
                     animation:'umbra-pulse 1.2s ease-in-out infinite' }}>
                     COMPUTING…
                   </span>
@@ -471,7 +471,7 @@ export default function PhaseDiagram() {
                   border:'1px solid rgba(94,106,210,0.2)', borderRadius:2,
                   padding:'4px 7px', pointerEvents:'none',
                 }}>
-                  <p style={{ fontFamily:'JetBrains Mono,monospace', fontSize:8,
+                  <p style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11,
                     color:'rgba(94,106,210,0.9)', margin:0, lineHeight:1.8 }}>
                     x: {tooltip.xv.toFixed(3)}<br/>
                     y: {tooltip.yv.toFixed(3)}<br/>
@@ -490,7 +490,7 @@ export default function PhaseDiagram() {
               {/* Color scale */}
               <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:5 }}>
                 <span style={{ fontFamily:'JetBrains Mono,monospace', fontSize:7,
-                  color:'rgba(255,255,255,0.3)' }}>0</span>
+                  color:'rgba(255,255,255,0.75)' }}>0</span>
                 <div style={{
                   flex:1, height:5, borderRadius:2,
                   background: `linear-gradient(to right, ${
@@ -500,24 +500,24 @@ export default function PhaseDiagram() {
                   })`,
                 }} />
                 <span style={{ fontFamily:'JetBrains Mono,monospace', fontSize:7,
-                  color:'rgba(255,255,255,0.3)' }}>1</span>
+                  color:'rgba(255,255,255,0.75)' }}>1</span>
               </div>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                 <span style={{ fontFamily:'JetBrains Mono,monospace', fontSize:7,
-                  color:'rgba(255,255,255,0.25)', letterSpacing:'.1em' }}>
+                  color:'rgba(255,255,255,0.75)', letterSpacing:'.1em' }}>
                   {cfg.metricLabel}
                   {(cfg.setX || cfg.setY) && ' · click to set'}
                 </span>
                 <button onClick={() => setState('idle')} style={{
                   background:'none', border:'none', fontFamily:'JetBrains Mono,monospace',
-                  fontSize:7, color:'rgba(94,106,210,0.4)', cursor:'pointer', letterSpacing:'.1em',
+                  fontSize:7, color:'rgba(94,106,210,0.75)', cursor:'pointer', letterSpacing:'.1em',
                 }}>
                   ↺ RECOMPUTE
                 </button>
               </div>
               {cfg.boundary && (
                 <p style={{ fontFamily:'JetBrains Mono,monospace', fontSize:7,
-                  color:'rgba(94,106,210,0.5)', margin:'5px 0 0', letterSpacing:'.08em' }}>
+                  color:'rgba(94,106,210,0.75)', margin:'5px 0 0', letterSpacing:'.08em' }}>
                   ─── {cfg.boundary.label}
                 </p>
               )}

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import katex from 'katex'
 import PhysicsTutor from './PhysicsTutor'
 import PhaseDiagram from './PhaseDiagram'
@@ -27,7 +27,7 @@ function DataRow({ label, value, unit, color = 'cyan' }) {
   }
   return (
     <div className="flex items-baseline justify-between gap-3 py-1.5 border-b border-border-subtle last:border-0">
-      <span className="font-display text-[11px] tracking-widest uppercase text-text-dim shrink-0">
+      <span className="font-display text-[13px] tracking-widest uppercase text-text-dim shrink-0">
         {label}
       </span>
       <span className={`font-mono-data text-sm tabular-nums ${colorMap[color]}`}>
@@ -46,11 +46,16 @@ export default function InfoPanel({
   formula = '',
   explanation = '',
   metrics = [],
+  syllabus = '',
+  tryThis = [],
+  checkpoint = null,
   footer = 'SPECIAL RELATIVITY · SR MODULE',
   isOpen: defaultOpen = true,
   accentColor = 'amber',
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
+  const [revealed, setRevealed] = useState(false)
+  useEffect(() => { setRevealed(false) }, [checkpoint?.q])
 
   const accentDotClass =
     { amber: 'bg-amber-glow shadow-glow-amber', cyan: 'bg-cyan-glow shadow-glow-cyan', rose: 'bg-rose-glow shadow-glow-rose' }[accentColor]
@@ -88,9 +93,18 @@ export default function InfoPanel({
           {/* Physics domain label */}
           {domain && (
             <div className="px-4 pt-3 pb-1.5">
-              <p className="font-mono-data text-[9px] tracking-[0.22em] uppercase leading-snug" style={{ color: '#4a9090' }}>
+              <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase leading-snug" style={{ color: '#8b9cf7' }}>
                 {domain}
               </p>
+              {syllabus && (
+                <span
+                  className="inline-block mt-1.5 px-1.5 py-0.5 rounded-sm font-mono-data text-[11px] tracking-[0.12em] uppercase"
+                  style={{ color: '#9aa7ff', background: 'rgba(94,106,210,0.10)', border: '1px solid rgba(94,106,210,0.25)' }}
+                  title="Curriculum reference"
+                >
+                  {syllabus}
+                </span>
+              )}
             </div>
           )}
 
@@ -110,7 +124,7 @@ export default function InfoPanel({
           {!primaryEq && formula && (
             <div className="px-4 py-3 border-b border-border-subtle">
               <p
-                className="font-mono-data text-[11px] leading-relaxed text-cyan-glow text-center"
+                className="font-mono-data text-[13px] leading-relaxed text-cyan-glow text-center"
                 style={{ textShadow: '0 0 8px rgba(94,106,210,0.45)' }}
               >
                 {formula}
@@ -124,7 +138,7 @@ export default function InfoPanel({
               {derivedEqs.map((d, i) => (
                 <div key={i}>
                   {d.label && (
-                    <p className="font-mono-data text-[9px] tracking-[0.18em] uppercase mb-1 leading-tight" style={{ color: '#4a9090' }}>
+                    <p className="font-mono-data text-[11px] tracking-[0.18em] uppercase mb-1 leading-tight" style={{ color: '#8b9cf7' }}>
                       {d.label}
                     </p>
                   )}
@@ -150,8 +164,46 @@ export default function InfoPanel({
 
           {/* Explanation text */}
           {explanation && (
+            <div className="px-4 py-4">
+              <p className="font-body text-[14px] leading-relaxed text-text-primary">{explanation}</p>
+            </div>
+          )}
+
+          {/* Try this — guided exploration prompts */}
+          {tryThis.length > 0 && (
+            <div className="px-4 pb-4 border-b border-border-subtle">
+              <p className="font-mono-data text-[11px] tracking-[0.18em] uppercase mb-2" style={{ color: '#8b9cf7' }}>
+                Try this
+              </p>
+              <ul className="space-y-1.5">
+                {tryThis.map((t, i) => (
+                  <li key={i} className="flex gap-2 font-body text-[14px] leading-snug text-text-primary">
+                    <span style={{ color: '#9aa7ff' }}>→</span>
+                    <span>{t}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Predict-first checkpoint */}
+          {checkpoint && (
             <div className="px-4 py-4 flex-1">
-              <p className="font-body text-[13px] leading-relaxed text-text-primary">{explanation}</p>
+              <p className="font-mono-data text-[11px] tracking-[0.18em] uppercase mb-2" style={{ color: '#8b9cf7' }}>
+                Predict
+              </p>
+              <p className="font-body text-[14px] leading-snug text-text-primary mb-2">{checkpoint.q}</p>
+              {revealed ? (
+                <p className="font-body text-[14px] leading-snug" style={{ color: '#9aa7ff' }}>{checkpoint.a}</p>
+              ) : (
+                <button
+                  onClick={() => setRevealed(true)}
+                  className="font-mono-data text-[11px] tracking-[0.14em] uppercase px-2 py-1 rounded-sm"
+                  style={{ color: '#9aa7ff', background: 'rgba(94,106,210,0.10)', border: '1px solid rgba(94,106,210,0.25)' }}
+                >
+                  Reveal answer
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -161,7 +213,7 @@ export default function InfoPanel({
       <PhaseDiagram />
 
       <div className="px-4 py-3 border-t border-border-subtle shrink-0">
-        <p className="font-mono-data text-[10px] text-text-dim leading-relaxed">{footer}</p>
+        <p className="font-mono-data text-[12px] text-text-dim leading-relaxed">{footer}</p>
       </div>
     </aside>
   )

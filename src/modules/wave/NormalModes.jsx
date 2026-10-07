@@ -179,17 +179,17 @@ export default function NormalModes({ modeIdx = 0 }) {
           border: '1px solid rgba(34,211,238,0.18)',
           borderRadius: 3, padding: '7px 10px', width: 160,
         }}>
-          <div style={{ fontSize: 8, color: 'rgba(34,211,238,0.45)', letterSpacing: '0.14em', marginBottom: 4 }}>
+          <div style={{ fontSize: 11, color: 'rgba(34,211,238,0.75)', letterSpacing: '0.14em', marginBottom: 4 }}>
             MODE ({m1},{n1})
           </div>
-          <div ref={freqRef} style={{ fontSize: 9, color: '#22d3ee', marginBottom: 3 }}>
+          <div ref={freqRef} style={{ fontSize: 11, color: '#22d3ee', marginBottom: 3 }}>
             ω/π = √({m1}²+{n1}²)
           </div>
-          <div style={{ fontSize: 8, color: 'rgba(34,211,238,0.35)', marginBottom: 6 }}>
+          <div style={{ fontSize: 11, color: 'rgba(34,211,238,0.75)', marginBottom: 6 }}>
             {(m1 - 1)} vert · {(n1 - 1)} horiz nodal lines
           </div>
           {superpose && (
-            <div style={{ fontSize: 8, color: 'rgba(232,121,249,0.6)', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 5 }}>
+            <div style={{ fontSize: 11, color: 'rgba(232,121,249,0.75)', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 5 }}>
               ⊕ MODE ({m2},{n2}) · ω/π={Math.sqrt(m2*m2+n2*n2).toFixed(2)}
             </div>
           )}
@@ -204,13 +204,13 @@ export default function NormalModes({ modeIdx = 0 }) {
           border: '1px solid rgba(34,211,238,0.15)',
           borderRadius: 3, padding: '7px 8px', width: 100,
         }}>
-          <div style={{ fontSize: 8, color: 'rgba(34,211,238,0.45)', letterSpacing: '0.13em', marginBottom: 5 }}>
+          <div style={{ fontSize: 11, color: 'rgba(34,211,238,0.75)', letterSpacing: '0.13em', marginBottom: 5 }}>
             SUPERPOSE
           </div>
 
           <button onClick={() => setSuperpose(s => !s)} style={{
             fontFamily: 'JetBrains Mono, monospace',
-            fontSize: 8, letterSpacing: '0.1em',
+            fontSize: 11, letterSpacing: '0.1em',
             width: '100%', marginBottom: 5,
             padding: '3px 0',
             background: superpose ? 'rgba(232,121,249,0.12)' : 'rgba(34,211,238,0.05)',
@@ -223,7 +223,7 @@ export default function NormalModes({ modeIdx = 0 }) {
 
           {superpose && (
             <>
-              <div style={{ fontSize: 7, color: 'rgba(232,121,249,0.4)', marginBottom: 3, letterSpacing: '0.1em' }}>
+              <div style={{ fontSize: 7, color: 'rgba(232,121,249,0.75)', marginBottom: 3, letterSpacing: '0.1em' }}>
                 2ND MODE
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>

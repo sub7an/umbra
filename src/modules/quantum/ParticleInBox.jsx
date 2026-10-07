@@ -359,7 +359,7 @@ function EnergyLadder({ n }) {
           <Html position={[0.6, y, 0]} center style={{ pointerEvents: 'none' }}>
             <span style={{
               fontFamily: 'JetBrains Mono, monospace',
-              fontSize: 9,
+              fontSize: 11,
               color: active ? '#f59e0b' : '#4a7a74',
               whiteSpace: 'nowrap',
             }}>
@@ -435,10 +435,10 @@ export default function ParticleInBox() {
 
       {/* ── Labels ── */}
       <Html position={[BOX_LEFT - 0.15, WALL_H / 2 + 0.2, 0]} center style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#4a7a74', whiteSpace: 'nowrap' }}>V=∞</span>
+        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#4a7a74', whiteSpace: 'nowrap' }}>V=∞</span>
       </Html>
       <Html position={[BOX_RIGHT + 0.15, WALL_H / 2 + 0.2, 0]} center style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#4a7a74', whiteSpace: 'nowrap' }}>V=∞</span>
+        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#4a7a74', whiteSpace: 'nowrap' }}>V=∞</span>
       </Html>
 
       <Html position={[0, -WALL_H / 2 - 0.45, 0]} center style={{ pointerEvents: 'none', textAlign: 'center' }}>

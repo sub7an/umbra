@@ -98,8 +98,8 @@ function Slider({ label, value, min, max, step, decimals, onChange }) {
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center justify-between">
-        <span className="font-mono-data text-[10px] tracking-wider uppercase text-text-dim">{label}</span>
-        <span className="font-mono-data text-[11px] tabular-nums" style={{ color: '#fb923c' }}>{value.toFixed(decimals)}</span>
+        <span className="font-mono-data text-[12px] tracking-wider uppercase text-text-dim">{label}</span>
+        <span className="font-mono-data text-[13px] tabular-nums" style={{ color: '#fb923c' }}>{value.toFixed(decimals)}</span>
       </div>
       <input type="range" min={min} max={max} step={step} value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
@@ -127,7 +127,7 @@ export default function GRModule() {
       <header className="flex items-center justify-between px-5 py-2 bg-panel border-b border-border-subtle shrink-0">
         <div className="flex items-center gap-3 shrink-0">
           <button onClick={() => setActiveModule(null)}
-            className="font-mono-data text-[11px] tracking-widest text-text-dim hover:text-orange-glow transition-colors duration-200 uppercase flex items-center gap-1.5">
+            className="font-mono-data text-[13px] tracking-widest text-text-dim hover:text-orange-glow transition-colors duration-200 uppercase flex items-center gap-1.5">
             ← MODULES
           </button>
           <div className="w-px h-4 bg-border-subtle" />
@@ -135,7 +135,7 @@ export default function GRModule() {
           <div className="flex items-center gap-1.5 px-2 py-0.5 rounded border shrink-0"
             style={{ borderColor: 'rgba(251,146,60,0.25)', background: 'rgba(251,146,60,0.05)' }}>
             <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#fb923c', boxShadow: '0 0 6px #fb923c', animation: 'umbra-pulse 1.8s ease-in-out infinite' }} />
-            <span className="font-mono-data text-[8px] tracking-[0.2em]" style={{ color: 'rgba(251,146,60,0.7)' }}>LIVE</span>
+            <span className="font-mono-data text-[11px] tracking-[0.2em]" style={{ color: 'rgba(251,146,60,0.75)' }}>LIVE</span>
           </div>
         </div>
 
@@ -143,7 +143,7 @@ export default function GRModule() {
           {VIEWS.map((v) => (
             <button key={v.id} onClick={() => setGrView(v.id)}
               className={[
-                'font-mono-data text-[11px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
+                'font-mono-data text-[13px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
                 grView === v.id
                   ? 'border-orange-glow text-orange-glow bg-orange-glow/5 shadow-glow-orange'
                   : 'border-border-subtle text-text-dim hover:border-orange-glow/50 hover:text-text-primary',
@@ -172,7 +172,7 @@ export default function GRModule() {
             {grView === 'waves'      && <GravitationalWaves  key="wav"  mass={grMass} />}
           </SceneWrapper>
           <div className="absolute top-3 left-4 pointer-events-none">
-            <span className="font-display text-[10px] tracking-[0.2em] uppercase text-text-dim">
+            <span className="font-display text-[12px] tracking-[0.2em] uppercase text-text-dim">
               {grView === 'curvature' ? 'Schwarzschild Geometry · Exact Solution'
                : grView === 'geodesics' ? 'Geodesic Equation · GR vs Newtonian'
                : 'Gravitational Wave Emission · h₊ Polarization'}
@@ -181,10 +181,10 @@ export default function GRModule() {
           <div className="absolute bottom-4 left-4 flex items-center gap-1.5 px-2.5 py-1 rounded border pointer-events-none"
             style={{ borderColor: 'rgba(251,146,60,0.18)', background: 'rgba(8,9,10,0.85)' }}>
             <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#fb923c', boxShadow: '0 0 4px #fb923c' }} />
-            <span className="font-mono-data text-[8px] tracking-[0.2em]" style={{ color: 'rgba(251,146,60,0.5)' }}>SIM ACTIVE</span>
+            <span className="font-mono-data text-[11px] tracking-[0.2em]" style={{ color: 'rgba(251,146,60,0.75)' }}>SIM ACTIVE</span>
           </div>
-          <div className="absolute bottom-4 right-4 font-mono-data text-[8px] tracking-[0.12em] pointer-events-none"
-            style={{ color: 'rgba(251,146,60,0.28)' }}>
+          <div className="absolute bottom-4 right-4 font-mono-data text-[11px] tracking-[0.12em] pointer-events-none"
+            style={{ color: 'rgba(251,146,60,0.75)' }}>
             DRAG TO ORBIT · SCROLL TO ZOOM
           </div>
         </main>
@@ -196,19 +196,19 @@ export default function GRModule() {
               <span className="font-display text-xs tracking-[0.18em] uppercase text-text-dim">Parameters</span>
             </div>
             <button onClick={resetGr}
-              className="font-mono-data text-[10px] tracking-wider text-text-dim hover:text-orange-glow transition-colors duration-200 uppercase px-2 py-1 border border-border-subtle hover:border-orange-glow/40 rounded">
+              className="font-mono-data text-[12px] tracking-wider text-text-dim hover:text-orange-glow transition-colors duration-200 uppercase px-2 py-1 border border-border-subtle hover:border-orange-glow/40 rounded">
               RST
             </button>
           </div>
 
           <div className="flex-1 px-4 py-4 flex flex-col gap-4 overflow-y-auto thin-scroll">
             <div>
-              <p className="font-mono-data text-[9px] tracking-[0.22em] uppercase text-text-dim mb-2">View</p>
+              <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase text-text-dim mb-2">View</p>
               <div className="flex flex-col gap-1.5">
                 {VIEWS.map((v) => (
                   <button key={v.id} onClick={() => setGrView(v.id)}
                     className={[
-                      'w-full text-left px-3 py-2 rounded border font-mono-data text-[11px] tracking-wide transition-all duration-150',
+                      'w-full text-left px-3 py-2 rounded border font-mono-data text-[13px] tracking-wide transition-all duration-150',
                       grView === v.id
                         ? 'border-orange-glow/60 bg-orange-glow/5 text-text-primary'
                         : 'border-border-subtle text-text-dim hover:border-orange-glow/30',
@@ -221,13 +221,13 @@ export default function GRModule() {
 
             <div className="h-px bg-border-subtle" />
             <div>
-              <p className="font-mono-data text-[9px] tracking-[0.22em] uppercase text-text-dim mb-3">Mass</p>
+              <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase text-text-dim mb-3">Mass</p>
               <Slider label="M  mass" value={grMass} min={0.5} max={5} step={0.1} decimals={1} onChange={setGrMass} />
             </div>
           </div>
 
           <div className="px-4 py-3 border-t border-border-subtle">
-            <p className="font-mono-data text-[9px] text-text-dim tracking-wider">
+            <p className="font-mono-data text-[11px] text-text-dim tracking-wider">
               GR · GEOMETRIC UNITS · G = c = 1
             </p>
           </div>

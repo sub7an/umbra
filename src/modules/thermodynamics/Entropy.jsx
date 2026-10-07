@@ -186,7 +186,7 @@ export default function Entropy({ temperature }) {
           width: 88,
           userSelect: 'none',
         }}>
-          <div style={{ fontSize: 8, color: 'rgba(56,189,248,0.45)', letterSpacing: '0.14em', marginBottom: 6 }}>
+          <div style={{ fontSize: 11, color: 'rgba(56,189,248,0.75)', letterSpacing: '0.14em', marginBottom: 6 }}>
             ΔS / Nk
           </div>
 
@@ -209,15 +209,15 @@ export default function Entropy({ temperature }) {
           <div ref={dsRef} style={{ fontSize: 13, color: '#38bdf8', textAlign: 'center', marginBottom: 2 }}>
             0.000
           </div>
-          <div style={{ fontSize: 8, color: 'rgba(56,189,248,0.35)', textAlign: 'center', marginBottom: 6 }}>
+          <div style={{ fontSize: 11, color: 'rgba(56,189,248,0.75)', textAlign: 'center', marginBottom: 6 }}>
             ln 2 = {Math.LN2.toFixed(3)}
           </div>
 
-          <div ref={pctRef} style={{ fontSize: 10, color: '#38bdf8', textAlign: 'center', marginBottom: 4 }}>
+          <div ref={pctRef} style={{ fontSize: 12, color: '#38bdf8', textAlign: 'center', marginBottom: 4 }}>
             0%
           </div>
           <div ref={phaseRef} style={{
-            fontSize: 7, color: 'rgba(56,189,248,0.5)',
+            fontSize: 7, color: 'rgba(56,189,248,0.75)',
             letterSpacing: '0.12em', textAlign: 'center',
           }}>
             SEALED
@@ -229,8 +229,8 @@ export default function Entropy({ temperature }) {
       <Html position={[0, -BOX_H * 0.9 - 0.55, 0]} center style={{ pointerEvents: 'all' }}>
         <button onClick={reset} style={{
           fontFamily: 'JetBrains Mono, monospace',
-          fontSize: 8, letterSpacing: '0.14em',
-          color: 'rgba(56,189,248,0.55)',
+          fontSize: 11, letterSpacing: '0.14em',
+          color: 'rgba(56,189,248,0.75)',
           background: 'rgba(4,9,14,0.88)',
           border: '1px solid rgba(56,189,248,0.18)',
           borderRadius: 2, padding: '4px 14px',
@@ -242,12 +242,12 @@ export default function Entropy({ temperature }) {
 
       {/* Labels */}
       <Html position={[-BOX_W * 0.5, BOX_H * 0.82, 0]} center style={{ pointerEvents: 'none' }}>
-        <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:8, color:'rgba(56,189,248,0.5)', letterSpacing:'0.12em' }}>
+        <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11, color:'rgba(56,189,248,0.75)', letterSpacing:'0.12em' }}>
           GAS A (cyan)
         </div>
       </Html>
       <Html position={[BOX_W * 0.5, BOX_H * 0.82, 0]} center style={{ pointerEvents: 'none' }}>
-        <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:8, color:'rgba(251,146,60,0.5)', letterSpacing:'0.12em' }}>
+        <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11, color:'rgba(251,146,60,0.75)', letterSpacing:'0.12em' }}>
           GAS B (orange)
         </div>
       </Html>

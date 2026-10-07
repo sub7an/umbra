@@ -125,7 +125,7 @@ export default function GestureHUD() {
               />
               <div style={{
                 position: 'absolute', top: 5, left: 7,
-                fontFamily: 'JetBrains Mono, monospace', fontSize: 8,
+                fontFamily: 'JetBrains Mono, monospace', fontSize: 11,
                 letterSpacing: '0.16em',
                 color: status === 'pinching' || status === 'twopinch' ? '#8b9cf7' : 'rgba(94,106,210,0.75)',
               }}>
@@ -134,8 +134,8 @@ export default function GestureHUD() {
             </div>
             <div style={{
               padding: '5px 8px', borderTop: '1px solid rgba(94,106,210,0.12)',
-              fontFamily: 'JetBrains Mono, monospace', fontSize: 8,
-              letterSpacing: '0.08em', lineHeight: 1.7, color: 'rgba(247,248,248,0.45)',
+              fontFamily: 'JetBrains Mono, monospace', fontSize: 11,
+              letterSpacing: '0.08em', lineHeight: 1.7, color: 'rgba(247,248,248,0.75)',
             }}>
               PINCH = CLICK · DRAG<br />
               EMPTY SPACE = ORBIT · 2 HANDS = ZOOM
@@ -148,7 +148,7 @@ export default function GestureHUD() {
           title={enabled ? 'Turn off hand tracking' : 'Control Umbra with your hand via webcam'}
           style={{
             display: 'flex', alignItems: 'center', gap: 6,
-            fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.12em',
+            fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.12em',
             color: enabled ? '#8b9cf7' : 'rgba(94,106,210,0.6)',
             background: 'rgba(8,9,10,0.72)', backdropFilter: 'blur(8px)',
             border: `1px solid ${enabled ? 'rgba(139,156,247,0.45)' : 'rgba(94,106,210,0.2)'}`,
@@ -168,7 +168,7 @@ export default function GestureHUD() {
         {initError && (
           <div style={{
             maxWidth: 220, textAlign: 'right',
-            fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11,
+            fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13,
             color: 'rgba(239,68,68,0.8)',
           }}>
             {initError}
@@ -187,7 +187,7 @@ export default function GestureHUD() {
           pointerEvents: 'none',
         }}>
           <div style={{
-            fontFamily: 'JetBrains Mono, monospace', fontSize: 10,
+            fontFamily: 'JetBrains Mono, monospace', fontSize: 12,
             letterSpacing: '0.24em', color: '#8b9cf7', marginBottom: 10,
           }}>
             HAND TRACKING ON

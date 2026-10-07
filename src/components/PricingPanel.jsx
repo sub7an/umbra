@@ -136,7 +136,7 @@ export default function PricingPanel() {
       <div style={{ width: '100%', maxWidth: 1020, animation: 'umbra-slide-up 0.35s cubic-bezier(0.16,1,0.3,1)' }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 36 }}>
-          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.28em', color: 'rgba(94,106,210,0.70)', marginBottom: 12 }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.28em', color: 'rgba(94,106,210,0.75)', marginBottom: 12 }}>
             SIMPLE PRICING · CANCEL ANYTIME
           </div>
           <div style={{ fontFamily: 'Chakra Petch, sans-serif', fontWeight: 700, fontSize: 'clamp(28px,4vw,44px)', color: '#f7f8f8' }}>
@@ -161,24 +161,24 @@ export default function PricingPanel() {
               {t.highlight && (
                 <div style={{
                   position: 'absolute', top: -9, left: '50%', transform: 'translateX(-50%)',
-                  fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.18em',
+                  fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.18em',
                   color: '#08090a', background: '#5e6ad2', borderRadius: 3, padding: '3px 10px',
                 }}>
                   MOST POPULAR
                 </div>
               )}
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.22em', color: t.accent, marginBottom: 14 }}>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.22em', color: t.accent, marginBottom: 14 }}>
                 {t.name}
               </div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 7, marginBottom: 20 }}>
                 <span style={{ fontFamily: 'Chakra Petch, sans-serif', fontWeight: 700, fontSize: 38, color: '#f7f8f8' }}>{t.price}</span>
-                <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>{t.sub}</span>
+                <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12, color: 'rgba(255,255,255,0.75)' }}>{t.sub}</span>
               </div>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 22 }}>
                 {t.features.map((f) => (
                   <div key={f} style={{ display: 'flex', gap: 9, alignItems: 'flex-start' }}>
-                    <span style={{ color: t.accent, fontSize: 11, lineHeight: '19px', flexShrink: 0 }}>✓</span>
-                    <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, lineHeight: 1.45, color: 'rgba(247,248,248,0.72)' }}>{f}</span>
+                    <span style={{ color: t.accent, fontSize: 13, lineHeight: '19px', flexShrink: 0 }}>✓</span>
+                    <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, lineHeight: 1.45, color: 'rgba(247,248,248,0.75)' }}>{f}</span>
                   </div>
                 ))}
               </div>
@@ -188,7 +188,7 @@ export default function PricingPanel() {
                 style={{
                   width: '100%', padding: '11px', borderRadius: 4,
                   cursor: t.ctaDisabled ? 'default' : 'pointer',
-                  fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.12em',
+                  fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.12em',
                   color: t.ctaDisabled ? 'rgba(255,255,255,0.35)' : t.highlight ? '#08090a' : t.accent,
                   background: t.ctaDisabled ? 'rgba(255,255,255,0.04)' : t.highlight ? '#5e6ad2' : `${t.accent}0f`,
                   border: t.ctaDisabled ? '1px solid rgba(255,255,255,0.08)' : `1px solid ${t.highlight ? '#5e6ad2' : t.accent + '40'}`,
@@ -203,7 +203,7 @@ export default function PricingPanel() {
                 <div style={{
                   marginTop: 8, textAlign: 'center',
                   fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12,
-                  color: 'rgba(247,248,248,0.70)', animation: 'umbra-slide-up 0.25s ease',
+                  color: 'rgba(247,248,248,0.75)', animation: 'umbra-slide-up 0.25s ease',
                 }}>
                   Email <span style={{ color: t.accent, fontWeight: 600 }}>{CONTACT_EMAIL}</span> — it's on your clipboard
                 </div>
@@ -213,7 +213,7 @@ export default function PricingPanel() {
         </div>
 
         <div style={{ textAlign: 'center', marginTop: 28 }}>
-          <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12, color: 'rgba(255,255,255,0.38)' }}>
+          <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12, color: 'rgba(255,255,255,0.75)' }}>
             Pro launches soon — waitlist members lock the early-bird price for life. · ESC to close
           </span>
         </div>

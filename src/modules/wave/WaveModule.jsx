@@ -24,27 +24,54 @@ function buildEquations(view) {
   switch (view) {
     case 'ripple': return {
       domain: 'WAVE MECHANICS · WAVE EQUATION',
+      syllabus: 'AQA 3.3.1 · IB 4.4 · superposition',
       primaryEq: `\\frac{\\partial^2 u}{\\partial t^2} = c^2 \\nabla^2 u`,
       derivedEqs: [
         { label: 'Superposition', eq: `u = \\textstyle\\sum_i A_i \\cos(kr_i - \\omega t)` },
         { label: 'Interference',  eq: `\\Delta = r_2 - r_1` },
       ],
+      tryThis: [
+        'Place two sources, then a third between them — watch the nodal lines rearrange.',
+        'Switch to 2 SLITS and count the bright bands behind the barrier.',
+      ],
+      checkpoint: {
+        q: 'Two sources are in phase. At a point exactly equidistant from both, is the water high, low, or still?',
+        a: 'High (then low) — equal path means Δ = 0, so the waves always arrive in phase and add: a constructive antinode, oscillating at full amplitude.',
+      },
     }
     case 'slit': return {
       domain: 'WAVE MECHANICS · DOUBLE SLIT',
+      syllabus: 'AQA 3.3.2 · IB 9.3 · Young’s slits',
       primaryEq: `I \\propto \\cos^2\\!\\left(\\frac{\\pi d \\sin\\theta}{\\lambda}\\right)`,
       derivedEqs: [
         { label: 'Maxima',        eq: `d \\sin\\theta = m\\lambda` },
         { label: 'Fringe spacing', eq: `\\Delta y = \\lambda L / d` },
       ],
+      tryThis: [
+        'Halve the slit separation d in your head — by Δy = λL/d the fringes should double in spacing.',
+        'Ask: what changes if you swap red light for blue (smaller λ)?',
+      ],
+      checkpoint: {
+        q: 'You double the slit separation d. Do the bright fringes move closer together or further apart?',
+        a: 'Closer together. Δy = λL/d, so doubling d halves the fringe spacing.',
+      },
     }
     case 'modes': return {
       domain: 'WAVE MECHANICS · NORMAL MODES',
+      syllabus: 'AQA 3.3.1.3 · IB 4.5 · standing waves',
       primaryEq: `u_{mn} = A \\sin\\!\\frac{m\\pi x}{L}\\sin\\!\\frac{n\\pi y}{L}\\cos(\\omega_{mn}t)`,
       derivedEqs: [
         { label: 'Eigenfreq.', eq: `\\omega_{mn} = \\pi c\\sqrt{m^2{+}n^2}/L` },
         { label: 'Nodes',      eq: `x = kL/m,\\quad y = kL/n` },
       ],
+      tryThis: [
+        'Select (2,1) then (1,2) — same frequency, rotated pattern. That is degeneracy.',
+        'Find the fundamental (1,1): the whole membrane moves as one, no internal nodal lines.',
+      ],
+      checkpoint: {
+        q: 'Mode (3,1) — how many nodal lines (still lines) lie inside the membrane?',
+        a: 'Two: m−1 = 2 nodal lines across x, and n−1 = 0 across y.',
+      },
     }
     default: return { domain: '', primaryEq: '', derivedEqs: [] }
   }
@@ -95,15 +122,15 @@ export default function WaveModule() {
           onClick={() => setActiveModule(null)}
           style={{
             fontFamily: 'JetBrains Mono, monospace',
-            fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase',
-            color: 'rgba(34,211,238,0.5)', background: 'none',
+            fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase',
+            color: 'rgba(34,211,238,0.75)', background: 'none',
             border: 'none', cursor: 'pointer', padding: 0,
           }}
         >← MODULES</button>
 
         <div style={{ width: 1, height: 14, background: 'rgba(34,211,238,0.12)' }} />
 
-        <span style={{ fontSize: 11, letterSpacing: '0.28em', textTransform: 'uppercase', color: ACCENT, fontWeight: 700 }}>
+        <span style={{ fontSize: 13, letterSpacing: '0.28em', textTransform: 'uppercase', color: ACCENT, fontWeight: 700 }}>
           Wave Mechanics
         </span>
 
@@ -120,11 +147,11 @@ export default function WaveModule() {
             background: ACCENT, boxShadow: `0 0 6px ${ACCENT}`,
             animation: 'umbra-pulse 1.8s ease-in-out infinite',
           }} />
-          <span style={{ fontSize: 8, letterSpacing: '0.2em', color: ACCENT }}>LIVE</span>
+          <span style={{ fontSize: 11, letterSpacing: '0.2em', color: ACCENT }}>LIVE</span>
         </div>
 
         {/* Stat readout */}
-        <span style={{ fontSize: 9, letterSpacing: '0.12em', color: 'rgba(34,211,238,0.45)' }}>
+        <span style={{ fontSize: 11, letterSpacing: '0.12em', color: 'rgba(34,211,238,0.75)' }}>
           {view === 'ripple' && `SOURCES: ${sourceCount}`}
           {view === 'modes'  && `MODE: (${m},${n})  ω = π·${Math.sqrt(m*m+n*n).toFixed(2)}c/L`}
         </span>
@@ -134,7 +161,7 @@ export default function WaveModule() {
           {VIEWS.map((v) => (
             <button key={v.id} onClick={() => setView(v.id)} style={{
               fontFamily: 'JetBrains Mono, monospace',
-              fontSize: 9, letterSpacing: '0.15em', textTransform: 'uppercase',
+              fontSize: 11, letterSpacing: '0.15em', textTransform: 'uppercase',
               padding: '5px 12px',
               background: view === v.id ? 'rgba(34,211,238,0.09)' : 'transparent',
               border: `1px solid ${view === v.id ? 'rgba(34,211,238,0.33)' : 'rgba(255,255,255,0.07)'}`,
@@ -154,9 +181,12 @@ export default function WaveModule() {
           <InfoPanel
             title="Wave Equation"
             domain={eq.domain}
+            syllabus={eq.syllabus}
             primaryEq={eq.primaryEq}
             derivedEqs={eq.derivedEqs}
             explanation={buildExplanation(view)}
+            tryThis={eq.tryThis}
+            checkpoint={eq.checkpoint}
             accentColor="cyan"
             footer="WAVE MECHANICS · UMBRA"
           />
@@ -186,7 +216,7 @@ export default function WaveModule() {
             pointerEvents: 'none',
           }}>
             <div style={{ width: 4, height: 4, borderRadius: '50%', background: ACCENT, boxShadow: `0 0 4px ${ACCENT}` }} />
-            <span style={{ fontSize: 8, letterSpacing: '0.2em', color: 'rgba(34,211,238,0.55)' }}>SIM ACTIVE</span>
+            <span style={{ fontSize: 11, letterSpacing: '0.2em', color: 'rgba(34,211,238,0.75)' }}>SIM ACTIVE</span>
           </div>
 
           {/* Ripple controls: slit mode + clear */}
@@ -205,7 +235,7 @@ export default function WaveModule() {
                 ].map((s) => (
                   <button key={s.id} onClick={() => setSlitMode(s.id)} style={{
                     fontFamily: 'JetBrains Mono, monospace',
-                    fontSize: 8, letterSpacing: '0.1em',
+                    fontSize: 11, letterSpacing: '0.1em',
                     padding: '4px 9px',
                     background: slitMode === s.id ? 'rgba(34,211,238,0.12)' : 'rgba(8,9,10,0.88)',
                     border: `1px solid ${slitMode === s.id ? 'rgba(34,211,238,0.4)' : 'rgba(34,211,238,0.12)'}`,
@@ -216,16 +246,16 @@ export default function WaveModule() {
               </div>
               {/* Clear button + hint */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 8, letterSpacing: '0.1em', color: 'rgba(34,211,238,0.28)' }}>
+                <span style={{ fontSize: 11, letterSpacing: '0.1em', color: 'rgba(34,211,238,0.75)' }}>
                   CLICK SURFACE · ADD SOURCE
                 </span>
                 <button onClick={() => setClear((c) => c + 1)} style={{
                   fontFamily: 'JetBrains Mono, monospace',
-                  fontSize: 8, letterSpacing: '0.1em',
+                  fontSize: 11, letterSpacing: '0.1em',
                   padding: '4px 9px',
                   background: 'rgba(8,9,10,0.88)',
                   border: '1px solid rgba(34,211,238,0.12)',
-                  color: 'rgba(34,211,238,0.38)',
+                  color: 'rgba(34,211,238,0.75)',
                   borderRadius: 2, cursor: 'pointer',
                 }}>CLEAR</button>
               </div>
@@ -242,7 +272,7 @@ export default function WaveModule() {
               {MODES.map(([mm, nn], i) => (
                 <button key={i} onClick={() => setModeIdx(i)} style={{
                   fontFamily: 'JetBrains Mono, monospace',
-                  fontSize: 8, letterSpacing: '0.08em',
+                  fontSize: 11, letterSpacing: '0.08em',
                   padding: '4px 6px',
                   background: modeIdx === i ? 'rgba(34,211,238,0.12)' : 'rgba(8,9,10,0.85)',
                   border: `1px solid ${modeIdx === i ? 'rgba(34,211,238,0.4)' : 'rgba(34,211,238,0.12)'}`,

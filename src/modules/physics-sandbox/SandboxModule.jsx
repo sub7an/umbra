@@ -127,7 +127,7 @@ function ModeButton({ m, active, onClick }) {
       </span>
       <span style={{
         fontFamily: 'JetBrains Mono, monospace',
-        fontSize: 10, letterSpacing: '0.12em',
+        fontSize: 12, letterSpacing: '0.12em',
         textTransform: 'uppercase',
         color: active ? m.color : 'rgba(255,255,255,0.35)',
       }}>
@@ -146,8 +146,8 @@ function Slider({ label, value, min, max, step, decimals, onChange }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)' }}>{label}</span>
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: ACCENT }}>{value.toFixed(decimals)}</span>
+        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.75)' }}>{label}</span>
+        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, color: ACCENT }}>{value.toFixed(decimals)}</span>
       </div>
       <input type="range" min={min} max={max} step={step} value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
@@ -183,15 +183,15 @@ export default function SandboxModule() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => setActiveModule(null)}
-            className="font-mono-data text-[11px] tracking-widest text-text-dim uppercase flex items-center gap-1.5"
-            style={{ color: 'rgba(132,204,22,0.6)' }}
+            className="font-mono-data text-[13px] tracking-widest text-text-dim uppercase flex items-center gap-1.5"
+            style={{ color: 'rgba(132,204,22,0.75)' }}
           >
             ← MODULES
           </button>
           <div className="w-px h-4 bg-border-subtle" />
           <h1 className="font-display text-base font-semibold text-text-primary tracking-wide">Physics Sandbox</h1>
-          <span className="font-mono-data text-[9px] tracking-wider uppercase px-2 py-0.5 border rounded"
-            style={{ borderColor: 'rgba(132,204,22,0.3)', color: 'rgba(132,204,22,0.6)', background: 'rgba(132,204,22,0.05)' }}>
+          <span className="font-mono-data text-[11px] tracking-wider uppercase px-2 py-0.5 border rounded"
+            style={{ borderColor: 'rgba(132,204,22,0.3)', color: 'rgba(132,204,22,0.75)', background: 'rgba(132,204,22,0.05)' }}>
             Click to place · Emergent fields
           </span>
         </div>
@@ -244,7 +244,7 @@ export default function SandboxModule() {
 
           {/* Mode overlay */}
           <div className="absolute top-3 left-4 pointer-events-none">
-            <span className="font-display text-[10px] tracking-[0.2em] uppercase text-text-dim">
+            <span className="font-display text-[12px] tracking-[0.2em] uppercase text-text-dim">
               {mode === 'erase'
                 ? 'ERASE MODE · Click a source to remove it'
                 : `PLACING: ${MODES.find(m => m.id === mode)?.label} · Click anywhere`}
@@ -259,7 +259,7 @@ export default function SandboxModule() {
                 fontSize: 12,
                 letterSpacing: '0.2em',
                 textTransform: 'uppercase',
-                color: 'rgba(255,255,255,0.12)',
+                color: 'rgba(255,255,255,0.75)',
                 textAlign: 'center',
                 lineHeight: 2,
               }}>
@@ -280,7 +280,7 @@ export default function SandboxModule() {
             </div>
             <button
               onClick={clearAll}
-              className="font-mono-data text-[10px] tracking-wider text-text-dim uppercase px-2 py-1 border border-border-subtle rounded"
+              className="font-mono-data text-[12px] tracking-wider text-text-dim uppercase px-2 py-1 border border-border-subtle rounded"
               style={{ '--hover-color': '#ef4444' }}
               onMouseEnter={(e) => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)' }}
               onMouseLeave={(e) => { e.currentTarget.style.color = ''; e.currentTarget.style.borderColor = '' }}
@@ -310,7 +310,7 @@ export default function SandboxModule() {
 
             {/* Presets */}
             <div>
-              <p className="font-mono-data text-[9px] tracking-[0.22em] uppercase text-text-dim mb-2">Presets</p>
+              <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase text-text-dim mb-2">Presets</p>
               <div className="flex flex-col gap-1">
                 {PRESETS.map((p) => (
                   <button
@@ -337,10 +337,10 @@ export default function SandboxModule() {
                       e.currentTarget.style.background = 'transparent'
                     }}
                   >
-                    <span style={{ fontFamily: 'monospace', fontSize: 10, color: ACCENT, width: 22, textAlign: 'center', flexShrink: 0 }}>
+                    <span style={{ fontFamily: 'monospace', fontSize: 12, color: ACCENT, width: 22, textAlign: 'center', flexShrink: 0 }}>
                       {p.icon}
                     </span>
-                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>
+                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.75)', textTransform: 'uppercase' }}>
                       {p.name}
                     </span>
                   </button>
@@ -352,7 +352,7 @@ export default function SandboxModule() {
 
             {/* Color legend */}
             <div>
-              <p className="font-mono-data text-[9px] tracking-[0.22em] uppercase text-text-dim mb-2">Speed</p>
+              <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase text-text-dim mb-2">Speed</p>
               <div className="flex flex-col gap-1">
                 {[
                   { color: '#0b1247', label: 'Slow' },
@@ -362,7 +362,7 @@ export default function SandboxModule() {
                 ].map(({ color, label }) => (
                   <div key={label} className="flex items-center gap-2">
                     <span style={{ width: 10, height: 10, borderRadius: '50%', background: color, display: 'inline-block', border: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }} />
-                    <span className="font-mono-data text-[9px] text-text-dim">{label}</span>
+                    <span className="font-mono-data text-[11px] text-text-dim">{label}</span>
                   </div>
                 ))}
               </div>
@@ -373,7 +373,7 @@ export default function SandboxModule() {
             {/* Placed sources list */}
             {sources.length > 0 && (
               <div>
-                <p className="font-mono-data text-[9px] tracking-[0.22em] uppercase text-text-dim mb-2">
+                <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase text-text-dim mb-2">
                   Active ({sources.length})
                 </p>
                 <div className="flex flex-col gap-1">
@@ -382,12 +382,12 @@ export default function SandboxModule() {
                     return (
                       <div key={src.id} className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
-                          <span style={{ color: def.color, fontSize: 11 }}>{def.symbol}</span>
-                          <span className="font-mono-data text-[9px] text-text-dim">{def.label}</span>
+                          <span style={{ color: def.color, fontSize: 13 }}>{def.symbol}</span>
+                          <span className="font-mono-data text-[11px] text-text-dim">{def.label}</span>
                         </div>
                         <button
                           onClick={() => removeSource(src.id)}
-                          className="font-mono-data text-[9px] text-text-dim"
+                          className="font-mono-data text-[11px] text-text-dim"
                           onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
                           onMouseLeave={(e) => e.currentTarget.style.color = ''}
                         >✕</button>
@@ -400,7 +400,7 @@ export default function SandboxModule() {
           </div>
 
           <div className="px-4 py-3 border-t border-border-subtle">
-            <p className="font-mono-data text-[9px] text-text-dim tracking-wider">
+            <p className="font-mono-data text-[11px] text-text-dim tracking-wider">
               SANDBOX · SUPERPOSITION · 2D
             </p>
           </div>

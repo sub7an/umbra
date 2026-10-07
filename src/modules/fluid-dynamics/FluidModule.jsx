@@ -98,8 +98,8 @@ function Slider({ label, value, min, max, step, decimals, onChange, accentHex })
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center justify-between">
-        <span className="font-mono-data text-[10px] tracking-wider uppercase text-text-dim">{label}</span>
-        <span className="font-mono-data text-[11px] tabular-nums" style={{ color: accentHex }}>{value.toFixed(decimals)}</span>
+        <span className="font-mono-data text-[12px] tracking-wider uppercase text-text-dim">{label}</span>
+        <span className="font-mono-data text-[13px] tabular-nums" style={{ color: accentHex }}>{value.toFixed(decimals)}</span>
       </div>
       <input type="range" min={min} max={max} step={step} value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
@@ -129,7 +129,7 @@ export default function FluidModule() {
       <header className="flex items-center justify-between px-5 py-2 bg-panel border-b border-border-subtle shrink-0">
         <div className="flex items-center gap-3 shrink-0">
           <button onClick={() => setActiveModule(null)}
-            className="font-mono-data text-[11px] tracking-widest text-text-dim hover:text-teal-glow transition-colors duration-200 uppercase flex items-center gap-1.5">
+            className="font-mono-data text-[13px] tracking-widest text-text-dim hover:text-teal-glow transition-colors duration-200 uppercase flex items-center gap-1.5">
             ← MODULES
           </button>
           <div className="w-px h-4 bg-border-subtle" />
@@ -137,7 +137,7 @@ export default function FluidModule() {
           <div className="flex items-center gap-1.5 px-2 py-0.5 rounded border shrink-0"
             style={{ borderColor: 'rgba(45,212,191,0.25)', background: 'rgba(45,212,191,0.05)' }}>
             <div style={{ width: 5, height: 5, borderRadius: '50%', background: ACCENT, boxShadow: `0 0 6px ${ACCENT}`, animation: 'umbra-pulse 1.8s ease-in-out infinite' }} />
-            <span className="font-mono-data text-[8px] tracking-[0.2em]" style={{ color: 'rgba(45,212,191,0.7)' }}>LIVE</span>
+            <span className="font-mono-data text-[11px] tracking-[0.2em]" style={{ color: 'rgba(45,212,191,0.75)' }}>LIVE</span>
           </div>
         </div>
 
@@ -145,7 +145,7 @@ export default function FluidModule() {
           {VIEWS.map((v) => (
             <button key={v.id} onClick={() => setFluidView(v.id)}
               className={[
-                'font-mono-data text-[11px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
+                'font-mono-data text-[13px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
                 fluidView === v.id
                   ? 'border-teal-glow text-teal-glow bg-teal-glow/5 shadow-glow-teal'
                   : 'border-border-subtle text-text-dim hover:border-teal-glow/50 hover:text-text-primary',
@@ -174,7 +174,7 @@ export default function FluidModule() {
             {fluidView === 'sph'         && <SPH            key="sph" reynolds={reynolds} />}
           </SceneWrapper>
           <div className="absolute top-3 left-4 pointer-events-none">
-            <span className="font-display text-[10px] tracking-[0.2em] uppercase text-text-dim">
+            <span className="font-display text-[12px] tracking-[0.2em] uppercase text-text-dim">
               {fluidView === 'streamlines' ? 'Potential Flow · Irrotational · Incompressible'
                : fluidView === 'vortex'    ? 'Kármán Vortex Street · Discrete Vortex Method'
                : 'SPH Dam Break 3D · Navier-Stokes · 216 Particles'}
@@ -183,10 +183,10 @@ export default function FluidModule() {
           <div className="absolute bottom-4 left-4 flex items-center gap-1.5 px-2.5 py-1 rounded border pointer-events-none"
             style={{ borderColor: 'rgba(45,212,191,0.18)', background: 'rgba(8,9,10,0.85)' }}>
             <div style={{ width: 4, height: 4, borderRadius: '50%', background: ACCENT, boxShadow: `0 0 4px ${ACCENT}` }} />
-            <span className="font-mono-data text-[8px] tracking-[0.2em]" style={{ color: 'rgba(45,212,191,0.5)' }}>SIM ACTIVE</span>
+            <span className="font-mono-data text-[11px] tracking-[0.2em]" style={{ color: 'rgba(45,212,191,0.75)' }}>SIM ACTIVE</span>
           </div>
-          <div className="absolute bottom-4 right-4 font-mono-data text-[8px] tracking-[0.12em] pointer-events-none"
-            style={{ color: 'rgba(45,212,191,0.28)' }}>
+          <div className="absolute bottom-4 right-4 font-mono-data text-[11px] tracking-[0.12em] pointer-events-none"
+            style={{ color: 'rgba(45,212,191,0.75)' }}>
             DRAG TO ORBIT · SCROLL TO ZOOM
           </div>
         </main>
@@ -198,19 +198,19 @@ export default function FluidModule() {
               <span className="font-display text-xs tracking-[0.18em] uppercase text-text-dim">Parameters</span>
             </div>
             <button onClick={resetFluid}
-              className="font-mono-data text-[10px] tracking-wider text-text-dim hover:text-teal-glow transition-colors duration-200 uppercase px-2 py-1 border border-border-subtle hover:border-teal-glow/40 rounded">
+              className="font-mono-data text-[12px] tracking-wider text-text-dim hover:text-teal-glow transition-colors duration-200 uppercase px-2 py-1 border border-border-subtle hover:border-teal-glow/40 rounded">
               RST
             </button>
           </div>
 
           <div className="flex-1 px-4 py-4 flex flex-col gap-4 overflow-y-auto thin-scroll">
             <div>
-              <p className="font-mono-data text-[9px] tracking-[0.22em] uppercase text-text-dim mb-2">View</p>
+              <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase text-text-dim mb-2">View</p>
               <div className="flex flex-col gap-1.5">
                 {VIEWS.map((v) => (
                   <button key={v.id} onClick={() => setFluidView(v.id)}
                     className={[
-                      'w-full text-left px-3 py-2 rounded border font-mono-data text-[11px] tracking-wide transition-all duration-150',
+                      'w-full text-left px-3 py-2 rounded border font-mono-data text-[13px] tracking-wide transition-all duration-150',
                       fluidView === v.id
                         ? 'border-teal-glow/60 bg-teal-glow/5 text-text-primary'
                         : 'border-border-subtle text-text-dim hover:border-teal-glow/30',
@@ -224,7 +224,7 @@ export default function FluidModule() {
             <div className="h-px bg-border-subtle" />
 
             <div>
-              <p className="font-mono-data text-[9px] tracking-[0.22em] uppercase text-text-dim mb-3">Flow</p>
+              <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase text-text-dim mb-3">Flow</p>
               <Slider label={fluidView === 'sph' ? 'G  gravity' : 'Re  speed'}
                 value={reynolds} min={0.3} max={2.5} step={0.05} decimals={2}
                 onChange={setFluidReynolds} accentHex={ACCENT} />
@@ -232,7 +232,7 @@ export default function FluidModule() {
 
             <div className="h-px bg-border-subtle" />
 
-            <div className="font-mono-data text-[9px] text-text-dim space-y-1.5">
+            <div className="font-mono-data text-[11px] text-text-dim space-y-1.5">
               {fluidView === 'streamlines' && (
                 <>
                   <p style={{ color: '#fb923c' }}>● stagnation pts</p>
@@ -258,7 +258,7 @@ export default function FluidModule() {
           </div>
 
           <div className="px-4 py-3 border-t border-border-subtle">
-            <p className="font-mono-data text-[9px] text-text-dim tracking-wider">
+            <p className="font-mono-data text-[11px] text-text-dim tracking-wider">
               FLUID DYNAMICS · 3D SPH · NAVIER-STOKES
             </p>
           </div>

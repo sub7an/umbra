@@ -74,11 +74,11 @@ function BoostFrame({ beta }) {
 
       {/* Labels */}
       <Html position={[H * beta + 0.2, H - 0.2, 0]} style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 10,
+        <span style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 12,
           color: '#e040fb', letterSpacing: '0.1em', textShadow: '0 0 6px #e040fb' }}>ct′</span>
       </Html>
       <Html position={[H + 0.2, H * beta - 0.2, 0]} style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 10,
+        <span style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 12,
           color: '#e040fb', letterSpacing: '0.1em', textShadow: '0 0 6px #e040fb' }}>x′</span>
       </Html>
     </group>
@@ -339,10 +339,10 @@ export default function LightCone() {
         <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 12, color: '#4a7a74', whiteSpace: 'nowrap' }}>x</span>
       </Html>
       <Html position={[0, 2.4, 0]} center style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 10, color: '#8b9cf7', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>FUTURE</span>
+        <span style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 12, color: '#8b9cf7', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>FUTURE</span>
       </Html>
       <Html position={[0, -2.4, 0]} center style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 10, color: '#3d4494', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>PAST</span>
+        <span style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 12, color: '#3d4494', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>PAST</span>
       </Html>
 
       {/* ── Origin event ── */}
@@ -365,7 +365,7 @@ export default function LightCone() {
       <Html position={[ex + 0.25, et + 0.35, 0]} style={{ pointerEvents: 'none' }}>
         <span style={{
           fontFamily: 'Chakra Petch,sans-serif',
-          fontSize: 11,
+          fontSize: 13,
           fontWeight: 600,
           color: regionColor,
           textShadow: `0 0 8px ${regionColor}`,

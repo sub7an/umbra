@@ -234,7 +234,7 @@ function DiagnosticsPanel({ velocity, gamma }) {
         <>
           {/* γ readout */}
           <div className="px-4 py-3 border-b border-border-subtle">
-            <p className="font-mono-data text-[9px] tracking-[0.22em] uppercase mb-1" style={{ color: '#4a9090' }}>
+            <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase mb-1" style={{ color: '#8b9cf7' }}>
               Lorentz factor · live
             </p>
             <span className="font-mono-data text-xl tabular-nums text-amber-glow glow-amber">
@@ -244,7 +244,7 @@ function DiagnosticsPanel({ velocity, gamma }) {
 
           {/* Rolling 4-momentum graph */}
           <div className="px-3 pt-3 pb-2 border-b border-border-subtle">
-            <p className="font-mono-data text-[9px] tracking-[0.22em] uppercase mb-2" style={{ color: '#4a9090' }}>
+            <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase mb-2" style={{ color: '#8b9cf7' }}>
               4-momentum · E² − p²
             </p>
             <div className="relative rounded overflow-hidden" style={{ height: '72px' }}>
@@ -256,15 +256,15 @@ function DiagnosticsPanel({ velocity, gamma }) {
               />
             </div>
             <div className="flex gap-4 mt-2">
-              <span className="flex items-center gap-1.5 font-mono-data text-[9px] text-text-dim">
+              <span className="flex items-center gap-1.5 font-mono-data text-[11px] text-text-dim">
                 <span className="inline-block w-3 rounded" style={{ height: 1.5, background: 'rgba(94,106,210,0.88)' }} />
                 E = γ
               </span>
-              <span className="flex items-center gap-1.5 font-mono-data text-[9px] text-text-dim">
+              <span className="flex items-center gap-1.5 font-mono-data text-[11px] text-text-dim">
                 <span className="inline-block w-3 rounded" style={{ height: 1.5, background: 'rgba(245,158,11,0.72)' }} />
                 p = γβ
               </span>
-              <span className="flex items-center gap-1.5 font-mono-data text-[9px] text-text-dim">
+              <span className="flex items-center gap-1.5 font-mono-data text-[11px] text-text-dim">
                 <span className="inline-block w-3 rounded" style={{ height: 1.5, background: 'rgba(106,173,165,0.65)' }} />
                 m²
               </span>
@@ -273,15 +273,15 @@ function DiagnosticsPanel({ velocity, gamma }) {
 
           {/* Invariant check readout */}
           <div className="px-4 py-3">
-            <p className="font-mono-data text-[9px] tracking-[0.18em] uppercase mb-2" style={{ color: '#4a9090' }}>
+            <p className="font-mono-data text-[11px] tracking-[0.18em] uppercase mb-2" style={{ color: '#8b9cf7' }}>
               Invariant check
             </p>
             <div className="flex items-baseline justify-between py-1.5 border-b border-border-subtle">
-              <span className="font-display text-[11px] tracking-widest uppercase text-text-dim">E² − p²</span>
+              <span className="font-display text-[13px] tracking-widest uppercase text-text-dim">E² − p²</span>
               <span className="font-mono-data text-sm tabular-nums text-cyan-glow glow-cyan">{m2.toFixed(6)}</span>
             </div>
             <div className="flex items-baseline justify-between py-1.5">
-              <span className="font-display text-[11px] tracking-widest uppercase text-text-dim">Expected m²</span>
+              <span className="font-display text-[13px] tracking-widest uppercase text-text-dim">Expected m²</span>
               <span className="font-mono-data text-sm tabular-nums text-text-dim">1.000000</span>
             </div>
           </div>
@@ -342,7 +342,7 @@ export default function SRModule() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => setActiveModule(null)}
-            className="font-mono-data text-[11px] tracking-widest text-text-dim hover:text-cyan-glow transition-colors duration-200 uppercase flex items-center gap-1.5"
+            className="font-mono-data text-[13px] tracking-widest text-text-dim hover:text-cyan-glow transition-colors duration-200 uppercase flex items-center gap-1.5"
           >
             ← MODULES
           </button>
@@ -363,7 +363,7 @@ export default function SRModule() {
                 aria-selected={isActive}
                 onClick={() => setActiveView(v.id)}
                 className={[
-                  'font-mono-data text-[11px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
+                  'font-mono-data text-[13px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
                   isActive
                     ? 'border-cyan-glow text-cyan-glow shadow-glow-cyan bg-cyan-glow/5'
                     : 'border-border-subtle text-text-dim hover:border-cyan-dim hover:text-text-primary',
@@ -405,7 +405,7 @@ export default function SRModule() {
 
           {/* Scene label */}
           <div className="absolute top-3 left-4 pointer-events-none">
-            <span className="font-display text-[10px] tracking-[0.2em] uppercase text-text-dim">
+            <span className="font-display text-[12px] tracking-[0.2em] uppercase text-text-dim">
               {VIEWS.find((v) => v.id === activeView)?.label}
             </span>
           </div>

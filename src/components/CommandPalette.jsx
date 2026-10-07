@@ -144,8 +144,8 @@ export default function CommandPalette() {
             }}
           />
           <kbd style={{
-            fontFamily: 'JetBrains Mono, monospace', fontSize: 9,
-            color: 'rgba(94,106,210,0.32)',
+            fontFamily: 'JetBrains Mono, monospace', fontSize: 11,
+            color: 'rgba(94,106,210,0.75)',
             border: '1px solid rgba(94,106,210,0.13)',
             borderRadius: 3, padding: '2px 6px', flexShrink: 0,
           }}>ESC</kbd>
@@ -156,8 +156,8 @@ export default function CommandPalette() {
           {results.length === 0 ? (
             <div style={{
               padding: '28px 16px', textAlign: 'center',
-              fontFamily: 'JetBrains Mono, monospace', fontSize: 10,
-              color: 'rgba(94,106,210,0.22)', letterSpacing: '0.12em',
+              fontFamily: 'JetBrains Mono, monospace', fontSize: 12,
+              color: 'rgba(94,106,210,0.75)', letterSpacing: '0.12em',
             }}>
               NO MODULES MATCH
             </div>
@@ -194,7 +194,7 @@ export default function CommandPalette() {
                   {mod.name}
                 </div>
                 <div style={{
-                  fontFamily: 'JetBrains Mono, monospace', fontSize: 9, marginTop: 2,
+                  fontFamily: 'JetBrains Mono, monospace', fontSize: 11, marginTop: 2,
                   color: `${mod.color}65`, letterSpacing: '0.04em',
                 }}>
                   {mod.formula}
@@ -202,8 +202,8 @@ export default function CommandPalette() {
               </div>
               {i === sel && (
                 <kbd style={{
-                  fontFamily: 'JetBrains Mono, monospace', fontSize: 9,
-                  color: 'rgba(94,106,210,0.32)',
+                  fontFamily: 'JetBrains Mono, monospace', fontSize: 11,
+                  color: 'rgba(94,106,210,0.75)',
                   border: '1px solid rgba(94,106,210,0.13)',
                   borderRadius: 3, padding: '2px 5px', flexShrink: 0,
                 }}>↵</kbd>
@@ -221,14 +221,14 @@ export default function CommandPalette() {
           {[['↑↓', 'navigate'], ['↵', 'open'], ['⌘K', 'close']].map(([key, lbl]) => (
             <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <kbd style={{
-                fontFamily: 'JetBrains Mono, monospace', fontSize: 8,
-                color: 'rgba(94,106,210,0.32)',
+                fontFamily: 'JetBrains Mono, monospace', fontSize: 11,
+                color: 'rgba(94,106,210,0.75)',
                 border: '1px solid rgba(94,106,210,0.12)',
                 borderRadius: 3, padding: '2px 5px',
               }}>{key}</kbd>
               <span style={{
-                fontFamily: 'JetBrains Mono, monospace', fontSize: 8,
-                color: 'rgba(94,106,210,0.2)', letterSpacing: '0.09em',
+                fontFamily: 'JetBrains Mono, monospace', fontSize: 11,
+                color: 'rgba(94,106,210,0.75)', letterSpacing: '0.09em',
               }}>{lbl}</span>
             </div>
           ))}

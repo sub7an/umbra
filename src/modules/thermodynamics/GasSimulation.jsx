@@ -168,7 +168,7 @@ export default function GasSimulation({ temperature }) {
           padding: '8px 10px',
           fontFamily: 'JetBrains Mono, monospace',
         }}>
-          <div style={{ fontSize: 7, letterSpacing: '0.18em', color: 'rgba(56,189,248,0.45)', marginBottom: 6 }}>
+          <div style={{ fontSize: 7, letterSpacing: '0.18em', color: 'rgba(56,189,248,0.75)', marginBottom: 6 }}>
             SPEED DISTRIBUTION
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 1.5, height: 62 }}>
@@ -185,13 +185,13 @@ export default function GasSimulation({ temperature }) {
               )
             })}
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3, fontSize: 7, color: 'rgba(56,189,248,0.28)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3, fontSize: 7, color: 'rgba(56,189,248,0.75)' }}>
             <span>0</span><span>v_max</span>
           </div>
-          <div className="vrms" style={{ fontSize: 8, color: '#38bdf8', marginTop: 6, opacity: 0.65 }}>
+          <div className="vrms" style={{ fontSize: 11, color: '#38bdf8', marginTop: 6, opacity: 0.65 }}>
             v_rms ≈ –
           </div>
-          <div style={{ fontSize: 7, color: 'rgba(56,189,248,0.28)', marginTop: 2 }}>
+          <div style={{ fontSize: 7, color: 'rgba(56,189,248,0.75)', marginTop: 2 }}>
             Maxwell-Boltzmann
           </div>
         </div>

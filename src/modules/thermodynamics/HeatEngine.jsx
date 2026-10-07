@@ -147,10 +147,10 @@ function PistonCylinder({ VRef, phaseRef, VA, Vmax }) {
 
       {/* Labels */}
       <Html position={[-CYL_LEN/2, -1.1, 0]} center style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9, color: '#ff6644', letterSpacing: '0.1em' }}>Q_IN</span>
+        <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11, color: '#ff6644', letterSpacing: '0.1em' }}>Q_IN</span>
       </Html>
       <Html position={[CYL_LEN/2, -1.1, 0]} center style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9, color: '#4488ff', letterSpacing: '0.1em' }}>Q_OUT</span>
+        <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11, color: '#4488ff', letterSpacing: '0.1em' }}>Q_OUT</span>
       </Html>
     </group>
   )
@@ -216,15 +216,15 @@ export default function HeatEngine({ temperature }) {
 
       {/* Axis labels */}
       <Html position={[5.0, -0.5, 0]} center style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11, color: '#38bdf8', opacity: 0.65 }}>V</span>
+        <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 13, color: '#38bdf8', opacity: 0.65 }}>V</span>
       </Html>
       <Html position={[-4.5, 5.4, 0]} center style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11, color: '#38bdf8', opacity: 0.65 }}>P</span>
+        <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 13, color: '#38bdf8', opacity: 0.65 }}>P</span>
       </Html>
 
       {/* Efficiency readout */}
       <Html position={[1.8, 4.6, 0]} center style={{ pointerEvents: 'none' }}>
-        <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, textAlign: 'right', lineHeight: 1.75 }}>
+        <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 12, textAlign: 'right', lineHeight: 1.75 }}>
           <div style={{ color: '#5e6ad2' }}>T_H = {TH.toFixed(2)}</div>
           <div style={{ color: '#fb923c' }}>T_C = 1.00</div>
           <div style={{ color: '#f59e0b', fontWeight: 700 }}>η = {(efficiency*100).toFixed(1)}%</div>
@@ -233,7 +233,7 @@ export default function HeatEngine({ temperature }) {
 
       {/* Phase legend */}
       <Html position={[-3.8, 4.6, 0]} style={{ pointerEvents: 'none' }}>
-        <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9, lineHeight: 2.0 }}>
+        <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11, lineHeight: 2.0 }}>
           {PHASE_COLORS.map((c, i) => (
             <div key={i} style={{ color: `#${c.getHexString()}` }}>─ {PHASE_LABELS[i]}</div>
           ))}

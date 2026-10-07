@@ -103,7 +103,7 @@ export default function Hero({ onScrollDown }) {
         {/* Live system status */}
         <div className="flex items-center gap-2.5 mb-10">
           <span className="w-1.5 h-1.5 rounded-full bg-cyan-glow shadow-glow-cyan animate-pulse-glow flex-shrink-0" />
-          <span className="font-mono-data text-[10px] tracking-[0.28em] uppercase text-text-dim">
+          <span className="font-mono-data text-[12px] tracking-[0.28em] uppercase text-text-dim">
             Instrument Array · Online
           </span>
         </div>
@@ -139,9 +139,9 @@ export default function Hero({ onScrollDown }) {
           onClick={onScrollDown}
           aria-label="Scroll to explore modules"
           className="group flex flex-col items-center gap-3 cursor-pointer transition-colors duration-300"
-          style={{ color: '#4a9090' }}
+          style={{ color: '#8b9cf7' }}
         >
-          <span className="font-mono-data text-[10px] tracking-[0.3em] uppercase group-hover:text-cyan-glow transition-colors duration-300">
+          <span className="font-mono-data text-[12px] tracking-[0.3em] uppercase group-hover:text-cyan-glow transition-colors duration-300">
             Explore modules
           </span>
           <svg

@@ -144,13 +144,13 @@ function QubitBloch({ position, color, label, blochLen, blochDir, concurrence, f
       </mesh>
 
       <Html position={[0.2, 1.20, 0]} style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9, color, whiteSpace: 'nowrap' }}>|0⟩</span>
+        <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11, color, whiteSpace: 'nowrap' }}>|0⟩</span>
       </Html>
       <Html position={[0.2, -1.24, 0]} style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 9, color: `${color}77`, whiteSpace: 'nowrap' }}>|1⟩</span>
+        <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11, color: `${color}77`, whiteSpace: 'nowrap' }}>|1⟩</span>
       </Html>
       <Html position={[0, -1.92, 0]} center style={{ pointerEvents: 'none' }}>
-        <div style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 11, color, letterSpacing: '0.14em', textShadow: `0 0 8px ${color}88`, whiteSpace: 'nowrap' }}>
+        <div style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 13, color, letterSpacing: '0.14em', textShadow: `0 0 8px ${color}88`, whiteSpace: 'nowrap' }}>
           {label}
         </div>
       </Html>
@@ -359,7 +359,7 @@ export default function Entanglement() {
 
         {/* Concurrence */}
         <div style={{
-          fontFamily: 'JetBrains Mono,monospace', fontSize: 11,
+          fontFamily: 'JetBrains Mono,monospace', fontSize: 13,
           color: '#f59e0b',
           textShadow: '0 0 8px rgba(245,158,11,0.5)',
           letterSpacing: '0.04em', marginTop: 6, whiteSpace: 'nowrap',
@@ -377,7 +377,7 @@ export default function Entanglement() {
           borderRadius: 3, padding: '5px 12px',
           display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 3,
         }}>
-          <div style={{ fontSize: 9, letterSpacing: '0.18em', color: 'rgba(180,180,200,0.45)' }}>
+          <div style={{ fontSize: 11, letterSpacing: '0.18em', color: 'rgba(180,180,200,0.75)' }}>
             CHSH BELL INEQUALITY
           </div>
           <div style={{
@@ -388,10 +388,10 @@ export default function Entanglement() {
           }}>
             S = {S.toFixed(3)}
           </div>
-          <div style={{ fontSize: 8, letterSpacing: '0.12em', color: sViol ? '#ef4444' : 'rgba(180,180,200,0.35)' }}>
+          <div style={{ fontSize: 11, letterSpacing: '0.12em', color: sViol ? '#ef4444' : 'rgba(180,180,200,0.35)' }}>
             {sViol ? 'CLASSICAL LIMIT VIOLATED  (S > 2)' : 'WITHIN CLASSICAL BOUND  (S ≤ 2)'}
           </div>
-          <div style={{ fontSize: 8, color: 'rgba(100,120,130,0.45)', letterSpacing: '0.1em', marginTop: 1 }}>
+          <div style={{ fontSize: 11, color: 'rgba(100,120,130,0.75)', letterSpacing: '0.1em', marginTop: 1 }}>
             QUANTUM MAX: 2√2 ≈ 2.828
           </div>
         </div>
@@ -399,7 +399,7 @@ export default function Entanglement() {
 
       {/* ── State vector ── */}
       <Html position={[0, -2.0, 0]} center style={{ pointerEvents: 'none', textAlign: 'center' }}>
-        <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: '#2e4a46', whiteSpace: 'nowrap' }}>
+        <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 12, color: '#2e4a46', whiteSpace: 'nowrap' }}>
           {`|ψ⟩ = ${Math.cos(alpha).toFixed(3)}|00⟩ + ${Math.sin(alpha).toFixed(3)}|11⟩`}
         </div>
       </Html>

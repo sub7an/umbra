@@ -74,7 +74,7 @@ export default function AboutPanel() {
       <div style={{ width: '100%', maxWidth: 980, animation: 'umbra-slide-up 0.35s cubic-bezier(0.16,1,0.3,1)' }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.3em', color: 'rgba(94,106,210,0.7)', marginBottom: 14 }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.3em', color: 'rgba(94,106,210,0.75)', marginBottom: 14 }}>
             ⬡ UMBRA · THE STORY
           </div>
           <div style={{ fontFamily: 'Chakra Petch, sans-serif', fontWeight: 700, fontSize: 'clamp(28px,4.5vw,50px)', color: '#f7f8f8', lineHeight: 1.05 }}>
@@ -83,7 +83,7 @@ export default function AboutPanel() {
           <div style={{ fontFamily: 'Chakra Petch, sans-serif', fontWeight: 700, fontSize: 'clamp(28px,4.5vw,50px)', color: '#5e6ad2', lineHeight: 1.05, textShadow: '0 0 32px rgba(94,106,210,0.3)' }}>
             in a browser tab.
           </div>
-          <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 15, color: 'rgba(247,248,248,0.6)', maxWidth: 560, margin: '18px auto 0', lineHeight: 1.6 }}>
+          <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 15, color: 'rgba(247,248,248,0.75)', maxWidth: 560, margin: '18px auto 0', lineHeight: 1.6 }}>
             Umbra turns the hardest ideas in physics into things you can grab, tune, and break — live, in 3D, with an AI tutor watching over your shoulder.
           </p>
         </div>
@@ -97,7 +97,7 @@ export default function AboutPanel() {
           {STATS.map((s) => (
             <div key={s.label} style={{ background: 'rgba(17,17,19,0.95)', padding: '22px 16px', textAlign: 'center' }}>
               <div style={{ fontFamily: 'Chakra Petch, sans-serif', fontWeight: 700, fontSize: 30, color: '#5e6ad2' }}>{s.value}</div>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9.5, letterSpacing: '0.1em', color: 'rgba(247,248,248,0.5)', marginTop: 6, lineHeight: 1.4, textTransform: 'uppercase' }}>{s.label}</div>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11.5, letterSpacing: '0.1em', color: 'rgba(247,248,248,0.75)', marginTop: 6, lineHeight: 1.4, textTransform: 'uppercase' }}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -109,9 +109,9 @@ export default function AboutPanel() {
               background: 'rgba(17,17,19,0.92)', border: `1px solid ${p.accent}26`,
               borderRadius: 8, padding: '22px 22px',
             }}>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.2em', color: p.accent, marginBottom: 10 }}>{p.tag}</div>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.2em', color: p.accent, marginBottom: 10 }}>{p.tag}</div>
               <div style={{ fontFamily: 'Chakra Petch, sans-serif', fontWeight: 700, fontSize: 18, color: '#f7f8f8', marginBottom: 8, lineHeight: 1.25 }}>{p.title}</div>
-              <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13.5, color: 'rgba(247,248,248,0.62)', lineHeight: 1.65, margin: 0 }}>{p.body}</p>
+              <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13.5, color: 'rgba(247,248,248,0.75)', lineHeight: 1.65, margin: 0 }}>{p.body}</p>
             </div>
           ))}
         </div>
@@ -121,14 +121,14 @@ export default function AboutPanel() {
           background: 'rgba(17,17,19,0.92)', border: '1px solid rgba(94,106,210,0.2)',
           borderRadius: 8, padding: '22px 24px', marginBottom: 28,
         }}>
-          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.2em', color: 'rgba(94,106,210,0.75)', marginBottom: 14 }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.2em', color: 'rgba(94,106,210,0.75)', marginBottom: 14 }}>
             WHERE WE ARE TODAY
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {TRACTION.map((t) => (
               <div key={t} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                 <span style={{ color: '#10b981', fontSize: 12, lineHeight: '20px', flexShrink: 0 }}>✓</span>
-                <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13.5, color: 'rgba(247,248,248,0.72)', lineHeight: 1.5 }}>{t}</span>
+                <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13.5, color: 'rgba(247,248,248,0.75)', lineHeight: 1.5 }}>{t}</span>
               </div>
             ))}
           </div>
@@ -139,7 +139,7 @@ export default function AboutPanel() {
           <button
             onClick={() => { setOpen(false); window.dispatchEvent(new CustomEvent('umbra-pricing-open')) }}
             style={{
-              fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.12em',
+              fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.12em',
               color: '#08090a', background: '#5e6ad2', border: 'none', borderRadius: 5,
               padding: '11px 22px', cursor: 'pointer', fontWeight: 700,
             }}
@@ -149,7 +149,7 @@ export default function AboutPanel() {
           <button
             onClick={() => { track('about_contact_click'); navigator.clipboard?.writeText('hamzahatef09@gmail.com').catch(() => {}); }}
             style={{
-              fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.12em',
+              fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.12em',
               color: '#5e6ad2', background: 'rgba(94,106,210,0.08)',
               border: '1px solid rgba(94,106,210,0.4)', borderRadius: 5,
               padding: '11px 22px', cursor: 'pointer',
@@ -160,7 +160,7 @@ export default function AboutPanel() {
           </button>
         </div>
         <div style={{ textAlign: 'center', marginTop: 18 }}>
-          <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>
+          <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12, color: 'rgba(255,255,255,0.75)' }}>
             hamzahatef09@gmail.com · ESC to close
           </span>
         </div>

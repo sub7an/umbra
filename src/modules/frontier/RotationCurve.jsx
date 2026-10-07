@@ -89,7 +89,7 @@ function DarkMatterHalo() {
         </mesh>
       ))}
       <Html position={[0, 5.7, 0]} center style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: 'rgba(130,60,220,0.75)', letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>
+        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'rgba(130,60,220,0.75)', letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>
           DARK MATTER HALO
         </span>
       </Html>
@@ -161,7 +161,7 @@ function OrbitalProbe({ radius }) {
         </mesh>
         <pointLight color="#f59e0b" intensity={1.0} distance={1.8} />
         <Html position={[0, 0.35, 0]} center style={{ pointerEvents: 'none' }}>
-          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#f59e0b', whiteSpace: 'nowrap', textShadow: '0 0 6px rgba(245,158,11,0.7)' }}>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#f59e0b', whiteSpace: 'nowrap', textShadow: '0 0 6px rgba(245,158,11,0.7)' }}>
             r = {radius.toFixed(2)}
           </span>
         </Html>
@@ -211,7 +211,7 @@ function VelocityGraph({ radius }) {
 
   return (
     <div style={{ width: G_W, background: 'rgba(5,9,12,0.95)', border: '1px solid rgba(245,158,11,0.28)', borderRadius: 6, overflow: 'hidden', userSelect: 'none' }}>
-      <div style={{ padding: '6px 10px 3px', fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#f59e0b', letterSpacing: '0.12em', opacity: 0.9 }}>
+      <div style={{ padding: '6px 10px 3px', fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#f59e0b', letterSpacing: '0.12em', opacity: 0.9 }}>
         ROTATION CURVES
       </div>
 
@@ -256,7 +256,7 @@ function VelocityGraph({ radius }) {
         <text x={PAD.l + 22} y={PAD.t + 33} fill="rgba(130,60,220,0.8)" fontSize={8} fontFamily="JetBrains Mono, monospace">dark matter</text>
       </svg>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 10px 7px', fontFamily: 'JetBrains Mono, monospace', fontSize: 9 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 10px 7px', fontFamily: 'JetBrains Mono, monospace', fontSize: 11 }}>
         <span style={{ color: '#5e6ad2' }}>v_obs {vObs.toFixed(3)}</span>
         <span style={{ color: '#f59e0b', opacity: 0.85 }}>v_kep {vKep.toFixed(3)}</span>
         <span style={{ color: 'rgba(130,60,220,0.85)' }}>Δv +{Math.max(0, disc).toFixed(3)}</span>
@@ -290,7 +290,7 @@ export default function RotationCurve() {
       </Html>
 
       <Html position={[-0.8, 3.2, 0]} center style={{ pointerEvents: 'none' }}>
-        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: '#2a4a5a', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>
+        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#2a4a5a', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>
           SPIRAL GALAXY · FACE-ON VIEW
         </div>
       </Html>

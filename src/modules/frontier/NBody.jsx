@@ -257,16 +257,16 @@ export default function NBody() {
           border: '1px solid rgba(245,158,11,0.18)',
           borderRadius: 3, padding: '7px 10px', minWidth: 148,
         }}>
-          <div style={{ fontSize: 8, color: 'rgba(245,158,11,0.45)', letterSpacing: '0.14em', marginBottom: 4 }}>
+          <div style={{ fontSize: 11, color: 'rgba(245,158,11,0.75)', letterSpacing: '0.14em', marginBottom: 4 }}>
             {preset.label.toUpperCase()}
           </div>
-          <div style={{ fontSize: 8, color: 'rgba(245,158,11,0.30)', marginBottom: 6 }}>
+          <div style={{ fontSize: 11, color: 'rgba(245,158,11,0.75)', marginBottom: 6 }}>
             {preset.desc}
           </div>
-          <div style={{ fontSize: 8, color: 'rgba(245,158,11,0.45)', marginBottom: 2 }}>
+          <div style={{ fontSize: 11, color: 'rgba(245,158,11,0.75)', marginBottom: 2 }}>
             E = <span ref={eRef} style={{ color: '#fbbf24' }}>—</span>
           </div>
-          <div ref={driftRef} style={{ fontSize: 7, color: 'rgba(245,158,11,0.35)', letterSpacing: '0.08em' }}>
+          <div ref={driftRef} style={{ fontSize: 7, color: 'rgba(245,158,11,0.75)', letterSpacing: '0.08em' }}>
             ΔE/E₀ = —
           </div>
         </div>
@@ -277,7 +277,7 @@ export default function NBody() {
         <div style={{ display: 'flex', gap: 4, fontFamily: 'JetBrains Mono,monospace' }}>
           {presetList.map(([key, p]) => (
             <button key={key} onClick={() => setPresetKey(key)} style={{
-              fontSize: 8, letterSpacing: '0.12em',
+              fontSize: 11, letterSpacing: '0.12em',
               padding: '4px 10px',
               background: presetKey === key ? 'rgba(245,158,11,0.10)' : 'rgba(4,6,14,0.85)',
               border: `1px solid ${presetKey === key ? 'rgba(245,158,11,0.45)' : 'rgba(245,158,11,0.14)'}`,

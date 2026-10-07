@@ -236,7 +236,7 @@ function ClockFace({ position, color, tRef, label, sublabel }) {
           {label}
         </div>
         {sublabel && (
-          <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 10, color: '#4a7a74', marginTop: 3, whiteSpace: 'nowrap' }}>
+          <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 12, color: '#4a7a74', marginTop: 3, whiteSpace: 'nowrap' }}>
             {sublabel}
           </div>
         )}
@@ -275,10 +275,10 @@ export default function TimeDilation() {
     <group>
       {/* ── Frame labels ── */}
       <Html position={[-2.2, 2.2, 0]} center style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 11, color: '#4a7a74', letterSpacing: '0.18em' }}>STATIONARY</span>
+        <span style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 13, color: '#4a7a74', letterSpacing: '0.18em' }}>STATIONARY</span>
       </Html>
       <Html position={[2.2, 2.2, 0]} center style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 11, color: '#4a7a74', letterSpacing: '0.18em' }}>MOVING</span>
+        <span style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 13, color: '#4a7a74', letterSpacing: '0.18em' }}>MOVING</span>
       </Html>
 
       {/* ── Tick rings ── */}
@@ -301,7 +301,7 @@ export default function TimeDilation() {
         <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 18, color: '#f59e0b', textShadow: '0 0 10px rgba(245,158,11,0.6)', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
           γ = {gamma.toFixed(4)}
         </div>
-        <div style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 10, color: '#4a7a74', marginTop: 6, letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>
+        <div style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 12, color: '#4a7a74', marginTop: 6, letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>
           MOVING CLOCK: {pct}% SLOWER
         </div>
       </Html>

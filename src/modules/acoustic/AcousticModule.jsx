@@ -546,12 +546,12 @@ export default function AcousticModule() {
         background:'rgba(8,9,10,.97)',
       }}>
         <button onClick={() => setActiveModule(null)} style={{
-          fontFamily:'JetBrains Mono,monospace',fontSize:10,
+          fontFamily:'JetBrains Mono,monospace',fontSize:12,
           letterSpacing:'.18em',textTransform:'uppercase',
-          color:'rgba(168,85,247,.50)',background:'none',border:'none',cursor:'pointer',padding:0,
+          color:'rgba(168,85,247,0.75)',background:'none',border:'none',cursor:'pointer',padding:0,
         }}>← MODULES</button>
         <div style={{width:1,height:14,background:'rgba(168,85,247,.12)'}}/>
-        <span style={{fontSize:11,letterSpacing:'.28em',textTransform:'uppercase',color:ACCENT,fontWeight:700}}>
+        <span style={{fontSize:13,letterSpacing:'.28em',textTransform:'uppercase',color:ACCENT,fontWeight:700}}>
           Acoustic Physics
         </span>
         <div style={{
@@ -559,12 +559,12 @@ export default function AcousticModule() {
           border:'1px solid rgba(168,85,247,.28)',borderRadius:2,background:'rgba(168,85,247,.05)',
         }}>
           <div style={{width:5,height:5,borderRadius:'50%',background:ACCENT,boxShadow:`0 0 6px ${ACCENT}`,animation:'umbra-pulse 1.8s ease-in-out infinite'}}/>
-          <span style={{fontSize:8,letterSpacing:'.2em',color:ACCENT}}>LIVE</span>
+          <span style={{fontSize:11,letterSpacing:'.2em',color:ACCENT}}>LIVE</span>
         </div>
         <div style={{display:'flex',gap:4,marginLeft:'auto'}}>
           {VIEWS.map(v => (
             <button key={v.id} role="tab" aria-selected={view===v.id} onClick={() => setView(v.id)} style={{
-              fontFamily:'JetBrains Mono,monospace',fontSize:9,letterSpacing:'.15em',textTransform:'uppercase',
+              fontFamily:'JetBrains Mono,monospace',fontSize:11,letterSpacing:'.15em',textTransform:'uppercase',
               padding:'5px 12px',borderRadius:2,cursor:'pointer',
               background: view===v.id ? 'rgba(168,85,247,.09)' : 'transparent',
               border:`1px solid ${view===v.id ? 'rgba(168,85,247,.33)' : 'rgba(255,255,255,.07)'}`,
@@ -607,7 +607,7 @@ export default function AcousticModule() {
               background:'rgba(8,9,10,.88)',pointerEvents:'none',
             }}>
               <div style={{width:4,height:4,borderRadius:'50%',background:ACCENT,boxShadow:`0 0 4px ${ACCENT}`}}/>
-              <span style={{fontSize:8,letterSpacing:'.2em',color:'rgba(168,85,247,.55)'}}>SIM ACTIVE</span>
+              <span style={{fontSize:11,letterSpacing:'.2em',color:'rgba(168,85,247,0.75)'}}>SIM ACTIVE</span>
             </div>
 
             {/* Lissajous interval picker (overlay) */}
@@ -617,7 +617,7 @@ export default function AcousticModule() {
                 display:'flex',flexDirection:'column',gap:4,
                 pointerEvents:'all',alignItems:'flex-end',
               }}>
-                <div style={{fontSize:7,letterSpacing:'.22em',color:'rgba(168,85,247,.40)',textTransform:'uppercase'}}>INTERVAL</div>
+                <div style={{fontSize:7,letterSpacing:'.22em',color:'rgba(168,85,247,0.75)',textTransform:'uppercase'}}>INTERVAL</div>
                 <div style={{display:'flex',flexDirection:'column',gap:2,alignItems:'flex-end'}}>
                   {LISSAJOUS_PRESETS.map((p,i) => (
                     <button key={i} onClick={() => setPresetIdx(i)}
@@ -646,7 +646,7 @@ export default function AcousticModule() {
               background:'rgba(2,6,10,.97)',
             }}>
               <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}>
-                <span style={{fontSize:8,letterSpacing:'.2em',color:'rgba(168,85,247,.45)',textTransform:'uppercase'}}>
+                <span style={{fontSize:11,letterSpacing:'.2em',color:'rgba(168,85,247,0.75)',textTransform:'uppercase'}}>
                   TONE PADS — tap to hear the plate vibrate
                 </span>
                 <button onClick={micActive ? stopMic : startMic}
@@ -665,9 +665,9 @@ export default function AcousticModule() {
                   <button key={i} onMouseDown={() => handlePad(i)}
                     className={`tone-pad${modeIdx===i?' active':''}`}
                   >
-                    <span style={{fontSize:9,color:modeIdx===i?'#c084fc':'rgba(168,85,247,.65)',letterSpacing:'.08em'}}>{mode.label}</span>
-                    <span style={{fontSize:10,color:modeIdx===i?'#e0d0ff':'rgba(200,180,255,.45)',fontWeight:600}}>{mode.freq} Hz</span>
-                    <span style={{fontSize:7,color:'rgba(168,85,247,.40)',letterSpacing:'.1em'}}>{mode.note}</span>
+                    <span style={{fontSize:11,color:modeIdx===i?'#c084fc':'rgba(168,85,247,.65)',letterSpacing:'.08em'}}>{mode.label}</span>
+                    <span style={{fontSize:12,color:modeIdx===i?'#e0d0ff':'rgba(200,180,255,.45)',fontWeight:600}}>{mode.freq} Hz</span>
+                    <span style={{fontSize:7,color:'rgba(168,85,247,0.75)',letterSpacing:'.1em'}}>{mode.note}</span>
                   </button>
                 ))}
               </div>
@@ -676,9 +676,9 @@ export default function AcousticModule() {
                   <button key={i+5} onMouseDown={() => handlePad(i+5)}
                     className={`tone-pad${modeIdx===i+5?' active':''}`}
                   >
-                    <span style={{fontSize:9,color:modeIdx===i+5?'#c084fc':'rgba(168,85,247,.65)',letterSpacing:'.08em'}}>{mode.label}</span>
-                    <span style={{fontSize:10,color:modeIdx===i+5?'#e0d0ff':'rgba(200,180,255,.45)',fontWeight:600}}>{mode.freq} Hz</span>
-                    <span style={{fontSize:7,color:'rgba(168,85,247,.40)',letterSpacing:'.1em'}}>{mode.note}</span>
+                    <span style={{fontSize:11,color:modeIdx===i+5?'#c084fc':'rgba(168,85,247,.65)',letterSpacing:'.08em'}}>{mode.label}</span>
+                    <span style={{fontSize:12,color:modeIdx===i+5?'#e0d0ff':'rgba(200,180,255,.45)',fontWeight:600}}>{mode.freq} Hz</span>
+                    <span style={{fontSize:7,color:'rgba(168,85,247,0.75)',letterSpacing:'.1em'}}>{mode.note}</span>
                   </button>
                 ))}
               </div>
@@ -693,7 +693,7 @@ export default function AcousticModule() {
               background:'rgba(2,6,10,.97)',
               display:'flex',alignItems:'center',gap:10,flexWrap:'wrap',
             }}>
-              <span style={{fontSize:8,letterSpacing:'.2em',color:'rgba(168,85,247,.45)',textTransform:'uppercase'}}>
+              <span style={{fontSize:11,letterSpacing:'.2em',color:'rgba(168,85,247,0.75)',textTransform:'uppercase'}}>
                 CLICK A STRING TO PLUCK
               </span>
               <div style={{display:'flex',gap:3,flexWrap:'wrap'}}>
@@ -733,7 +733,7 @@ export default function AcousticModule() {
               <button onClick={toggleLissAudio}
                 className={`ac-btn${lissAudio?' active':''}`}
                 style={{
-                  padding:'6px 18px',fontSize:10,
+                  padding:'6px 18px',fontSize:12,
                   borderColor: lissAudio ? `${lColor}66` : `${lColor}22`,
                   color:       lissAudio ? lColor          : `${lColor}55`,
                   minWidth:90,
@@ -742,33 +742,33 @@ export default function AcousticModule() {
 
               {/* Live freq readout */}
               {lissAudio && (
-                <div style={{display:'flex',gap:10,fontSize:9,letterSpacing:'.1em'}}>
+                <div style={{display:'flex',gap:10,fontSize:11,letterSpacing:'.1em'}}>
                   <span style={{color:`${lColor}88`}}>{lA}×<span style={{color:lColor,fontWeight:700,marginLeft:3}}>{(lA*lissBaseFreq).toFixed(0)} Hz</span></span>
-                  <span style={{color:'rgba(168,85,247,.3)'}}>+</span>
+                  <span style={{color:'rgba(168,85,247,0.75)'}}>+</span>
                   <span style={{color:`${lColor}88`}}>{lB}×<span style={{color:lColor,fontWeight:700,marginLeft:3}}>{(lB*lissBaseFreq).toFixed(0)} Hz</span></span>
                 </div>
               )}
 
               {/* Base pitch */}
               <div style={{display:'flex',alignItems:'center',gap:8}}>
-                <span style={{fontSize:8,letterSpacing:'.15em',color:'rgba(168,85,247,.45)',textTransform:'uppercase',whiteSpace:'nowrap'}}>PITCH</span>
+                <span style={{fontSize:11,letterSpacing:'.15em',color:'rgba(168,85,247,0.75)',textTransform:'uppercase',whiteSpace:'nowrap'}}>PITCH</span>
                 <input type="range" className="ac-slider" min={80} max={440} step={1}
                   value={lissBaseFreq}
                   style={{'--val':`${((lissBaseFreq-80)/360*100).toFixed(1)}%`}}
                   onChange={e => setLissBaseFreq(Number(e.target.value))}
                 />
-                <span style={{fontSize:9,color:'rgba(168,85,247,.6)',minWidth:38}}>{lissBaseFreq} Hz</span>
+                <span style={{fontSize:11,color:'rgba(168,85,247,0.75)',minWidth:38}}>{lissBaseFreq} Hz</span>
               </div>
 
               {/* Phase delta */}
               <div style={{display:'flex',alignItems:'center',gap:8,flex:'1 1 auto',maxWidth:260}}>
-                <span style={{fontSize:8,letterSpacing:'.15em',color:'rgba(168,85,247,.45)',textTransform:'uppercase',whiteSpace:'nowrap'}}>PHASE δ</span>
+                <span style={{fontSize:11,letterSpacing:'.15em',color:'rgba(168,85,247,0.75)',textTransform:'uppercase',whiteSpace:'nowrap'}}>PHASE δ</span>
                 <input type="range" className="ac-slider" min={0} max={6.283} step={0.01}
                   value={lissPhase}
                   style={{'--val':`${(lissPhase/6.283*100).toFixed(1)}%`}}
                   onChange={e => setLissPhase(Number(e.target.value))}
                 />
-                <span style={{fontSize:9,color:'rgba(168,85,247,.6)',minWidth:36}}>
+                <span style={{fontSize:11,color:'rgba(168,85,247,0.75)',minWidth:36}}>
                   {(lissPhase * 180 / Math.PI).toFixed(0)}°
                 </span>
               </div>

@@ -52,8 +52,8 @@ function Toast({ scene }) {
         animation: 'umbra-pulse 1s ease-in-out infinite',
       }} />
       <div>
-        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fontWeight: 700, color: '#e8f4f0' }}>{scene.label}</div>
-        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 8, color: 'rgba(200,230,220,0.5)', marginTop: 2 }}>{scene.desc}</div>
+        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, fontWeight: 700, color: '#e8f4f0' }}>{scene.label}</div>
+        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'rgba(200,230,220,0.75)', marginTop: 2 }}>{scene.desc}</div>
       </div>
     </div>
   )
@@ -100,7 +100,7 @@ export default function SurpriseMe() {
           zIndex: 10040,
           display: 'flex', alignItems: 'center', gap: 7,
           padding: '7px 14px',
-          fontFamily: 'JetBrains Mono, monospace', fontSize: 9, letterSpacing: '0.16em',
+          fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.16em',
           color: spinning ? 'rgba(94,106,210,0.3)' : 'rgba(94,106,210,0.55)',
           background: 'rgba(8,9,10,0.72)',
           border: '1px solid rgba(94,106,210,0.12)',
