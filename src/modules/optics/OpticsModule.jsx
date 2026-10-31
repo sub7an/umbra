@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import useModuleStore from '../../store/useModuleStore'
 import SceneWrapper from '../../components/SceneWrapper'
 import InfoPanel from '../../components/InfoPanel'
@@ -102,8 +101,10 @@ function buildExplanation(view) {
 
 export default function OpticsModule() {
   const setActiveModule = useModuleStore((s) => s.setActiveModule)
-  const [view, setView] = useState('prism')
-  const [focalLength, setFocalLength] = useState(2.5)
+  const view           = useModuleStore((s) => s.optics.viewType)
+  const focalLength    = useModuleStore((s) => s.optics.focalLength)
+  const setView        = useModuleStore((s) => s.setOpticsView)
+  const setFocalLength = useModuleStore((s) => s.setOpticsFocalLength)
 
   const eq = buildEquations(view)
 

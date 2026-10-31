@@ -69,6 +69,18 @@ const SIM_SETTERS = {
   'fluid.reynolds':     (v) => useModuleStore.getState().setFluidReynolds(parseFloat(v)),
   'fp.hubble':          (v) => useModuleStore.getState().setFpHubble(parseFloat(v)),
   'fp.bhMass':          (v) => useModuleStore.getState().setFpBhMass(parseFloat(v)),
+  'wave.view':          (v) => useModuleStore.getState().setWaveView(v),
+  'wave.modeIdx':       (v) => useModuleStore.getState().setWaveModeIdx(parseInt(v)),
+  'wave.slitMode':      (v) => useModuleStore.getState().setWaveSlitMode(parseInt(v)),
+  'optics.view':        (v) => useModuleStore.getState().setOpticsView(v),
+  'optics.focalLength': (v) => useModuleStore.getState().setOpticsFocalLength(parseFloat(v)),
+  'acoustic.view':      (v) => useModuleStore.getState().setAcousticView(v),
+  'acoustic.modeIdx':   (v) => useModuleStore.getState().setAcousticModeIdx(parseInt(v)),
+  'acoustic.presetIdx': (v) => useModuleStore.getState().setAcousticPresetIdx(parseInt(v)),
+  'acoustic.lissPhase': (v) => useModuleStore.getState().setAcousticLissPhase(parseFloat(v)),
+  'acoustic.lissBaseFreq': (v) => useModuleStore.getState().setAcousticLissBaseFreq(parseFloat(v)),
+  'sandbox.mode':       (v) => useModuleStore.getState().setSandboxMode(v),
+  'sandbox.strength':   (v) => useModuleStore.getState().setSandboxStrength(parseFloat(v)),
 }
 
 function applyControls(text) {
@@ -205,13 +217,13 @@ function buildContext(moduleId, s) {
     case 'fluid-dynamics':
       return `Re=${s.fluid.reynolds.toFixed(3)}, view=${s.fluid.viewType}`
     case 'acoustic-physics':
-      return `CYMATICS (2200 sand particles on Chladni nodal lines, modes (1,1)–(3,5), mic input); HARMONICS (8 strings, C3 harmonics); LISSAJOUS (interval ratios 1:1–5:8 with dual-oscillator audio)`
+      return `view=${s.acoustic.viewType}, Chladni mode #${s.acoustic.modeIdx}, Lissajous preset #${s.acoustic.presetIdx}, phase δ=${s.acoustic.lissPhase.toFixed(2)}, base f=${s.acoustic.lissBaseFreq} Hz. CYMATICS (2200 sand particles on Chladni nodal lines, modes (1,1)–(3,5), mic input); HARMONICS (8 strings, C3 harmonics); LISSAJOUS (interval ratios 1:1–5:8 with dual-oscillator audio)`
     case 'wave-mechanics':
-      return `128×128 wave mesh, views: ripple tank, interference, diffraction`
+      return `view=${s.wave.viewType}, normal mode #${s.wave.modeIdx}, slit mode=${['open', 'single slit', 'double slit'][s.wave.slitMode]}. 128×128 wave mesh, views: ripple tank, interference, diffraction`
     case 'optics':
-      return `Ray tracing: prism dispersion (Cauchy eq.), biconvex lens focusing, diffraction grating`
+      return `view=${s.optics.viewType}, lens f=${s.optics.focalLength.toFixed(1)} (power ${(1/s.optics.focalLength).toFixed(2)} D). Ray tracing: prism dispersion (Cauchy eq.), biconvex lens focusing, diffraction grating`
     case 'physics-sandbox':
-      return `900 tracers responding to user-placed attractors, repulsors, and vortices`
+      return `placing=${s.sandbox.mode}, strength=${s.sandbox.strength.toFixed(2)}. 900 tracers responding to user-placed attractors, repulsors, and vortices`
     default: return ''
   }
 }
@@ -224,6 +236,10 @@ const SIM_PARAMS = {
   'thermodynamics':     'thermo.temperature (0.2–3.0)',
   'fluid-dynamics':     'fluid.reynolds (0.3–2.5)',
   'frontier-physics':   'fp.hubble (0.2–2.5), fp.bhMass (0.3–1.5)',
+  'wave-mechanics':     'wave.view (ripple/slit/modes), wave.modeIdx (0–8, normal mode (m,n) index), wave.slitMode (0 open / 1 single slit / 2 double slit)',
+  'optics':             'optics.view (prism/lens/grating), optics.focalLength (1.5–5)',
+  'acoustic-physics':   'acoustic.view (cymatics/harmonics/lissajous), acoustic.modeIdx (0–9, Chladni mode), acoustic.presetIdx (0–7, Lissajous ratio), acoustic.lissPhase (0–6.28), acoustic.lissBaseFreq (80–440 Hz)',
+  'physics-sandbox':    'sandbox.mode (attractor/repulsor/vortex_ccw/vortex_cw/erase), sandbox.strength (0.2–3)',
 }
 
 function buildSystemPrompt(moduleId, ctx, sessionCtx) {

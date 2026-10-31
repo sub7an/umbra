@@ -88,10 +88,13 @@ function buildExplanation(view) {
 
 export default function WaveModule() {
   const setActiveModule = useModuleStore((s) => s.setActiveModule)
-  const [view, setView]         = useState('ripple')
+  const view                    = useModuleStore((s) => s.wave.viewType)
+  const modeIdx                 = useModuleStore((s) => s.wave.modeIdx)
+  const slitMode                = useModuleStore((s) => s.wave.slitMode)
+  const setView                 = useModuleStore((s) => s.setWaveView)
+  const setModeIdx              = useModuleStore((s) => s.setWaveModeIdx)
+  const setSlitMode             = useModuleStore((s) => s.setWaveSlitMode)
   const [sourceCount, setCount] = useState(1)
-  const [modeIdx, setModeIdx]   = useState(0)
-  const [slitMode, setSlitMode] = useState(0)
   const [clearCount, setClear]  = useState(0)
 
   const eq = buildEquations(view)

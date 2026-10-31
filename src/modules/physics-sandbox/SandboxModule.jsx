@@ -168,8 +168,10 @@ function Slider({ label, value, min, max, step, decimals, onChange }) {
 export default function SandboxModule() {
   const setActiveModule = useModuleStore((s) => s.setActiveModule)
   const [sources,  setSources]  = useState([])
-  const [mode,     setMode]     = useState('attractor')
-  const [strength, setStrength] = useState(1.0)
+  const mode        = useModuleStore((s) => s.sandbox.mode)
+  const strength    = useModuleStore((s) => s.sandbox.strength)
+  const setMode     = useModuleStore((s) => s.setSandboxMode)
+  const setStrength = useModuleStore((s) => s.setSandboxStrength)
 
   const addSource    = useCallback((src) => setSources((s) => [...s, src]), [])
   const removeSource = useCallback((id)  => setSources((s) => s.filter((x) => x.id !== id)), [])

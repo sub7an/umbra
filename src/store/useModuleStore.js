@@ -198,6 +198,79 @@ const useModuleStore = create((set) => ({
     set((state) => ({ fluid: { ...state.fluid, reynolds: Math.max(0.3, Math.min(2.5, v)) } })),
 
   resetFluid: () => set({ fluid: { viewType: 'streamlines', reynolds: 1.0 } }),
+
+  // Wave Mechanics state
+  wave: {
+    viewType: 'ripple', // 'ripple' | 'slit' | 'modes'
+    modeIdx: 0,         // index into NormalModes MODES ∈ [0, 8]
+    slitMode: 0,        // ripple-tank barrier: 0 open | 1 single slit | 2 double slit
+  },
+
+  setWaveView: (v) =>
+    set((state) => (['ripple', 'slit', 'modes'].includes(v) ? { wave: { ...state.wave, viewType: v } } : {})),
+
+  setWaveModeIdx: (v) =>
+    set((state) => ({ wave: { ...state.wave, modeIdx: Math.round(Math.max(0, Math.min(8, v))) } })),
+
+  setWaveSlitMode: (v) =>
+    set((state) => ({ wave: { ...state.wave, slitMode: Math.round(Math.max(0, Math.min(2, v))) } })),
+
+  resetWave: () => set({ wave: { viewType: 'ripple', modeIdx: 0, slitMode: 0 } }),
+
+  // Optics state
+  optics: {
+    viewType: 'prism', // 'prism' | 'lens' | 'grating'
+    focalLength: 2.5,  // lens focal length f ∈ [1.5, 5]
+  },
+
+  setOpticsView: (v) =>
+    set((state) => (['prism', 'lens', 'grating'].includes(v) ? { optics: { ...state.optics, viewType: v } } : {})),
+
+  setOpticsFocalLength: (v) =>
+    set((state) => ({ optics: { ...state.optics, focalLength: Math.max(1.5, Math.min(5.0, v)) } })),
+
+  resetOptics: () => set({ optics: { viewType: 'prism', focalLength: 2.5 } }),
+
+  // Acoustic Physics state
+  acoustic: {
+    viewType: 'cymatics',     // 'cymatics' | 'harmonics' | 'lissajous'
+    modeIdx: 3,               // Chladni mode index ∈ [0, 9]
+    presetIdx: 1,             // Lissajous ratio preset index ∈ [0, 7]
+    lissPhase: Math.PI / 4,   // Lissajous phase offset ∈ [0, 2π]
+    lissBaseFreq: 220,        // Lissajous base frequency (Hz) ∈ [80, 440]
+  },
+
+  setAcousticView: (v) =>
+    set((state) => (['cymatics', 'harmonics', 'lissajous'].includes(v) ? { acoustic: { ...state.acoustic, viewType: v } } : {})),
+
+  setAcousticModeIdx: (v) =>
+    set((state) => ({ acoustic: { ...state.acoustic, modeIdx: Math.round(Math.max(0, Math.min(9, v))) } })),
+
+  setAcousticPresetIdx: (v) =>
+    set((state) => ({ acoustic: { ...state.acoustic, presetIdx: Math.round(Math.max(0, Math.min(7, v))) } })),
+
+  setAcousticLissPhase: (v) =>
+    set((state) => ({ acoustic: { ...state.acoustic, lissPhase: Math.max(0, Math.min(2 * Math.PI, v)) } })),
+
+  setAcousticLissBaseFreq: (v) =>
+    set((state) => ({ acoustic: { ...state.acoustic, lissBaseFreq: Math.round(Math.max(80, Math.min(440, v))) } })),
+
+  resetAcoustic: () =>
+    set({ acoustic: { viewType: 'cymatics', modeIdx: 3, presetIdx: 1, lissPhase: Math.PI / 4, lissBaseFreq: 220 } }),
+
+  // Physics Sandbox state (placed sources stay local to the scene)
+  sandbox: {
+    mode: 'attractor', // 'attractor' | 'repulsor' | 'vortex_ccw' | 'vortex_cw' | 'erase'
+    strength: 1.0,     // source strength ∈ [0.2, 3]
+  },
+
+  setSandboxMode: (v) =>
+    set((state) => (['attractor', 'repulsor', 'vortex_ccw', 'vortex_cw', 'erase'].includes(v) ? { sandbox: { ...state.sandbox, mode: v } } : {})),
+
+  setSandboxStrength: (v) =>
+    set((state) => ({ sandbox: { ...state.sandbox, strength: Math.max(0.2, Math.min(3.0, v)) } })),
+
+  resetSandbox: () => set({ sandbox: { mode: 'attractor', strength: 1.0 } }),
 }))
 
 export default useModuleStore

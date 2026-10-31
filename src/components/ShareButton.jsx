@@ -10,6 +10,10 @@ const MOD_SLICE = {
   'general-relativity': 'gr',
   'thermodynamics':     'thermo',
   'fluid-dynamics':     'fluid',
+  'wave-mechanics':     'wave',
+  'optics':             'optics',
+  'acoustic-physics':   'acoustic',
+  'physics-sandbox':    'sandbox',
 }
 
 export function encodeShareState() {
@@ -70,6 +74,22 @@ export function applySharedState(decoded) {
   } else if (key === 'fluid' && decoded.s) {
     if (decoded.s.viewType !== undefined) store.setFluidView(decoded.s.viewType)
     if (decoded.s.reynolds !== undefined) store.setFluidReynolds(decoded.s.reynolds)
+  } else if (key === 'wave' && decoded.s) {
+    if (decoded.s.viewType !== undefined) store.setWaveView(decoded.s.viewType)
+    if (decoded.s.modeIdx  !== undefined) store.setWaveModeIdx(decoded.s.modeIdx)
+    if (decoded.s.slitMode !== undefined) store.setWaveSlitMode(decoded.s.slitMode)
+  } else if (key === 'optics' && decoded.s) {
+    if (decoded.s.viewType    !== undefined) store.setOpticsView(decoded.s.viewType)
+    if (decoded.s.focalLength !== undefined) store.setOpticsFocalLength(decoded.s.focalLength)
+  } else if (key === 'acoustic' && decoded.s) {
+    if (decoded.s.viewType     !== undefined) store.setAcousticView(decoded.s.viewType)
+    if (decoded.s.modeIdx      !== undefined) store.setAcousticModeIdx(decoded.s.modeIdx)
+    if (decoded.s.presetIdx    !== undefined) store.setAcousticPresetIdx(decoded.s.presetIdx)
+    if (decoded.s.lissPhase    !== undefined) store.setAcousticLissPhase(decoded.s.lissPhase)
+    if (decoded.s.lissBaseFreq !== undefined) store.setAcousticLissBaseFreq(decoded.s.lissBaseFreq)
+  } else if (key === 'sandbox' && decoded.s) {
+    if (decoded.s.mode     !== undefined) store.setSandboxMode(decoded.s.mode)
+    if (decoded.s.strength !== undefined) store.setSandboxStrength(decoded.s.strength)
   }
 }
 

@@ -390,15 +390,20 @@ function buildExplanation(view) {
 export default function AcousticModule() {
   const setActiveModule = useModuleStore(s => s.setActiveModule)
 
-  const [view,         setView]         = useState('cymatics')
-  const [modeIdx,      setModeIdx]      = useState(3)
+  const view            = useModuleStore(s => s.acoustic.viewType)
+  const modeIdx         = useModuleStore(s => s.acoustic.modeIdx)
+  const presetIdx       = useModuleStore(s => s.acoustic.presetIdx)
+  const lissPhase       = useModuleStore(s => s.acoustic.lissPhase)
+  const lissBaseFreq    = useModuleStore(s => s.acoustic.lissBaseFreq)
+  const setView         = useModuleStore(s => s.setAcousticView)
+  const setModeIdx      = useModuleStore(s => s.setAcousticModeIdx)
+  const setPresetIdx    = useModuleStore(s => s.setAcousticPresetIdx)
+  const setLissPhase    = useModuleStore(s => s.setAcousticLissPhase)
+  const setLissBaseFreq = useModuleStore(s => s.setAcousticLissBaseFreq)
   const [focusN,       setFocusN]       = useState(null)
-  const [presetIdx,    setPresetIdx]    = useState(1)
   const [scatterToken, setScatterToken] = useState(0)
   const [micActive,    setMicActive]    = useState(false)
   const [lissAudio,    setLissAudio]    = useState(false)
-  const [lissPhase,    setLissPhase]    = useState(Math.PI / 4)
-  const [lissBaseFreq, setLissBaseFreq] = useState(220)
 
   const micStreamRef = useRef(null)
   const analyserRef  = useRef(null)
@@ -410,7 +415,7 @@ export default function AcousticModule() {
     setModeIdx(i)
     setScatterToken(t => t + 1)
     playTone(CHLADNI_MODES[i].freq, 1.4)
-  }, [])
+  }, [setModeIdx])
 
   // ── Cymatics: microphone ────────────────────────────────────────────────────
   const startMic = useCallback(async () => {
@@ -445,7 +450,7 @@ export default function AcousticModule() {
     } catch (e) {
       console.warn('Mic access denied:', e)
     }
-  }, [])
+  }, [setModeIdx])
 
   const stopMic = useCallback(() => {
     cancelAnimationFrame(micRafRef.current)
