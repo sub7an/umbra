@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react'
+import { Component, useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react'
 import useModuleStore from './store/useModuleStore'
 import ModulePicker from './components/ModulePicker'
 import GestureHUD from './components/GestureHUD'
@@ -100,6 +100,56 @@ function ModuleFallback() {
   )
 }
 
+// Catches a module that fails to load (chunk fetch failed — offline, server down,
+// or a redeploy replaced the chunk) or crashes while rendering, so one module
+// can't black out the whole app. React.lazy caches the rejected import, so
+// "retry" reloads the page; the URL hash reopens the same module.
+class ModuleErrorBoundary extends Component {
+  state = { error: null }
+
+  static getDerivedStateFromError(error) {
+    return { error }
+  }
+
+  componentDidCatch(error) {
+    console.error('Module failed:', error)
+  }
+
+  render() {
+    if (!this.state.error) return this.props.children
+    const isLoadError = /dynamically imported module|Importing a module script failed|Loading chunk/i
+      .test(String(this.state.error?.message))
+    const btn = {
+      fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.18em',
+      padding: '8px 16px', borderRadius: 2, cursor: 'pointer', background: 'transparent',
+    }
+    return (
+      <div role="alert" style={{
+        width: '100%', height: '100%', background: '#08090a',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14,
+        fontFamily: 'JetBrains Mono, monospace', textAlign: 'center', padding: 16,
+      }}>
+        <div style={{ fontSize: 13, letterSpacing: '0.22em', color: 'rgba(34,211,238,0.85)' }}>
+          {isLoadError ? "COULDN'T LOAD THIS MODULE" : 'THIS MODULE HIT AN ERROR'}
+        </div>
+        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', maxWidth: 360, lineHeight: 1.6 }}>
+          {isLoadError
+            ? 'Check your connection, or the site may have just updated. Retrying will fetch the latest version.'
+            : 'Something went wrong inside the simulation. Retry, or pick another module.'}
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={() => window.location.reload()} style={{
+            ...btn, color: '#22d3ee', border: '1px solid rgba(34,211,238,0.4)',
+          }}>RETRY</button>
+          <button onClick={() => useModuleStore.getState().setActiveModule(null)} style={{
+            ...btn, color: 'rgba(255,255,255,0.75)', border: '1px solid rgba(255,255,255,0.15)',
+          }}>← MODULES</button>
+        </div>
+      </div>
+    )
+  }
+}
+
 const OUT_MS = 520
 const IN_MS  = 560
 
@@ -135,7 +185,11 @@ function renderModule(id) {
   else if (id === 'acoustic-physics')    inner = <AcousticModule />
   else return <ModulePicker />
 
-  return <Suspense fallback={<ModuleFallback />}>{inner}</Suspense>
+  return (
+    <ModuleErrorBoundary key={id}>
+      <Suspense fallback={<ModuleFallback />}>{inner}</Suspense>
+    </ModuleErrorBoundary>
+  )
 }
 
 export default function App() {
