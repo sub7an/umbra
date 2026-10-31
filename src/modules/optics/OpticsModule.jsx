@@ -17,7 +17,7 @@ const VIEWS = [
 ]
 
 const CAMERA = {
-  prism:   [2, 4.5, 10],
+  prism:   [-1.5, 10, 11],
   lens:    [0, 3, 9],
   grating: [5, 3, 8],
 }
@@ -81,7 +81,7 @@ function buildEquations(view) {
 
 function buildExplanation(view) {
   switch (view) {
-    case 'prism': return '48 spectral rays (380–720 nm) pass through a glass prism. Cauchy dispersion n(λ) = A + B/λ² gives higher n for shorter wavelengths — violet bends most, red least — creating a rainbow on the projection screen. Use the PRISM ANGLE slider to rotate the prism: shallow angles show a narrow spread, steep angles push internal rays past the critical angle θ_c = arcsin(1/n) and trigger Total Internal Reflection (TIR), trapping those wavelengths inside.'
+    case 'prism': return '48 spectral rays (380–720 nm) pass through a glass prism. Cauchy dispersion n(λ) = A + B/λ² gives higher n for shorter wavelengths — violet bends most, red least — creating a rainbow on the projection screen. Use the Prism angle slider to rotate the prism: shallow angles show a narrow spread, steep angles push internal rays past the critical angle θ_c = arcsin(1/n) and trigger Total Internal Reflection (TIR), trapping those wavelengths inside.'
     case 'lens': return 'A biconvex lens refracts parallel rays through its curved surfaces. Paraxial rays (near the axis) all converge at the focal point f. The thin lens equation 1/f = 1/dₒ + 1/dᵢ relates object and image distances. Focal length is positive for converging lenses. Rays further from the axis suffer spherical aberration — they cross the axis slightly closer, which is why real lenses need multiple elements.'
     case 'grating': return 'A diffraction grating has thousands of equally-spaced slits (here: 600 lines/mm, d = 1.67 µm). Constructive interference occurs where path difference = mλ: d·sinθ = mλ. Each wavelength diffracts at a different angle — white light is spread into orders m = 0, ±1, ±2. The 0th order is straight-through, ±1st orders are the most intense. Larger |m| means wider angular spread.'
     default: return ''

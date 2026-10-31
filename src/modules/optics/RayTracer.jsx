@@ -10,6 +10,7 @@ const PRISM_HALF = 1.8
 const PRISM_H    = PRISM_HALF * Math.sqrt(3)
 const N1_AIR     = 1.0003
 const SCREEN_X   = 6.2   // projection screen x-position
+const WHITE      = new THREE.Color(1, 1, 1)
 
 // ── Cauchy dispersion: visually amplified (real B≈3500; using 20000 for spread)
 function cauchyN(wl) { return 1.44 + 20000 / (wl * wl) }
@@ -101,9 +102,12 @@ function traceRay(wl, yOff, rP) {
     { a: rP[0], b: rP[1] },
   ]
 
+  // White light: every wavelength shares the same incoming ray (only a
+  // hair of vertical spread so the beam has visible thickness). Colours
+  // separate only once the light refracts into the glass.
   const startX = -6.2
-  const startZ = rP[0].z + (rP[2].z - rP[0].z) * 0.5 + yOff * 0.04
-  const origin = new THREE.Vector3(startX, yOff * 0.035, startZ)
+  const startZ = rP[0].z + (rP[2].z - rP[0].z) * 0.5
+  const origin = new THREE.Vector3(startX, yOff * 0.006, startZ)
 
   let entryHit = null, entryFace = null
   for (const f of faces) {
@@ -113,10 +117,12 @@ function traceRay(wl, yOff, rP) {
   if (entryHit === null) return { segs, tirOccurred, screenHit: null }
 
   const hit1 = origin.clone().addScaledVector(dir, entryHit)
-  segs.push({ from: new THREE.Vector3(startX, origin.y, origin.z), to: hit1.clone(), color, opacity: 0.75 })
+  segs.push({ from: new THREE.Vector3(startX, origin.y, origin.z), to: hit1.clone(), color: WHITE, opacity: 0.9, incident: true })
 
   // Snell at entry
-  const entryNorm = faceOutwardNormal(entryFace.a, entryFace.b).negate()  // inward
+  // snellRefract wants the normal facing the incoming ray (cosθᵢ = −d·n > 0),
+  // which at the entry face is the outward normal.
+  const entryNorm = faceOutwardNormal(entryFace.a, entryFace.b)
   const refracted1 = snellRefract(dir, entryNorm, N1_AIR, n2)
   if (!refracted1) return { segs, tirOccurred, screenHit: null }
 
@@ -182,7 +188,7 @@ function buildRayData(angle) {
     const wl   = 380 + (i / (N_RAYS - 1)) * 340
     const yOff = (i - N_RAYS / 2) * 0.35
     const { segs, tirOccurred, screenHit } = traceRay(wl, yOff, rP)
-    allSegs.push(...segs)
+    allSegs.push(...segs.filter((sg) => !sg.incident || Math.abs(yOff) < 0.2))
     if (tirOccurred) anyTIR = true
     if (screenHit) screenHits.push(screenHit)
     if (segs.length >= 2) {
@@ -216,14 +222,28 @@ function Photon({ points, color, delay }) {
   )
 }
 
+const CHIP = {
+  fontFamily: 'Inter, system-ui, sans-serif', fontSize: 12, fontWeight: 500,
+  color: 'rgb(var(--c-text))', whiteSpace: 'nowrap',
+  background: 'rgb(var(--c-panel) / 0.85)', border: '1px solid rgb(var(--c-border))',
+  borderRadius: 6, padding: '3px 8px',
+}
+
 // ── Main component ─────────────────────────────────────────────────────────────
 export default function RayTracer() {
-  const [prismAngle, setPrismAngle] = useState(0)
+  // 20° shows the full spectrum; rotating toward −40° drives violet into TIR
+  const [prismAngle, setPrismAngle] = useState(20 * Math.PI / 180)
 
   const { allSegs, paths, screenHits, rP, anyTIR } = useMemo(
     () => buildRayData(prismAngle),
     [prismAngle]
   )
+
+  // Keep the screen centred on wherever the spectrum lands
+  const screenZ = useMemo(() => {
+    if (!screenHits.length) return 3
+    return screenHits.reduce((a, h) => a + h.z, 0) / screenHits.length
+  }, [screenHits])
 
   const lineGeos = useMemo(() =>
     allSegs.map((seg) => ({
@@ -245,7 +265,7 @@ export default function RayTracer() {
   }, [rP])
 
   return (
-    <group>
+    <group position={[-1.6, 0, -2.4]}>
       <ambientLight intensity={0.07} color="#0a0a1a" />
       <directionalLight position={[0, 8, 4]} intensity={0.28} color="#fff8e0" />
       <pointLight position={[-5, 2, 0]} intensity={0.4} color="#fff8d0" distance={14} decay={2} />
@@ -259,14 +279,15 @@ export default function RayTracer() {
           side={THREE.DoubleSide}
         />
       </mesh>
-      <mesh geometry={prismGeo}>
-        <meshBasicMaterial color="#38bdf8" wireframe transparent opacity={0.10} />
-      </mesh>
+      <lineSegments>
+        <edgesGeometry args={[prismGeo]} />
+        <lineBasicMaterial color="#bae6fd" transparent opacity={0.55} />
+      </lineSegments>
 
       {/* Spectral ray segments */}
       {lineGeos.map((l, i) => (
         <line key={i} geometry={l.geo}>
-          <lineBasicMaterial color={l.color} transparent opacity={l.opacity} linewidth={1} />
+          <lineBasicMaterial color={l.color} transparent opacity={Math.min(1, l.opacity * 1.25)} toneMapped={false} />
         </line>
       ))}
 
@@ -276,16 +297,16 @@ export default function RayTracer() {
       ))}
 
       {/* ── Projection screen ── */}
-      <mesh position={[SCREEN_X, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
-        <planeGeometry args={[9, 1.6]} />
+      <mesh position={[SCREEN_X, 0, screenZ]} rotation={[0, Math.PI / 2, 0]}>
+        <planeGeometry args={[6, 1.6]} />
         <meshStandardMaterial color="#060812" roughness={0.95} />
       </mesh>
 
       {/* Spectrum bar on screen */}
       {screenHits.map((h, i) => (
         <mesh key={i} position={[SCREEN_X - 0.04, h.y, h.z]}>
-          <sphereGeometry args={[0.04, 5, 5]} />
-          <meshBasicMaterial color={h.color} />
+          <sphereGeometry args={[0.075, 10, 10]} />
+          <meshBasicMaterial color={h.color} toneMapped={false} />
           <pointLight color={h.color} intensity={0.06} distance={0.8} decay={2} />
         </mesh>
       ))}
@@ -293,50 +314,35 @@ export default function RayTracer() {
       {/* TIR badge */}
       {anyTIR && (
         <Html position={[0, 2.6, 0]} center style={{ pointerEvents: 'none' }}>
-          <div style={{
-            fontFamily: 'JetBrains Mono,monospace', fontSize: 11,
-            color: '#f97316', letterSpacing: '0.16em',
-            background: 'rgba(4,6,14,0.80)',
-            border: '1px solid rgba(249,115,22,0.35)',
-            borderRadius: 2, padding: '3px 9px',
-          }}>
-            TOTAL INTERNAL REFLECTION
+          <div style={{ ...CHIP, color: '#fdba74', borderColor: 'rgba(249,115,22,0.45)' }}>
+            Total internal reflection
           </div>
         </Html>
       )}
 
-      {/* ── Prism angle slider (inline) ── */}
-      <Html position={[0, -3.0, 0]} center style={{ pointerEvents: 'all' }}>
-        <div style={{
-          fontFamily: 'JetBrains Mono,monospace',
-          display: 'flex', alignItems: 'center', gap: 10,
-          background: 'rgba(4,6,14,0.85)',
-          border: '1px solid rgba(56,189,248,0.18)',
-          borderRadius: 3, padding: '5px 12px',
-        }}>
-          <span style={{ fontSize: 11, color: 'rgba(56,189,248,0.75)', letterSpacing: '0.14em' }}>
-            PRISM ANGLE
-          </span>
+      {/* Prism angle */}
+      <Html calculatePosition={(_, __, size) => [size.width / 2 - 150, size.height - 132]} style={{ pointerEvents: 'all' }}>
+        <label style={{ ...CHIP, display: 'flex', alignItems: 'center', gap: 10, padding: '6px 12px' }}>
+          <span style={{ color: 'rgb(var(--c-text-muted))' }}>Prism angle</span>
           <input
             type="range" min={-40} max={40} step={1}
             value={Math.round(prismAngle * 180 / Math.PI)}
             onChange={e => setPrismAngle(parseFloat(e.target.value) * Math.PI / 180)}
-            style={{ width: 110, accentColor: '#38bdf8', cursor: 'pointer' }}
+            style={{ width: 120, accentColor: '#fcd34d', cursor: 'pointer' }}
+            aria-label="Prism angle"
           />
-          <span style={{ fontSize: 12, color: '#38bdf8', minWidth: 36, textAlign: 'right' }}>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', minWidth: 34, textAlign: 'right' }}>
             {Math.round(prismAngle * 180 / Math.PI)}°
           </span>
-        </div>
+        </label>
       </Html>
 
-      {/* Screen label */}
-      <Html position={[SCREEN_X, -1.05, 0]} center style={{ pointerEvents: 'none' }}>
-        <div style={{
-          fontFamily: 'JetBrains Mono,monospace', fontSize: 11,
-          color: 'rgba(56,189,248,0.75)', letterSpacing: '0.14em',
-        }}>
-          SCREEN
-        </div>
+      {/* Labels */}
+      <Html position={[-5.4, 0.45, 0]} center style={{ pointerEvents: 'none' }}>
+        <div style={CHIP}>White light in</div>
+      </Html>
+      <Html position={[SCREEN_X, -1.1, screenZ]} center style={{ pointerEvents: 'none' }}>
+        <div style={CHIP}>Screen · spectrum</div>
       </Html>
     </group>
   )
