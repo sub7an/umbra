@@ -5,6 +5,7 @@ import ControlPanel from '../../components/ControlPanel'
 import GasSimulation from './GasSimulation'
 import Entropy from './Entropy'
 import HeatEngine from './HeatEngine'
+import { hotReservoirT } from './carnot'
 import IsingModel from './IsingModel'
 import useModuleStore from '../../store/useModuleStore'
 
@@ -73,7 +74,7 @@ function buildEquations(view) {
         ],
         tryThis: [
           'Raise T_H or lower T_C and watch efficiency climb toward 1 — η = 1 − T_C/T_H.',
-          'Set T_C = T_H: efficiency falls to zero. No temperature difference means no work.',
+          'Drag T to its minimum so T_H nears T_C: the loop collapses and efficiency heads to zero. No temperature difference means no work.',
         ],
         checkpoint: {
           q: 'A Carnot engine runs between 600 K and 300 K. What is its maximum possible efficiency?',
@@ -122,8 +123,8 @@ Below the critical temperature T_c ≈ 2.269 (Onsager exact solution, 1944), the
 }
 
 function buildMetrics(view, temperature) {
-  const TH  = (temperature * 2 + 1).toFixed(2)
-  const eff = ((1 - 1 / (temperature * 2 + 1)) * 100).toFixed(1)
+  const TH  = hotReservoirT(temperature).toFixed(2)
+  const eff = ((1 - 1 / hotReservoirT(temperature)) * 100).toFixed(1)
   const vrms = (Math.sqrt(3 * temperature)).toFixed(2)
   switch (view) {
     case 'gas':

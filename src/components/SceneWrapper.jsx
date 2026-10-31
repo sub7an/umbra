@@ -190,10 +190,25 @@ function GestureCamera({ orbitRef, minDist, maxDist }) {
 }
 
 // ── Camera director: dolly-in on load, eased glide on view change ─────────────
-function CameraDirector({ position }) {
-  const { camera } = useThree()
-  const key   = position.join(',')
-  const goal  = useRef(new THREE.Vector3(...position))
+// Scenes are composed for a wide (~16:10) viewport. When docked panels make
+// the scene area narrow or square, pull the camera back so wide layouts
+// aren't cropped at the sides — partially, so tall views don't float in
+// empty space.
+const REF_ASPECT = 1.5
+function fitFactor(aspect) {
+  return Math.min(1.8, Math.max(1, Math.pow(REF_ASPECT / aspect, 0.75)))
+}
+
+function CameraDirector({ position, orbitRef, maxDist }) {
+  const { camera, size } = useThree()
+  const fit   = fitFactor(size.width / Math.max(1, size.height))
+  const fitKey = fit.toFixed(2)
+  const key   = position.join(',') + '|' + fitKey
+  const goal  = useRef(new THREE.Vector3(...position).multiplyScalar(fit))
+
+  useEffect(() => {
+    if (orbitRef?.current) orbitRef.current.maxDistance = maxDist * fit
+  }, [orbitRef, maxDist, fit])
   const anim  = useRef({ active: false, from: new THREE.Vector3(), start: -1, dur: 1 })
   const first = useRef(true)
 
@@ -209,7 +224,7 @@ function CameraDirector({ position }) {
   }, [])
 
   useEffect(() => {
-    const g = new THREE.Vector3(...position)
+    const g = new THREE.Vector3(...position).multiplyScalar(fit)
     goal.current = g
     if (first.current) {
       // Opening shot: start pulled back and above, dolly in
@@ -283,7 +298,7 @@ export default function SceneWrapper({ children, cameraPosition, showGrid = true
         style={{ width: '100%', height: '100%', display: 'block', background: '#0b0d12' }}
       >
         <fog attach="fog" args={['#0b0d12', 18, 55]} />
-        <CameraDirector position={camPos} />
+        <CameraDirector position={camPos} orbitRef={orbitRef} maxDist={maxDist} />
         <DefaultLighting />
         <DustField />
         {showGrid && <CinematicFloor />}
