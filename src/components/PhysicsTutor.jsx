@@ -557,7 +557,7 @@ export default function PhysicsTutor() {
   const hexFilter = `drop-shadow(0 0 ${2 + glowIntensity * 9}px rgba(${glowRGB},${glowIntensity}))`
 
   return (
-    <div style={{ borderTop: '1px solid rgba(94,106,210,0.07)', background: 'rgba(1,6,12,0.97)', flexShrink: 0, display: 'flex', flexDirection: 'column-reverse' }}>
+    <div style={{ borderTop: '1px solid rgba(124,140,255,0.07)', background: 'rgba(1,6,12,0.97)', flexShrink: 0, display: 'flex', flexDirection: 'column-reverse' }}>
       <style>{`
         @keyframes umbra-fade-in { from { opacity:0; transform:translateY(3px) } to { opacity:1; transform:translateY(0) } }
         @keyframes umbra-pulse { 0%,100%{opacity:.3} 50%{opacity:1} }
@@ -573,19 +573,19 @@ export default function PhysicsTutor() {
           <svg width="11" height="11" viewBox="0 0 12 12" fill="none"
             style={{ filter: hexFilter, transition:'filter 0.5s ease' }}>
             <path d="M6 1L10.33 3.5V8.5L6 11L1.67 8.5V3.5L6 1Z"
-              stroke={open ? `rgba(${glowRGB},0.9)` : 'rgba(94,106,210,0.35)'}
+              stroke={open ? `rgba(${glowRGB},0.9)` : 'rgba(124,140,255,0.35)'}
               strokeWidth="1"
               fill={open ? `rgba(${glowRGB},0.09)` : 'none'}
               style={{ transition:'all .2s' }}
             />
           </svg>
           <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:11, letterSpacing:'.22em',
-            textTransform:'uppercase', color: open ? '#5e6ad2' : 'rgba(94,106,210,0.38)', transition:'color .15s' }}>
+            textTransform:'uppercase', color: open ? '#7c8cff' : 'rgba(124,140,255,0.38)', transition:'color .15s' }}>
             UMBRA AI
           </span>
           {streaming && (
             <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:7, letterSpacing:'.15em',
-              color:'#5e6ad2', animation:'umbra-pulse 0.8s ease-in-out infinite' }}>THINKING</span>
+              color:'#7c8cff', animation:'umbra-pulse 0.8s ease-in-out infinite' }}>THINKING</span>
           )}
           {isDreaming && (
             <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:7, letterSpacing:'.15em',
@@ -595,10 +595,10 @@ export default function PhysicsTutor() {
             <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:7, letterSpacing:'.15em', color:'#fbbf24' }}>CHALLENGE</span>
           )}
           {challenge?.won && (
-            <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:7, letterSpacing:'.15em', color:'rgba(94,106,210,0.75)' }}>SOLVED</span>
+            <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:7, letterSpacing:'.15em', color:'rgba(124,140,255,0.75)' }}>SOLVED</span>
           )}
           {messages.length > 0 && !streaming && !isDreaming && !challenge && (
-            <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:7, letterSpacing:'.12em', color:'rgba(94,106,210,0.75)' }}>
+            <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:7, letterSpacing:'.12em', color:'rgba(124,140,255,0.75)' }}>
               {messages.filter(m => m.role==='user').length}Q
             </span>
           )}
@@ -608,9 +608,9 @@ export default function PhysicsTutor() {
             onClick={e => { e.stopPropagation(); setVoiceOn(v => !v) }}
             title={voiceOn ? 'Voice on — click to mute' : 'Voice off — click to enable'}
             style={{ fontSize:12, cursor:'pointer', userSelect:'none',
-              color: voiceOn ? '#5e6ad2' : 'rgba(94,106,210,0.2)', transition:'color .15s' }}
+              color: voiceOn ? '#7c8cff' : 'rgba(124,140,255,0.2)', transition:'color .15s' }}
           >{voiceOn ? '🔊' : '🔇'}</span>
-          <span style={{ fontSize:11, color:'rgba(94,106,210,0.75)', fontFamily:'monospace',
+          <span style={{ fontSize:11, color:'rgba(124,140,255,0.75)', fontFamily:'monospace',
             transform: open ? 'rotate(0deg)' : 'rotate(180deg)', transition:'transform .2s', display:'inline-block' }}>▲</span>
         </div>
       </button>
@@ -622,17 +622,17 @@ export default function PhysicsTutor() {
           {/* Connection insight banner */}
           {insight && (
             <div style={{ margin:'0 10px 6px', padding:'8px 10px',
-              background:'rgba(94,106,210,0.03)', borderRadius:2,
-              borderLeft:'2px solid rgba(94,106,210,0.4)',
-              border:'1px solid rgba(94,106,210,0.1)',
+              background:'rgba(124,140,255,0.03)', borderRadius:2,
+              borderLeft:'2px solid rgba(124,140,255,0.4)',
+              border:'1px solid rgba(124,140,255,0.1)',
               animation:'umbra-fade-in 0.5s ease' }}>
               <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
                 <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:7,
-                  letterSpacing:'.2em', textTransform:'uppercase', color:'rgba(94,106,210,0.75)' }}>
+                  letterSpacing:'.2em', textTransform:'uppercase', color:'rgba(124,140,255,0.75)' }}>
                   ◈ CONNECTION DETECTED
                 </span>
                 <button onClick={() => setInsight(null)} style={{ fontFamily:'JetBrains Mono, monospace',
-                  fontSize:7, color:'rgba(94,106,210,0.75)', background:'none', border:'none', cursor:'pointer', padding:0 }}>✕</button>
+                  fontSize:7, color:'rgba(124,140,255,0.75)', background:'none', border:'none', cursor:'pointer', padding:0 }}>✕</button>
               </div>
               <p style={{ fontFamily:'system-ui, sans-serif', fontSize:12,
                 color:'rgba(200,230,225,0.78)', lineHeight:1.6, margin:0 }}>{insight}</p>
@@ -643,11 +643,11 @@ export default function PhysicsTutor() {
           {challenge && (
             <div style={{ margin:'0 10px 6px', padding:'8px 10px',
               background:'rgba(251,191,36,0.03)', borderRadius:2,
-              borderLeft:`2px solid ${challenge.won ? 'rgba(94,106,210,0.5)' : 'rgba(251,191,36,0.5)'}`,
-              border:`1px solid ${challenge.won ? 'rgba(94,106,210,0.12)' : 'rgba(251,191,36,0.12)'}` }}>
+              borderLeft:`2px solid ${challenge.won ? 'rgba(124,140,255,0.5)' : 'rgba(251,191,36,0.5)'}`,
+              border:`1px solid ${challenge.won ? 'rgba(124,140,255,0.12)' : 'rgba(251,191,36,0.12)'}` }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:3 }}>
                 <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:7, letterSpacing:'.18em',
-                  textTransform:'uppercase', color: challenge.won ? 'rgba(94,106,210,0.7)' : 'rgba(251,191,36,0.7)' }}>
+                  textTransform:'uppercase', color: challenge.won ? 'rgba(124,140,255,0.7)' : 'rgba(251,191,36,0.7)' }}>
                   {challenge.won ? '✓ SOLVED' : '⚡ CHALLENGE'}
                 </span>
                 <button onClick={() => setChallenge(null)} style={{ fontFamily:'JetBrains Mono, monospace',
@@ -658,7 +658,7 @@ export default function PhysicsTutor() {
                 {challenge.prompt}
               </p>
               <p style={{ fontFamily:'JetBrains Mono, monospace', fontSize:11,
-                color: challenge.won ? 'rgba(94,106,210,0.5)' : 'rgba(251,191,36,0.4)', marginTop:3 }}>
+                color: challenge.won ? 'rgba(124,140,255,0.5)' : 'rgba(251,191,36,0.4)', marginTop:3 }}>
                 Target: {challenge.target}
               </p>
               {!challenge.won && challenge.hint && (
@@ -671,23 +671,23 @@ export default function PhysicsTutor() {
           {/* Message area */}
           <div style={{ flex:1, overflowY:'auto', padding:'4px 14px 10px',
             display:'flex', flexDirection:'column', gap:10, minHeight:0,
-            scrollbarWidth:'thin', scrollbarColor:'rgba(94,106,210,0.12) transparent' }}>
+            scrollbarWidth:'thin', scrollbarColor:'rgba(124,140,255,0.12) transparent' }}>
 
             {/* Starters */}
             {messages.length === 0 && !streaming && (
               <div style={{ paddingTop:4 }}>
                 <p style={{ fontFamily:'JetBrains Mono, monospace', fontSize:7, letterSpacing:'.2em',
-                  textTransform:'uppercase', color:'rgba(94,106,210,0.75)', marginBottom:8 }}>TRY ASKING</p>
+                  textTransform:'uppercase', color:'rgba(124,140,255,0.75)', marginBottom:8 }}>TRY ASKING</p>
                 {starters.map((q, i) => (
                   <button key={i} onClick={() => send(q)} style={{
                     display:'block', width:'100%', textAlign:'left',
                     fontFamily:'JetBrains Mono, monospace', fontSize:12,
-                    color:'rgba(94,106,210,0.75)', background:'none', border:'none',
-                    cursor:'pointer', padding:'5px 0', borderBottom:'1px solid rgba(94,106,210,0.05)',
+                    color:'rgba(124,140,255,0.75)', background:'none', border:'none',
+                    cursor:'pointer', padding:'5px 0', borderBottom:'1px solid rgba(124,140,255,0.05)',
                     transition:'color .1s',
                   }}
-                  onMouseEnter={e => e.currentTarget.style.color='#5e6ad2'}
-                  onMouseLeave={e => e.currentTarget.style.color='rgba(94,106,210,0.5)'}
+                  onMouseEnter={e => e.currentTarget.style.color='#7c8cff'}
+                  onMouseLeave={e => e.currentTarget.style.color='rgba(124,140,255,0.5)'}
                   >→ {q}</button>
                 ))}
                 {CHALLENGES[moduleId] && (
@@ -724,7 +724,7 @@ export default function PhysicsTutor() {
               const borderColor = m.proactive ? 'rgba(255,180,0,0.3)'
                 : m.dream ? 'rgba(160,100,255,0.35)'
                 : m.challenge ? 'rgba(251,191,36,0.3)'
-                : 'rgba(94,106,210,0.25)'
+                : 'rgba(124,140,255,0.25)'
               const textColor = m.proactive ? 'rgba(255,220,150,0.82)'
                 : m.dream ? 'rgba(220,200,255,0.85)'
                 : m.challenge ? 'rgba(255,235,180,0.85)'
@@ -749,7 +749,7 @@ export default function PhysicsTutor() {
                       <div key={si} style={{ marginBottom: si < stepsToShow.length-1 ? 8 : 0,
                         color: textColor, animation:'umbra-fade-in 0.4s ease' }}>
                         <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:11,
-                          color:'rgba(94,106,210,0.75)', marginRight:6 }}>§{si+1}</span>
+                          color:'rgba(124,140,255,0.75)', marginRight:6 }}>§{si+1}</span>
                         {step}
                       </div>
                     ))
@@ -758,7 +758,7 @@ export default function PhysicsTutor() {
                   )}
                   {m.derivation && isLastDeriv && derivVisible < (m.steps?.length ?? 0) && (
                     <span style={{ display:'inline-block', width:6, height:11,
-                      background:'#5e6ad2', marginLeft:2, verticalAlign:'text-bottom',
+                      background:'#7c8cff', marginLeft:2, verticalAlign:'text-bottom',
                       animation:'umbra-pulse 0.6s ease-in-out infinite' }}/>
                   )}
                 </div>
@@ -767,12 +767,12 @@ export default function PhysicsTutor() {
 
             {/* Streaming */}
             {streamText && (
-              <div style={{ paddingLeft:10, borderLeft:'2px solid rgba(94,106,210,0.35)',
+              <div style={{ paddingLeft:10, borderLeft:'2px solid rgba(124,140,255,0.35)',
                 fontFamily:'system-ui, sans-serif', fontSize:13,
                 color:'rgba(210,235,230,0.88)', lineHeight:1.65 }}>
                 {stripControls(streamText)}
                 <span style={{ display:'inline-block', width:6, height:11,
-                  background:'#5e6ad2', marginLeft:2, verticalAlign:'text-bottom',
+                  background:'#7c8cff', marginLeft:2, verticalAlign:'text-bottom',
                   animation:'umbra-pulse 0.6s ease-in-out infinite' }}/>
               </div>
             )}
@@ -786,7 +786,7 @@ export default function PhysicsTutor() {
 
           {/* Input row */}
           <div style={{ display:'flex', alignItems:'center', gap:6,
-            padding:'8px 14px', borderTop:'1px solid rgba(94,106,210,0.07)' }}>
+            padding:'8px 14px', borderTop:'1px solid rgba(124,140,255,0.07)' }}>
             <input
               ref={inputRef}
               value={input}
@@ -794,12 +794,12 @@ export default function PhysicsTutor() {
               onKeyDown={handleKey}
               placeholder={streaming ? 'Responding…' : isDreaming ? 'UMBRA is exploring — move to interrupt' : 'Ask about what you\'re seeing  [/]'}
               disabled={streaming || isDreaming}
-              style={{ flex:1, background:'rgba(94,106,210,0.04)',
-                border:'1px solid rgba(94,106,210,0.10)', borderRadius:2, padding:'6px 10px',
+              style={{ flex:1, background:'rgba(124,140,255,0.04)',
+                border:'1px solid rgba(124,140,255,0.10)', borderRadius:2, padding:'6px 10px',
                 fontFamily:'JetBrains Mono, monospace', fontSize:12,
                 color:'rgba(220,240,235,0.85)', outline:'none', transition:'border-color .15s' }}
-              onFocus={e => e.target.style.borderColor='rgba(94,106,210,0.30)'}
-              onBlur={e  => e.target.style.borderColor='rgba(94,106,210,0.10)'}
+              onFocus={e => e.target.style.borderColor='rgba(124,140,255,0.30)'}
+              onBlur={e  => e.target.style.borderColor='rgba(124,140,255,0.10)'}
             />
             {CHALLENGES[moduleId] && !challenge && (
               <button onClick={startChallenge} style={{
@@ -815,8 +815,8 @@ export default function PhysicsTutor() {
               disabled={streaming || !input.trim() || isDreaming}
               style={{ fontFamily:'JetBrains Mono, monospace', fontSize:11, letterSpacing:'.15em',
                 textTransform:'uppercase', padding:'6px 11px', borderRadius:2,
-                border:'1px solid rgba(94,106,210,0.18)', background:'rgba(94,106,210,0.05)',
-                color:(input.trim() && !streaming) ? '#5e6ad2' : 'rgba(94,106,210,0.2)',
+                border:'1px solid rgba(124,140,255,0.18)', background:'rgba(124,140,255,0.05)',
+                color:(input.trim() && !streaming) ? '#7c8cff' : 'rgba(124,140,255,0.2)',
                 cursor:(input.trim() && !streaming) ? 'pointer' : 'default', transition:'all .1s' }}>
               ASK
             </button>
@@ -825,12 +825,12 @@ export default function PhysicsTutor() {
           {/* Footer */}
           <div style={{ padding:'4px 14px 7px', display:'flex', justifyContent:'space-between' }}>
             <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:7,
-              letterSpacing:'.12em', color:'rgba(94,106,210,0.75)' }}>
+              letterSpacing:'.12em', color:'rgba(124,140,255,0.75)' }}>
               / to focus · Enter to send · {moduleId.replace(/-/g,' ')}
             </span>
             {journal.visited.length > 1 && (
               <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:7,
-                letterSpacing:'.1em', color:'rgba(94,106,210,0.75)' }}>
+                letterSpacing:'.1em', color:'rgba(124,140,255,0.75)' }}>
                 {journal.visited.length} modules explored
               </span>
             )}

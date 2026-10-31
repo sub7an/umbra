@@ -131,9 +131,9 @@ export default function ShareButton() {
         fontFamily: 'JetBrains Mono, monospace',
         fontSize: 12,
         letterSpacing: '0.12em',
-        color: status === 'copied' ? '#5e6ad2' : 'rgba(94,106,210,0.45)',
-        background: status === 'copied' ? 'rgba(94,106,210,0.08)' : 'rgba(8,9,10,0.72)',
-        border: `1px solid ${status === 'copied' ? 'rgba(94,106,210,0.4)' : 'rgba(94,106,210,0.14)'}`,
+        color: status === 'copied' ? '#7c8cff' : 'rgba(124,140,255,0.45)',
+        background: status === 'copied' ? 'rgba(124,140,255,0.08)' : 'rgba(8,9,10,0.72)',
+        border: `1px solid ${status === 'copied' ? 'rgba(124,140,255,0.4)' : 'rgba(124,140,255,0.14)'}`,
         borderRadius: 4,
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
@@ -143,21 +143,21 @@ export default function ShareButton() {
       }}
       onMouseEnter={e => {
         if (status === 'idle') {
-          e.currentTarget.style.color = 'rgba(94,106,210,0.85)'
-          e.currentTarget.style.borderColor = 'rgba(94,106,210,0.35)'
+          e.currentTarget.style.color = 'rgba(124,140,255,0.85)'
+          e.currentTarget.style.borderColor = 'rgba(124,140,255,0.35)'
         }
       }}
       onMouseLeave={e => {
         if (status === 'idle') {
-          e.currentTarget.style.color = 'rgba(94,106,210,0.45)'
-          e.currentTarget.style.borderColor = 'rgba(94,106,210,0.14)'
+          e.currentTarget.style.color = 'rgba(124,140,255,0.45)'
+          e.currentTarget.style.borderColor = 'rgba(124,140,255,0.14)'
         }
       }}
     >
       {status === 'copied' ? (
         <>
           <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-            <path d="M2 5.5L4.5 8L9 3" stroke="#5e6ad2" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M2 5.5L4.5 8L9 3" stroke="#7c8cff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           COPIED
         </>

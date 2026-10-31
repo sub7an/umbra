@@ -61,11 +61,11 @@ function buildEquations(view, velocity, gamma, Lc) {
         derivedEqs: [
           {
             label: 'Lorentz factor',
-            eq: `\\textcolor{#5e6ad2}{\\gamma} = \\dfrac{1}{\\sqrt{1-\\textcolor{#f59e0b}{\\beta}^2}}`,
+            eq: `\\textcolor{#7c8cff}{\\gamma} = \\dfrac{1}{\\sqrt{1-\\textcolor{#f59e0b}{\\beta}^2}}`,
           },
           {
             label: 'Current',
-            eq: `\\textcolor{#f59e0b}{\\beta} = ${b},\\;\\textcolor{#5e6ad2}{\\gamma} = ${g}`,
+            eq: `\\textcolor{#f59e0b}{\\beta} = ${b},\\;\\textcolor{#7c8cff}{\\gamma} = ${g}`,
           },
         ],
         tryThis: [
@@ -82,15 +82,15 @@ function buildEquations(view, velocity, gamma, Lc) {
       return {
         domain: 'LORENTZ TRANSFORM · TIME DILATION',
         syllabus: 'AQA (turning points) · IB A.1 · time dilation',
-        primaryEq: `\\textcolor{#f59e0b}{t'} = \\textcolor{#5e6ad2}{\\gamma}\\,t_0`,
+        primaryEq: `\\textcolor{#f59e0b}{t'} = \\textcolor{#7c8cff}{\\gamma}\\,t_0`,
         derivedEqs: [
           {
             label: 'Lorentz factor',
-            eq: `\\textcolor{#5e6ad2}{\\gamma} = \\dfrac{1}{\\sqrt{1-\\textcolor{#f59e0b}{\\beta}^2}}`,
+            eq: `\\textcolor{#7c8cff}{\\gamma} = \\dfrac{1}{\\sqrt{1-\\textcolor{#f59e0b}{\\beta}^2}}`,
           },
           {
             label: 'Live values',
-            eq: `\\textcolor{#f59e0b}{\\beta}=${b},\\;\\textcolor{#5e6ad2}{\\gamma}=${g}`,
+            eq: `\\textcolor{#f59e0b}{\\beta}=${b},\\;\\textcolor{#7c8cff}{\\gamma}=${g}`,
           },
         ],
         tryThis: [
@@ -107,7 +107,7 @@ function buildEquations(view, velocity, gamma, Lc) {
       return {
         domain: 'LORENTZ TRANSFORM · LENGTH CONTRACTION',
         syllabus: 'AQA (turning points) · IB A.1 · length contraction',
-        primaryEq: `\\textcolor{#e040fb}{L'} = \\dfrac{L_0}{\\textcolor{#5e6ad2}{\\gamma}}`,
+        primaryEq: `\\textcolor{#e040fb}{L'} = \\dfrac{L_0}{\\textcolor{#7c8cff}{\\gamma}}`,
         derivedEqs: [
           {
             label: 'Proper length',
@@ -173,7 +173,7 @@ function drawDiagGraph(ctx, w, h, history) {
   }
 
   trace('rgba(245,158,11,0.72)', 'p')         // amber: momentum p = γβ
-  trace('rgba(94,106,210,0.88)', 'E')           // cyan: energy E = γ
+  trace('rgba(124,140,255,0.88)', 'E')           // cyan: energy E = γ
   trace('rgba(106,173,165,0.65)', 'm2', 1, [2, 5])  // dim dashed: invariant m²
 }
 
@@ -261,7 +261,7 @@ function DiagnosticsPanel({ velocity, gamma }) {
         <>
           {/* γ readout */}
           <div className="px-4 py-3 border-b border-border-subtle">
-            <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase mb-1" style={{ color: '#8b9cf7' }}>
+            <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase mb-1" style={{ color: '#a5b0ff' }}>
               Lorentz factor · live
             </p>
             <span className="font-mono-data text-xl tabular-nums text-amber-glow glow-amber">
@@ -271,7 +271,7 @@ function DiagnosticsPanel({ velocity, gamma }) {
 
           {/* Rolling 4-momentum graph */}
           <div className="px-3 pt-3 pb-2 border-b border-border-subtle">
-            <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase mb-2" style={{ color: '#8b9cf7' }}>
+            <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase mb-2" style={{ color: '#a5b0ff' }}>
               4-momentum · E² − p²
             </p>
             <div className="relative rounded overflow-hidden" style={{ height: '72px' }}>
@@ -284,7 +284,7 @@ function DiagnosticsPanel({ velocity, gamma }) {
             </div>
             <div className="flex gap-4 mt-2">
               <span className="flex items-center gap-1.5 font-mono-data text-[11px] text-text-dim">
-                <span className="inline-block w-3 rounded" style={{ height: 1.5, background: 'rgba(94,106,210,0.88)' }} />
+                <span className="inline-block w-3 rounded" style={{ height: 1.5, background: 'rgba(124,140,255,0.88)' }} />
                 E = γ
               </span>
               <span className="flex items-center gap-1.5 font-mono-data text-[11px] text-text-dim">
@@ -300,7 +300,7 @@ function DiagnosticsPanel({ velocity, gamma }) {
 
           {/* Invariant check readout */}
           <div className="px-4 py-3">
-            <p className="font-mono-data text-[11px] tracking-[0.18em] uppercase mb-2" style={{ color: '#8b9cf7' }}>
+            <p className="font-mono-data text-[11px] tracking-[0.18em] uppercase mb-2" style={{ color: '#a5b0ff' }}>
               Invariant check
             </p>
             <div className="flex items-baseline justify-between py-1.5 border-b border-border-subtle">

@@ -1,28 +1,33 @@
-@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ─── design-contract (seed: 3ec9088e) ─────────────────────────────────────
-   THESIS: Oscilloscope-instrument world; refuses the generic "floating neon
-   panel on starfield" default. Every element belongs to precision measurement.
-   OWN-WORLD: #08090a ground, #5e6ad2 phosphor-cyan + #f59e0b amber accents,
-   Chakra Petch display, JetBrains Mono data, osc-grid panel texture,
-   single-px cyan borders with blur-glow, no decorative drop-shadows.
-   STORY: User scrubs velocity → three scenes respond → gamma glows in mono →
-   InfoPanel translates the sensation into language.
-   FIRST VIEWPORT: Dark full-bleed canvas; 3D scene dominant center; left
-   InfoPanel, right ControlPanel as thin instrument drawers.
-   FORM: Oscilloscope physics instrumentation, index 6.
-   FINISH: unreviewed and undocumented is unfinished; this build ends with the
-   finish review, the verdict, and DESIGN.md.
+/* ─── Design system: "clean lab instrument" ────────────────────────────────
+   Calm graphite surfaces, one indigo brand hue, per-module accent colours.
+   Inter for all reading text (16px base), JetBrains Mono only for live
+   numbers/equations. No neon glows, scanlines or grain — the simulation is
+   the hero; the chrome stays quiet and legible, including on a projector.
+   Colours are RGB channels so Tailwind opacity modifiers keep working.
 ──────────────────────────────────────────────────────────────────────────── */
 
 :root {
   color-scheme: dark;
-  --font-mono: 'JetBrains Mono', monospace;
+
+  --c-ground:      11 13 18;    /* #0b0d12 app background            */
+  --c-panel:       17 20 27;    /* #11141b panels, cards             */
+  --c-panel-hover: 24 28 37;    /* #181c25 hover / raised            */
+  --c-border:      40 46 60;    /* #282e3c hairlines                 */
+  --c-text:        238 240 245; /* #eef0f5 primary text  (15.8:1)    */
+  --c-text-muted:  164 171 187; /* #a4abbb secondary text (7.9:1)    */
+  --c-brand:       124 140 255; /* #7c8cff brand / focus  (6.4:1)    */
+  --c-brand-text:  165 176 255; /* #a5b0ff brand text on dark        */
+  --c-brand-dim:   63 74 138;   /* #3f4a8a brand borders             */
+
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --radius: 8px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 * {
@@ -34,49 +39,43 @@ html, body, #root {
   padding: 0;
   width: 100%;
   height: 100%;
-  background: #08090a;
+  background: rgb(var(--c-ground));
   overflow: hidden;
 }
 
-/* ── Scanline + film grain cinematic layer ──────────────────────────────────── */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.055) 2px,
-    rgba(0, 0, 0, 0.055) 4px
-  );
-  pointer-events: none;
-  z-index: 9990;
+body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  color: rgb(var(--c-text));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv11', 'ss01';
 }
 
-body::after {
-  content: '';
-  position: fixed;
-  inset: -50%;
-  width: 200%;
-  height: 200%;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
-  opacity: 0.028;
-  pointer-events: none;
-  z-index: 9989;
-  animation: grain-shift 7s steps(8) infinite;
+button, a, [role='button'], [role='tab'] {
+  cursor: pointer;
 }
 
-@keyframes grain-shift {
-  0%   { transform: translate(0, 0) }
-  12%  { transform: translate(-4%, -8%) }
-  25%  { transform: translate(-12%, 4%) }
-  37%  { transform: translate(6%, -12%) }
-  50%  { transform: translate(-8%, 10%) }
-  62%  { transform: translate(10%, -6%) }
-  75%  { transform: translate(-14%, 2%) }
-  87%  { transform: translate(4%, -10%) }
-  100% { transform: translate(0, 0) }
+/* One consistent, always-visible keyboard focus ring */
+:focus-visible {
+  outline: 2px solid rgb(var(--c-brand));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: rgb(var(--c-brand) / 0.35);
+}
+
+/* Respect reduced-motion everywhere (sims keep running; chrome stops moving) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @keyframes umbra-ticker {
@@ -100,98 +99,79 @@ body::after {
   to   { opacity: 1; transform: translateY(0) }
 }
 
-/* Oscilloscope measurement grid — applied to panel backgrounds */
-.osc-grid {
-  background-image:
-    linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px);
-  background-size: 24px 24px;
-}
-
-/* Phosphor glow text effect */
-.glow-cyan {
-  text-shadow: 0 0 6px rgba(94,106,210,0.7), 0 0 14px rgba(94,106,210,0.3);
-}
-.glow-amber {
-  text-shadow: 0 0 6px rgba(245,158,11,0.7), 0 0 14px rgba(245,158,11,0.3);
-}
-.glow-rose {
-  text-shadow: 0 0 6px rgba(224,64,251,0.7), 0 0 14px rgba(224,64,251,0.3);
-}
-.glow-violet {
-  text-shadow: 0 0 6px rgba(168,85,247,0.7), 0 0 14px rgba(168,85,247,0.3);
-}
-.glow-emerald {
-  text-shadow: 0 0 6px rgba(16,185,129,0.7), 0 0 14px rgba(16,185,129,0.3);
-}
-
-/* CRT scanline overlay */
-.scanlines::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0,0,0,0.08) 2px,
-    rgba(0,0,0,0.08) 4px
-  );
-  pointer-events: none;
-  z-index: 10;
-}
-
-/* Phosphor border glow */
-.border-glow {
-  box-shadow: 0 0 0 1px rgba(94,106,210,0.4), 0 0 8px rgba(94,106,210,0.15);
-}
-.border-glow-strong {
-  box-shadow: 0 0 0 1px rgba(94,106,210,0.7), 0 0 16px rgba(94,106,210,0.25);
-}
+/* Legacy effect classes, kept as no-ops/quiet versions so existing markup
+   adopts the new look without per-file edits. */
+.osc-grid { background-image: none; }
+.glow-cyan, .glow-amber, .glow-rose, .glow-violet, .glow-emerald { text-shadow: none; }
+.scanlines::after { display: none; }
+.border-glow        { box-shadow: 0 0 0 1px rgb(var(--c-brand) / 0.35); }
+.border-glow-strong { box-shadow: 0 0 0 1px rgb(var(--c-brand) / 0.6); }
 
 /* Scroll inside panels */
-.thin-scroll::-webkit-scrollbar {
-  width: 3px;
+.thin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--c-border)) transparent;
 }
-.thin-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
+.thin-scroll::-webkit-scrollbar { width: 6px; }
+.thin-scroll::-webkit-scrollbar-track { background: transparent; }
 .thin-scroll::-webkit-scrollbar-thumb {
-  background: #2a2a3a;
-  border-radius: 2px;
+  background: rgb(var(--c-border));
+  border-radius: 3px;
 }
-.thin-scroll::-webkit-scrollbar-thumb:hover {
-  background: #8b9cf7;
-}
+.thin-scroll::-webkit-scrollbar-thumb:hover { background: rgb(var(--c-text-muted)); }
 
 /* ── Light mode ──────────────────────────────────────────────────────────────
-   The whole app inverts at the root (dark chrome becomes light, indigo hue
+   The whole app inverts at the root (dark chrome becomes light, hues
    preserved via hue-rotate). Simulation canvases and the webcam preview are
    re-inverted so physics renders stay true dark — a dark viewport inside
-   light chrome, like every pro 3D tool. Film grain and scanlines are off in
-   light mode: they read as dirt on white. */
+   light chrome, like every pro 3D tool. */
 html.light {
   filter: invert(1) hue-rotate(180deg);
-  background: #eceaf4;
+  background: #eceef4;
 }
 html.light .scanlines canvas,
 html.light .sim-dark canvas,
 html.light video {
   filter: invert(1) hue-rotate(180deg);
 }
-html.light body::before,
-html.light body::after {
-  display: none;
-}
-html.light .scanlines::after {
-  display: none;
-}
 
 @layer utilities {
   .font-display {
-    font-family: 'Chakra Petch', sans-serif;
+    font-family: var(--font-body);
+    letter-spacing: -0.011em;
   }
   .font-mono-data {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
+  }
+}
+
+@layer components {
+  /* Shared UI primitives for the redesigned shell */
+  .ui-btn {
+    @apply inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md text-sm font-medium
+      text-text-primary bg-panel border border-border-subtle
+      transition-colors duration-150 hover:bg-panel-hover hover:border-text-dim/40
+      disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .ui-btn-primary {
+    @apply inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md text-sm font-semibold
+      bg-cyan-glow text-ground transition-colors duration-150 hover:bg-cyan-mid;
+  }
+  .ui-btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 h-9 px-3 rounded-md text-sm font-medium
+      text-text-dim transition-colors duration-150 hover:text-text-primary hover:bg-panel-hover;
+  }
+  .ui-tab {
+    @apply h-8 px-3 rounded-md text-sm font-medium text-text-dim whitespace-nowrap
+      transition-colors duration-150 hover:text-text-primary hover:bg-panel-hover;
+  }
+  .ui-tab[aria-selected='true'] {
+    @apply text-text-primary bg-panel-hover shadow-[inset_0_0_0_1px_rgb(var(--c-border))];
+  }
+  .ui-eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.08em] text-text-dim;
+  }
+  .ui-card {
+    @apply rounded-lg bg-panel border border-border-subtle;
   }
 }

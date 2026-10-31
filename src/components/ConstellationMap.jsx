@@ -76,7 +76,7 @@ export default function ConstellationMap({ onNavigate }) {
           </filter>
           <radialGradient id="bg-grad" cx="50%" cy="50%" r="60%">
             <stop offset="0%"   stopColor="#0a1a22"/>
-            <stop offset="100%" stopColor="#08090a"/>
+            <stop offset="100%" stopColor="#0b0d12"/>
           </radialGradient>
         </defs>
 
@@ -164,7 +164,7 @@ export default function ConstellationMap({ onNavigate }) {
                 textAnchor="middle"
                 fontSize={node.r > 4 ? 3.3 : 2.7}
                 fill={c}
-                fontFamily="Chakra Petch, sans-serif"
+                fontFamily="Inter, sans-serif"
                 fontWeight="bold"
                 filter={isHov ? 'url(#cg1)' : undefined}
                 style={{ pointerEvents: 'none' }}
@@ -174,7 +174,7 @@ export default function ConstellationMap({ onNavigate }) {
                 x={node.x} y={node.y + node.r + 2.6}
                 textAnchor="middle" fontSize="1.55"
                 fill={isHov ? 'rgba(223,242,237,0.95)' : 'rgba(223,242,237,0.32)'}
-                fontFamily="Chakra Petch, sans-serif"
+                fontFamily="Inter, sans-serif"
                 style={{ pointerEvents: 'none', transition: 'fill 0.15s' }}
               >{node.name}</text>
             </g>
@@ -190,7 +190,7 @@ export default function ConstellationMap({ onNavigate }) {
         fontSize: 11, letterSpacing: '0.16em',
         color: hovNode
           ? `rgba(${hovNode.col.join(',')},0.7)`
-          : 'rgba(94,106,210,0.2)',
+          : 'rgba(124,140,255,0.2)',
         transition: 'color 0.2s',
       }}>
         {hovNode ? `${hovNode.name.toUpperCase()}  ·  CLICK TO ENTER →` : 'HOVER TO EXPLORE CONNECTIONS  ·  CLICK TO ENTER'}

@@ -13,7 +13,7 @@ const PILLARS = [
     tag: 'THE PRODUCT',
     title: 'Physics you can touch, not just read',
     body: 'Thirteen GPU-accelerated worlds — black holes, quantum tunneling, chaos, electromagnetism — rendered live in the browser. Every parameter is a slider; every result updates in real time. No downloads, no plugins, no lab budget.',
-    accent: '#5e6ad2',
+    accent: '#7c8cff',
   },
   {
     tag: 'THE WEDGE',
@@ -74,13 +74,13 @@ export default function AboutPanel() {
       <div style={{ width: '100%', maxWidth: 980, animation: 'umbra-slide-up 0.35s cubic-bezier(0.16,1,0.3,1)' }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.3em', color: 'rgba(94,106,210,0.75)', marginBottom: 14 }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.3em', color: 'rgba(124,140,255,0.75)', marginBottom: 14 }}>
             ⬡ UMBRA · THE STORY
           </div>
-          <div style={{ fontFamily: 'Chakra Petch, sans-serif', fontWeight: 700, fontSize: 'clamp(28px,4.5vw,50px)', color: '#f7f8f8', lineHeight: 1.05 }}>
+          <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 'clamp(28px,4.5vw,50px)', color: '#eef0f5', lineHeight: 1.05 }}>
             The physics lab that fits
           </div>
-          <div style={{ fontFamily: 'Chakra Petch, sans-serif', fontWeight: 700, fontSize: 'clamp(28px,4.5vw,50px)', color: '#5e6ad2', lineHeight: 1.05, textShadow: '0 0 32px rgba(94,106,210,0.3)' }}>
+          <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 'clamp(28px,4.5vw,50px)', color: '#7c8cff', lineHeight: 1.05, textShadow: '0 0 32px rgba(124,140,255,0.3)' }}>
             in a browser tab.
           </div>
           <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 15, color: 'rgba(247,248,248,0.75)', maxWidth: 560, margin: '18px auto 0', lineHeight: 1.6 }}>
@@ -91,12 +91,12 @@ export default function AboutPanel() {
         {/* Stats band */}
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 1,
-          background: 'rgba(94,106,210,0.12)', border: '1px solid rgba(94,106,210,0.12)',
+          background: 'rgba(124,140,255,0.12)', border: '1px solid rgba(124,140,255,0.12)',
           borderRadius: 8, overflow: 'hidden', marginBottom: 20,
         }}>
           {STATS.map((s) => (
-            <div key={s.label} style={{ background: 'rgba(17,17,19,0.95)', padding: '22px 16px', textAlign: 'center' }}>
-              <div style={{ fontFamily: 'Chakra Petch, sans-serif', fontWeight: 700, fontSize: 30, color: '#5e6ad2' }}>{s.value}</div>
+            <div key={s.label} style={{ background: 'rgba(17,20,27,0.95)', padding: '22px 16px', textAlign: 'center' }}>
+              <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 30, color: '#7c8cff' }}>{s.value}</div>
               <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11.5, letterSpacing: '0.1em', color: 'rgba(247,248,248,0.75)', marginTop: 6, lineHeight: 1.4, textTransform: 'uppercase' }}>{s.label}</div>
             </div>
           ))}
@@ -106,11 +106,11 @@ export default function AboutPanel() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 14, marginBottom: 20 }}>
           {PILLARS.map((p) => (
             <div key={p.tag} style={{
-              background: 'rgba(17,17,19,0.92)', border: `1px solid ${p.accent}26`,
+              background: 'rgba(17,20,27,0.92)', border: `1px solid ${p.accent}26`,
               borderRadius: 8, padding: '22px 22px',
             }}>
               <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.2em', color: p.accent, marginBottom: 10 }}>{p.tag}</div>
-              <div style={{ fontFamily: 'Chakra Petch, sans-serif', fontWeight: 700, fontSize: 18, color: '#f7f8f8', marginBottom: 8, lineHeight: 1.25 }}>{p.title}</div>
+              <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 18, color: '#eef0f5', marginBottom: 8, lineHeight: 1.25 }}>{p.title}</div>
               <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13.5, color: 'rgba(247,248,248,0.75)', lineHeight: 1.65, margin: 0 }}>{p.body}</p>
             </div>
           ))}
@@ -118,10 +118,10 @@ export default function AboutPanel() {
 
         {/* Traction */}
         <div style={{
-          background: 'rgba(17,17,19,0.92)', border: '1px solid rgba(94,106,210,0.2)',
+          background: 'rgba(17,20,27,0.92)', border: '1px solid rgba(124,140,255,0.2)',
           borderRadius: 8, padding: '22px 24px', marginBottom: 28,
         }}>
-          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.2em', color: 'rgba(94,106,210,0.75)', marginBottom: 14 }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.2em', color: 'rgba(124,140,255,0.75)', marginBottom: 14 }}>
             WHERE WE ARE TODAY
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -140,7 +140,7 @@ export default function AboutPanel() {
             onClick={() => { setOpen(false); window.dispatchEvent(new CustomEvent('umbra-pricing-open')) }}
             style={{
               fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.12em',
-              color: '#08090a', background: '#5e6ad2', border: 'none', borderRadius: 5,
+              color: '#0b0d12', background: '#7c8cff', border: 'none', borderRadius: 5,
               padding: '11px 22px', cursor: 'pointer', fontWeight: 700,
             }}
           >
@@ -150,8 +150,8 @@ export default function AboutPanel() {
             onClick={() => { track('about_contact_click'); navigator.clipboard?.writeText('hamzahatef09@gmail.com').catch(() => {}); }}
             style={{
               fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.12em',
-              color: '#5e6ad2', background: 'rgba(94,106,210,0.08)',
-              border: '1px solid rgba(94,106,210,0.4)', borderRadius: 5,
+              color: '#7c8cff', background: 'rgba(124,140,255,0.08)',
+              border: '1px solid rgba(124,140,255,0.4)', borderRadius: 5,
               padding: '11px 22px', cursor: 'pointer',
             }}
             title="Copy contact email"

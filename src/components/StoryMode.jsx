@@ -433,7 +433,7 @@ function ProgressDots({ total, current }) {
           width: i === current ? 18 : 6,
           height: 6,
           borderRadius: 3,
-          background: i < current ? 'rgba(94,106,210,0.5)' : i === current ? '#5e6ad2' : 'rgba(255,255,255,0.12)',
+          background: i < current ? 'rgba(124,140,255,0.5)' : i === current ? '#7c8cff' : 'rgba(255,255,255,0.12)',
           transition: 'all 0.35s ease',
         }} />
       ))}
@@ -516,8 +516,8 @@ function JourneyCard({ journey, onStart, totalXP }) {
             {done && (
               <span style={{
                 fontFamily: 'JetBrains Mono, monospace', fontSize: 11,
-                letterSpacing: '0.10em', color: '#5e6ad2',
-                background: 'rgba(94,106,210,0.1)', border: '1px solid rgba(94,106,210,0.25)',
+                letterSpacing: '0.10em', color: '#7c8cff',
+                background: 'rgba(124,140,255,0.1)', border: '1px solid rgba(124,140,255,0.25)',
                 borderRadius: 3, padding: '2px 6px',
               }}>DONE</span>
             )}
@@ -561,7 +561,7 @@ function JourneyCard({ journey, onStart, totalXP }) {
         <div style={{ marginTop: 12, height: 2, background: 'rgba(255,255,255,0.06)', borderRadius: 1, overflow: 'hidden' }}>
           <div style={{
             height: '100%', borderRadius: 1,
-            background: done ? '#5e6ad2' : journey.color,
+            background: done ? '#7c8cff' : journey.color,
             width: done ? '100%' : `${((stepsDone + 1) / journey.steps.length) * 100}%`,
             transition: 'width 0.4s ease',
           }} />
@@ -863,7 +863,7 @@ function JourneyOverlay({ journey, onClose, onComplete }) {
                 style={{
                   width: '100%', padding: '10px 0',
                   fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.12em',
-                  color: quizCorrect ? '#08090a' : 'rgba(255,255,255,0.35)',
+                  color: quizCorrect ? '#0b0d12' : 'rgba(255,255,255,0.35)',
                   background: quizCorrect ? journey.color : 'rgba(255,255,255,0.06)',
                   border: 'none', borderRadius: 5, cursor: quizCorrect ? 'pointer' : 'not-allowed',
                   fontWeight: 700,
@@ -939,8 +939,8 @@ export default function StoryMode() {
             padding: '7px 13px',
             fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.14em',
             color: open ? '#e8f4f0' : 'rgba(200,230,220,0.58)',
-            background: open ? 'rgba(94,106,210,0.08)' : 'rgba(8,9,10,0.72)',
-            border: `1px solid ${open ? 'rgba(94,106,210,0.3)' : 'rgba(94,106,210,0.12)'}`,
+            background: open ? 'rgba(124,140,255,0.08)' : 'rgba(8,9,10,0.72)',
+            border: `1px solid ${open ? 'rgba(124,140,255,0.3)' : 'rgba(124,140,255,0.12)'}`,
             borderRadius: 5,
             backdropFilter: 'blur(10px)',
             WebkitBackdropFilter: 'blur(10px)',
@@ -953,7 +953,7 @@ export default function StoryMode() {
           </svg>
           JOURNEYS
           {totalXP > 0 && (
-            <span style={{ color: '#5e6ad2', marginLeft: 2 }}>{totalXP} XP</span>
+            <span style={{ color: '#7c8cff', marginLeft: 2 }}>{totalXP} XP</span>
           )}
         </button>
       )}
@@ -964,7 +964,7 @@ export default function StoryMode() {
           position: 'fixed', top: 104, left: 20, zIndex: 10100,
           width: 380,
           background: 'rgba(8,9,10,0.96)',
-          border: '1px solid rgba(94,106,210,0.12)',
+          border: '1px solid rgba(124,140,255,0.12)',
           borderRadius: 10,
           boxShadow: '0 24px 80px rgba(0,0,0,0.85)',
           backdropFilter: 'blur(20px)',
@@ -976,8 +976,8 @@ export default function StoryMode() {
           {/* Header */}
           <div style={{
             padding: '16px 18px 12px',
-            borderBottom: '1px solid rgba(94,106,210,0.07)',
-            background: 'rgba(94,106,210,0.02)',
+            borderBottom: '1px solid rgba(124,140,255,0.07)',
+            background: 'rgba(124,140,255,0.02)',
             position: 'sticky', top: 0,
             backdropFilter: 'blur(10px)',
             WebkitBackdropFilter: 'blur(10px)',
@@ -985,12 +985,12 @@ export default function StoryMode() {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.16em', color: 'rgba(94,106,210,0.75)', marginBottom: 4 }}>STORY MODE</div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.16em', color: 'rgba(124,140,255,0.75)', marginBottom: 4 }}>STORY MODE</div>
                 <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 14, fontWeight: 700, color: '#e8f4f0' }}>Guided Journeys</div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: 'rgba(94,106,210,0.75)', letterSpacing: '0.12em' }}>TOTAL XP</div>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 16, fontWeight: 700, color: '#5e6ad2' }}>{totalXP}</div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: 'rgba(124,140,255,0.75)', letterSpacing: '0.12em' }}>TOTAL XP</div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 16, fontWeight: 700, color: '#7c8cff' }}>{totalXP}</div>
               </div>
             </div>
             <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, color: 'rgba(247,248,248,0.75)', lineHeight: 1.6, margin: '8px 0 0', letterSpacing: '-0.01em' }}>
@@ -1016,7 +1016,7 @@ export default function StoryMode() {
           {/* Footer */}
           <div style={{
             padding: '10px 18px',
-            borderTop: '1px solid rgba(94,106,210,0.07)',
+            borderTop: '1px solid rgba(124,140,255,0.07)',
             fontFamily: 'JetBrains Mono, monospace', fontSize: 12,
             color: 'rgba(200,230,220,0.75)', letterSpacing: '0.10em', textAlign: 'center',
           }}>

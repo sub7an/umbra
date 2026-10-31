@@ -28,7 +28,7 @@ function findClickable(el) {
   return null
 }
 
-function spawnRipple(sx, sy, color = '#5e6ad2') {
+function spawnRipple(sx, sy, color = '#7c8cff') {
   const el = document.createElement('div')
   Object.assign(el.style, {
     position: 'fixed', left: `${sx}px`, top: `${sy}px`,
@@ -52,11 +52,11 @@ function makeCursor() {
   root.innerHTML = `
     <svg width="34" height="34" viewBox="0 0 34 34" style="display:block">
       <circle data-ring cx="17" cy="17" r="12" fill="none"
-        stroke="rgba(94,106,210,0.9)" stroke-width="1.5"
+        stroke="rgba(124,140,255,0.9)" stroke-width="1.5"
         style="transition: r 0.12s, stroke 0.12s"/>
-      <circle data-fill cx="17" cy="17" r="0" fill="rgba(94,106,210,0.28)"
+      <circle data-fill cx="17" cy="17" r="0" fill="rgba(124,140,255,0.28)"
         style="transition: r 0.12s"/>
-      <circle cx="17" cy="17" r="2.2" fill="#5e6ad2"/>
+      <circle cx="17" cy="17" r="2.2" fill="#7c8cff"/>
     </svg>`
   document.body.appendChild(root)
   return {
@@ -115,7 +115,7 @@ export default function GestureEventBridge() {
       cursor.root.style.transform = `translate(${sx}px, ${sy}px)`
       cursor.ring.setAttribute('r', pinching ? '8' : '12')
       cursor.fill.setAttribute('r', pinching ? '7' : '0')
-      cursor.ring.setAttribute('stroke', pinching ? '#8b9cf7' : 'rgba(94,106,210,0.9)')
+      cursor.ring.setAttribute('stroke', pinching ? '#a5b0ff' : 'rgba(124,140,255,0.9)')
 
       if (pinching) {
         if (!wasPinchRef.current) {

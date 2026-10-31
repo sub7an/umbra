@@ -26,7 +26,7 @@ function bridge(category = '', keywords = '') {
     return { module: 'quantum-mechanics', label: 'See the quantum physics of starlight', color: '#a855f7' }
   if (has(/wave|interferen|resonan/))
     return { module: 'wave-mechanics', label: 'Play with wave interference', color: '#22d3ee' }
-  return { module: 'frontier-physics', label: 'Explore the frontier physics', color: '#5e6ad2' }
+  return { module: 'frontier-physics', label: 'Explore the frontier physics', color: '#7c8cff' }
 }
 
 const CAT_COLOR = {
@@ -57,11 +57,11 @@ function Chip({ text, color }) {
 
 function TimelineRow({ obs, dim }) {
   if (!obs) return null
-  const c = CAT_COLOR[obs.category] || '#5e6ad2'
+  const c = CAT_COLOR[obs.category] || '#7c8cff'
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', opacity: dim ? 0.6 : 1 }}>
       <span style={{ width: 6, height: 6, borderRadius: '50%', background: c, flexShrink: 0 }} />
-      <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12.5, color: '#f7f8f8', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12.5, color: '#eef0f5', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {obs.target}
       </span>
       <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'rgba(247,248,248,0.75)', whiteSpace: 'nowrap' }}>
@@ -127,7 +127,7 @@ export default function TelescopeLive() {
 
   const cur = data?.jwst?.current
   const b = cur ? bridge(cur.category, cur.keywords) : null
-  const catColor = cur ? (CAT_COLOR[cur.category] || '#5e6ad2') : '#5e6ad2'
+  const catColor = cur ? (CAT_COLOR[cur.category] || '#7c8cff') : '#7c8cff'
   const keywords = (cur?.keywords || '').split(',').map(k => k.trim()).filter(Boolean).slice(0, 4)
 
   const simulate = () => {
@@ -179,7 +179,7 @@ export default function TelescopeLive() {
       <div style={{ width: '100%', maxWidth: 620, animation: 'umbra-slide-up 0.35s cubic-bezier(0.16,1,0.3,1)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
           <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 8px #22c55e', animation: 'umbra-pulse 1.4s ease-in-out infinite' }} />
-          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.28em', color: 'rgba(94,106,210,0.75)' }}>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.28em', color: 'rgba(124,140,255,0.75)' }}>
             LIVE FROM SPACE
           </span>
         </div>
@@ -188,7 +188,7 @@ export default function TelescopeLive() {
         <div style={{
           position: 'relative', width: '100%', paddingTop: '56.25%',
           borderRadius: 8, overflow: 'hidden', marginBottom: 8,
-          border: '1px solid rgba(94,106,210,0.25)', background: '#05060a',
+          border: '1px solid rgba(124,140,255,0.25)', background: '#05060a',
         }}>
           {videoId ? (
             <iframe
@@ -202,7 +202,7 @@ export default function TelescopeLive() {
             <div style={{
               position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.16em',
-              color: 'rgba(94,106,210,0.75)', textAlign: 'center', padding: 20,
+              color: 'rgba(124,140,255,0.75)', textAlign: 'center', padding: 20,
               animation: videoId === undefined ? 'umbra-pulse 1.4s ease-in-out infinite' : 'none',
             }}>
               {videoId === undefined ? 'CONNECTING TO NASA LIVE…' : 'NASA IS NOT BROADCASTING LIVE RIGHT NOW — CHECK BACK SOON'}
@@ -220,7 +220,7 @@ export default function TelescopeLive() {
         )}
 
         {!data && !err && (
-          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.2em', color: 'rgba(94,106,210,0.75)', padding: '20px 0', animation: 'umbra-pulse 1.4s ease-in-out infinite' }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.2em', color: 'rgba(124,140,255,0.75)', padding: '20px 0', animation: 'umbra-pulse 1.4s ease-in-out infinite' }}>
             CONTACTING WEBB…
           </div>
         )}
@@ -229,7 +229,7 @@ export default function TelescopeLive() {
           <>
             {/* Current target hero */}
             <div style={{
-              background: 'rgba(17,17,19,0.95)', border: `1px solid ${catColor}40`,
+              background: 'rgba(17,20,27,0.95)', border: `1px solid ${catColor}40`,
               borderRadius: 8, padding: '22px 22px', marginBottom: 14,
               boxShadow: `0 0 40px ${catColor}14`,
             }}>
@@ -246,12 +246,12 @@ export default function TelescopeLive() {
                 text={cur.target}
                 duration={700}
                 as="div"
-                style={{ fontFamily: 'Chakra Petch, sans-serif', fontWeight: 700, fontSize: 'clamp(22px,4vw,32px)', color: '#f7f8f8', lineHeight: 1.1, marginBottom: 12, wordBreak: 'break-word' }}
+                style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 'clamp(22px,4vw,32px)', color: '#eef0f5', lineHeight: 1.1, marginBottom: 12, wordBreak: 'break-word' }}
               />
 
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
                 {cur.category && <Chip text={cur.category.toUpperCase()} color={catColor} />}
-                {cur.instrument && <Chip text={cur.instrument} color="#5e6ad2" />}
+                {cur.instrument && <Chip text={cur.instrument} color="#7c8cff" />}
                 {keywords.map(k => <Chip key={k} text={k} color="rgba(247,248,248,0.5)" />)}
               </div>
 
@@ -262,7 +262,7 @@ export default function TelescopeLive() {
                   style={{
                     width: '100%', padding: '12px', borderRadius: 6, cursor: 'pointer', marginBottom: 8,
                     fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.1em', fontWeight: 700,
-                    color: '#08090a', background: b.color, border: 'none',
+                    color: '#0b0d12', background: b.color, border: 'none',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                   }}
                 >
@@ -276,12 +276,12 @@ export default function TelescopeLive() {
                   style={{
                     width: '100%', padding: '10px', borderRadius: 6, cursor: explain.loading ? 'default' : 'pointer',
                     fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.1em',
-                    color: '#8b9cf7', background: 'rgba(94,106,210,0.08)', border: '1px solid rgba(94,106,210,0.3)',
+                    color: '#a5b0ff', background: 'rgba(124,140,255,0.08)', border: '1px solid rgba(124,140,255,0.3)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                   }}
                 >
                   {explain.loading
-                    ? <><span style={{ width: 6, height: 6, borderRadius: '50%', background: '#8b9cf7', animation: 'umbra-pulse 0.8s ease-in-out infinite' }} /> UMBRA AI IS THINKING…</>
+                    ? <><span style={{ width: 6, height: 6, borderRadius: '50%', background: '#a5b0ff', animation: 'umbra-pulse 0.8s ease-in-out infinite' }} /> UMBRA AI IS THINKING…</>
                     : <>✦ EXPLAIN THIS TARGET</>}
                 </button>
               )}
@@ -289,10 +289,10 @@ export default function TelescopeLive() {
               {showExplain && explain.text && (
                 <div style={{
                   marginTop: 10, padding: '12px 14px', borderRadius: 6,
-                  background: 'rgba(94,106,210,0.06)', border: '1px solid rgba(94,106,210,0.18)',
-                  borderLeft: '3px solid rgba(94,106,210,0.5)',
+                  background: 'rgba(124,140,255,0.06)', border: '1px solid rgba(124,140,255,0.18)',
+                  borderLeft: '3px solid rgba(124,140,255,0.5)',
                 }}>
-                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.14em', color: 'rgba(94,106,210,0.75)', marginBottom: 6 }}>
+                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.14em', color: 'rgba(124,140,255,0.75)', marginBottom: 6 }}>
                     ✦ UMBRA AI
                   </div>
                   <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, lineHeight: 1.6, color: 'rgba(247,248,248,0.82)', margin: 0 }}>
@@ -304,8 +304,8 @@ export default function TelescopeLive() {
 
             {/* Running feed */}
             {(data.jwst.upcoming?.length > 0 || data.jwst.recent?.length > 0) && (
-              <div style={{ background: 'rgba(17,17,19,0.7)', border: '1px solid rgba(94,106,210,0.14)', borderRadius: 8, padding: '14px 18px', marginBottom: 14 }}>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.2em', color: 'rgba(94,106,210,0.75)', marginBottom: 4 }}>
+              <div style={{ background: 'rgba(17,20,27,0.7)', border: '1px solid rgba(124,140,255,0.14)', borderRadius: 8, padding: '14px 18px', marginBottom: 14 }}>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.2em', color: 'rgba(124,140,255,0.75)', marginBottom: 4 }}>
                   UP NEXT
                 </div>
                 {(data.jwst.upcoming || []).map((o, i) => <TimelineRow key={'u' + i} obs={o} dim={i > 1} />)}
@@ -325,12 +325,12 @@ export default function TelescopeLive() {
         {/* Latest real Webb imagery (updates as NASA releases new images) */}
         {shots.length > 0 && (
           <div style={{ marginBottom: 14 }}>
-            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.2em', color: 'rgba(94,106,210,0.75)', marginBottom: 8 }}>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.2em', color: 'rgba(124,140,255,0.75)', marginBottom: 8 }}>
               LATEST WEBB IMAGERY
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
               {shots.map((s, i) => (
-                <div key={i} title={s.title} style={{ position: 'relative', paddingTop: '100%', borderRadius: 6, overflow: 'hidden', border: '1px solid rgba(94,106,210,0.15)' }}>
+                <div key={i} title={s.title} style={{ position: 'relative', paddingTop: '100%', borderRadius: 6, overflow: 'hidden', border: '1px solid rgba(124,140,255,0.15)' }}>
                   <img src={s.img} alt={s.title} loading="lazy"
                     style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>

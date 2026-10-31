@@ -103,7 +103,7 @@ export default function WaveModule() {
   return (
     <div style={{
       width: '100%', height: '100%',
-      background: '#08090a',
+      background: '#0b0d12',
       display: 'flex', flexDirection: 'column',
       fontFamily: 'JetBrains Mono, monospace',
     }}>

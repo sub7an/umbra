@@ -28,7 +28,7 @@ export default function CheckoutBanner() {
       position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)',
       zIndex: 10200, padding: '12px 20px', borderRadius: 6,
       background: 'rgba(8,9,10,0.95)', backdropFilter: 'blur(12px)',
-      border: `1px solid ${ok ? 'rgba(16,185,129,0.45)' : 'rgba(94,106,210,0.35)'}`,
+      border: `1px solid ${ok ? 'rgba(16,185,129,0.45)' : 'rgba(124,140,255,0.35)'}`,
       display: 'flex', alignItems: 'center', gap: 10,
       animation: 'umbra-slide-up 0.35s cubic-bezier(0.16,1,0.3,1)', maxWidth: '92vw',
     }}>

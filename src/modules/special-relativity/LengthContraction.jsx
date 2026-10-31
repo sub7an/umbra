@@ -203,7 +203,7 @@ export default function LengthContraction() {
       {/* ── Rest-frame reference (ghost) ── */}
       <group position={[0, 1.5, 0]}>
         <RoundedBox args={[PROPER_LENGTH, 0.26, 0.26]} radius={0.05} smoothness={4}>
-          <meshStandardMaterial color="#0c2530" emissive="#5e6ad2" emissiveIntensity={0.18} transparent opacity={0.55} />
+          <meshStandardMaterial color="#0c2530" emissive="#7c8cff" emissiveIntensity={0.18} transparent opacity={0.55} />
         </RoundedBox>
         <Line
           points={[
@@ -281,7 +281,7 @@ export default function LengthContraction() {
         <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 16, color: '#f59e0b', textShadow: '0 0 10px rgba(245,158,11,0.6)', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
           γ = {gamma.toFixed(4)}
         </div>
-        <div style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 12, color: '#4a7a74', marginTop: 5, letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>
+        <div style={{ fontFamily: 'Inter,sans-serif', fontSize: 12, color: '#4a7a74', marginTop: 5, letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>
           CONTRACTED BY {contractionPct}%
         </div>
       </Html>

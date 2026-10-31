@@ -45,8 +45,8 @@ function getBestMime() {
 }
 
 // ── Individual action buttons ─────────────────────────────────────────────────
-function Btn({ label, icon, onClick, active, color = '#5e6ad2', title }) {
-  const base = `rgba(${color === '#5e6ad2' ? '94,106,210' : color === '#a855f7' ? '168,85,247' : '239,68,68'},`
+function Btn({ label, icon, onClick, active, color = '#7c8cff', title }) {
+  const base = `rgba(${color === '#7c8cff' ? '124,140,255' : color === '#a855f7' ? '168,85,247' : '239,68,68'},`
   return (
     <button
       onClick={onClick}
@@ -71,7 +71,7 @@ function Btn({ label, icon, onClick, active, color = '#5e6ad2', title }) {
 }
 
 function Divider() {
-  return <div style={{ width: 1, height: 18, background: 'rgba(94,106,210,0.1)', flexShrink: 0 }} />
+  return <div style={{ width: 1, height: 18, background: 'rgba(124,140,255,0.1)', flexShrink: 0 }} />
 }
 
 // ── Share action ──────────────────────────────────────────────────────────────
@@ -95,7 +95,7 @@ function ShareAction({ activeModule }) {
     <Btn
       onClick={handle}
       active={status === 'copied'}
-      color="#5e6ad2"
+      color="#7c8cff"
       title="Copy shareable link to this exact simulation state"
       icon={status === 'copied'
         ? <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7.5L8 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -125,7 +125,7 @@ function SoundAction() {
     <Btn
       onClick={() => { const m = !muted; setMuted(m); set(m) }}
       active={false}
-      color="#5e6ad2"
+      color="#7c8cff"
       title={muted ? 'Unmute interface sounds' : 'Mute interface sounds'}
       icon={<svg width="10" height="10" viewBox="0 0 11 11" fill="none"><path d="M1.5 4V7H3.5L6 9.5V1.5L3.5 4H1.5Z" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round"/>{muted ? <path d="M7.5 4L10 6.5M10 4L7.5 6.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/> : <path d="M7.5 3.5C8.3 4.3 8.3 6.7 7.5 7.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>}</svg>}
       label={muted ? 'MUTED' : 'SND'}
@@ -140,7 +140,7 @@ function ThemeAction() {
     <Btn
       onClick={() => setTheme(toggleTheme())}
       active={false}
-      color="#5e6ad2"
+      color="#7c8cff"
       title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
       icon={theme === 'light'
         ? <svg width="10" height="10" viewBox="0 0 11 11" fill="none"><path d="M9 6.5A4 4 0 1 1 4.5 2 3.2 3.2 0 0 0 9 6.5Z" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round"/></svg>
@@ -168,7 +168,7 @@ function EmbedAction({ activeModule }) {
     <Btn
       onClick={handle}
       active={status === 'copied'}
-      color="#5e6ad2"
+      color="#7c8cff"
       title="Copy iframe embed code — paste into Notion, Canvas, Moodle, or any web page"
       icon={status === 'copied'
         ? <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7.5L8 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -326,11 +326,11 @@ function AskAction() {
                 onKeyDown={e => e.key === 'Enter' && submit()}
                 placeholder="e.g. Black hole 3× solar mass, electron tunneling through a barrier…"
                 disabled={loading}
-                style={{ width:'100%',background:'none',border:'none',outline:'none',fontFamily:'JetBrains Mono, monospace',fontSize:13,color:'#f7f8f8',letterSpacing:'0.02em',opacity:loading?0.5:1 }}
+                style={{ width:'100%',background:'none',border:'none',outline:'none',fontFamily:'JetBrains Mono, monospace',fontSize:13,color:'#eef0f5',letterSpacing:'0.02em',opacity:loading?0.5:1 }}
               />
             </div>
             {loading && <div style={{ padding:'12px 16px',display:'flex',alignItems:'center',gap:8 }}><span style={{ display:'inline-block',width:6,height:6,borderRadius:'50%',background:'rgba(168,85,247,0.7)',animation:'umbra-pulse 0.9s ease-in-out infinite' }}/><span style={{ fontFamily:'JetBrains Mono, monospace',fontSize:13,letterSpacing:'0.12em',color:'rgba(168,85,247,0.75)' }}>ROUTING TO MODULE…</span></div>}
-            {result && <div style={{ padding:'12px 16px' }}><div style={{ fontFamily:'Chakra Petch, sans-serif',fontSize:13,color:'#a855f7',fontWeight:600 }}>✓ {result.label}</div><div style={{ fontFamily:"'Inter', system-ui, sans-serif",fontSize:12,color:'rgba(168,85,247,0.75)',marginTop:4 }}>{result.reason}</div></div>}
+            {result && <div style={{ padding:'12px 16px' }}><div style={{ fontFamily:'Inter, sans-serif',fontSize:13,color:'#a855f7',fontWeight:600 }}>✓ {result.label}</div><div style={{ fontFamily:"'Inter', system-ui, sans-serif",fontSize:12,color:'rgba(168,85,247,0.75)',marginTop:4 }}>{result.reason}</div></div>}
             {error && <div style={{ padding:'12px 16px' }}><span style={{ fontFamily:'JetBrains Mono, monospace',fontSize:11,color:'rgba(239,68,68,0.75)' }}>{error}</span></div>}
             {!loading && !result && !error && (
               <div style={{ padding:'8px 16px 10px',display:'flex',flexWrap:'wrap',gap:5 }}>
@@ -385,7 +385,7 @@ function SnapshotAction({ activeModule }) {
         ctx.fillRect(0, H, W, BAR)
 
         // Accent line
-        ctx.fillStyle = '#5e6ad2'
+        ctx.fillStyle = '#7c8cff'
         ctx.fillRect(0, H, W, 2)
 
         const scale = W / 1920
@@ -393,7 +393,7 @@ function SnapshotAction({ activeModule }) {
 
         // UMBRA wordmark
         ctx.font = `700 ${fs(18)}px "JetBrains Mono", monospace`
-        ctx.fillStyle = '#5e6ad2'
+        ctx.fillStyle = '#7c8cff'
         ctx.fillText('UMBRA', fs(24), H + BAR * 0.65)
 
         // Module name
@@ -427,7 +427,7 @@ function SnapshotAction({ activeModule }) {
     <Btn
       onClick={snap}
       active={status === 'done'}
-      color="#5e6ad2"
+      color="#7c8cff"
       title={isPro ? 'Download clean PNG (Pro — no watermark)' : 'Download simulation as PNG (with Umbra watermark)'}
       icon={
         status === 'done'
@@ -498,7 +498,7 @@ export default function FloatingToolbar({ explainActive, onExplainToggle }) {
       display: 'flex',
       alignItems: 'center',
       background: 'rgba(8,9,10,0.82)',
-      border: '1px solid rgba(94,106,210,0.10)',
+      border: '1px solid rgba(124,140,255,0.10)',
       borderRadius: 5,
       backdropFilter: 'blur(10px)',
       WebkitBackdropFilter: 'blur(10px)',
@@ -516,7 +516,7 @@ export default function FloatingToolbar({ explainActive, onExplainToggle }) {
           <Btn
             onClick={onExplainToggle}
             active={explainActive}
-            color="#5e6ad2"
+            color="#7c8cff"
             title="Click anywhere in the simulation to get a plain English explanation (E)"
             icon={<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="currentColor" strokeWidth="1.1"/><path d="M5 3v2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><circle cx="5" cy="7.2" r="0.55" fill="currentColor"/></svg>}
             label={explainActive ? 'CLICK ANYTHING' : 'EXPLAIN'}

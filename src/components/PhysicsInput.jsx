@@ -221,7 +221,7 @@ export default function PhysicsInput() {
             style={{
               width: '100%', background: 'none', border: 'none', outline: 'none',
               fontFamily: 'JetBrains Mono, monospace', fontSize: 13,
-              color: '#f7f8f8', letterSpacing: '0.02em',
+              color: '#eef0f5', letterSpacing: '0.02em',
               opacity: loading ? 0.5 : 1,
             }}
           />
@@ -238,7 +238,7 @@ export default function PhysicsInput() {
         )}
         {result && (
           <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <span style={{ fontFamily: 'Chakra Petch, sans-serif', fontSize: 12, color: '#a855f7', fontWeight: 600 }}>✓ {result.label}</span>
+            <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: '#a855f7', fontWeight: 600 }}>✓ {result.label}</span>
             <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'rgba(168,85,247,0.75)', letterSpacing: '0.06em' }}>{result.reason}</span>
           </div>
         )}

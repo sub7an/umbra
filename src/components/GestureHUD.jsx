@@ -57,7 +57,7 @@ export default function GestureHUD() {
           const lms = hands[h]
           const X = (p) => (1 - p.x) * CHIP_W   // mirror to match the user
           const Y = (p) => p.y * CHIP_H
-          ctx.strokeStyle = pinching ? 'rgba(139,156,247,0.9)' : 'rgba(94,106,210,0.55)'
+          ctx.strokeStyle = pinching ? 'rgba(139,156,247,0.9)' : 'rgba(124,140,255,0.55)'
           ctx.lineWidth = 1
           for (const [a, b] of HAND_CONNECTIONS) {
             ctx.beginPath()
@@ -65,7 +65,7 @@ export default function GestureHUD() {
             ctx.lineTo(X(lms[b]), Y(lms[b]))
             ctx.stroke()
           }
-          ctx.fillStyle = pinching ? '#8b9cf7' : 'rgba(94,106,210,0.8)'
+          ctx.fillStyle = pinching ? '#a5b0ff' : 'rgba(124,140,255,0.8)'
           for (const p of [lms[4], lms[8]]) {
             ctx.beginPath()
             ctx.arc(X(p), Y(p), 2.4, 0, Math.PI * 2)
@@ -99,7 +99,7 @@ export default function GestureHUD() {
         {live && (
           <div style={{
             width: CHIP_W, borderRadius: 4, overflow: 'hidden',
-            border: '1px solid rgba(94,106,210,0.25)',
+            border: '1px solid rgba(124,140,255,0.25)',
             background: 'rgba(8,9,10,0.85)', backdropFilter: 'blur(10px)',
             animation: 'umbra-slide-up 0.25s ease',
           }}>
@@ -127,13 +127,13 @@ export default function GestureHUD() {
                 position: 'absolute', top: 5, left: 7,
                 fontFamily: 'JetBrains Mono, monospace', fontSize: 11,
                 letterSpacing: '0.16em',
-                color: status === 'pinching' || status === 'twopinch' ? '#8b9cf7' : 'rgba(94,106,210,0.75)',
+                color: status === 'pinching' || status === 'twopinch' ? '#a5b0ff' : 'rgba(124,140,255,0.75)',
               }}>
                 {STATUS_LABEL[status] ?? 'TRACKING'}
               </div>
             </div>
             <div style={{
-              padding: '5px 8px', borderTop: '1px solid rgba(94,106,210,0.12)',
+              padding: '5px 8px', borderTop: '1px solid rgba(124,140,255,0.12)',
               fontFamily: 'JetBrains Mono, monospace', fontSize: 11,
               letterSpacing: '0.08em', lineHeight: 1.7, color: 'rgba(247,248,248,0.75)',
             }}>
@@ -149,17 +149,17 @@ export default function GestureHUD() {
           style={{
             display: 'flex', alignItems: 'center', gap: 6,
             fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.12em',
-            color: enabled ? '#8b9cf7' : 'rgba(94,106,210,0.6)',
+            color: enabled ? '#a5b0ff' : 'rgba(124,140,255,0.6)',
             background: 'rgba(8,9,10,0.72)', backdropFilter: 'blur(8px)',
-            border: `1px solid ${enabled ? 'rgba(139,156,247,0.45)' : 'rgba(94,106,210,0.2)'}`,
+            border: `1px solid ${enabled ? 'rgba(139,156,247,0.45)' : 'rgba(124,140,255,0.2)'}`,
             borderRadius: 3, padding: '5px 10px', cursor: 'pointer',
             transition: 'color 0.15s, border-color 0.15s',
           }}
         >
           <span style={{
             width: 6, height: 6, borderRadius: '50%',
-            background: enabled ? '#8b9cf7' : 'rgba(94,106,210,0.35)',
-            boxShadow: enabled ? '0 0 6px #8b9cf7' : 'none',
+            background: enabled ? '#a5b0ff' : 'rgba(124,140,255,0.35)',
+            boxShadow: enabled ? '0 0 6px #a5b0ff' : 'none',
             animation: enabled ? 'umbra-pulse 1.6s ease-in-out infinite' : 'none',
           }} />
           GESTURE
@@ -181,14 +181,14 @@ export default function GestureHUD() {
         <div style={{
           position: 'fixed', top: '18%', left: '50%', transform: 'translateX(-50%)',
           zIndex: 10120, padding: '18px 26px', borderRadius: 6,
-          background: 'rgba(8,9,10,0.95)', border: '1px solid rgba(94,106,210,0.35)',
+          background: 'rgba(8,9,10,0.95)', border: '1px solid rgba(124,140,255,0.35)',
           backdropFilter: 'blur(12px)', textAlign: 'center',
           animation: 'umbra-slide-up 0.35s cubic-bezier(0.16,1,0.3,1)',
           pointerEvents: 'none',
         }}>
           <div style={{
             fontFamily: 'JetBrains Mono, monospace', fontSize: 12,
-            letterSpacing: '0.24em', color: '#8b9cf7', marginBottom: 10,
+            letterSpacing: '0.24em', color: '#a5b0ff', marginBottom: 10,
           }}>
             HAND TRACKING ON
           </div>
@@ -196,8 +196,8 @@ export default function GestureHUD() {
             fontFamily: "'Inter', system-ui, sans-serif", fontSize: 14,
             lineHeight: 1.8, color: 'rgba(247,248,248,0.85)',
           }}>
-            Your hand is the cursor. <b style={{ color: '#8b9cf7' }}>Pinch</b> to click and drag sliders.<br />
-            Pinch <b style={{ color: '#8b9cf7' }}>empty space</b> to orbit · pinch with <b style={{ color: '#8b9cf7' }}>both hands</b> to zoom.
+            Your hand is the cursor. <b style={{ color: '#a5b0ff' }}>Pinch</b> to click and drag sliders.<br />
+            Pinch <b style={{ color: '#a5b0ff' }}>empty space</b> to orbit · pinch with <b style={{ color: '#a5b0ff' }}>both hands</b> to zoom.
           </div>
         </div>
       )}

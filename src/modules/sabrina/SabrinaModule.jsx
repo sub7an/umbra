@@ -117,14 +117,14 @@ export default function SabrinaModule() {
   const setActiveModule = useModuleStore((s) => s.setActiveModule)
 
   return (
-    <div className="relative w-full h-full" style={{ background: '#08090a', overflow: 'hidden' }}>
+    <div className="relative w-full h-full" style={{ background: '#0b0d12', overflow: 'hidden' }}>
 
       <Canvas className="sim-dark"
         camera={{ position: [0, 0, 8], fov: 45, near: 0.1, far: 100 }}
         gl={{ antialias: true, alpha: false, preserveDrawingBuffer: true }}
         style={{ width: '100%', height: '100%', display: 'block' }}
       >
-        <color attach="background" args={['#08090a']} />
+        <color attach="background" args={['#0b0d12']} />
         <HeartCloud />
         <Sparkles />
         <OrbitControls enablePan={false} enableDamping dampingFactor={0.08} minDistance={3} maxDistance={16} />
@@ -164,7 +164,7 @@ export default function SabrinaModule() {
           }
         `}</style>
         <div style={{
-          fontFamily: 'Chakra Petch, sans-serif',
+          fontFamily: 'Inter, sans-serif',
           fontSize: 34, fontWeight: 700, color: PINK,
           textShadow: `0 0 18px ${DEEP}, 0 0 45px ${DEEP}, 0 0 70px ${DEEP}`,
           letterSpacing: '0.06em', whiteSpace: 'nowrap',
@@ -173,7 +173,7 @@ export default function SabrinaModule() {
           <span style={{ display: 'inline-block', animation: 'heartbeat 1.4s ease-in-out infinite' }}>♥</span>
         </div>
         <div style={{
-          fontFamily: 'Chakra Petch, sans-serif',
+          fontFamily: 'Inter, sans-serif',
           fontSize: 14, color: LIGHT,
           opacity: 0.75, letterSpacing: '0.16em',
           textTransform: 'uppercase',
@@ -182,7 +182,7 @@ export default function SabrinaModule() {
           you make everything better
         </div>
         <div style={{
-          fontFamily: 'Chakra Petch, sans-serif',
+          fontFamily: 'Inter, sans-serif',
           fontSize: 13, color: PINK,
           opacity: 0, letterSpacing: '0.22em',
           textTransform: 'uppercase',

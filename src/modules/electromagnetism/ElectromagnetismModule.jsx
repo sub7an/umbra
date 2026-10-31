@@ -372,8 +372,8 @@ export default function ElectromagnetismModule() {
                   onChange={setBStrength} />
                 <div className="h-px bg-border-subtle my-1" />
                 <div className="font-mono-data text-[11px] text-text-dim space-y-1.5">
-                  <p style={{ color: '#5e6ad2' }}>─ particle trail</p>
-                  <p style={{ color: '#5e6ad2' }}>↗ Lorentz force F</p>
+                  <p style={{ color: '#7c8cff' }}>─ particle trail</p>
+                  <p style={{ color: '#7c8cff' }}>↗ Lorentz force F</p>
                   <p style={{ color: '#a855f7' }}>↑ B field arrows</p>
                 </div>
               </>

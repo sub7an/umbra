@@ -247,8 +247,8 @@ export default function LorentzForce({ bStrength = 1.0 }) {
       {/* Positive particle (cyan) */}
       <mesh ref={p1Ref}>
         <sphereGeometry args={[0.13, 14, 14]} />
-        <meshStandardMaterial color="#5e6ad2" emissive="#5e6ad2" emissiveIntensity={3.5} roughness={0} />
-        <pointLight color="#5e6ad2" intensity={2.0} distance={3.5} decay={2} />
+        <meshStandardMaterial color="#7c8cff" emissive="#7c8cff" emissiveIntensity={3.5} roughness={0} />
+        <pointLight color="#7c8cff" intensity={2.0} distance={3.5} decay={2} />
       </mesh>
 
       {/* Negative particle (pink) */}
@@ -284,13 +284,13 @@ export default function LorentzForce({ bStrength = 1.0 }) {
           fontFamily: 'JetBrains Mono,monospace', fontSize: 11,
           letterSpacing: '0.10em',
           background: 'rgba(4,6,14,0.88)',
-          border: '1px solid rgba(94,106,210,0.18)',
+          border: '1px solid rgba(124,140,255,0.18)',
           borderRadius: 3, padding: '7px 10px',
         }}>
-          <div style={{ fontSize: 11, color: 'rgba(94,106,210,0.75)', marginBottom: 5 }}>F = q(E+v×B)</div>
-          <div style={{ color: '#5e6ad2', marginBottom: 2 }}>
+          <div style={{ fontSize: 11, color: 'rgba(124,140,255,0.75)', marginBottom: 5 }}>F = q(E+v×B)</div>
+          <div style={{ color: '#7c8cff', marginBottom: 2 }}>
             <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%',
-              background: '#5e6ad2', marginRight: 4, verticalAlign: 'middle' }} />
+              background: '#7c8cff', marginRight: 4, verticalAlign: 'middle' }} />
             q = +1
           </div>
           <div style={{ color: '#f472b6', marginBottom: 6 }}>

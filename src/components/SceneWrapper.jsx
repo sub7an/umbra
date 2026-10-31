@@ -10,7 +10,7 @@ function DefaultLighting() {
     <>
       <ambientLight intensity={0.15} color="#0a2030" />
       <directionalLight position={[5, 8, 5]} intensity={0.6} color="#c0f0e8" castShadow />
-      <pointLight position={[-4, 4, -4]} intensity={0.3} color="#5e6ad2" />
+      <pointLight position={[-4, 4, -4]} intensity={0.3} color="#7c8cff" />
       <pointLight position={[4, -2, 4]} intensity={0.15} color="#f59e0b" />
     </>
   )
@@ -105,7 +105,7 @@ function DustField({ count = 240 }) {
         opacity={0.32}
         depthWrite={false}
         blending={THREE.AdditiveBlending}
-        color="#8b9cf7"
+        color="#a5b0ff"
       />
     </points>
   )
@@ -270,9 +270,9 @@ export default function SceneWrapper({ children, cameraPosition, showGrid = true
         gl={{ antialias: true, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: true }}
         dpr={[1, 2]}
         performance={{ min: 0.5 }}
-        style={{ width: '100%', height: '100%', display: 'block', background: '#08090a' }}
+        style={{ width: '100%', height: '100%', display: 'block', background: '#0b0d12' }}
       >
-        <fog attach="fog" args={['#08090a', 18, 55]} />
+        <fog attach="fog" args={['#0b0d12', 18, 55]} />
         <CameraDirector position={camPos} />
         <DefaultLighting />
         <DustField />

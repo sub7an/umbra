@@ -59,15 +59,15 @@ export default function AuthPanel() {
 
   const inputStyle = {
     width: '100%', padding: '10px 12px', borderRadius: 5, marginBottom: 10,
-    background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(94,106,210,0.25)',
-    color: '#f7f8f8', fontFamily: "'Inter', system-ui, sans-serif", fontSize: 14, outline: 'none',
+    background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(124,140,255,0.25)',
+    color: '#eef0f5', fontFamily: "'Inter', system-ui, sans-serif", fontSize: 14, outline: 'none',
   }
   const btn = (primary) => ({
     width: '100%', padding: '11px', borderRadius: 5, cursor: 'pointer',
     fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.12em',
-    color: primary ? '#08090a' : '#5e6ad2',
-    background: primary ? '#5e6ad2' : 'rgba(94,106,210,0.08)',
-    border: primary ? 'none' : '1px solid rgba(94,106,210,0.4)', fontWeight: 700,
+    color: primary ? '#0b0d12' : '#7c8cff',
+    background: primary ? '#7c8cff' : 'rgba(124,140,255,0.08)',
+    border: primary ? 'none' : '1px solid rgba(124,140,255,0.4)', fontWeight: 700,
   })
 
   return (
@@ -80,14 +80,14 @@ export default function AuthPanel() {
       }}
     >
       <div style={{
-        width: '100%', maxWidth: 380, background: 'rgba(17,17,19,0.98)',
-        border: '1px solid rgba(94,106,210,0.3)', borderRadius: 8, padding: '28px 26px',
+        width: '100%', maxWidth: 380, background: 'rgba(17,20,27,0.98)',
+        border: '1px solid rgba(124,140,255,0.3)', borderRadius: 8, padding: '28px 26px',
         animation: 'umbra-slide-up 0.3s cubic-bezier(0.16,1,0.3,1)',
       }}>
-        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.28em', color: 'rgba(94,106,210,0.75)', marginBottom: 8 }}>
+        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.28em', color: 'rgba(124,140,255,0.75)', marginBottom: 8 }}>
           ⬡ UMBRA ACCOUNT
         </div>
-        <div style={{ fontFamily: 'Chakra Petch, sans-serif', fontWeight: 700, fontSize: 22, color: '#f7f8f8', marginBottom: 4 }}>
+        <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 22, color: '#eef0f5', marginBottom: 4 }}>
           Sign in to save your progress
         </div>
         <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12.5, color: 'rgba(247,248,248,0.75)', margin: '0 0 20px', lineHeight: 1.5 }}>
@@ -145,7 +145,7 @@ export default function AuthPanel() {
             <button
               onClick={() => { setMode(mode === 'magic' ? 'password' : 'magic'); setStatus(null) }}
               style={{ width: '100%', marginTop: 14, background: 'none', border: 'none', cursor: 'pointer',
-                fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.1em', color: 'rgba(94,106,210,0.75)' }}
+                fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.1em', color: 'rgba(124,140,255,0.75)' }}
             >
               {mode === 'magic' ? 'USE EMAIL + PASSWORD INSTEAD' : 'USE A MAGIC LINK INSTEAD'}
             </button>

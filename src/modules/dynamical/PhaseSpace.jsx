@@ -95,7 +95,7 @@ function LimitCycle({ mu }) {
   if (!geo) return null
   return (
     <line geometry={geo}>
-      <lineBasicMaterial color="#5e6ad2" transparent opacity={0.65} />
+      <lineBasicMaterial color="#7c8cff" transparent opacity={0.65} />
     </line>
   )
 }
@@ -171,7 +171,7 @@ function PhaseParticles({ mu }) {
 // ── Fixed point marker (origin) ───────────────────────────────────────────────
 function FixedPoint({ mu }) {
   // For μ > 0, origin is an unstable focus (repeller); limit cycle surrounds it
-  const col = mu > 0 ? '#e040fb' : '#5e6ad2'
+  const col = mu > 0 ? '#e040fb' : '#7c8cff'
   return (
     <mesh position={[0, 0, 0.03]}>
       <sphereGeometry args={[0.07, 12, 12]} />

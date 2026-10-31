@@ -93,13 +93,13 @@ export default function InfoPanel({
           {/* Physics domain label */}
           {domain && (
             <div className="px-4 pt-3 pb-1.5">
-              <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase leading-snug" style={{ color: '#8b9cf7' }}>
+              <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase leading-snug" style={{ color: '#a5b0ff' }}>
                 {domain}
               </p>
               {syllabus && (
                 <span
                   className="inline-block mt-1.5 px-1.5 py-0.5 rounded-sm font-mono-data text-[11px] tracking-[0.12em] uppercase"
-                  style={{ color: '#9aa7ff', background: 'rgba(94,106,210,0.10)', border: '1px solid rgba(94,106,210,0.25)' }}
+                  style={{ color: '#9aa7ff', background: 'rgba(124,140,255,0.10)', border: '1px solid rgba(124,140,255,0.25)' }}
                   title="Curriculum reference"
                 >
                   {syllabus}
@@ -113,7 +113,7 @@ export default function InfoPanel({
             <div className="px-3 py-4 border-b border-border-subtle">
               <div
                 className="flex justify-center overflow-x-auto"
-                style={{ fontSize: '13px', color: '#f7f8f8', lineHeight: 1.5 }}
+                style={{ fontSize: '13px', color: '#eef0f5', lineHeight: 1.5 }}
               >
                 <KatexMath tex={primaryEq} block />
               </div>
@@ -125,7 +125,7 @@ export default function InfoPanel({
             <div className="px-4 py-3 border-b border-border-subtle">
               <p
                 className="font-mono-data text-[13px] leading-relaxed text-cyan-glow text-center"
-                style={{ textShadow: '0 0 8px rgba(94,106,210,0.45)' }}
+                style={{ textShadow: '0 0 8px rgba(124,140,255,0.45)' }}
               >
                 {formula}
               </p>
@@ -138,13 +138,13 @@ export default function InfoPanel({
               {derivedEqs.map((d, i) => (
                 <div key={i}>
                   {d.label && (
-                    <p className="font-mono-data text-[11px] tracking-[0.18em] uppercase mb-1 leading-tight" style={{ color: '#8b9cf7' }}>
+                    <p className="font-mono-data text-[11px] tracking-[0.18em] uppercase mb-1 leading-tight" style={{ color: '#a5b0ff' }}>
                       {d.label}
                     </p>
                   )}
                   <div
                     className="overflow-x-auto"
-                    style={{ fontSize: '11px', color: '#f7f8f8', lineHeight: 1.7 }}
+                    style={{ fontSize: '11px', color: '#eef0f5', lineHeight: 1.7 }}
                   >
                     <KatexMath tex={d.eq} block={false} />
                   </div>
@@ -172,7 +172,7 @@ export default function InfoPanel({
           {/* Try this — guided exploration prompts */}
           {tryThis.length > 0 && (
             <div className="px-4 pb-4 border-b border-border-subtle">
-              <p className="font-mono-data text-[11px] tracking-[0.18em] uppercase mb-2" style={{ color: '#8b9cf7' }}>
+              <p className="font-mono-data text-[11px] tracking-[0.18em] uppercase mb-2" style={{ color: '#a5b0ff' }}>
                 Try this
               </p>
               <ul className="space-y-1.5">
@@ -189,7 +189,7 @@ export default function InfoPanel({
           {/* Predict-first checkpoint */}
           {checkpoint && (
             <div className="px-4 py-4 flex-1">
-              <p className="font-mono-data text-[11px] tracking-[0.18em] uppercase mb-2" style={{ color: '#8b9cf7' }}>
+              <p className="font-mono-data text-[11px] tracking-[0.18em] uppercase mb-2" style={{ color: '#a5b0ff' }}>
                 Predict
               </p>
               <p className="font-body text-[14px] leading-snug text-text-primary mb-2">{checkpoint.q}</p>
@@ -199,7 +199,7 @@ export default function InfoPanel({
                 <button
                   onClick={() => setRevealed(true)}
                   className="font-mono-data text-[11px] tracking-[0.14em] uppercase px-2 py-1 rounded-sm"
-                  style={{ color: '#9aa7ff', background: 'rgba(94,106,210,0.10)', border: '1px solid rgba(94,106,210,0.25)' }}
+                  style={{ color: '#9aa7ff', background: 'rgba(124,140,255,0.10)', border: '1px solid rgba(124,140,255,0.25)' }}
                 >
                   Reveal answer
                 </button>

@@ -150,7 +150,7 @@ function QubitBloch({ position, color, label, blochLen, blochDir, concurrence, f
         <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11, color: `${color}77`, whiteSpace: 'nowrap' }}>|1⟩</span>
       </Html>
       <Html position={[0, -1.92, 0]} center style={{ pointerEvents: 'none' }}>
-        <div style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 13, color, letterSpacing: '0.14em', textShadow: `0 0 8px ${color}88`, whiteSpace: 'nowrap' }}>
+        <div style={{ fontFamily: 'Inter,sans-serif', fontSize: 13, color, letterSpacing: '0.14em', textShadow: `0 0 8px ${color}88`, whiteSpace: 'nowrap' }}>
           {label}
         </div>
       </Html>
@@ -324,7 +324,7 @@ export default function Entanglement() {
 
       <QubitBloch
         position={[-3, 0, 0]}
-        color="#5e6ad2"
+        color="#7c8cff"
         label="QUBIT A"
         blochLen={displayLen}
         blochDir={displayDir}

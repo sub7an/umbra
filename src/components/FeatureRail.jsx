@@ -18,7 +18,7 @@ const GROUPS = [
   {
     label: 'INTERACT',
     items: [
-      { title: 'Multiplayer Rooms', desc: 'Share a synced simulation with a class or study group.', accent: '#5e6ad2', icon: '⊚', event: 'umbra-rooms-open' },
+      { title: 'Multiplayer Rooms', desc: 'Share a synced simulation with a class or study group.', accent: '#7c8cff', icon: '⊚', event: 'umbra-rooms-open' },
       { title: 'Hand Gestures', desc: 'Control the camera and UI with your webcam — no mouse.', accent: '#a855f7', icon: '✋', event: 'umbra-gesture-open' },
     ],
   },
@@ -31,12 +31,12 @@ function Card({ item }) {
       className="group text-left"
       style={{
         display: 'flex', gap: 12, alignItems: 'flex-start', width: '100%',
-        background: 'rgba(17,17,19,0.6)', border: `1px solid ${item.accent}22`,
+        background: 'rgba(17,20,27,0.6)', border: `1px solid ${item.accent}22`,
         borderRadius: 8, padding: '16px 16px', cursor: 'pointer',
         transition: 'border-color 0.15s, background 0.15s, transform 0.15s',
       }}
       onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${item.accent}66`; e.currentTarget.style.background = `${item.accent}0d`; e.currentTarget.style.transform = 'translateY(-2px)' }}
-      onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${item.accent}22`; e.currentTarget.style.background = 'rgba(17,17,19,0.6)'; e.currentTarget.style.transform = 'none' }}
+      onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${item.accent}22`; e.currentTarget.style.background = 'rgba(17,20,27,0.6)'; e.currentTarget.style.transform = 'none' }}
     >
       <span style={{
         width: 34, height: 34, borderRadius: 7, flexShrink: 0,
@@ -46,7 +46,7 @@ function Card({ item }) {
       }}>{item.icon}</span>
       <div style={{ minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 3 }}>
-          <span style={{ fontFamily: 'Chakra Petch, sans-serif', fontWeight: 600, fontSize: 15, color: '#f7f8f8' }}>{item.title}</span>
+          <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: 15, color: '#eef0f5' }}>{item.title}</span>
           {item.live && (
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.1em', color: '#22c55e' }}>
               <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 5px #22c55e', animation: 'umbra-pulse 1.4s ease-in-out infinite' }} />LIVE
@@ -63,10 +63,10 @@ export default function FeatureRail() {
   return (
     <section className="shrink-0 px-8 lg:px-14 pt-4 pb-14">
       <div className="flex items-center gap-4 mb-6">
-        <span className="font-mono-data text-[12px] tracking-[0.24em] uppercase" style={{ color: 'rgba(94,106,210,0.75)' }}>
+        <span className="font-mono-data text-[12px] tracking-[0.24em] uppercase" style={{ color: 'rgba(124,140,255,0.75)' }}>
           // WAYS TO EXPLORE
         </span>
-        <div className="flex-1 h-px" style={{ background: 'rgba(94,106,210,0.1)' }} />
+        <div className="flex-1 h-px" style={{ background: 'rgba(124,140,255,0.1)' }} />
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24 }}>
         {GROUPS.map((g) => (

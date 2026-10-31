@@ -181,7 +181,7 @@ function ClockFace({ position, color, tRef, label, sublabel }) {
 
       {/* Bezel */}
       <RoundedBox args={[1.7, 1.7, 0.12]} radius={0.08} smoothness={4}>
-        <meshStandardMaterial color="#111113" emissive={color} emissiveIntensity={0.06} roughness={0.8} metalness={0.3} />
+        <meshStandardMaterial color="#11141b" emissive={color} emissiveIntensity={0.06} roughness={0.8} metalness={0.3} />
       </RoundedBox>
 
       {/* Face disc */}
@@ -232,7 +232,7 @@ function ClockFace({ position, color, tRef, label, sublabel }) {
       <pointLight color={color} intensity={1.0} distance={3.5} position={[0, 0, 0.5]} />
 
       <Html position={[0, -1.1, 0]} center style={{ pointerEvents: 'none', textAlign: 'center' }}>
-        <div style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 12, color, letterSpacing: '0.14em', whiteSpace: 'nowrap', textShadow: `0 0 6px ${color}` }}>
+        <div style={{ fontFamily: 'Inter,sans-serif', fontSize: 12, color, letterSpacing: '0.14em', whiteSpace: 'nowrap', textShadow: `0 0 6px ${color}` }}>
           {label}
         </div>
         {sublabel && (
@@ -251,7 +251,7 @@ const LAB_RATE = 0.6  // rad/s
 function LabClock({ position }) {
   const tRef = useRef(0)
   useFrame((_, delta) => { tRef.current += delta * LAB_RATE })
-  return <ClockFace position={position} color="#5e6ad2" tRef={tRef} label="LAB FRAME" sublabel="stationary" />
+  return <ClockFace position={position} color="#7c8cff" tRef={tRef} label="LAB FRAME" sublabel="stationary" />
 }
 
 function MovingClock({ position, velocity, gamma }) {
@@ -275,18 +275,18 @@ export default function TimeDilation() {
     <group>
       {/* ── Frame labels ── */}
       <Html position={[-2.2, 2.2, 0]} center style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 13, color: '#4a7a74', letterSpacing: '0.18em' }}>STATIONARY</span>
+        <span style={{ fontFamily: 'Inter,sans-serif', fontSize: 13, color: '#4a7a74', letterSpacing: '0.18em' }}>STATIONARY</span>
       </Html>
       <Html position={[2.2, 2.2, 0]} center style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 13, color: '#4a7a74', letterSpacing: '0.18em' }}>MOVING</span>
+        <span style={{ fontFamily: 'Inter,sans-serif', fontSize: 13, color: '#4a7a74', letterSpacing: '0.18em' }}>MOVING</span>
       </Html>
 
       {/* ── Tick rings ── */}
-      <TickRings position={[-2.2, 0, -0.1]} color="#5e6ad2" rate={labRate} />
+      <TickRings position={[-2.2, 0, -0.1]} color="#7c8cff" rate={labRate} />
       <TickRings position={[2.2, 0, -0.1]} color="#e040fb" rate={movRate} />
 
       {/* ── Elapsed tick counters ── */}
-      <TickCounter position={[-3.3, -1.3, 0]} color="#5e6ad2" rate={labRate * 2} />
+      <TickCounter position={[-3.3, -1.3, 0]} color="#7c8cff" rate={labRate * 2} />
       <TickCounter position={[3.0, -1.3, 0]} color="#e040fb" rate={(labRate * 2) / gamma} />
 
       {/* ── Clock faces ── */}
@@ -301,7 +301,7 @@ export default function TimeDilation() {
         <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 18, color: '#f59e0b', textShadow: '0 0 10px rgba(245,158,11,0.6)', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
           γ = {gamma.toFixed(4)}
         </div>
-        <div style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 12, color: '#4a7a74', marginTop: 6, letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>
+        <div style={{ fontFamily: 'Inter,sans-serif', fontSize: 12, color: '#4a7a74', marginTop: 6, letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>
           MOVING CLOCK: {pct}% SLOWER
         </div>
       </Html>

@@ -74,11 +74,11 @@ function BoostFrame({ beta }) {
 
       {/* Labels */}
       <Html position={[H * beta + 0.2, H - 0.2, 0]} style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 12,
+        <span style={{ fontFamily: 'Inter,sans-serif', fontSize: 12,
           color: '#e040fb', letterSpacing: '0.1em', textShadow: '0 0 6px #e040fb' }}>ct′</span>
       </Html>
       <Html position={[H + 0.2, H * beta - 0.2, 0]} style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 12,
+        <span style={{ fontFamily: 'Inter,sans-serif', fontSize: 12,
           color: '#e040fb', letterSpacing: '0.1em', textShadow: '0 0 6px #e040fb' }}>x′</span>
       </Html>
     </group>
@@ -219,8 +219,8 @@ function EventPoint({ position, onDrag, region }) {
   const dragPlane = useRef(new THREE.Plane())
   const intersection = useRef(new THREE.Vector3())
 
-  const colorMap = { timelike: '#5e6ad2', spacelike: '#e040fb', lightlike: '#f59e0b' }
-  const color = colorMap[region] ?? '#f7f8f8'
+  const colorMap = { timelike: '#7c8cff', spacelike: '#e040fb', lightlike: '#f59e0b' }
+  const color = colorMap[region] ?? '#eef0f5'
 
   const handlePointerDown = useCallback((e) => {
     e.stopPropagation()
@@ -300,13 +300,13 @@ export default function LightCone() {
     setSrEvent(Math.max(-4, Math.min(4, x)), Math.max(-4, Math.min(4, t)))
   }, [setSrEvent])
 
-  const regionColor = { timelike: '#5e6ad2', spacelike: '#e040fb', lightlike: '#f59e0b' }[region]
+  const regionColor = { timelike: '#7c8cff', spacelike: '#e040fb', lightlike: '#f59e0b' }[region]
 
   return (
     <group>
       {/* ── Solid transparent cone volumes ── */}
       {/* Future cone: ConeGeometry apex at +h/2 local → flip with rotX=PI + position at h/2 */}
-      <SolidCone posY={height / 2} rotX={Math.PI} h={height} color="#5e6ad2" opacity={0.06} />
+      <SolidCone posY={height / 2} rotX={Math.PI} h={height} color="#7c8cff" opacity={0.06} />
       {/* Past cone: apex at +h/2 local → position at -h/2 gives apex at origin */}
       <SolidCone posY={-height / 2} rotX={0} h={height} color="#3d4494" opacity={0.04} />
 
@@ -316,11 +316,11 @@ export default function LightCone() {
       ))}
 
       {/* ── Light pulse rings traveling along cone surface ── */}
-      <PulseRings height={height} color="#5e6ad2" dir={1} speed={0.14} />
+      <PulseRings height={height} color="#7c8cff" dir={1} speed={0.14} />
       <PulseRings height={height} color="#3d4494" dir={-1} speed={0.11} />
 
       {/* ── Wireframe cone lines ── */}
-      <ConeLines apex={0} height={height} radius={height} color="#5e6ad2" opacity={0.6} />
+      <ConeLines apex={0} height={height} radius={height} color="#7c8cff" opacity={0.6} />
       <ConeLines apex={0} height={-height} radius={height} color="#3d4494" opacity={0.35} />
 
       {/* ── Null geodesics (x = ±ct) ── */}
@@ -339,10 +339,10 @@ export default function LightCone() {
         <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 12, color: '#4a7a74', whiteSpace: 'nowrap' }}>x</span>
       </Html>
       <Html position={[0, 2.4, 0]} center style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 12, color: '#8b9cf7', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>FUTURE</span>
+        <span style={{ fontFamily: 'Inter,sans-serif', fontSize: 12, color: '#a5b0ff', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>FUTURE</span>
       </Html>
       <Html position={[0, -2.4, 0]} center style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'Chakra Petch,sans-serif', fontSize: 12, color: '#3d4494', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>PAST</span>
+        <span style={{ fontFamily: 'Inter,sans-serif', fontSize: 12, color: '#3d4494', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>PAST</span>
       </Html>
 
       {/* ── Origin event ── */}
@@ -364,7 +364,7 @@ export default function LightCone() {
       {/* ── Region label ── */}
       <Html position={[ex + 0.25, et + 0.35, 0]} style={{ pointerEvents: 'none' }}>
         <span style={{
-          fontFamily: 'Chakra Petch,sans-serif',
+          fontFamily: 'Inter,sans-serif',
           fontSize: 13,
           fontWeight: 600,
           color: regionColor,

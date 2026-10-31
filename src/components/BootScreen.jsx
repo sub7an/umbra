@@ -72,7 +72,7 @@ export default function BootScreen({ onComplete }) {
         onClick={finish}
         style={{
           position:   'fixed', inset: 0, zIndex: 9000,
-          background: '#08090a',
+          background: '#0b0d12',
           display:    'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
           opacity:    fading ? 0 : 1,
@@ -84,7 +84,7 @@ export default function BootScreen({ onComplete }) {
         {/* CRT scanlines */}
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1,
-          backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(94,106,210,0.018) 2px, rgba(94,106,210,0.018) 4px)',
+          backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(124,140,255,0.018) 2px, rgba(124,140,255,0.018) 4px)',
         }} />
 
         {/* Vignette */}
@@ -103,7 +103,7 @@ export default function BootScreen({ onComplete }) {
               fontFamily:    'JetBrains Mono, monospace',
               fontSize:       13,
               letterSpacing: '0.10em',
-              color:          l.bright ? '#5e6ad2' : 'rgba(255,255,255,0.26)',
+              color:          l.bright ? '#7c8cff' : 'rgba(255,255,255,0.26)',
               animation:     'boot-line 0.18s ease both',
               whiteSpace:    'nowrap',
             }}>
@@ -115,7 +115,7 @@ export default function BootScreen({ onComplete }) {
           {lines.length > 0 && lines.length < LINES.length && (
             <div style={{
               fontFamily: 'JetBrains Mono, monospace',
-              fontSize: 13, color: '#5e6ad2',
+              fontSize: 13, color: '#7c8cff',
               animation: 'cursor-blink 0.9s step-end infinite',
             }}>▋</div>
           )}
@@ -125,12 +125,12 @@ export default function BootScreen({ onComplete }) {
         {showLogo && (
           <div style={{ textAlign: 'center', zIndex: 2, animation: 'umbra-in 0.65s cubic-bezier(0.22,1,0.36,1) both' }}>
             <div style={{
-              fontFamily:    'Chakra Petch, sans-serif',
+              fontFamily:    'Inter, sans-serif',
               fontSize:      'clamp(56px, 9vw, 112px)',
               fontWeight:    800,
               letterSpacing: '0.20em',
-              color:         '#5e6ad2',
-              textShadow:    '0 0 30px rgba(94,106,210,0.7), 0 0 70px rgba(94,106,210,0.35), 0 0 130px rgba(94,106,210,0.15)',
+              color:         '#7c8cff',
+              textShadow:    '0 0 30px rgba(124,140,255,0.7), 0 0 70px rgba(124,140,255,0.35), 0 0 130px rgba(124,140,255,0.15)',
               lineHeight:     1,
             }}>
               UMBRA
@@ -157,7 +157,7 @@ export default function BootScreen({ onComplete }) {
             fontSize:       12,
             letterSpacing: '0.30em',
             textTransform: 'uppercase',
-            color:         'rgba(94,106,210,0.75)',
+            color:         'rgba(124,140,255,0.75)',
             animation:     'ready-pulse 1.3s ease-in-out infinite',
             zIndex:         2,
           }}>

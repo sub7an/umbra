@@ -85,7 +85,7 @@ function ModuleFallback() {
   return (
     <div style={{
       width: '100%', height: '100%',
-      background: '#08090a',
+      background: '#0b0d12',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
       <div style={{
@@ -125,7 +125,7 @@ class ModuleErrorBoundary extends Component {
     }
     return (
       <div role="alert" style={{
-        width: '100%', height: '100%', background: '#08090a',
+        width: '100%', height: '100%', background: '#0b0d12',
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14,
         fontFamily: 'JetBrains Mono, monospace', textAlign: 'center', padding: 16,
       }}>
@@ -336,8 +336,8 @@ export default function App() {
             position: 'fixed', bottom: 10, right: 12, zIndex: 10000,
             display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none',
             fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.14em',
-            color: 'rgba(94,106,210,0.85)', background: 'rgba(8,9,10,0.8)',
-            border: '1px solid rgba(94,106,210,0.3)', borderRadius: 4, padding: '5px 10px',
+            color: 'rgba(124,140,255,0.85)', background: 'rgba(8,9,10,0.8)',
+            border: '1px solid rgba(124,140,255,0.3)', borderRadius: 4, padding: '5px 10px',
             backdropFilter: 'blur(8px)',
           }}
         >

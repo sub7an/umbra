@@ -207,7 +207,7 @@ export default function BlackHole({ hiRes }) {
       {unlocked && (
         <Html position={[0, 2.2, 0]} center style={{ pointerEvents: 'none', textAlign: 'center' }}>
           <div style={{
-            fontFamily: 'Chakra Petch, sans-serif',
+            fontFamily: 'Inter, sans-serif',
             fontSize: 28,
             fontWeight: 700,
             color: '#ff69b4',

@@ -100,7 +100,7 @@ function buildEquations(view, fpRadius, hubble, vo, vk, bhMass) {
       return {
         domain: 'GALACTIC KINEMATICS · MISSING MASS',
         syllabus: 'IB D.4 · dark matter (enrichment)',
-        primaryEq: `\\textcolor{#5e6ad2}{v_{\\mathrm{obs}}} \\gg \\textcolor{#f59e0b}{v_{\\mathrm{kep}}}`,
+        primaryEq: `\\textcolor{#7c8cff}{v_{\\mathrm{obs}}} \\gg \\textcolor{#f59e0b}{v_{\\mathrm{kep}}}`,
         derivedEqs: [
           {
             label: 'Keplerian (visible mass)',
@@ -108,7 +108,7 @@ function buildEquations(view, fpRadius, hubble, vo, vk, bhMass) {
           },
           {
             label: `r = ${fpRadius.toFixed(2)}`,
-            eq: `\\textcolor{#5e6ad2}{v_{\\mathrm{obs}}} = ${vo.toFixed(3)},\\;\\textcolor{#f59e0b}{v_{\\mathrm{kep}}} = ${vk.toFixed(3)}`,
+            eq: `\\textcolor{#7c8cff}{v_{\\mathrm{obs}}} = ${vo.toFixed(3)},\\;\\textcolor{#f59e0b}{v_{\\mathrm{kep}}} = ${vk.toFixed(3)}`,
           },
         ],
         tryThis: [

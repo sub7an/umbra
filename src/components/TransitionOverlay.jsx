@@ -2,11 +2,11 @@ import { useEffect, useRef } from 'react'
 
 // Accent color per module id
 const MODULE_COLOR = {
-  null:                 '#5e6ad2',
+  null:                 '#7c8cff',
   'physics-sandbox':    '#84cc16',
   'wave-mechanics':     '#22d3ee',
   'optics':             '#fcd34d',
-  'special-relativity': '#5e6ad2',
+  'special-relativity': '#7c8cff',
   'quantum-mechanics':  '#f59e0b',
   'frontier-physics':   '#e040fb',
   'dynamical-systems':  '#10b981',
@@ -18,7 +18,7 @@ const MODULE_COLOR = {
 }
 
 function hexRgb(hex) {
-  const n = parseInt((hex ?? '#5e6ad2').replace('#', ''), 16)
+  const n = parseInt((hex ?? '#7c8cff').replace('#', ''), 16)
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
 }
 

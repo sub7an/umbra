@@ -25,7 +25,7 @@ const TIERS = [
     name: 'PRO',
     price: '$6',
     sub: '/month · early-bird, locked for life',
-    accent: '#5e6ad2',
+    accent: '#7c8cff',
     cta: 'Join the waitlist →',
     highlight: true,
     features: [
@@ -136,13 +136,13 @@ export default function PricingPanel() {
       <div style={{ width: '100%', maxWidth: 1020, animation: 'umbra-slide-up 0.35s cubic-bezier(0.16,1,0.3,1)' }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 36 }}>
-          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.28em', color: 'rgba(94,106,210,0.75)', marginBottom: 12 }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.28em', color: 'rgba(124,140,255,0.75)', marginBottom: 12 }}>
             SIMPLE PRICING · CANCEL ANYTIME
           </div>
-          <div style={{ fontFamily: 'Chakra Petch, sans-serif', fontWeight: 700, fontSize: 'clamp(28px,4vw,44px)', color: '#f7f8f8' }}>
+          <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 'clamp(28px,4vw,44px)', color: '#eef0f5' }}>
             Free for the curious.
           </div>
-          <div style={{ fontFamily: 'Chakra Petch, sans-serif', fontWeight: 700, fontSize: 'clamp(28px,4vw,44px)', color: '#5e6ad2', textShadow: '0 0 32px rgba(94,106,210,0.3)' }}>
+          <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 'clamp(28px,4vw,44px)', color: '#7c8cff', textShadow: '0 0 32px rgba(124,140,255,0.3)' }}>
             Powerful for the serious.
           </div>
         </div>
@@ -152,9 +152,9 @@ export default function PricingPanel() {
           {TIERS.map((t) => (
             <div key={t.id} style={{
               position: 'relative',
-              background: 'rgba(17,17,19,0.92)',
-              border: `1px solid ${t.highlight ? 'rgba(94,106,210,0.55)' : t.accent + '26'}`,
-              boxShadow: t.highlight ? '0 0 40px rgba(94,106,210,0.15)' : 'none',
+              background: 'rgba(17,20,27,0.92)',
+              border: `1px solid ${t.highlight ? 'rgba(124,140,255,0.55)' : t.accent + '26'}`,
+              boxShadow: t.highlight ? '0 0 40px rgba(124,140,255,0.15)' : 'none',
               borderRadius: 6, padding: '26px 24px',
               display: 'flex', flexDirection: 'column',
             }}>
@@ -162,7 +162,7 @@ export default function PricingPanel() {
                 <div style={{
                   position: 'absolute', top: -9, left: '50%', transform: 'translateX(-50%)',
                   fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.18em',
-                  color: '#08090a', background: '#5e6ad2', borderRadius: 3, padding: '3px 10px',
+                  color: '#0b0d12', background: '#7c8cff', borderRadius: 3, padding: '3px 10px',
                 }}>
                   MOST POPULAR
                 </div>
@@ -171,7 +171,7 @@ export default function PricingPanel() {
                 {t.name}
               </div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 7, marginBottom: 20 }}>
-                <span style={{ fontFamily: 'Chakra Petch, sans-serif', fontWeight: 700, fontSize: 38, color: '#f7f8f8' }}>{t.price}</span>
+                <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 38, color: '#eef0f5' }}>{t.price}</span>
                 <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12, color: 'rgba(255,255,255,0.75)' }}>{t.sub}</span>
               </div>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 22 }}>
@@ -189,9 +189,9 @@ export default function PricingPanel() {
                   width: '100%', padding: '11px', borderRadius: 4,
                   cursor: t.ctaDisabled ? 'default' : 'pointer',
                   fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.12em',
-                  color: t.ctaDisabled ? 'rgba(255,255,255,0.35)' : t.highlight ? '#08090a' : t.accent,
-                  background: t.ctaDisabled ? 'rgba(255,255,255,0.04)' : t.highlight ? '#5e6ad2' : `${t.accent}0f`,
-                  border: t.ctaDisabled ? '1px solid rgba(255,255,255,0.08)' : `1px solid ${t.highlight ? '#5e6ad2' : t.accent + '40'}`,
+                  color: t.ctaDisabled ? 'rgba(255,255,255,0.35)' : t.highlight ? '#0b0d12' : t.accent,
+                  background: t.ctaDisabled ? 'rgba(255,255,255,0.04)' : t.highlight ? '#7c8cff' : `${t.accent}0f`,
+                  border: t.ctaDisabled ? '1px solid rgba(255,255,255,0.08)' : `1px solid ${t.highlight ? '#7c8cff' : t.accent + '40'}`,
                   transition: 'filter 0.15s',
                 }}
                 onMouseEnter={(e) => { if (!t.ctaDisabled) e.currentTarget.style.filter = 'brightness(1.2)' }}
