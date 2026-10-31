@@ -18,7 +18,7 @@ const VIEWS = [
 const TC = 2.0 / Math.log(1 + Math.sqrt(2))   // ≈ 2.2692
 
 const CAMERA = {
-  gas:    [0, 0, 14],
+  gas:    [9, 6.5, 15],
   entropy: [0, 0, 14],
   engine: [0, 2.5, 14],
   ising:  [0, 9, 8],
