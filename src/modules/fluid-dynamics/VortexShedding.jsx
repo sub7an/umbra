@@ -13,8 +13,8 @@ const CORE    = 0.35
 const MAX_V   = 80
 const DYE_TOP = new THREE.Color('#5eead4')
 const DYE_BOT = new THREE.Color('#fbbf24')
-const EMIT_PER_FRAME = 10
-const N_TRACE = 1600 // dye particles
+const EMIT_PER_FRAME = 12
+const N_TRACE = 4200 // dye particles (≈6 s of travel before recycling)
 
 // Potential flow velocity around cylinder
 function potentialFlow(x, y, U) {
@@ -48,22 +48,22 @@ const VORT_VERT = `
 `
 const VORT_FRAG = `
   uniform vec3 uV[${MAX_V}];
-  uniform float uN;
   varying vec2 vP;
   void main() {
     float w = 0.0;
-    // Only live vortices, and only ones close enough to matter (exp(-12) ≈ 0)
+    // Skip unused slots and vortices too far away to matter (exp(-12) ≈ 0)
     for (int k = 0; k < ${MAX_V}; k++) {
-      if (float(k) >= uN) break;
+      if (uV[k].z == 0.0) continue;           // unused slot
       vec2 d = vP - uV[k].xy;
       float r2 = dot(d, d);
       if (r2 > 4.2) continue;
       w += uV[k].z * exp(-r2 / 0.35);
     }
     if (dot(vP, vP) < ${(R * R).toFixed(3)}) discard;
-    float m = clamp(abs(w) * 0.55, 0.0, 1.0);
-    vec3 col = w > 0.0 ? vec3(0.95, 0.30, 0.30) : vec3(0.25, 0.50, 1.0);
-    gl_FragColor = vec4(pow(col, vec3(2.2)), m * 0.75);
+    // Normalised to the peak of one vortex blob (|Γ| ≈ 1–1.6)
+    float m = clamp(abs(w) * 1.1, 0.0, 1.0);
+    vec3 col = w > 0.0 ? vec3(1.0, 0.42, 0.42) : vec3(0.40, 0.62, 1.0);
+    gl_FragColor = vec4(pow(col, vec3(2.2)), m * 0.85);
   }
 `
 
@@ -86,7 +86,6 @@ export default function VortexShedding({ reynolds }) {
 
   const vortU = useMemo(() => ({
     uV: { value: Array.from({ length: MAX_V }, () => new THREE.Vector3(1000, 1000, 0)) },
-    uN: { value: 0 },
   }), [])
 
   const { vPos, vCol, tPos, tCol } = useMemo(() => {
@@ -190,7 +189,6 @@ export default function VortexShedding({ reynolds }) {
     }
 
     // Vorticity field uniforms
-    vortU.uN.value = vCnt.current * 1.0
     const vu = vortU.uV.value
     for (let k = 0; k < MAX_V; k++) {
       if (k < vCnt.current) vu[k].set(vxa[k], vya[k], ga[k])
