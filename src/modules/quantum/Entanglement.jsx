@@ -144,13 +144,13 @@ function QubitBloch({ position, color, label, blochLen, blochDir, concurrence, f
       </mesh>
 
       <Html position={[0.2, 1.20, 0]} style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11, color, whiteSpace: 'nowrap' }}>|0⟩</span>
+        <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 13, color, whiteSpace: 'nowrap' }}>|0⟩</span>
       </Html>
       <Html position={[0.2, -1.24, 0]} style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11, color: `${color}77`, whiteSpace: 'nowrap' }}>|1⟩</span>
+        <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 13, color: `${color}bb`, whiteSpace: 'nowrap' }}>|1⟩</span>
       </Html>
       <Html position={[0, -1.92, 0]} center style={{ pointerEvents: 'none' }}>
-        <div style={{ fontFamily: 'Inter,sans-serif', fontSize: 13, color, letterSpacing: '0.14em', textShadow: `0 0 8px ${color}88`, whiteSpace: 'nowrap' }}>
+        <div style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: 13, fontWeight: 600, color, whiteSpace: 'nowrap' }}>
           {label}
         </div>
       </Html>
@@ -166,8 +166,8 @@ function EntanglementBeam({ concurrence, flashTrigger }) {
   const colArr  = useMemo(() => {
     const c = new Float32Array(BEAM_N * 3)
     for (let i = 0; i < BEAM_N; i++) {
-      if (i < BEAM_N / 2) { c[i*3]=0; c[i*3+1]=0.90; c[i*3+2]=0.77 }    // cyan
-      else                  { c[i*3]=0.88; c[i*3+1]=0.25; c[i*3+2]=0.98 } // rose
+      if (i < BEAM_N / 2) { c[i*3]=0.49; c[i*3+1]=0.55; c[i*3+2]=1.0 }  // qubit A colour
+      else                  { c[i*3]=0.88; c[i*3+1]=0.25; c[i*3+2]=0.98 } // qubit B colour
     }
     return c
   }, [])
@@ -216,11 +216,11 @@ function EntanglementBeam({ concurrence, flashTrigger }) {
       // Flash: brighten color toward white
       const fl = flashT.current
       if (fl > 0) {
-        colArr[i*3]   = i < half ? fl + (1-fl)*0   : fl + (1-fl)*0.88
-        colArr[i*3+1] = i < half ? fl + (1-fl)*0.9 : fl + (1-fl)*0.25
-        colArr[i*3+2] = i < half ? fl + (1-fl)*0.77 : fl + (1-fl)*0.98
+        colArr[i*3]   = i < half ? fl + (1-fl)*0.49 : fl + (1-fl)*0.88
+        colArr[i*3+1] = i < half ? fl + (1-fl)*0.55 : fl + (1-fl)*0.25
+        colArr[i*3+2] = i < half ? fl + (1-fl)*1.0  : fl + (1-fl)*0.98
       } else {
-        if (i < half) { colArr[i*3]=0; colArr[i*3+1]=0.90; colArr[i*3+2]=0.77 }
+        if (i < half) { colArr[i*3]=0.49; colArr[i*3+1]=0.55; colArr[i*3+2]=1.0 }
         else          { colArr[i*3]=0.88; colArr[i*3+1]=0.25; colArr[i*3+2]=0.98 }
       }
     }
@@ -234,7 +234,7 @@ function EntanglementBeam({ concurrence, flashTrigger }) {
     <points geometry={geo}>
       <pointsMaterial
         ref={matRef}
-        size={0.10}
+        size={0.12}
         vertexColors
         transparent opacity={0.5}
         blending={THREE.AdditiveBlending}
@@ -243,6 +243,12 @@ function EntanglementBeam({ concurrence, flashTrigger }) {
       />
     </points>
   )
+}
+
+const CHIP = {
+  fontFamily: 'Inter, system-ui, sans-serif', fontWeight: 500, whiteSpace: 'nowrap',
+  background: 'rgb(var(--c-panel) / 0.88)', border: '1px solid rgb(var(--c-border))',
+  borderRadius: 8, padding: '5px 10px', transition: 'all 0.2s',
 }
 
 // ── Main export ────────────────────────────────────────────────────────────────
@@ -271,7 +277,8 @@ export default function Entanglement() {
   const flashRefB = useRef(null)
   const flashTimerRef = useRef(0)
 
-  const readoutRef = useRef()
+  const [tally, setTally] = useState({ n: 0, zeros: 0 })
+  useEffect(() => { setTally({ n: 0, zeros: 0 }) }, [alpha])
 
   const alphaRef       = useRef(alpha)
   alphaRef.current     = alpha
@@ -289,6 +296,7 @@ export default function Entanglement() {
       const a = alphaRef.current
       const outcome = Math.random() < (Math.cos(a) * Math.cos(a)) ? 0 : 1
       setMeasureOutcome(outcome)
+      setTally(t => ({ n: t.n + 1, zeros: t.zeros + (outcome === 0 ? 1 : 0) }))
       setFlashTrigger(t => t + 1)
       setTimeout(() => {
         setMeasureOutcome(null)
@@ -313,19 +321,17 @@ export default function Entanglement() {
   const poleLabel = measureOutcome === 0 ? '|0⟩' : '|1⟩'
   const corrLabel = measureOutcome !== null
     ? `A: ${poleLabel} → B: ${poleLabel}  ✓`
-    : concurrence > 0.95 ? '|Φ⁺⟩  BELL STATE'
-    : concurrence < 0.05 ? 'PRODUCT STATE'
-    : 'PARTIAL ENTANGLEMENT'
+    : concurrence > 0.95 ? 'Bell state |Φ⁺⟩ — maximally entangled'
+    : concurrence < 0.05 ? 'Product state — not entangled'
+    : 'Partially entangled'
 
   return (
-    <group>
-      <ambientLight intensity={0.06} color="#06060e" />
-      <directionalLight position={[2, 6, 3]} intensity={0.2} color="#c0c8ff" />
+    <group position={[-1.1, 0, 0]}>
 
       <QubitBloch
         position={[-3, 0, 0]}
         color="#7c8cff"
-        label="QUBIT A"
+        label="Qubit A"
         blochLen={displayLen}
         blochDir={displayDir}
         concurrence={concurrence}
@@ -334,7 +340,7 @@ export default function Entanglement() {
       <QubitBloch
         position={[3, 0, 0]}
         color="#e040fb"
-        label="QUBIT B"
+        label="Qubit B"
         blochLen={displayLen}
         blochDir={displayDir}
         concurrence={concurrence}
@@ -343,64 +349,59 @@ export default function Entanglement() {
 
       <EntanglementBeam concurrence={concurrence} flashTrigger={flashTrigger} />
 
-      {/* ── Concurrence + CHSH readout ── */}
-      <Html position={[0, 2.3, 0]} center style={{ pointerEvents: 'none', textAlign: 'center' }}>
-        {/* State label */}
+      {/* State / outcome chip above the qubits */}
+      <Html position={[0, 2.35, 0]} center style={{ pointerEvents: 'none' }}>
         <div style={{
-          fontFamily: 'JetBrains Mono,monospace',
-          fontSize: measureOutcome !== null ? 13 : 10,
-          color: measureOutcome !== null ? '#f59e0b' : '#4a7a74',
-          textShadow: measureOutcome !== null ? '0 0 12px rgba(245,158,11,0.8)' : 'none',
-          letterSpacing: '0.06em', whiteSpace: 'nowrap',
-          transition: 'font-size 0.2s',
+          ...CHIP,
+          color: measureOutcome !== null ? '#fbbf24' : 'rgb(var(--c-text))',
+          borderColor: measureOutcome !== null ? 'rgba(251,191,36,0.6)' : 'rgb(var(--c-border))',
+          fontSize: measureOutcome !== null ? 14 : 12,
         }}>
-          {corrLabel}
-        </div>
-
-        {/* Concurrence */}
-        <div style={{
-          fontFamily: 'JetBrains Mono,monospace', fontSize: 13,
-          color: '#f59e0b',
-          textShadow: '0 0 8px rgba(245,158,11,0.5)',
-          letterSpacing: '0.04em', marginTop: 6, whiteSpace: 'nowrap',
-        }}>
-          C = {concurrence.toFixed(4)}
+          {measureOutcome !== null ? `Measured: A = ${poleLabel}, B = ${poleLabel} — always the same` : corrLabel}
         </div>
       </Html>
 
-      {/* ── CHSH Bell inequality ── */}
-      <Html position={[0, -2.6, 0]} center style={{ pointerEvents: 'none', textAlign: 'center' }}>
+      {/* Pinned card */}
+      <Html calculatePosition={(_, __, size) => [size.width - 226, 52]} style={{ pointerEvents: 'none' }}>
         <div style={{
-          fontFamily: 'JetBrains Mono,monospace',
-          background: 'rgba(4,6,14,0.80)',
-          border: `1px solid ${sViol ? 'rgba(239,68,68,0.35)' : 'rgba(74,122,116,0.2)'}`,
-          borderRadius: 3, padding: '5px 12px',
-          display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+          width: 214, padding: '10px 12px', borderRadius: 10,
+          background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
+          fontFamily: 'Inter, system-ui, sans-serif', color: 'rgb(var(--c-text))', backdropFilter: 'blur(8px)', fontSize: 12,
         }}>
-          <div style={{ fontSize: 11, letterSpacing: '0.18em', color: 'rgba(180,180,200,0.75)' }}>
-            CHSH BELL INEQUALITY
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, marginBottom: 8 }}>
+            |ψ⟩ = {Math.cos(alpha).toFixed(3)}|00⟩ + {Math.sin(alpha).toFixed(3)}|11⟩
           </div>
-          <div style={{
-            fontSize: 13,
-            color: sViol ? '#ef4444' : 'rgba(180,180,200,0.55)',
-            textShadow: sViol ? '0 0 10px rgba(239,68,68,0.6)' : 'none',
-            letterSpacing: '0.04em',
-          }}>
-            S = {S.toFixed(3)}
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'rgb(var(--c-text-muted))' }}>Concurrence C</span>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace', color: '#fbbf24' }}>{concurrence.toFixed(3)}</span>
           </div>
-          <div style={{ fontSize: 11, letterSpacing: '0.12em', color: sViol ? '#ef4444' : 'rgba(180,180,200,0.35)' }}>
-            {sViol ? 'CLASSICAL LIMIT VIOLATED  (S > 2)' : 'WITHIN CLASSICAL BOUND  (S ≤ 2)'}
-          </div>
-          <div style={{ fontSize: 11, color: 'rgba(100,120,130,0.75)', letterSpacing: '0.1em', marginTop: 1 }}>
-            QUANTUM MAX: 2√2 ≈ 2.828
-          </div>
-        </div>
-      </Html>
 
-      {/* ── State vector ── */}
-      <Html position={[0, -2.0, 0]} center style={{ pointerEvents: 'none', textAlign: 'center' }}>
-        <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 12, color: '#2e4a46', whiteSpace: 'nowrap' }}>
-          {`|ψ⟩ = ${Math.cos(alpha).toFixed(3)}|00⟩ + ${Math.sin(alpha).toFixed(3)}|11⟩`}
+          <div style={{ marginTop: 10, fontWeight: 600 }}>CHSH Bell test</div>
+          <div style={{ position: 'relative', height: 8, borderRadius: 4, marginTop: 6, background: 'rgb(var(--c-border))' }}>
+            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${(S / 2.828) * 100}%`, borderRadius: 4, background: sViol ? '#f87171' : '#94a3b8' }} />
+            <div style={{ position: 'absolute', left: `${(2 / 2.828) * 100}%`, top: -4, bottom: -4, borderLeft: '2px solid rgb(var(--c-text))' }} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginTop: 4, color: 'rgb(var(--c-text-muted))' }}>
+            <span>S = <span style={{ fontFamily: 'JetBrains Mono, monospace', color: sViol ? '#f87171' : 'rgb(var(--c-text))' }}>{S.toFixed(3)}</span></span>
+            <span>classical ≤ 2 · max 2√2</span>
+          </div>
+          <div style={{ marginTop: 4, color: sViol ? '#f87171' : 'rgb(var(--c-text-muted))' }}>
+            {sViol ? 'Violates the classical limit — no local hidden variables can explain it.' : 'Within the classical bound.'}
+          </div>
+
+          <div style={{ marginTop: 10, paddingTop: 8, borderTop: '1px solid rgb(var(--c-border))' }}>
+            <div style={{ fontWeight: 600, marginBottom: 4 }}>Measurements</div>
+            <dl style={{ display: 'grid', gridTemplateColumns: '1fr auto', rowGap: 3 }}>
+              <dt style={{ color: 'rgb(var(--c-text-muted))' }}>Runs</dt>
+              <dd style={{ fontFamily: 'JetBrains Mono, monospace', textAlign: 'right' }}>{tally.n}</dd>
+              <dt style={{ color: 'rgb(var(--c-text-muted))' }}>A and B agree</dt>
+              <dd style={{ fontFamily: 'JetBrains Mono, monospace', textAlign: 'right' }}>{tally.n ? '100%' : '–'}</dd>
+              <dt style={{ color: 'rgb(var(--c-text-muted))' }}>Both |0⟩ (theory cos²α)</dt>
+              <dd style={{ fontFamily: 'JetBrains Mono, monospace', textAlign: 'right' }}>
+                {tally.n ? `${Math.round((tally.zeros / tally.n) * 100)}%` : '–'} <span style={{ color: 'rgb(var(--c-text-muted))' }}>({Math.round(Math.cos(alpha) ** 2 * 100)}%)</span>
+              </dd>
+            </dl>
+          </div>
         </div>
       </Html>
     </group>
