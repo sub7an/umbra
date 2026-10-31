@@ -15,8 +15,8 @@ const VIEWS = [
 ]
 const CAMERA = {
   cymatics:  [0, 3.1, 2.1],
-  harmonics: [0, 0, 7.5],
-  lissajous: [0.8, 0.4, 5.5],
+  harmonics: [0, 0, 7.2],
+  lissajous: [0, 0, 6.6],
 }
 
 // Chladni modes — f_mn = 100·√(m²+n²)
@@ -163,30 +163,103 @@ function CymaticsScene({ modeIdx, scatterToken }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// HARMONICS SCENE — clickable/pluckable strings
+// HARMONICS SCENE — eight strings on an instrument body, each drawn by a shader
+// that renders the standing wave y = A·sin(nπx)·cos(ωt): a glowing string, its
+// ±A envelope as a faint band, and bright nodes where the string never moves.
 // ═══════════════════════════════════════════════════════════════════════════════
-const H_PTS = 240
+const S_LEN = 2.8          // speaking length between the bridges
+const S_GAP = 0.66         // spacing between strings
+const S_H   = 1.7          // shader plane height (room for big plucks)
+
+const STRING_VERT = /* glsl */`
+varying vec2 vUv;
+void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+`
+const STRING_FRAG = /* glsl */`
+uniform float uN;       // harmonic number
+uniform float uDisp;    // current signed amplitude A·cos(ωt)
+uniform float uEnv;     // envelope amplitude A
+uniform vec3  uColor;
+uniform float uActive;  // 0..1
+uniform float uHover;
+varying vec2 vUv;
+void main() {
+  float x = vUv.x;
+  float y = (vUv.y - 0.5) * ${S_H.toFixed(2)};
+  float s = sin(uN * 3.14159265 * x);
+  float d = abs(y - s * uDisp);
+  float px = fwidth(y);
+
+  vec3 col = pow(uColor, vec3(2.2));
+  float core = 1.0 - smoothstep(0.0, 1.8 * px, d);
+  float glow = exp(-d / 0.035) * 0.55 + exp(-d / 0.12) * 0.18;
+  // Envelope band: the region the string sweeps through
+  float env = abs(s) * uEnv;
+  float band = (1.0 - smoothstep(env - px, env + px, abs(y))) * 0.07;
+  float edge = (1.0 - smoothstep(0.0, 1.2 * px, abs(abs(y) - env))) * 0.22 * step(0.02, uEnv);
+  // Nodes: x = k/n, where the string stays still
+  float k = fract(x * uN + 0.5) - 0.5;
+  float nd = length(vec2(k / uN * ${S_LEN.toFixed(2)}, y));
+  float node = exp(-nd * nd / 0.0012) * 1.4 + exp(-nd / 0.05) * 0.25;
+  node *= step(0.5, uN * min(x, 1.0 - x) + 0.5);   // skip the fixed ends
+
+  float a = (core * 1.6 + glow + band + edge) * (0.12 + 0.88 * uActive) * (1.0 + 0.4 * uHover);
+  vec3 c = col * a + vec3(1.0, 0.97, 0.9) * node * uActive;
+  gl_FragColor = vec4(c, 1.0);
+}
+`
+
+function StringWave({ n, color, matRef }) {
+  const mat = useMemo(() => new THREE.ShaderMaterial({
+    vertexShader: STRING_VERT, fragmentShader: STRING_FRAG,
+    uniforms: {
+      uN: { value: n }, uDisp: { value: 0 }, uEnv: { value: 0 },
+      uColor: { value: new THREE.Color(color) }, uActive: { value: 1 }, uHover: { value: 0 },
+    },
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    extensions: { derivatives: true },
+  }), [n, color])
+  useEffect(() => () => mat.dispose(), [mat])
+  useEffect(() => { matRef(mat) }, [mat, matRef])
+  return (
+    <mesh material={mat} position={[0, 0, 0.02]}>
+      <planeGeometry args={[S_LEN, S_H]} />
+    </mesh>
+  )
+}
+
+function InstrumentBody() {
+  const H = S_GAP * 8 + 0.4
+  return (
+    <group>
+      {/* Soundboard */}
+      <mesh position={[0, 0, -0.12]}>
+        <boxGeometry args={[S_LEN + 1.3, H, 0.12]} />
+        <meshStandardMaterial color="#1c140e" roughness={0.55} metalness={0.05} />
+      </mesh>
+      {/* Inlay strip along each edge */}
+      {[1, -1].map((s) => (
+        <mesh key={s} position={[0, s * (H / 2 - 0.05), -0.055]}>
+          <boxGeometry args={[S_LEN + 1.3, 0.03, 0.01]} />
+          <meshStandardMaterial color="#8a6a3a" roughness={0.35} metalness={0.5} />
+        </mesh>
+      ))}
+      {/* Nut and bridge */}
+      {[-S_LEN / 2, S_LEN / 2].map((x) => (
+        <mesh key={x} position={[x, 0, -0.02]}>
+          <boxGeometry args={[0.07, H - 0.2, 0.12]} />
+          <meshStandardMaterial color="#e8e0cc" roughness={0.3} metalness={0.1} />
+        </mesh>
+      ))}
+    </group>
+  )
+}
 
 function HarmonicsScene({ focusN, onPluck }) {
-  const pluckRef   = useRef(new Array(8).fill(null))
-  const [hoveredN, setHoveredN] = useState(null)
-
-  const geos = useMemo(() => Array.from({ length: 8 }, () => {
-    const pos = new Float32Array((H_PTS + 1) * 3)
-    const geo = new THREE.BufferGeometry()
-    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3))
-    return geo
-  }), [])
-  useEffect(() => () => geos.forEach(g => g.dispose()), [geos])
-
-  const axisGeos = useMemo(() => Array.from({ length: 8 }, (_, i) => {
-    const n = i + 1, yOff = -(n - 4.5) * 0.66
-    const pos = new Float32Array([-1.4, yOff, 0, 1.4, yOff, 0])
-    const geo = new THREE.BufferGeometry()
-    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3))
-    return geo
-  }), [])
-  useEffect(() => () => axisGeos.forEach(g => g.dispose()), [axisGeos])
+  const pluckRef = useRef(new Array(8).fill(null))
+  const hoverRef = useRef(null)
+  const mats     = useRef([])
+  const setters  = useMemo(() => Array.from({ length: 8 }, (_, i) => (m) => { mats.current[i] = m }), [])
 
   const handleClick = useCallback((n) => {
     pluckRef.current[n-1] = performance.now()
@@ -197,123 +270,237 @@ function HarmonicsScene({ focusN, onPluck }) {
     const t   = clock.getElapsedTime()
     const now = performance.now()
     for (let n = 1; n <= 8; n++) {
-      const geo   = geos[n-1]
-      const pos   = geo.attributes.position.array
-      const yOff  = -(n - 4.5) * 0.66
-      const omega = n * 1.8
-
+      const m = mats.current[n-1]
+      if (!m) continue
       const pluckTime = pluckRef.current[n-1]
       const pluckAge  = pluckTime ? (now - pluckTime) / 1000 : null
       if (pluckAge !== null && pluckAge > 3.5) pluckRef.current[n-1] = null
-
       const isPlucked = pluckAge !== null && pluckAge <= 3.5
       const pluckGain = isPlucked ? Math.exp(-pluckAge * 1.8) : 0
-      const baseGain  = (focusN === null || focusN === n) ? 0.22 : 0.05
-      const amp = baseGain + pluckGain * 0.55
-
-      for (let p = 0; p <= H_PTS; p++) {
-        const xN = p / H_PTS
-        const x  = xN * 2.8 - 1.4
-        const dy = Math.sin(n * Math.PI * xN) * Math.cos(omega * t) * amp
-        pos[p*3]   = x
-        pos[p*3+1] = yOff + dy
-        pos[p*3+2] = 0
-      }
-      geo.attributes.position.needsUpdate = true
+      const isActive  = focusN === null || focusN === n
+      const amp = (isActive ? 0.22 : 0.05) + pluckGain * 0.55
+      const u = m.uniforms
+      u.uDisp.value = amp * Math.cos(n * 1.8 * t)
+      u.uEnv.value = amp
+      u.uActive.value += ((isActive ? 1 : 0) - u.uActive.value) * 0.15
+      u.uHover.value  += ((hoverRef.current === n ? 1 : 0) - u.uHover.value) * 0.2
     }
   })
 
   return (
     <group>
-      {axisGeos.map((geo, i) => (
-        <line key={`ax-${i}`} geometry={geo}>
-          <lineBasicMaterial color="#0d1e2e" transparent opacity={0.7} />
-        </line>
-      ))}
-      {geos.map((geo, i) => {
-        const n        = i + 1
-        const color    = HARMONIC_COLORS[i]
-        const isActive = focusN === null || focusN === n
-        const isHover  = hoveredN === n
-        const yOff     = -(n - 4.5) * 0.66
+      <InstrumentBody />
+      {HARMONIC_COLORS.map((color, i) => {
+        const n = i + 1
+        const yOff = -(n - 4.5) * S_GAP
         return (
-          <group key={n}>
-            <line geometry={geo}>
-              <lineBasicMaterial color={color} transparent opacity={isActive ? (isHover ? 1.0 : 0.75) : 0.06} />
-            </line>
-            {[-1.4, 1.4].map(ex => (
-              <mesh key={ex} position={[ex, yOff, 0]}>
-                <sphereGeometry args={[0.028, 8, 8]} />
-                <meshBasicMaterial color={isActive ? color : '#1a2a3a'} />
-              </mesh>
-            ))}
+          <group key={n} position={[0, yOff, 0]}>
+            <StringWave n={n} color={color} matRef={setters[i]} />
+            {/* Tuning peg past the nut */}
+            <mesh position={[-S_LEN / 2 - 0.38, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
+              <cylinderGeometry args={[0.07, 0.07, 0.1, 20]} />
+              <meshStandardMaterial color="#d4b878" metalness={0.9} roughness={0.25} />
+            </mesh>
             {/* Invisible clickable hit-zone */}
             <mesh
-              position={[0, yOff, 0]}
+              position={[0, 0, 0.05]}
               onClick={(e) => { e.stopPropagation(); handleClick(n) }}
-              onPointerEnter={() => setHoveredN(n)}
-              onPointerLeave={() => setHoveredN(null)}
+              onPointerEnter={() => { hoverRef.current = n; document.body.style.cursor = 'pointer' }}
+              onPointerLeave={() => { if (hoverRef.current === n) hoverRef.current = null; document.body.style.cursor = '' }}
             >
-              <planeGeometry args={[2.8, 0.52]} />
-              <meshBasicMaterial transparent opacity={0} side={THREE.DoubleSide} />
+              <planeGeometry args={[S_LEN, 0.52]} />
+              <meshBasicMaterial transparent opacity={0} depthWrite={false} side={THREE.DoubleSide} />
             </mesh>
           </group>
         )
       })}
-      <ambientLight intensity={0.6} />
-      <pointLight position={[0, 2, 4]} intensity={0.8} color="#c0d8ff" />
     </group>
   )
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// LISSAJOUS SCENE
+// LISSAJOUS SCENE — an oscilloscope in X–Y mode. A phosphor beam traces
+// x = sin(a·t), y = sin(b·t + φ); the two input signals scroll out of the
+// screen along the bottom and left edges so you can see what builds the figure.
 // ═══════════════════════════════════════════════════════════════════════════════
 const LIS_TRAIL = 2000
+const LIS_R     = 1.5     // beam deflection
+const SCREEN    = 1.75    // half-size of the screen
+const STRIP_K   = 260     // samples in each side signal strip
+const STRIP_DY  = 0.0042  // spacing of strip samples
+
+const SCOPE_FRAG = /* glsl */`
+varying vec2 vUv;
+void main() {
+  vec2 p = (vUv - 0.5) * 2.0 * ${SCREEN.toFixed(2)};
+  vec3 col = vec3(0.006, 0.014, 0.012);
+  // 8×8 graticule with minor ticks on the centre lines
+  float div = ${(SCREEN / 4).toFixed(4)};
+  vec2 g = abs(fract(p / div + 0.5) - 0.5) * div / fwidth(p);
+  float grid = 1.0 - min(min(g.x, g.y), 1.0);
+  vec2 c = abs(p) / fwidth(p);
+  float axes = 1.0 - min(min(c.x, c.y), 1.0);
+  vec2 m = abs(fract(p / (div / 5.0) + 0.5) - 0.5) * (div / 5.0) / fwidth(p);
+  float minor = (1.0 - min(m.x, 1.0)) * step(abs(p.y), 0.05) + (1.0 - min(m.y, 1.0)) * step(abs(p.x), 0.05);
+  col += vec3(0.04, 0.09, 0.08) * (grid * 0.6 + axes * 0.8 + minor * 0.6);
+  // Curved-glass falloff
+  float r = length(p / ${SCREEN.toFixed(2)});
+  col *= 1.0 - 0.45 * r * r;
+  gl_FragColor = vec4(col, 1.0);
+}
+`
+
+function Scope() {
+  const mat = useMemo(() => new THREE.ShaderMaterial({
+    vertexShader: STRING_VERT, fragmentShader: SCOPE_FRAG, extensions: { derivatives: true },
+  }), [])
+  useEffect(() => () => mat.dispose(), [mat])
+  const W = SCREEN * 2
+  return (
+    <group>
+      <mesh position={[0, 0, -0.03]} material={mat}>
+        <planeGeometry args={[W, W]} />
+      </mesh>
+      {/* Bezel */}
+      {[[0, SCREEN + 0.06, W + 0.24, 0.12], [0, -SCREEN - 0.06, W + 0.24, 0.12], [SCREEN + 0.06, 0, 0.12, W], [-SCREEN - 0.06, 0, 0.12, W]].map(([x, y, w, h], i) => (
+        <mesh key={i} position={[x, y, -0.02]}>
+          <boxGeometry args={[w, h, 0.1]} />
+          <meshStandardMaterial color="#20262e" metalness={0.7} roughness={0.35} />
+        </mesh>
+      ))}
+    </group>
+  )
+}
 
 function LissajousScene({ presetIdx, phase }) {
-  const dotRef   = useRef()
+  const dotRef = useRef()
+  const { a, b, color } = LISSAJOUS_PRESETS[presetIdx]
+
+  // Phosphor trail: newest sample at index 0, colour fades with age (fixed by index)
   const trailGeo = useMemo(() => {
-    const pos = new Float32Array(LIS_TRAIL * 3)
     const geo = new THREE.BufferGeometry()
-    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3))
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(LIS_TRAIL * 3), 3))
+    geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(LIS_TRAIL * 3), 3))
     return geo
   }, [])
   useEffect(() => () => trailGeo.dispose(), [trailGeo])
   useEffect(() => {
-    trailGeo.attributes.position.array.fill(0)
-    trailGeo.attributes.position.needsUpdate = true
-  }, [presetIdx, trailGeo])
+    const c = new THREE.Color(color), hot = new THREE.Color('#ffffff')
+    const col = trailGeo.attributes.color.array
+    for (let i = 0; i < LIS_TRAIL; i++) {
+      const age = i / LIS_TRAIL
+      const k = Math.exp(-age * 2.6) * 2.4
+      const w = Math.exp(-i / 18)                      // white-hot head
+      col[i*3]   = (c.r * (1 - w) + hot.r * w) * k
+      col[i*3+1] = (c.g * (1 - w) + hot.g * w) * k
+      col[i*3+2] = (c.b * (1 - w) + hot.b * w) * k
+    }
+    trailGeo.attributes.color.needsUpdate = true
+  }, [color, trailGeo])
+
+  // Ghost of the whole closed figure
+  const ghostGeo = useMemo(() => {
+    const pts = []
+    for (let i = 0; i <= 1600; i++) {
+      const s = (i / 1600) * Math.PI * 2
+      pts.push(Math.sin(a * s) * LIS_R, Math.sin(b * s + phase) * LIS_R, 0)
+    }
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3))
+    return g
+  }, [a, b, phase])
+  useEffect(() => () => ghostGeo.dispose(), [ghostGeo])
+
+  // Side strips: x-signal scrolling down from the bottom edge, y-signal scrolling
+  // left from the left edge, plus guide lines from the beam to each strip
+  const stripGeo = useMemo(() => {
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(STRIP_K * 2 * 3), 3))
+    g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(STRIP_K * 2 * 3), 3))
+    return g
+  }, [])
+  const guideGeo = useMemo(() => {
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(4 * 3), 3))
+    return g
+  }, [])
+  useEffect(() => () => { stripGeo.dispose(); guideGeo.dispose() }, [stripGeo, guideGeo])
 
   useFrame(({ clock }) => {
-    const t   = clock.getElapsedTime()
-    const { a, b } = LISSAJOUS_PRESETS[presetIdx]
+    const t = clock.getElapsedTime() * 0.55
     const arr = trailGeo.attributes.position.array
-    arr.copyWithin(3, 0, (LIS_TRAIL - 1) * 3)
-    const px = Math.sin(a * t * 0.55) * 1.5
-    const py = Math.sin(b * t * 0.55 + phase) * 1.5
-    const pz = Math.sin((a + b) * t * 0.27) * 0.35
-    arr[0] = px; arr[1] = py; arr[2] = pz
+    const px = Math.sin(a * t) * LIS_R
+    const py = Math.sin(b * t + phase) * LIS_R
+    // Sample the trail analytically at fixed time steps, so it stays smooth at any frame rate
+    for (let i = 0; i < LIS_TRAIL; i++) {
+      const ti = t - i * 0.003
+      arr[i*3] = Math.sin(a * ti) * LIS_R; arr[i*3+1] = Math.sin(b * ti + phase) * LIS_R; arr[i*3+2] = 0
+    }
     trailGeo.attributes.position.needsUpdate = true
-    if (dotRef.current) dotRef.current.position.set(px, py, pz)
+    if (dotRef.current) dotRef.current.position.set(px, py, 0.01)
+
+    // Strips sample the analytic signals at fixed time steps, so they are smooth
+    const sp = stripGeo.attributes.position.array, sc = stripGeo.attributes.color.array
+    const c = new THREE.Color(color)
+    for (let k = 0; k < STRIP_K; k++) {
+      const tk = t - k * 0.012
+      const f = Math.exp(-k / (STRIP_K * 0.45))
+      const o = k * 3, o2 = (STRIP_K + k) * 3
+      sp[o]  = Math.sin(a * tk) * LIS_R;  sp[o+1]  = -SCREEN - 0.25 - k * STRIP_DY; sp[o+2]  = 0
+      sp[o2] = -SCREEN - 0.25 - k * STRIP_DY; sp[o2+1] = Math.sin(b * tk + phase) * LIS_R; sp[o2+2] = 0
+      sc[o] = sc[o2] = c.r * f; sc[o+1] = sc[o2+1] = c.g * f; sc[o+2] = sc[o2+2] = c.b * f
+    }
+    stripGeo.attributes.position.needsUpdate = true
+    stripGeo.attributes.color.needsUpdate = true
+    const gp = guideGeo.attributes.position.array
+    gp.set([px, py, 0, px, -SCREEN - 0.25, 0, px, py, 0, -SCREEN - 0.25, py, 0])
+    guideGeo.attributes.position.needsUpdate = true
   })
 
-  const { color } = LISSAJOUS_PRESETS[presetIdx]
   return (
-    <group>
-      <line geometry={trailGeo}>
-        <lineBasicMaterial color={color} transparent opacity={0.72} />
+    <group position={[0.3, 0.5, 0]}>
+      <Scope />
+      <line geometry={ghostGeo}>
+        <lineBasicMaterial color={color} transparent opacity={0.12} toneMapped={false} />
+      </line>
+      <line geometry={trailGeo} frustumCulled={false}>
+        <lineBasicMaterial vertexColors transparent blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
       </line>
       <mesh ref={dotRef}>
-        <sphereGeometry args={[0.055, 14, 14]} />
-        <meshBasicMaterial color="#ffffff" />
+        <sphereGeometry args={[0.045, 14, 14]} />
+        <meshBasicMaterial color={[2.5, 2.5, 2.5]} toneMapped={false} />
       </mesh>
-      <ambientLight intensity={0.3} />
-      <pointLight position={[3, 3, 3]} intensity={1.2} color={color} />
-      <pointLight position={[-3,-3, 2]} intensity={0.5} color="#3040a0" />
+      <StripLines geo={stripGeo} />
+      <lineSegments geometry={guideGeo} frustumCulled={false}>
+        <lineBasicMaterial color="#94a3b8" transparent opacity={0.25} />
+      </lineSegments>
     </group>
   )
 }
+
+// The strip geometry holds two polylines back to back; draw each with its own range
+function StripLines({ geo }) {
+  const [g1, g2] = useMemo(() => {
+    const mk = (start) => {
+      const g = new THREE.BufferGeometry()
+      g.setAttribute('position', geo.attributes.position)
+      g.setAttribute('color', geo.attributes.color)
+      g.setDrawRange(start, STRIP_K)
+      return g
+    }
+    return [mk(0), mk(STRIP_K)]
+  }, [geo])
+  return (
+    <>
+      {[g1, g2].map((g, i) => (
+        <line key={i} geometry={g} frustumCulled={false}>
+          <lineBasicMaterial vertexColors transparent blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
+        </line>
+      ))}
+    </>
+  )
+}
+
 
 // ── InfoPanel data ─────────────────────────────────────────────────────────────
 function buildEquations(view) {
@@ -582,7 +769,7 @@ export default function AcousticModule() {
 
           {/* 3-D scene */}
           <div style={{flex:1,position:'relative',overflow:'hidden',minHeight:0}}>
-            <SceneWrapper cameraPosition={CAMERA[view]} showGrid={false} minDist={2} maxDist={18}>
+            <SceneWrapper cameraPosition={CAMERA[view]} idleRotate={view === 'cymatics'} showGrid={false} minDist={2} maxDist={18}>
               {view==='cymatics'  && <CymaticsScene  modeIdx={modeIdx} scatterToken={scatterToken} />}
               {view==='harmonics' && <HarmonicsScene  focusN={focusN} onPluck={handlePluck} />}
               {view==='lissajous' && <LissajousScene  presetIdx={presetIdx} phase={lissPhase} />}
