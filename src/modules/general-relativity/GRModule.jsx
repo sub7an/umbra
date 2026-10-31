@@ -16,8 +16,8 @@ const VIEWS = [
 
 const CAMERA = {
   curvature: [0, 7, 10],
-  geodesics:  [2, 11, 7],
-  waves:      [0, 8, 10],
+  geodesics:  [0, 9.5, 14],
+  waves:      [0, 7.5, 12.5],
 }
 
 function buildEquations(view) {
@@ -44,9 +44,9 @@ function buildEquations(view) {
       return {
         domain: 'GR · GEODESIC EQUATION',
         syllabus: 'Enrichment · Mercury’s perihelion precession',
-        primaryEq: `\\frac{d^2u}{d\\phi^2} = -u + 3Mu^2`,
+        primaryEq: `\\frac{d^2u}{d\\phi^2} = \\frac{M}{L^2} - u + 3Mu^2`,
         derivedEqs: [
-          { label: 'u = 1/r, Newtonian', eq: `\\frac{d^2u}{d\\phi^2} = -u` },
+          { label: 'u = 1/r, Newtonian', eq: `\\frac{d^2u}{d\\phi^2} = \\frac{M}{L^2} - u` },
           { label: 'Orbital precession', eq: `\\Delta\\phi = \\frac{6\\pi GM}{c^2 a(1-e^2)}` },
         ],
         tryThis: [

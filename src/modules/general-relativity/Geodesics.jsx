@@ -1,5 +1,6 @@
-import { useRef, useMemo } from 'react'
+import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
+import { Line } from '@react-three/drei'
 import * as THREE from 'three'
 
 const SIZE = 10
@@ -12,22 +13,41 @@ function warpY(x, z, mass) {
   return -mass / (r + 0.6)
 }
 
-// Massive-particle geodesic: d²u/dφ² = -u + 3Mu²
-function integrateGeodesic(mass, r0, vTangential, nSteps = 1800, dphi = 0.014) {
+// Massive-particle geodesic (Schwarzschild orbit equation, u = 1/r):
+//     d²u/dφ² = M/L² − u + 3Mu²
+// The 3Mu² term is GR's correction; without it the orbit is a closed ellipse.
+// Orbits are specified by periapsis/apoapsis. Equal effective potential
+// (1 − 2M/r)(1 + L²/r²) at both turning points fixes L exactly; the orbit
+// starts at periapsis with du/dφ = 0 and is integrated with RK4 in φ.
+const ORBIT_DPHI = 0.01
+function orbitL(mass, rp, ra) {
   const M = mass * 0.15
-  const u0 = 1 / r0
-  let u = u0
-  let uPrev = u0 * (1 - vTangential * dphi)
+  const num = 2 * M * (1 / rp - 1 / ra)
+  const den = (1 - 2 * M / rp) / (rp * rp) - (1 - 2 * M / ra) / (ra * ra)
+  return Math.sqrt(Math.max(num / den, 1e-6))
+}
+function integrateGeodesic(mass, rp, ra, turns = 6) {
+  const M = mass * 0.15
+  const L = orbitL(mass, rp, ra)
+  const k = M / (L * L)
+  const f = (u) => k - u + 3 * M * u * u
+  let u = 1 / rp, w = 0
+  const h = ORBIT_DPHI
   const pts = []
-  for (let i = 0; i < nSteps; i++) {
-    const phi = i * dphi
-    const d2u = -u + 3 * M * u * u
-    const uNext = 2 * u - uPrev + d2u * dphi * dphi
-    uPrev = u; u = uNext
-    if (u <= 0 || 1 / u < M * 2.1) break
-    const r = Math.min(1 / u, SIZE - 1)
+  const n = Math.round((turns * Math.PI * 2) / h)
+  for (let i = 0; i < n; i++) {
+    const phi = i * h
+    if (u <= 0 || 1 / u < M * 2.05) break        // plunged through the horizon
+    const r = 1 / u
+    if (r > SIZE - 0.8) break
     const x = r * Math.cos(phi), z = r * Math.sin(phi)
     pts.push([x, warpY(x, z, mass) + 0.06, z])
+    const k1u = w, k1w = f(u)
+    const k2u = w + 0.5 * h * k1w, k2w = f(u + 0.5 * h * k1u)
+    const k3u = w + 0.5 * h * k2w, k3w = f(u + 0.5 * h * k2u)
+    const k4u = w + h * k3w, k4w = f(u + h * k3u)
+    u += (h / 6) * (k1u + 2 * k2u + 2 * k3u + k4u)
+    w += (h / 6) * (k1w + 2 * k2w + 2 * k3w + k4w)
   }
   return pts
 }
@@ -68,288 +88,268 @@ function integrateLightRay(mass, bScale, phiOffset = 0) {
   return pts
 }
 
-// Newtonian reference orbit (perfect ellipse, no precession)
-function newtonianOrbit(r0, mass, nPts = 256) {
+// Newtonian reference: the closed ellipse with the same periapsis/apoapsis
+function newtonianOrbit(rp, ra, mass, nPts = 360) {
+  const p = (2 * rp * ra) / (rp + ra), e = (ra - rp) / (ra + rp)
   const pts = []
   for (let i = 0; i <= nPts; i++) {
     const phi = (i / nPts) * Math.PI * 2
-    const x = r0 * Math.cos(phi), z = r0 * Math.sin(phi)
+    const r = p / (1 + e * Math.cos(phi))
+    const x = r * Math.cos(phi), z = r * Math.sin(phi)
     pts.push([x, warpY(x, z, mass) + 0.06, z])
   }
   return pts
 }
 
-// ─── Background warped surface ───────────────────────────────────────────────
+// ─── Curved spacetime sheet: displaced on the GPU, lit, with a polar grid ────
 
-const SURF_VERT = `
+const SURF_VERT = /* glsl */`
+  uniform float uMass;
+  varying vec3 vN;
+  varying vec3 vView;
+  varying vec2 vXZ;
   varying float vH;
+  float warp(vec2 p) { return -uMass / (length(p) + 0.6); }
   void main() {
-    vH = position.y;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    vec2 p = position.xz;
+    float h = warp(p);
+    float e = 0.04;
+    vec3 n = normalize(vec3(h - warp(p + vec2(e, 0.0)), e, h - warp(p + vec2(0.0, e))));
+    vN = normalize(normalMatrix * n);
+    vXZ = p; vH = h;
+    vec4 mv = modelViewMatrix * vec4(p.x, h, p.y, 1.0);
+    vView = -mv.xyz;
+    gl_Position = projectionMatrix * mv;
   }
 `
-const SURF_FRAG = `
+const SURF_FRAG = /* glsl */`
+  uniform float uMass;
+  varying vec3 vN;
+  varying vec3 vView;
+  varying vec2 vXZ;
   varying float vH;
+  vec3 lin(vec3 c) { return pow(c, vec3(2.2)); }
   void main() {
-    float t = clamp(-vH * 0.38, 0.0, 1.0);
-    vec3 col = mix(vec3(0.04, 0.08, 0.18), vec3(0.26, 0.10, 0.02), t);
-    gl_FragColor = vec4(col, 0.30);
+    float r = length(vXZ);
+    float th = atan(vXZ.y, vXZ.x);
+    // Polar grid: rings every 0.5, 24 spokes; lines thin out with distance
+    float rr = r / 0.5;
+    float ring = 1.0 - min(abs(fract(rr + 0.5) - 0.5) / fwidth(rr), 1.0);
+    float ss = th / (6.2831853 / 24.0);
+    float spoke = (1.0 - min(abs(fract(ss + 0.5) - 0.5) / fwidth(ss), 1.0)) * smoothstep(0.3, 1.2, r);
+
+    vec3 N = normalize(vN); if (!gl_FrontFacing) N = -N;
+    vec3 V = normalize(vView);
+    float diff = max(dot(N, normalize(vec3(0.3, 1.0, 0.2))), 0.0);
+    float fres = pow(1.0 - max(dot(N, V), 0.0), 2.5);
+
+    // Deeper = warmer: a soft glow down the throat of the well
+    float depth = clamp(-vH / (uMass / 0.6), 0.0, 1.0);
+    vec3 base = mix(lin(vec3(0.020, 0.026, 0.06)), lin(vec3(0.50, 0.20, 0.05)), pow(depth, 1.6));
+    vec3 col = base * (0.55 + 0.6 * diff)
+             + lin(vec3(0.40, 0.48, 0.95)) * (ring * 0.07 + spoke * 0.04) * (0.5 + 1.5 * depth)
+             + lin(vec3(0.30, 0.35, 0.8)) * fres * 0.05;
+    float edge = 1.0 - smoothstep(${(SIZE - 2.5).toFixed(1)}, ${SIZE.toFixed(1)}, r);
+    gl_FragColor = vec4(col * edge, edge);
   }
 `
 
-function BackgroundSurface({ mass }) {
-  const { surfGeo, wireGeo } = useMemo(() => {
-    const N = GRID + 1
-    const posArr = new Float32Array(N * N * 3)
-    const idxArr = []
-    for (let iz = 0; iz < N; iz++) {
-      for (let ix = 0; ix < N; ix++) {
-        const k = (iz * N + ix) * 3
-        const x = (ix / GRID - 0.5) * SIZE * 2
-        const z = (iz / GRID - 0.5) * SIZE * 2
-        posArr[k]   = x
-        posArr[k+1] = warpY(x, z, mass)
-        posArr[k+2] = z
-      }
-    }
-    for (let iz = 0; iz < GRID; iz++) {
-      for (let ix = 0; ix < GRID; ix++) {
-        const a = iz * N + ix
-        idxArr.push(a, a+1, a+N, a+1, a+N+1, a+N)
-      }
-    }
-    const sg = new THREE.BufferGeometry()
-    sg.setAttribute('position', new THREE.BufferAttribute(posArr, 3))
-    sg.setIndex(idxArr)
-
-    // Wireframe grid (lineSegments pairs)
-    const G = 18
-    const wirePts = []
-    for (let i = 0; i <= G; i++) {
-      const s = (i / G - 0.5) * SIZE * 2
-      for (let j = 0; j < G; j++) {
-        const a = (j / G - 0.5) * SIZE * 2
-        const b = ((j+1) / G - 0.5) * SIZE * 2
-        wirePts.push(a, warpY(a, s, mass) + 0.02, s, b, warpY(b, s, mass) + 0.02, s)
-        wirePts.push(s, warpY(s, a, mass) + 0.02, a, s, warpY(s, b, mass) + 0.02, b)
-      }
-    }
-    const wg = new THREE.BufferGeometry()
-    wg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(wirePts), 3))
-
-    return { surfGeo: sg, wireGeo: wg }
-  }, [mass])
-
-  return (
-    <group>
-      <mesh geometry={surfGeo} frustumCulled={false}>
-        <shaderMaterial vertexShader={SURF_VERT} fragmentShader={SURF_FRAG}
-          side={THREE.DoubleSide} transparent depthWrite={false} />
-      </mesh>
-      <lineSegments geometry={wireGeo} frustumCulled={false}>
-        <lineBasicMaterial color="#1e3a5f" transparent opacity={0.22} />
-      </lineSegments>
-    </group>
-  )
-}
-
-// ─── Special radius rings ────────────────────────────────────────────────────
-
-function RadiusRing({ r, mass, color, opacity = 0.6 }) {
+function SpacetimeSheet({ mass }) {
   const geo = useMemo(() => {
-    const pts = []
-    for (let i = 0; i <= 128; i++) {
-      const phi = (i / 128) * Math.PI * 2
-      const x = r * Math.cos(phi), z = r * Math.sin(phi)
-      pts.push(new THREE.Vector3(x, warpY(x, z, mass) + 0.08, z))
+    // Polar mesh: dense near the centre where the well is steep
+    const NR = 120, NT = 160
+    const pos = [], idx = []
+    for (let i = 0; i <= NR; i++) {
+      const r = 0.05 + SIZE * Math.pow(i / NR, 1.6)
+      for (let j = 0; j <= NT; j++) {
+        const t = (j / NT) * Math.PI * 2
+        pos.push(r * Math.cos(t), 0, r * Math.sin(t))
+      }
     }
-    return new THREE.BufferGeometry().setFromPoints(pts)
-  }, [r, mass])
-
-  return (
-    <line geometry={geo}>
-      <lineBasicMaterial color={color} transparent opacity={opacity} />
-    </line>
-  )
-}
-
-// ─── Geodesic orbit line ─────────────────────────────────────────────────────
-
-function OrbitLine({ pts, color, opacity = 0.18 }) {
-  const geo = useMemo(() => {
-    const arr = new Float32Array(pts.length * 3)
-    pts.forEach(([x, y, z], i) => { arr[i*3]=x; arr[i*3+1]=y; arr[i*3+2]=z })
-    return new THREE.BufferGeometry().setAttribute(
-      'position', new THREE.BufferAttribute(arr, 3)
-    )
-  }, [pts])
-  return (
-    <line geometry={geo}>
-      <lineBasicMaterial color={color} transparent opacity={opacity} />
-    </line>
-  )
-}
-
-// ─── Particle with glowing trail ─────────────────────────────────────────────
-
-const TRAIL = 90
-
-function GeoParticle({ pts, color, speed }) {
-  const dotRef   = useRef()
-  const trailRef = useRef()
-  const tRef     = useRef(Math.random())
-
-  const trailGeo = useMemo(() => {
-    const arr = new Float32Array((TRAIL + 1) * 3)
-    const p = pts[0] || [0, 0, 0]
-    for (let i = 0; i <= TRAIL; i++) { arr[i*3]=p[0]; arr[i*3+1]=p[1]; arr[i*3+2]=p[2] }
+    for (let i = 0; i < NR; i++) for (let j = 0; j < NT; j++) {
+      const a = i * (NT + 1) + j, b = a + 1, c = a + NT + 1, d = c + 1
+      idx.push(a, c, b, b, c, d)
+    }
     const g = new THREE.BufferGeometry()
-    g.setAttribute('position', new THREE.BufferAttribute(arr, 3))
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
+    g.setIndex(idx)
     return g
-  }, [pts])
+  }, [])
+  const mat = useMemo(() => new THREE.ShaderMaterial({
+    vertexShader: SURF_VERT, fragmentShader: SURF_FRAG,
+    uniforms: { uMass: { value: mass } },
+    side: THREE.DoubleSide, transparent: true, depthWrite: false,
+  }), []) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => { geo.dispose(); mat.dispose() }, [geo, mat])
+  useEffect(() => { mat.uniforms.uMass.value = mass }, [mat, mass])
+  return <mesh geometry={geo} material={mat} frustumCulled={false} />
+}
+
+// ─── Special radii (horizon, photon sphere, ISCO) ────────────────────────────
+
+function RadiusRing({ r, mass, color, opacity = 0.6, width = 1.5, dashed = false }) {
+  const pts = useMemo(() => {
+    const out = []
+    for (let i = 0; i <= 160; i++) {
+      const phi = (i / 160) * Math.PI * 2
+      const x = r * Math.cos(phi), z = r * Math.sin(phi)
+      out.push([x, warpY(x, z, mass) + 0.03, z])
+    }
+    return out
+  }, [r, mass])
+  return <Line points={pts} color={color} lineWidth={width} transparent opacity={opacity} dashed={dashed} dashSize={0.12} gapSize={0.08} />
+}
+
+// ─── Orbit path (faint full rosette) ─────────────────────────────────────────
+
+function OrbitPath({ pts, color, opacity = 0.25, dashed = false }) {
+  if (pts.length < 2) return null
+  return <Line points={pts} color={color} lineWidth={1.2} transparent opacity={opacity} dashed={dashed} dashSize={0.2} gapSize={0.12} />
+}
+
+// ─── Body on a geodesic: Kepler-like timing (dφ/dt ∝ 1/r²), comet trail ─────
+
+const TRAIL = 140
+
+function Traveller({ pts, color, rate, size = 0.09, light = false }) {
+  const head = useRef()
+  const fRef = useRef(Math.random() * pts.length)
+  const geo = useMemo(() => {
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(TRAIL * 3), 3))
+    const c = new THREE.Color(color)
+    const col = new Float32Array(TRAIL * 3)
+    for (let i = 0; i < TRAIL; i++) {
+      const a = Math.pow(1 - i / TRAIL, 1.8) * 1.6
+      col[i * 3] = c.r * a; col[i * 3 + 1] = c.g * a; col[i * 3 + 2] = c.b * a
+    }
+    g.setAttribute('color', new THREE.BufferAttribute(col, 3))
+    return g
+  }, [color])
+  useEffect(() => () => geo.dispose(), [geo])
+  const hist = useRef([])
 
   useFrame((_, delta) => {
-    tRef.current = (tRef.current + speed * delta) % 1
-    const idx = Math.floor(tRef.current * pts.length)
-
-    const p = pts[idx]
-    if (!p) return
-    dotRef.current?.position.set(p[0], p[1], p[2])
-
-    const pos = trailRef.current?.geometry.attributes.position
-    if (!pos) return
-    for (let i = 0; i <= TRAIL; i++) {
-      const ti = (idx - i + pts.length) % pts.length
-      const tp = pts[ti]
-      pos.setXYZ(i, tp[0], tp[1], tp[2])
+    const n = pts.length
+    if (n < 2) return
+    const i = Math.floor(fRef.current) % n
+    const p = pts[i]
+    const r2 = p[0] * p[0] + p[2] * p[2]
+    // Points are equally spaced in φ. A massive body has dφ/dt ∝ 1/r² (fixed
+    // angular momentum); light moves at constant speed, so dφ/dt ∝ 1/r
+    const r = Math.sqrt(Math.max(r2, 0.09))
+    fRef.current += Math.min(delta, 0.05) * rate / (light ? r : r * r)
+    if (fRef.current >= n) { fRef.current %= n; if (light) hist.current.length = 0 }
+    const q = pts[Math.floor(fRef.current) % n]
+    head.current?.position.set(q[0], q[1], q[2])
+    const h = hist.current
+    h.unshift(q)
+    if (h.length > TRAIL) h.length = TRAIL
+    const arr = geo.attributes.position.array
+    for (let k = 0; k < TRAIL; k++) {
+      const s = h[Math.min(k, h.length - 1)]
+      arr[k * 3] = s[0]; arr[k * 3 + 1] = s[1]; arr[k * 3 + 2] = s[2]
     }
-    pos.needsUpdate = true
+    geo.attributes.position.needsUpdate = true
   })
 
   return (
     <group>
-      <line ref={trailRef} geometry={trailGeo} frustumCulled={false}>
-        <lineBasicMaterial color={color} transparent opacity={0.75} />
+      <line geometry={geo} frustumCulled={false}>
+        <lineBasicMaterial vertexColors transparent blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
       </line>
-      <mesh ref={dotRef}>
-        <sphereGeometry args={[0.10, 10, 10]} />
-        <meshBasicMaterial color={color} />
-      </mesh>
+      <group ref={head}>
+        <mesh>
+          <sphereGeometry args={[size, 16, 16]} />
+          <meshBasicMaterial color={new THREE.Color(color).multiplyScalar(2.2)} toneMapped={false} />
+        </mesh>
+        <mesh>
+          <sphereGeometry args={[size * 2.4, 16, 16]} />
+          <meshBasicMaterial color={color} transparent opacity={0.22} blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
+        </mesh>
+      </group>
     </group>
   )
 }
 
-// ─── Animated photon pulse on a light ray ────────────────────────────────────
+// ─── Central black hole: shadow, photon ring, thin hot disc ──────────────────
 
-function PhotonPulse({ pts, color = '#ffffff', speed = 0.12 }) {
-  const ref  = useRef()
-  const tRef = useRef(Math.random())
-
-  useFrame((_, delta) => {
-    tRef.current = (tRef.current + speed * delta) % 1
-    const idx = Math.floor(tRef.current * (pts.length - 1))
-    const p   = pts[idx]
-    if (ref.current && p) ref.current.position.set(p[0], p[1], p[2])
-  })
-
+function CentralHole({ mass }) {
+  const M = mass * 0.15
+  const y = warpY(0, 0, mass) * 0.92
+  const disc = useRef()
+  useFrame((_, d) => { if (disc.current) disc.current.rotation.z += d * 0.8 })
   return (
-    <mesh ref={ref}>
-      <sphereGeometry args={[0.07, 8, 8]} />
-      <meshBasicMaterial color={color} />
-    </mesh>
+    <group position={[0, y, 0]}>
+      <mesh>
+        <sphereGeometry args={[Math.max(2 * M, 0.12), 32, 32]} />
+        <meshBasicMaterial color="#000000" />
+      </mesh>
+      <mesh>
+        <sphereGeometry args={[Math.max(2 * M, 0.12) * 1.5, 32, 32]} />
+        <meshBasicMaterial color="#ff9a4d" transparent opacity={0.18} blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
+      </mesh>
+      <mesh ref={disc} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[Math.max(3 * M, 0.2), Math.max(6 * M, 0.45), 96]} />
+        <meshBasicMaterial color={[2.2, 1.1, 0.4]} transparent opacity={0.55} blending={THREE.AdditiveBlending} depthWrite={false} side={THREE.DoubleSide} toneMapped={false} />
+      </mesh>
+    </group>
   )
 }
 
 // ─── Main component ──────────────────────────────────────────────────────────
 
+const clip = (pts) => pts.filter((p) => p[0] * p[0] + p[2] * p[2] < (SIZE - 0.6) ** 2)
+
 export default function Geodesics({ mass }) {
-  const starRef = useRef()
-  const tRef    = useRef(0)
-  const M       = mass * 0.15
+  const M = mass * 0.15
 
   const { orbits, lightRays } = useMemo(() => {
-    const orbits = [
-      {
-        pts:   integrateGeodesic(mass, 4.8, 0.09, 2200, 0.013),
-        color: '#7c8cff', speed: 0.16,
-        label: 'Tight precessing orbit',
-      },
-      {
-        pts:   integrateGeodesic(mass, 3.2, 0.18, 2200, 0.013),
-        color: '#f59e0b', speed: 0.26,
-        label: 'Strong GR precession',
-      },
-      {
-        pts:   integrateGeodesic(mass, 7.0, 0.04, 1400, 0.016),
-        color: '#a855f7', speed: 0.10,
-        label: 'Wide stable orbit',
-      },
-    ]
+    // (periapsis, apoapsis, colour). Index rate = 490·L so dφ/dt = L/r² in one shared time scale
+    const spec = [[3.0, 6.5, '#7c8cff'], [2.2, 4.4, '#f59e0b'], [5.0, 8.4, '#c084fc']]
+    // Keep periapses outside ~5.6M so the orbits stay bound as M grows
+    const orbits = spec.map(([rp0, ra0, color]) => {
+      const rp = Math.max(rp0, 5.6 * M), ra = Math.min(Math.max(ra0, rp * 1.6), SIZE - 1.2)
+      return { pts: integrateGeodesic(mass, rp, ra, 4), color, rate: 490 * orbitL(mass, rp, ra) }
+    })
     const lightRays = [
-      { pts: integrateLightRay(mass, 1.3, 0),              color: '#ffffff' },
-      { pts: integrateLightRay(mass, 2.0, Math.PI * 0.55), color: '#a5f3fc' },
-      { pts: integrateLightRay(mass, 3.8, Math.PI * 1.10), color: '#7dd3fc' },
+      { pts: clip(integrateLightRay(mass, 1.3, 0)),              color: '#ffffff' },
+      { pts: clip(integrateLightRay(mass, 2.0, Math.PI * 0.55)), color: '#a5f3fc' },
+      { pts: clip(integrateLightRay(mass, 3.8, Math.PI * 1.10)), color: '#7dd3fc' },
     ]
     return { orbits, lightRays }
   }, [mass])
 
-  // Newtonian reference orbit (same radius as cyan orbit)
-  const newtonPts = useMemo(() => newtonianOrbit(4.8, mass), [mass])
-
-  useFrame((_, delta) => {
-    tRef.current += delta
-    if (starRef.current) {
-      const s = 1 + 0.06 * Math.sin(tRef.current * 2.4)
-      starRef.current.scale.set(s, s, s)
-    }
-  })
+  const newtonPts = useMemo(() => newtonianOrbit(Math.max(3.0, 5.6 * M), Math.max(6.5, Math.max(3.0, 5.6 * M) * 1.6), mass), [mass, M])
 
   return (
     <group>
-      <ambientLight intensity={0.3} />
-      <pointLight position={[0, 5, 0]} intensity={2.2} color="#fb923c" />
-      <pointLight position={[4, 3, 5]} intensity={0.4} color="#7c8cff" />
+      <SpacetimeSheet mass={mass} />
 
-      {/* Curved spacetime background */}
-      <BackgroundSurface mass={mass} />
+      <RadiusRing r={2 * M} mass={mass} color="#f87171" opacity={0.9} width={2} />
+      <RadiusRing r={3 * M} mass={mass} color="#fbbf24" opacity={0.7} width={1.5} />
+      <RadiusRing r={6 * M} mass={mass} color="#818cf8" opacity={0.6} width={1.2} dashed />
 
-      {/* ── Special radii ─────────────────────────────── */}
-      {/* Event horizon r = 2M */}
-      <RadiusRing r={2 * M} mass={mass} color="#ff4040" opacity={0.70} />
-      {/* Photon sphere r = 3M */}
-      <RadiusRing r={3 * M} mass={mass} color="#fbbf24" opacity={0.55} />
-      {/* ISCO r = 6M */}
-      <RadiusRing r={6 * M} mass={mass} color="#7c8cff" opacity={0.30} />
+      {/* Newtonian reference: a closed orbit that never precesses */}
+      <OrbitPath pts={newtonPts} color="#94a3b8" opacity={0.35} dashed />
 
-      {/* ── Newtonian reference (closed circle, no precession) ── */}
-      <OrbitLine pts={newtonPts} color="#94a3b8" opacity={0.20} />
-
-      {/* ── GR geodesic orbits ────────────────────────── */}
       {orbits.map((o, i) => (
         <group key={i}>
-          <OrbitLine pts={o.pts} color={o.color} opacity={0.14} />
-          <GeoParticle pts={o.pts} color={o.color} speed={o.speed} />
+          <OrbitPath pts={o.pts} color={o.color} opacity={0.22} />
+          <Traveller pts={o.pts} color={o.color} rate={o.rate} />
         </group>
       ))}
 
-      {/* ── Bent light rays ───────────────────────────── */}
       {lightRays.map((lr, i) => (
         lr.pts.length > 2 && (
           <group key={`lr${i}`}>
-            <OrbitLine pts={lr.pts} color={lr.color} opacity={0.28} />
-            <PhotonPulse pts={lr.pts} color={lr.color} speed={0.10 + i * 0.03} />
+            <OrbitPath pts={lr.pts} color={lr.color} opacity={0.45} />
+            <Traveller pts={lr.pts} color={lr.color} rate={700} size={0.06} light />
           </group>
         )
       ))}
 
-      {/* ── Central mass ──────────────────────────────── */}
-      <mesh ref={starRef} position={[0, warpY(0, 0, mass) + M * 0.4, 0]}>
-        <sphereGeometry args={[Math.max(M * 1.2, 0.18), 28, 28]} />
-        <meshStandardMaterial
-          color="#fb923c" emissive="#fb923c" emissiveIntensity={1.8}
-          roughness={0} metalness={0}
-        />
-      </mesh>
+      <CentralHole mass={mass} />
     </group>
   )
 }
