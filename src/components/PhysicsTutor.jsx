@@ -217,7 +217,7 @@ function buildContext(moduleId, s) {
     case 'fluid-dynamics':
       return `Re=${s.fluid.reynolds.toFixed(3)}, view=${s.fluid.viewType}`
     case 'acoustic-physics':
-      return `view=${s.acoustic.viewType}, Chladni mode #${s.acoustic.modeIdx}, Lissajous preset #${s.acoustic.presetIdx}, phase δ=${s.acoustic.lissPhase.toFixed(2)}, base f=${s.acoustic.lissBaseFreq} Hz. CYMATICS (2200 sand particles on Chladni nodal lines, modes (1,1)–(3,5), mic input); HARMONICS (8 strings, C3 harmonics); LISSAJOUS (interval ratios 1:1–5:8 with dual-oscillator audio)`
+      return `view=${s.acoustic.viewType}, Chladni mode #${s.acoustic.modeIdx}, Lissajous preset #${s.acoustic.presetIdx}, phase δ=${s.acoustic.lissPhase.toFixed(2)}, base f=${s.acoustic.lissBaseFreq} Hz. CYMATICS (2200 sand particles on Chladni nodal lines of a free square plate, modes (1,2)–(4,5), mic input); HARMONICS (8 strings, C3 harmonics); LISSAJOUS (interval ratios 1:1–5:8 with dual-oscillator audio)`
     case 'wave-mechanics':
       return `view=${s.wave.viewType}, normal mode #${s.wave.modeIdx}, slit mode=${['open', 'single slit', 'double slit'][s.wave.slitMode]}. 128×128 wave mesh, views: ripple tank, interference, diffraction`
     case 'optics':

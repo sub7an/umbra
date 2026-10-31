@@ -14,23 +14,25 @@ const VIEWS = [
   { id: 'lissajous', label: 'Lissajous' },
 ]
 const CAMERA = {
-  cymatics:  [0, 4.5, 3.2],
+  cymatics:  [0, 3.1, 2.1],
   harmonics: [0, 0, 7.5],
   lissajous: [0.8, 0.4, 5.5],
 }
 
 // Chladni modes — f_mn = 100·√(m²+n²)
+// Free square plate modes (m ≠ n; for m = n the Chladni combination vanishes).
+// f = 100·√(m² + n²) Hz keeps frequency rising with pattern complexity.
 const CHLADNI_MODES = [
-  { m:1, n:1, label:'(1,1)', freq:141, note:'D3'  },
-  { m:1, n:2, label:'(1,2)', freq:224, note:'A3'  },
-  { m:2, n:2, label:'(2,2)', freq:283, note:'C#4' },
+  { m:1, n:2, label:'(1,2)', freq:224, note:'A3' },
   { m:1, n:3, label:'(1,3)', freq:316, note:'Eb4' },
   { m:2, n:3, label:'(2,3)', freq:361, note:'F#4' },
-  { m:3, n:3, label:'(3,3)', freq:424, note:'Ab4' },
-  { m:2, n:4, label:'(2,4)', freq:447, note:'A4'  },
-  { m:3, n:4, label:'(3,4)', freq:500, note:'B4'  },
-  { m:4, n:4, label:'(4,4)', freq:566, note:'Db5' },
-  { m:3, n:5, label:'(3,5)', freq:583, note:'D5'  },
+  { m:1, n:4, label:'(1,4)', freq:412, note:'Ab4' },
+  { m:2, n:4, label:'(2,4)', freq:447, note:'A4' },
+  { m:3, n:4, label:'(3,4)', freq:500, note:'B4' },
+  { m:1, n:5, label:'(1,5)', freq:510, note:'C5' },
+  { m:2, n:5, label:'(2,5)', freq:539, note:'C#5' },
+  { m:3, n:5, label:'(3,5)', freq:583, note:'D5' },
+  { m:4, n:5, label:'(4,5)', freq:640, note:'Eb5' },
 ]
 
 // Harmonics of C3 (130.8 Hz)
@@ -77,7 +79,7 @@ function playTone(freq, duration = 1.2, type = 'sine', vol = 0.22) {
 // ═══════════════════════════════════════════════════════════════════════════════
 // CYMATICS SCENE
 // ═══════════════════════════════════════════════════════════════════════════════
-const N_PARTICLES = 2200
+const N_PARTICLES = 3200
 
 function CymaticsScene({ modeIdx, scatterToken }) {
   const meshRef = useRef()
@@ -101,25 +103,30 @@ function CymaticsScene({ modeIdx, scatterToken }) {
     scatter()
   }, [scatter])
 
-  useEffect(() => { scatter() }, [scatterToken, scatter])
+  // Re-scatter on every mode change (pads, mic, tutor, share links), not just pad taps
+  useEffect(() => { scatter() }, [scatterToken, modeIdx, scatter])
 
   useFrame((_, delta) => {
     if (!meshRef.current || !posRef.current) return
     const { m, n } = CHLADNI_MODES[modeIdx]
     const dt   = Math.min(delta, 0.033)
-    const DAMP = 0.86, NOISE = 0.0009, FORCE = 0.055
+    const DAMP = 0.86, NOISE = 0.0012, FORCE = 0.16
 
     for (let i = 0; i < N_PARTICLES; i++) {
       let x = posRef.current[i*2], y = posRef.current[i*2+1]
       let vx = velRef.current[i*2], vy = velRef.current[i*2+1]
-      const sinMX = Math.sin(m * Math.PI * x)
-      const sinNY = Math.sin(n * Math.PI * y)
-      const u     = sinMX * sinNY
-      const sign  = u >= 0 ? 1 : -1
-      const dudx  = m * Math.PI * Math.cos(m * Math.PI * x) * sinNY
-      const dudy  = n * Math.PI * sinMX * Math.cos(n * Math.PI * y)
-      vx = (vx - sign * dudx * FORCE * dt + (Math.random()-0.5)*NOISE) * DAMP
-      vy = (vy - sign * dudy * FORCE * dt + (Math.random()-0.5)*NOISE) * DAMP
+      // Chladni plate (free edges): u = cos(nπX)cos(mπY) − cos(mπX)cos(nπY),
+      // X,Y ∈ [0,1]. Sand is pushed down |u| onto the curved nodal lines.
+      const X = (x + 1) * 0.5, Y = (y + 1) * 0.5
+      const kn = n * Math.PI, km = m * Math.PI
+      const cnX = Math.cos(kn * X), cmY = Math.cos(km * Y), cmX = Math.cos(km * X), cnY = Math.cos(kn * Y)
+      const u    = cnX * cmY - cmX * cnY
+      const dudx = 0.5 * (-kn * Math.sin(kn * X) * cmY + km * Math.sin(km * X) * cnY)
+      const dudy = 0.5 * (-km * cnX * Math.sin(km * Y) + kn * cmX * Math.sin(kn * Y))
+      // Smooth descent of u²/2 (force −u∇u): fades to zero on the nodal line, so sand
+      // settles all along it instead of jittering across and piling up at crossings
+      vx = (vx - u * dudx * FORCE * dt + (Math.random()-0.5)*NOISE) * DAMP
+      vy = (vy - u * dudy * FORCE * dt + (Math.random()-0.5)*NOISE) * DAMP
       x += vx; y += vy
       if (x < -0.97) { x = -0.97; vx =  Math.abs(vx) * 0.3 }
       if (x >  0.97) { x =  0.97; vx = -Math.abs(vx) * 0.3 }
@@ -128,7 +135,7 @@ function CymaticsScene({ modeIdx, scatterToken }) {
       posRef.current[i*2]   = x;  posRef.current[i*2+1]  = y
       velRef.current[i*2]   = vx; velRef.current[i*2+1]  = vy
       dummy.position.set(x, 0.018, y)
-      dummy.scale.setScalar(0.011)
+      dummy.scale.setScalar(0.0095)
       dummy.updateMatrix()
       meshRef.current.setMatrixAt(i, dummy.matrix)
     }
@@ -137,28 +144,20 @@ function CymaticsScene({ modeIdx, scatterToken }) {
 
   return (
     <group>
-      <mesh rotation={[-Math.PI/2, 0, 0]} receiveShadow>
-        <planeGeometry args={[2.05, 2.05]} />
-        <meshStandardMaterial color="#060c16" metalness={0.88} roughness={0.22} />
+      {/* Brushed-steel plate on a central stem (driven from the centre) */}
+      <mesh position={[0, -0.02, 0]}>
+        <boxGeometry args={[2.06, 0.04, 2.06]} />
+        <meshStandardMaterial color="#2b3442" metalness={0.85} roughness={0.38} />
       </mesh>
-      <mesh rotation={[-Math.PI/2, 0, 0]} position={[0, 0.001, 0]}>
-        <planeGeometry args={[2.08, 2.08]} />
-        <meshStandardMaterial color={ACCENT} emissive={ACCENT} emissiveIntensity={0.10} transparent opacity={0.20} />
+      <mesh position={[0, -0.32, 0]}>
+        <cylinderGeometry args={[0.05, 0.08, 0.56, 16]} />
+        <meshStandardMaterial color="#475569" metalness={0.8} roughness={0.3} />
       </mesh>
-      {[[0.95,0.95],[-0.95,0.95],[0.95,-0.95],[-0.95,-0.95]].map(([cx,cy],i) => (
-        <mesh key={i} position={[cx, 0.05, cy]}>
-          <cylinderGeometry args={[0.022, 0.022, 0.09, 8]} />
-          <meshStandardMaterial color="#5a6a7a" metalness={0.9} roughness={0.2} />
-        </mesh>
-      ))}
       <instancedMesh ref={meshRef} args={[undefined, undefined, N_PARTICLES]}>
-        <sphereGeometry args={[1, 5, 5]} />
-        <meshStandardMaterial color="#F5DEB3" emissive="#C8A060" emissiveIntensity={0.30} roughness={0.85} />
+        <sphereGeometry args={[1, 6, 5]} />
+        <meshStandardMaterial color="#f5e6c4" emissive="#8a6a3a" emissiveIntensity={0.25} roughness={0.9} />
       </instancedMesh>
-      <ambientLight intensity={0.25} color="#102030" />
-      <directionalLight position={[1, 5, 2]} intensity={1.6} castShadow />
-      <pointLight position={[0, 3.5, 0]} intensity={0.8} color="#d0e8ff" />
-      <pointLight position={[-2, 1, 2]} intensity={0.4} color={ACCENT} />
+      <directionalLight position={[1, 5, 2]} intensity={0.8} />
     </group>
   )
 }
@@ -322,10 +321,11 @@ function buildEquations(view) {
     case 'cymatics': return {
       domain: 'ACOUSTIC PHYSICS · CHLADNI FIGURES',
       syllabus: 'A-level standing waves · 2D Chladni plate',
-      primaryEq: `u(x,y)=\\sin(m\\pi x)\\sin(n\\pi y)\\cos(\\omega_{mn}t)`,
+      primaryEq: `u=\\cos(n\\pi x)\\cos(m\\pi y)-\\cos(m\\pi x)\\cos(n\\pi y)`,
       derivedEqs: [
-        { label:'Eigenfreq.', eq:`f_{mn}=\\tfrac{c}{2L}\\sqrt{m^2+n^2}` },
-        { label:'Force',      eq:`F=-\\operatorname{sgn}(u)\\nabla|u|`   },
+        { label:'Nodal lines', eq:`u(x,y)=0` },
+        { label:'Mode frequency (this model)', eq:`f_{mn}\\propto\\sqrt{m^2+n^2}` },
+        { label:'Force on sand', eq:`F\\propto-u\\,\\nabla u` },
       ],
       tryThis: [
         'Step through the modes and watch the sand collect on the still nodal lines.',
@@ -376,7 +376,7 @@ function buildEquations(view) {
 function buildExplanation(view) {
   switch (view) {
     case 'cymatics':
-      return 'Tap the tone pads to vibrate the plate at that mode\'s resonant frequency — and hear it. Sand settles on nodal lines where vibration is zero. Enable MIC to let your voice drive the pattern live.'
+      return 'Tap the tone pads to vibrate the plate at that mode\'s resonant frequency — and hear it. Sand settles on the curved nodal lines where the plate does not move — the classic Chladni figures. Enable Use mic to let your voice drive the pattern live.'
     case 'harmonics':
       return 'Click any string to pluck it and hear the note. Each harmonic n vibrates at n × f₀. STRUM ALL plays them as a chord. The ratio of overtones defines the timbre of every musical instrument.'
     case 'lissajous':
@@ -646,7 +646,7 @@ export default function AcousticModule() {
                   >
                     <span style={{fontSize:11,color:modeIdx===i?'#c084fc':'rgba(168,85,247,.65)',letterSpacing:'.08em'}}>{mode.label}</span>
                     <span style={{fontSize:12,color:modeIdx===i?'#e0d0ff':'rgba(200,180,255,.45)',fontWeight:600}}>{mode.freq} Hz</span>
-                    <span style={{fontSize:7,color:'rgba(168,85,247,0.75)',letterSpacing:'.1em'}}>{mode.note}</span>
+                    <span style={{fontSize:11,color:'rgb(var(--c-text-muted))'}}>{mode.note}</span>
                   </button>
                 ))}
               </div>
@@ -657,7 +657,7 @@ export default function AcousticModule() {
                   >
                     <span style={{fontSize:11,color:modeIdx===i+5?'#c084fc':'rgba(168,85,247,.65)',letterSpacing:'.08em'}}>{mode.label}</span>
                     <span style={{fontSize:12,color:modeIdx===i+5?'#e0d0ff':'rgba(200,180,255,.45)',fontWeight:600}}>{mode.freq} Hz</span>
-                    <span style={{fontSize:7,color:'rgba(168,85,247,0.75)',letterSpacing:'.1em'}}>{mode.note}</span>
+                    <span style={{fontSize:11,color:'rgb(var(--c-text-muted))'}}>{mode.note}</span>
                   </button>
                 ))}
               </div>
