@@ -1,5 +1,6 @@
 // Lorentz force: two opposite charges in B field, optional E×B drift.
-// B = B₀ŷ → positive charge gyrates CCW, negative CW; both drift same way under E.
+// B = B₀ŷ → seen from above, the positive charge circles clockwise (ω = −qB/m)
+// and the negative one counter-clockwise; under E both drift the same way (E×B).
 import { useRef, useMemo, useEffect, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
@@ -62,29 +63,70 @@ function makeSim(px, pz, vx, vy) {
   }
 }
 
-// ── B-field arrow grid ────────────────────────────────────────────────────────
-function BFieldGrid({ B }) {
-  const { list, len } = useMemo(() => {
+// ── Magnet: N pole below, S pole above, vertical field lines between ──────────
+const POLE_Y_N = -3.6
+const POLE_Y_S = 4.8
+function MagnetField({ B }) {
+  const lines = useMemo(() => {
     const half = Math.floor(GRID_N / 2)
-    const l = []
+    const pts = []
     for (let i = -half; i <= half; i++) {
       for (let j = -half; j <= half; j++) {
-        if (Math.abs(i) < 1 && Math.abs(j) < 1) continue
-        l.push(new THREE.Vector3(i * GRID_S, -3.0, j * GRID_S))
+        pts.push(i * GRID_S, POLE_Y_N + 0.1, j * GRID_S, i * GRID_S, POLE_Y_S - 0.1, j * GRID_S)
       }
     }
-    return { list: l, len: 0.5 + B * 0.16 }
-  }, [B])
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3))
+    return g
+  }, [])
+  useEffect(() => () => lines.dispose(), [lines])
 
-  const dir = useMemo(() => new THREE.Vector3(0, 1, 0), [])
+  // Arrowheads half-way up each line show the direction of B (strength → opacity)
+  const heads = useMemo(() => {
+    const half = Math.floor(GRID_N / 2)
+    const l = []
+    for (let i = -half; i <= half; i++) for (let j = -half; j <= half; j++) l.push([i * GRID_S, 0.6, j * GRID_S])
+    return l
+  }, [])
+  const op = Math.min(0.85, 0.25 + B * 0.2)
+  const plate = GRID_N * GRID_S + 0.6
+
   return (
     <group>
-      {list.map((pos, i) => (
-        <arrowHelper key={i} args={[dir, pos, len, '#7c3aed', len * 0.28, len * 0.14]} />
+      <lineSegments geometry={lines}>
+        <lineBasicMaterial color="#c4b5fd" transparent opacity={op * 0.6} />
+      </lineSegments>
+      {heads.map((p, i) => (
+        <mesh key={i} position={p}>
+          <coneGeometry args={[0.09, 0.26, 10]} />
+          <meshBasicMaterial color="#c4b5fd" transparent opacity={op} />
+        </mesh>
       ))}
+      {/* Pole plates */}
+      <mesh position={[0, POLE_Y_N - 0.12, 0]}>
+        <boxGeometry args={[plate, 0.24, plate]} />
+        <meshStandardMaterial color="#b91c1c" metalness={0.6} roughness={0.35} />
+      </mesh>
+      <mesh position={[0, POLE_Y_S + 0.12, 0]}>
+        <boxGeometry args={[plate, 0.24, plate]} />
+        <meshStandardMaterial color="#1d4ed8" metalness={0.6} roughness={0.35} transparent opacity={0.55} />
+      </mesh>
+      <Html position={[plate / 2 + 0.4, POLE_Y_N, 0]} center style={{ pointerEvents: 'none' }}>
+        <span style={{ ...LABEL, color: '#fca5a5' }}>N pole</span>
+      </Html>
+      <Html position={[plate / 2 + 0.4, POLE_Y_S, 0]} center style={{ pointerEvents: 'none' }}>
+        <span style={{ ...LABEL, color: '#93c5fd' }}>S pole</span>
+      </Html>
+      <Html position={[plate / 2 + 0.5, 0.6, 0]} center style={{ pointerEvents: 'none' }}>
+        <span style={{ ...LABEL, color: '#ddd6fe' }}>B ↑</span>
+      </Html>
     </group>
   )
 }
+
+const LABEL = { fontFamily: 'Inter, system-ui, sans-serif', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }
+const POS_COL = '#22d3ee'
+const NEG_COL = '#f472b6'
 
 // ── Force arrow helper ────────────────────────────────────────────────────────
 function ForceArrow({ arrowRef, color }) {
@@ -191,7 +233,7 @@ export default function LorentzForce({ bStrength = 1.0 }) {
     if (p1Ref.current) p1Ref.current.position.set(p1[0], p1[1], p1[2])
     if (p2Ref.current) p2Ref.current.position.set(p2[0], p2[1], p2[2])
 
-    writeTrail(trail1Geo, sim1Ref.current, 0.0, 0.9, 0.85)  // cyan
+    writeTrail(trail1Geo, sim1Ref.current, 0.13, 0.83, 0.93)  // cyan, matches POS_COL
     writeTrail(trail2Geo, sim2Ref.current, 1.0, 0.25, 0.55) // pink
 
     updateForceArrow(a1Ref, p1, v1, +1, B)
@@ -207,9 +249,9 @@ export default function LorentzForce({ bStrength = 1.0 }) {
       const vd    = eOn ? (Math.abs(eRef.current / B)).toFixed(2) : '0'
       if (readoutRef.current) {
         readoutRef.current.innerHTML = [
-          `<div>ω<sub>c</sub> = B/m = ${wc}</div>`,
-          `<div>r = v⊥/ω<sub>c</sub> = ${r}</div>`,
-          eOn ? `<div style="color:rgba(251,191,36,0.7)">v<sub>E×B</sub> = ${vd}</div>` : '',
+          `<div>ω<sub>c</sub> = qB/m = ${wc}</div>`,
+          `<div>r = mv⊥/qB = ${r}</div>`,
+          eOn ? `<div style="color:#fbbf24">v<sub>E×B</sub> = E/B = ${vd}</div>` : '',
         ].join('')
       }
     }
@@ -217,11 +259,9 @@ export default function LorentzForce({ bStrength = 1.0 }) {
 
   return (
     <group>
-      <ambientLight intensity={0.08} color="#06041a" />
-      <directionalLight position={[3, 8, 4]} intensity={0.30} color="#dde8ff" />
 
-      {/* B-field arrows */}
-      <BFieldGrid B={bStrength} />
+      {/* Magnet poles + field lines */}
+      <MagnetField B={bStrength} />
 
       {/* E-field arrows (z direction, shown when E is on) */}
       {eOn && [-GRID_S, 0, GRID_S].map((x, i) => (
@@ -236,97 +276,60 @@ export default function LorentzForce({ bStrength = 1.0 }) {
 
       {/* Trails */}
       <line geometry={trail1Geo}>
-        <lineBasicMaterial vertexColors transparent opacity={0.85}
-          blending={THREE.AdditiveBlending} depthWrite={false} />
+        <lineBasicMaterial vertexColors transparent opacity={1}
+          blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
       </line>
       <line geometry={trail2Geo}>
-        <lineBasicMaterial vertexColors transparent opacity={0.85}
-          blending={THREE.AdditiveBlending} depthWrite={false} />
+        <lineBasicMaterial vertexColors transparent opacity={1}
+          blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
       </line>
 
       {/* Positive particle (cyan) */}
       <mesh ref={p1Ref}>
-        <sphereGeometry args={[0.13, 14, 14]} />
-        <meshStandardMaterial color="#7c8cff" emissive="#7c8cff" emissiveIntensity={3.5} roughness={0} />
-        <pointLight color="#7c8cff" intensity={2.0} distance={3.5} decay={2} />
+        <sphereGeometry args={[0.16, 18, 18]} />
+        <meshStandardMaterial color={POS_COL} emissive={POS_COL} emissiveIntensity={3} roughness={0} />
+        <pointLight color={POS_COL} intensity={2.0} distance={3.5} decay={2} />
       </mesh>
 
       {/* Negative particle (pink) */}
       <mesh ref={p2Ref}>
-        <sphereGeometry args={[0.13, 14, 14]} />
-        <meshStandardMaterial color="#f472b6" emissive="#f472b6" emissiveIntensity={3.5} roughness={0} />
+        <sphereGeometry args={[0.16, 18, 18]} />
+        <meshStandardMaterial color={NEG_COL} emissive={NEG_COL} emissiveIntensity={3} roughness={0} />
         <pointLight color="#f472b6" intensity={2.0} distance={3.5} decay={2} />
       </mesh>
 
       {/* Force arrows */}
-      <ForceArrow arrowRef={a1Ref} color={0x00e5c4} />
-      <ForceArrow arrowRef={a2Ref} color={0xf472b6} />
+      <ForceArrow arrowRef={a1Ref} color={0xfde047} />
+      <ForceArrow arrowRef={a2Ref} color={0xfde047} />
 
-      {/* Field labels */}
-      <Html position={[GRID_N/2 * GRID_S + 0.6, -2.8, 0]} style={{ pointerEvents: 'none' }}>
-        <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11,
-          color: '#a855f7', letterSpacing: '0.12em', opacity: 0.8 }}>
-          B = B₀ŷ
-        </div>
-      </Html>
       {eOn && (
         <Html position={[GRID_S * 1.5 + 0.6, 0, -GRID_S * 2]} style={{ pointerEvents: 'none' }}>
-          <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11,
-            color: '#fbbf24', letterSpacing: '0.12em', opacity: 0.8 }}>
-            E = E₀ẑ
-          </div>
+          <span style={{ ...LABEL, color: '#fbbf24' }}>E → (z)</span>
         </Html>
       )}
 
-      {/* Live readout */}
-      <Html position={[4.2, 3.0, 0]} center style={{ pointerEvents: 'none' }}>
+      {/* Readout + E×B toggle, pinned to the scene corner */}
+      <Html calculatePosition={(_, __, size) => [size.width - 216, 52]} style={{ pointerEvents: 'auto' }}>
         <div style={{
-          fontFamily: 'JetBrains Mono,monospace', fontSize: 11,
-          letterSpacing: '0.10em',
-          background: 'rgba(4,6,14,0.88)',
-          border: '1px solid rgba(124,140,255,0.18)',
-          borderRadius: 3, padding: '7px 10px',
+          width: 204, padding: '10px 12px', borderRadius: 10,
+          background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
+          fontFamily: 'Inter, system-ui, sans-serif', color: 'rgb(var(--c-text))', backdropFilter: 'blur(8px)', fontSize: 12,
         }}>
-          <div style={{ fontSize: 11, color: 'rgba(124,140,255,0.75)', marginBottom: 5 }}>F = q(E+v×B)</div>
-          <div style={{ color: '#7c8cff', marginBottom: 2 }}>
-            <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%',
-              background: '#7c8cff', marginRight: 4, verticalAlign: 'middle' }} />
-            q = +1
+          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>F = q(E + v × B)</div>
+          <div style={{ color: 'rgb(var(--c-text-muted))', marginBottom: 8 }}>Charges spiral round the field lines</div>
+          <div style={{ display: 'grid', gap: 4, marginBottom: 8 }}>
+            <span><span style={{ color: POS_COL }}>●</span> q = +1 · clockwise from above</span>
+            <span><span style={{ color: NEG_COL }}>●</span> q = −1 · counter-clockwise</span>
+            <span><span style={{ color: '#fde047' }}>→</span> Magnetic force (always ⟂ v)</span>
           </div>
-          <div style={{ color: '#f472b6', marginBottom: 6 }}>
-            <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%',
-              background: '#f472b6', marginRight: 4, verticalAlign: 'middle' }} />
-            q = −1
-          </div>
-          <div ref={readoutRef} style={{ color: '#a5f3fc', lineHeight: 1.7 }} />
-        </div>
-      </Html>
-
-      {/* E×B drift toggle */}
-      <Html position={[-4.5, 3.0, 0]} center style={{ pointerEvents: 'all' }}>
-        <div style={{
-          fontFamily: 'JetBrains Mono,monospace',
-          background: 'rgba(4,6,14,0.88)',
-          border: '1px solid rgba(251,191,36,0.18)',
-          borderRadius: 3, padding: '7px 10px',
-        }}>
-          <div style={{ fontSize: 11, color: 'rgba(251,191,36,0.75)', letterSpacing: '0.12em', marginBottom: 5 }}>
-            E×B DRIFT
-          </div>
-          <button onClick={() => setEOn(v => !v)} style={{
-            fontFamily: 'JetBrains Mono,monospace',
-            fontSize: 11, letterSpacing: '0.12em',
-            padding: '4px 10px',
-            background: eOn ? 'rgba(251,191,36,0.12)' : 'rgba(4,6,14,0.6)',
-            border: `1px solid ${eOn ? 'rgba(251,191,36,0.45)' : 'rgba(251,191,36,0.15)'}`,
-            color: eOn ? '#fbbf24' : 'rgba(251,191,36,0.4)',
-            borderRadius: 2, cursor: 'pointer', display: 'block', width: '100%', marginBottom: 4,
-          }}>
-            {eOn ? 'E ON' : 'E OFF'}
+          <div ref={readoutRef} style={{ fontFamily: 'JetBrains Mono, monospace', lineHeight: 1.7, borderTop: '1px solid rgb(var(--c-border))', paddingTop: 6 }} />
+          <button type="button" onClick={() => setEOn(v => !v)} aria-pressed={eOn} className="ui-btn w-full mt-2 h-8"
+            style={eOn ? { color: '#fbbf24', borderColor: 'rgba(251,191,36,0.5)' } : undefined}>
+            {eOn ? 'Electric field on (E × B drift)' : 'Add electric field'}
           </button>
           {eOn && (
-            <div style={{ fontSize: 7, color: 'rgba(251,191,36,0.75)', lineHeight: 1.6 }}>
-              v<sub>D</sub> = E×B/B²<br />charge-independent
+            <div style={{ marginTop: 6, color: 'rgb(var(--c-text-muted))' }}>
+              Both charges drift the same way: v<sub>D</sub> = E × B / B², independent of q.
             </div>
           )}
         </div>
