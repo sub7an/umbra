@@ -221,6 +221,8 @@ const useModuleStore = create((set) => ({
   optics: {
     viewType: 'prism', // 'prism' | 'lens' | 'grating'
     focalLength: 2.5,  // lens focal length f ∈ [1.5, 5]
+    objectDist: 5.0,   // lens lab object distance u ∈ [0.8, 8]
+    gratingLines: 600, // grating lines per mm ∈ [200, 1200]
   },
 
   setOpticsView: (v) =>
@@ -229,7 +231,13 @@ const useModuleStore = create((set) => ({
   setOpticsFocalLength: (v) =>
     set((state) => ({ optics: { ...state.optics, focalLength: Math.max(1.5, Math.min(5.0, v)) } })),
 
-  resetOptics: () => set({ optics: { viewType: 'prism', focalLength: 2.5 } }),
+  setOpticsObjectDist: (v) =>
+    set((state) => ({ optics: { ...state.optics, objectDist: Math.max(0.8, Math.min(8.0, v)) } })),
+
+  setOpticsGratingLines: (v) =>
+    set((state) => ({ optics: { ...state.optics, gratingLines: Math.round(Math.max(200, Math.min(1200, v))) } })),
+
+  resetOptics: () => set({ optics: { viewType: 'prism', focalLength: 2.5, objectDist: 5.0, gratingLines: 600 } }),
 
   // Acoustic Physics state
   acoustic: {

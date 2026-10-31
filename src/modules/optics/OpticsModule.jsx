@@ -18,8 +18,8 @@ const VIEWS = [
 
 const CAMERA = {
   prism:   [-1.5, 10, 11],
-  lens:    [0, 3, 9],
-  grating: [5, 3, 8],
+  lens:    [0.5, 1.4, 16.5],
+  grating: [0, 0, 13.5],
 }
 
 function buildEquations(view) {
@@ -82,8 +82,8 @@ function buildEquations(view) {
 function buildExplanation(view) {
   switch (view) {
     case 'prism': return '48 spectral rays (380–720 nm) pass through a glass prism. Cauchy dispersion n(λ) = A + B/λ² gives higher n for shorter wavelengths — violet bends most, red least — creating a rainbow on the projection screen. Use the Prism angle slider to rotate the prism: shallow angles show a narrow spread, steep angles push internal rays past the critical angle θ_c = arcsin(1/n) and trigger Total Internal Reflection (TIR), trapping those wavelengths inside.'
-    case 'lens': return 'A biconvex lens refracts parallel rays through its curved surfaces. Paraxial rays (near the axis) all converge at the focal point f. The thin lens equation 1/f = 1/dₒ + 1/dᵢ relates object and image distances. Focal length is positive for converging lenses. Rays further from the axis suffer spherical aberration — they cross the axis slightly closer, which is why real lenses need multiple elements.'
-    case 'grating': return 'A diffraction grating has thousands of equally-spaced slits (here: 600 lines/mm, d = 1.67 µm). Constructive interference occurs where path difference = mλ: d·sinθ = mλ. Each wavelength diffracts at a different angle — white light is spread into orders m = 0, ±1, ±2. The 0th order is straight-through, ±1st orders are the most intense. Larger |m| means wider angular spread.'
+    case 'lens': return 'An object arrow (amber) stands on an optical bench in front of a converging lens. Three principal rays leave its tip: one parallel to the axis bends through the far focal point F′, one through the centre goes straight on, and one through the near focal point F leaves parallel. Where they meet is the image (cyan), at dᵢ given by 1/f = 1/dₒ + 1/dᵢ. Slide the object inside f and the rays diverge after the lens: trace them backwards (dashed) and they appear to come from a virtual, upright, magnified image on the object side. That is a magnifying glass.'
+    case 'grating': return 'A diffraction grating has thousands of equally-spaced slits (600 lines/mm by default, d = 1.67 µm). Constructive interference occurs where path difference = mλ: d·sinθ = mλ. Each wavelength diffracts at a different angle — white light is spread into orders m = 0, ±1, ±2. The 0th order is straight-through, ±1st orders are the most intense. Larger |m| means wider angular spread.'
     default: return ''
   }
 }
@@ -93,6 +93,14 @@ export default function OpticsModule() {
   const focalLength    = useModuleStore((s) => s.optics.focalLength)
   const setView        = useModuleStore((s) => s.setOpticsView)
   const setFocalLength = useModuleStore((s) => s.setOpticsFocalLength)
+  const objectDist     = useModuleStore((s) => s.optics.objectDist)
+  const setObjectDist  = useModuleStore((s) => s.setOpticsObjectDist)
+  const gratingLines   = useModuleStore((s) => s.optics.gratingLines)
+  const setGratingLines = useModuleStore((s) => s.setOpticsGratingLines)
+
+  // Thin-lens image for the live readouts
+  const imgV = Math.abs(objectDist - focalLength) < 0.03 ? Infinity : (objectDist * focalLength) / (objectDist - focalLength)
+  const imgM = isFinite(imgV) ? -imgV / objectDist : Infinity
 
   const eq = buildEquations(view)
 
@@ -103,7 +111,7 @@ export default function OpticsModule() {
       views={VIEWS}
       activeView={view}
       onViewChange={setView}
-      readout={view === 'lens' ? <>f = {focalLength.toFixed(1)} · P = {(1 / focalLength).toFixed(2)} D</> : view === 'prism' ? 'n(λ) = A + B/λ²' : 'd sin θ = mλ'}
+      readout={view === 'lens' ? <>f = {focalLength.toFixed(1)} · u = {objectDist.toFixed(1)}</> : view === 'prism' ? 'n(λ) = A + B/λ²' : <>{gratingLines} lines/mm · d = {(1000 / gratingLines).toFixed(2)} µm</>}
       lesson={
         <InfoPanel
           domain={eq.domain}
@@ -119,8 +127,13 @@ export default function OpticsModule() {
         <ControlPanel
           title="Parameters"
           footer="Geometric ray tracing · Cauchy dispersion"
-          onReset={view === 'lens' ? () => setFocalLength(2.5) : undefined}
-          controls={view === 'lens' ? [{ label: 'Focal length f', min: 1.5, max: 5.0, step: 0.1, value: focalLength, onChange: setFocalLength }] : []}
+          onReset={view === 'lens' ? () => { setFocalLength(2.5); setObjectDist(5.0) } : view === 'grating' ? () => setGratingLines(600) : undefined}
+          controls={view === 'lens' ? [
+            { label: 'Focal length f', min: 1.5, max: 5.0, step: 0.1, value: focalLength, onChange: setFocalLength },
+            { label: 'Object distance u', min: 0.8, max: 8.0, step: 0.1, value: objectDist, onChange: setObjectDist },
+          ] : view === 'grating' ? [
+            { label: 'Lines per mm', min: 200, max: 1200, step: 50, value: gratingLines, onChange: setGratingLines },
+          ] : []}
         >
           {view === 'lens' && (
             <dl className="grid grid-cols-2 gap-2">
@@ -132,15 +145,27 @@ export default function OpticsModule() {
                 <dt className="text-[12px] text-text-dim">Power</dt>
                 <dd className="font-mono-data text-[14px] text-text-primary">{(1 / focalLength).toFixed(2)} D</dd>
               </div>
+              <div className="rounded-md bg-ground border border-border-subtle px-3 py-2">
+                <dt className="text-[12px] text-text-dim">Image distance v</dt>
+                <dd className="font-mono-data text-[14px] text-text-primary">{isFinite(imgV) ? imgV.toFixed(2) : '∞'}</dd>
+              </div>
+              <div className="rounded-md bg-ground border border-border-subtle px-3 py-2">
+                <dt className="text-[12px] text-text-dim">Magnification</dt>
+                <dd className="font-mono-data text-[14px] text-text-primary">{isFinite(imgM) ? imgM.toFixed(2) : '∞'}</dd>
+              </div>
+              <div className="col-span-2 rounded-md bg-ground border border-border-subtle px-3 py-2">
+                <dt className="text-[12px] text-text-dim">Image</dt>
+                <dd className="text-[14px] text-text-primary">{!isFinite(imgV) ? 'At infinity: rays leave parallel' : imgV > 0 ? `Real, inverted, ${Math.abs(imgM) > 1 ? 'magnified' : Math.abs(imgM) < 1 ? 'diminished' : 'same size'}` : 'Virtual, upright, magnified'}</dd>
+              </div>
             </dl>
           )}
         </ControlPanel>
       }
     >
-      <SceneWrapper cameraPosition={CAMERA[view]} showGrid={false} minDist={3} maxDist={22}>
+      <SceneWrapper cameraPosition={CAMERA[view]} idleRotate={view === 'prism'} showGrid={false} minDist={3} maxDist={26}>
         {view === 'prism'   && <RayTracer />}
-        {view === 'lens'    && <LensLab f={focalLength} />}
-        {view === 'grating' && <DiffractionGrating />}
+        {view === 'lens'    && <LensLab f={focalLength} u={objectDist} />}
+        {view === 'grating' && <DiffractionGrating linesPerMm={gratingLines} />}
       </SceneWrapper>
       <SceneCaption>{VIEWS.find((v) => v.id === view)?.label}</SceneCaption>
     </ModuleShell>

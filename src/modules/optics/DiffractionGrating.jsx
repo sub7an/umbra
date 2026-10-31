@@ -1,7 +1,21 @@
-// 3D diffraction grating: spectral orders + animated photon pulses
-import { useMemo, useRef } from 'react'
+// Diffraction grating spectroscope, seen from above.
+//
+// A collimated white beam hits a ruled grating. Each order m fans out as a
+// continuous rainbow sheet at the angles d·sinθ = mλ (380–700 nm) and lands on
+// a curved screen, where the spectrum is painted as bright bands. The zeroth
+// order goes straight through, white. Higher orders are dimmer, spread wider,
+// and vanish once sinθ would exceed 1. Changing the line density changes d and
+// re-fans every order.
+import { useMemo, useRef, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+
+const WL_MIN = 380, WL_MAX = 700
+const N_WL   = 96
+const R      = 5.0          // screen radius (centred on the grating)
+const SRC_X  = -4.2
+const BEAM_W = 0.28
+const MAX_M  = 4
 
 function wlToRGB(wl) {
   let r, g, b
@@ -11,167 +25,266 @@ function wlToRGB(wl) {
   else if (wl < 580) { r = (wl - 510) / 70; g = 1; b = 0 }
   else if (wl < 645) { r = 1; g = -(wl - 645) / 65; b = 0 }
   else               { r = 1; g = 0; b = 0 }
-  const f = wl < 420 ? 0.3 + 0.7 * (wl - 380) / 40 : wl > 700 ? 0.3 + 0.7 * (720 - wl) / 20 : 1
+  const f = wl < 420 ? 0.3 + 0.7 * (wl - 380) / 40 : wl > 680 ? 0.3 + 0.7 * (WL_MAX - wl) / 20 : 1
   return [r * f, g * f, b * f]
 }
 
-const D       = 600e-9
-const N_WL    = 20
-const ORDERS  = [-2, -1, 0, 1, 2]
-const GRATING_X = 0
+// Relative order brightness: single-slit envelope with slit width ≈ d/3
+function orderWeight(m) {
+  if (m === 0) return 1
+  const x = Math.PI * m / 3
+  return (Math.sin(x) / x) ** 2
+}
 
-function buildGratingData() {
-  const segs  = []
-  const paths = []   // for photon animation
-
-  for (let wi = 0; wi < N_WL; wi++) {
-    const wl = (380 + wi * (340 / (N_WL - 1))) * 1e-9
-    const [r, g, b] = wlToRGB(wl / 1e-9)
-    const col = new THREE.Color(r, g, b)
-    const y   = (wi / (N_WL - 1) - 0.5) * 3.5
-
-    // Incident ray
-    const incFrom = new THREE.Vector3(-5, y, 0)
-    const incTo   = new THREE.Vector3(GRATING_X, y, 0)
-    segs.push({ from: incFrom, to: incTo, color: new THREE.Color('#ffe8a0'), opacity: 0.5 })
-
-    for (const m of ORDERS) {
-      const sinTheta = m * wl / D
-      if (Math.abs(sinTheta) > 1) continue
-      const theta    = Math.asin(sinTheta)
-      const cosTheta = Math.cos(theta)
-      const len      = 5
-      const diffFrom = new THREE.Vector3(GRATING_X, y, 0)
-      const diffTo   = new THREE.Vector3(GRATING_X + cosTheta * len, y, Math.sin(theta) * len)
-      segs.push({ from: diffFrom, to: diffTo, color: col.clone(), opacity: m === 0 ? 0.4 : 0.75 })
-
-      // Build photon path (incident → grating → diffracted end) for animated subset
-      if (wi % 4 === 0) {
-        paths.push({
-          points: [incFrom.clone(), incTo.clone(), diffTo.clone()],
-          color:  m === 0 ? new THREE.Color('#ffe8a0') : col.clone(),
-          delay:  (wi * ORDERS.length + ORDERS.indexOf(m)) / (N_WL * ORDERS.length),
-        })
-      }
-    }
+// Angles θ(λ) for order m, or null where the order doesn't exist
+function orderAngles(m, dNm) {
+  const out = []
+  for (let i = 0; i < N_WL; i++) {
+    const wl = WL_MIN + (i / (N_WL - 1)) * (WL_MAX - WL_MIN)
+    const s = (m * wl) / dNm
+    out.push(Math.abs(s) <= 1 ? { wl, th: Math.asin(s) } : null)
   }
-  return { segs, paths }
+  return out
 }
 
-// ─── Animated grating surface ────────────────────────────────────────────────
-function GratingSurface() {
-  const meshRef = useRef()
-  const tRef    = useRef(0)
-
-  const geo = useMemo(() => {
-    const W = 64, H = 32
-    const pos = new Float32Array(W * H * 3)
-    for (let j = 0; j < H; j++) {
-      for (let i = 0; i < W; i++) {
-        const k = (j * W + i) * 3
-        pos[k]     = 0
-        pos[k + 1] = (j / (H - 1) - 0.5) * 4
-        pos[k + 2] = (i / (W - 1) - 0.5) * 6
-      }
+// ── Rainbow fans (grating → screen) and the painted spectrum on the screen ───
+function Spectra({ dNm }) {
+  const { fan, bands } = useMemo(() => {
+    const fp = [], fc = [], fi = []
+    const bp = [], bc = [], bi = []
+    for (let m = -MAX_M; m <= MAX_M; m++) {
+      if (m === 0) continue
+      const ang = orderAngles(m, dNm)
+      const w = orderWeight(m)
+      let prev = null
+      ang.forEach((a) => {
+        if (!a) { prev = null; return }
+        const [r, g, b] = wlToRGB(a.wl)
+        const cx = Math.cos(a.th), cy = Math.sin(a.th)
+        // Fan: a thin triangle from the grating spot to this point on the screen
+        const base = fp.length / 3
+        fp.push(0, 0, 0, cx * R, cy * R, 0)
+        const k0 = 0.16 * w, k1 = 0.05 * w
+        fc.push(r * k0, g * k0, b * k0, r * k1, g * k1, b * k1)
+        if (prev !== null) fi.push(prev, prev + 1, base + 1, prev, base + 1, base)
+        // Screen band: a short radial quad at the screen
+        const bb = bp.length / 3
+        bp.push(cx * (R - 0.12), cy * (R - 0.12), 0.01, cx * (R + 0.02), cy * (R + 0.02), 0.01)
+        const kb = 1.6 * Math.max(w, 0.15)
+        bc.push(r * kb, g * kb, b * kb, r * kb * 0.6, g * kb * 0.6, b * kb * 0.6)
+        if (prev !== null) bi.push(bb - 2, bb - 1, bb + 1, bb - 2, bb + 1, bb)
+        prev = base
+      })
     }
-    const idxArr = new Uint32Array((W - 1) * (H - 1) * 6)
-    let p = 0
-    for (let j = 0; j < H - 1; j++) {
-      for (let i = 0; i < W - 1; i++) {
-        const a = j*W+i, b = a+1, c = a+W, d = c+1
-        idxArr[p++] = a; idxArr[p++] = c; idxArr[p++] = b
-        idxArr[p++] = b; idxArr[p++] = c; idxArr[p++] = d
-      }
+    const mk = (p, c, i) => {
+      const g = new THREE.BufferGeometry()
+      g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3))
+      g.setAttribute('color', new THREE.Float32BufferAttribute(c, 3))
+      g.setIndex(i)
+      return g
     }
-    const g = new THREE.BufferGeometry()
-    g.setAttribute('position', new THREE.BufferAttribute(pos, 3))
-    g.setIndex(new THREE.BufferAttribute(idxArr, 1))
-    return g
-  }, [])
-
-  useFrame((_, delta) => {
-    tRef.current += delta * 2
-    if (!meshRef.current) return
-    const attr = meshRef.current.geometry.attributes.position
-    const W = 64, H = 32
-    for (let j = 0; j < H; j++) {
-      for (let i = 0; i < W; i++) {
-        attr.setX(j * W + i, Math.sin(i / (W - 1) * Math.PI * 16 + tRef.current) * 0.04)
-      }
-    }
-    attr.needsUpdate = true
-  })
-
-  return (
-    <mesh ref={meshRef} geometry={geo}>
-      <meshBasicMaterial color="#fcd34d" wireframe transparent opacity={0.12} side={THREE.DoubleSide} />
-    </mesh>
-  )
-}
-
-// ─── Photon pulse ────────────────────────────────────────────────────────────
-function Photon({ points, color, delay }) {
-  const ref  = useRef()
-  const tRef = useRef(delay)
-
-  useFrame((_, delta) => {
-    tRef.current = (tRef.current + 0.18 * delta) % 1
-    const t  = tRef.current
-    const fi = t * (points.length - 1)
-    const si = Math.floor(fi)
-    const fr = fi - si
-    if (ref.current && si < points.length - 1) {
-      ref.current.position.lerpVectors(points[si], points[si + 1], fr)
-    }
-  })
-
-  return (
-    <mesh ref={ref}>
-      <sphereGeometry args={[0.04, 6, 6]} />
-      <meshBasicMaterial color={color} />
-    </mesh>
-  )
-}
-
-// ─── Main component ──────────────────────────────────────────────────────────
-export default function DiffractionGrating() {
-  const { segs, paths } = useMemo(() => buildGratingData(), [])
-
-  const lineGeos = useMemo(() => segs.map((s) => ({
-    geo:     new THREE.BufferGeometry().setFromPoints([s.from, s.to]),
-    color:   s.color,
-    opacity: s.opacity,
-  })), [segs])
+    return { fan: mk(fp, fc, fi), bands: mk(bp, bc, bi) }
+  }, [dNm])
+  useEffect(() => () => { fan.dispose(); bands.dispose() }, [fan, bands])
 
   return (
     <group>
-      <ambientLight intensity={0.08} color="#0a0808" />
-      <directionalLight position={[0, 8, 0]} intensity={0.3} color="#fff8d0" />
-      <pointLight position={[-4, 0, 0]} intensity={0.5} color="#fff8d0" distance={10} decay={2} />
-
-      <GratingSurface />
-
-      {/* Grating barrier */}
-      <mesh position={[0, 0, 0]}>
-        <boxGeometry args={[0.06, 4.5, 6.5]} />
-        <meshBasicMaterial color="#222018" transparent opacity={0.9} />
+      <mesh geometry={fan}>
+        <meshBasicMaterial vertexColors transparent blending={THREE.AdditiveBlending} depthWrite={false} side={THREE.DoubleSide} toneMapped={false} />
       </mesh>
-      <mesh position={[0, 0, 0]}>
-        <boxGeometry args={[0.07, 4.5, 6.5]} />
-        <meshBasicMaterial color="#fcd34d" wireframe transparent opacity={0.10} />
+      <mesh geometry={bands}>
+        <meshBasicMaterial vertexColors transparent blending={THREE.AdditiveBlending} depthWrite={false} side={THREE.DoubleSide} toneMapped={false} />
       </mesh>
+    </group>
+  )
+}
 
-      {/* Spectral ray lines */}
-      {lineGeos.map((l, i) => (
-        <line key={i} geometry={l.geo}>
-          <lineBasicMaterial color={l.color} transparent opacity={l.opacity} />
-        </line>
-      ))}
+// ── White beam in, zeroth order out ───────────────────────────────────────────
+function WhiteBeam() {
+  const geo = useMemo(() => {
+    // Incoming beam (source → grating) and the straight-through zeroth order
+    const p = [], c = []
+    const strip = (x0, x1, a0, a1) => {
+      p.push(x0, -BEAM_W / 2, 0, x0, BEAM_W / 2, 0, x1, BEAM_W / 2, 0, x0, -BEAM_W / 2, 0, x1, BEAM_W / 2, 0, x1, -BEAM_W / 2, 0)
+      c.push(a0, a0, a0, a0, a0, a0, a1, a1, a1, a0, a0, a0, a1, a1, a1, a1, a1, a1)
+    }
+    strip(SRC_X + 0.4, 0, 0.35, 0.55)
+    strip(0, R, 0.4, 0.18)
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3))
+    g.setAttribute('color', new THREE.Float32BufferAttribute(c, 3))
+    return g
+  }, [])
+  useEffect(() => () => geo.dispose(), [geo])
+  return (
+    <group>
+      <mesh geometry={geo}>
+        <meshBasicMaterial vertexColors transparent blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
+      </mesh>
+      {/* Bright core line */}
+      <mesh position={[(SRC_X + 0.4 + R) / 2, 0, 0.01]}>
+        <planeGeometry args={[R - SRC_X - 0.4, 0.03]} />
+        <meshBasicMaterial color={[1.6, 1.55, 1.4]} toneMapped={false} />
+      </mesh>
+      {/* Zeroth-order spot on the screen */}
+      <mesh position={[R - 0.05, 0, 0.02]}>
+        <planeGeometry args={[0.14, BEAM_W * 1.2]} />
+        <meshBasicMaterial color={[2.4, 2.4, 2.3]} toneMapped={false} />
+      </mesh>
+    </group>
+  )
+}
 
-      {/* Animated photon pulses on diffracted rays */}
-      {paths.map((p, i) => (
-        <Photon key={i} points={p.points} color={p.color} delay={p.delay} />
+// ── Photons: sparks running outward along random wavelengths and orders ──────
+const N_SPARK = 220
+function Sparks({ dNm }) {
+  const geo = useMemo(() => {
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(N_SPARK * 3), 3))
+    g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(N_SPARK * 3), 3))
+    return g
+  }, [])
+  const state = useMemo(() => Array.from({ length: N_SPARK }, () => ({ s: Math.random(), th: 0, col: [1, 1, 1] })), [])
+  useEffect(() => () => geo.dispose(), [geo])
+
+  const respawn = (p) => {
+    // Pick an order weighted by brightness, then a wavelength that exists in it
+    for (let tries = 0; tries < 20; tries++) {
+      const m = Math.round((Math.random() * 2 - 1) * MAX_M)
+      if (Math.random() > orderWeight(m) + 0.05) continue
+      const wl = WL_MIN + Math.random() * (WL_MAX - WL_MIN)
+      const sn = (m * wl) / dNm
+      if (Math.abs(sn) > 1) continue
+      p.th = Math.asin(sn)
+      p.col = m === 0 ? [1.6, 1.6, 1.5] : wlToRGB(wl).map((v) => v * 2.2)
+      return
+    }
+    p.th = 0; p.col = [1.6, 1.6, 1.5]
+  }
+  useEffect(() => { state.forEach(respawn) }, [dNm]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useFrame((_, delta) => {
+    const pos = geo.attributes.position.array, col = geo.attributes.color.array
+    const total = -SRC_X + R
+    state.forEach((p, i) => {
+      p.s += Math.min(delta, 0.05) * 0.16
+      if (p.s > 1) { p.s -= 1; respawn(p) }
+      const d = p.s * total
+      if (d < -SRC_X) { pos[i * 3] = SRC_X + d; pos[i * 3 + 1] = (Math.random() - 0.5) * BEAM_W * 0.6 }
+      else { const r = d + SRC_X; pos[i * 3] = Math.cos(p.th) * r; pos[i * 3 + 1] = Math.sin(p.th) * r }
+      pos[i * 3 + 2] = 0.02
+      const before = d < -SRC_X
+      col[i * 3] = before ? 1.4 : p.col[0]; col[i * 3 + 1] = before ? 1.4 : p.col[1]; col[i * 3 + 2] = before ? 1.3 : p.col[2]
+    })
+    geo.attributes.position.needsUpdate = true
+    geo.attributes.color.needsUpdate = true
+  })
+
+  return (
+    <points geometry={geo} frustumCulled={false}>
+      <pointsMaterial size={0.07} vertexColors transparent depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
+    </points>
+  )
+}
+
+// ── Hardware: lamp + slit, grating with ruling, curved screen ────────────────
+const RULING_FRAG = /* glsl */`
+  uniform float uLines;
+  varying vec2 vUv;
+  void main() {
+    float l = abs(fract(vUv.y * uLines) - 0.5);
+    float rule = smoothstep(0.18, 0.32, l);
+    // Rulings shimmer with a faint rainbow, as a real grating does
+    vec3 iri = 0.5 + 0.5 * cos(6.2831853 * (vUv.y * 2.0 + vec3(0.0, 0.33, 0.67)));
+    vec3 col = mix(vec3(0.05, 0.06, 0.09), vec3(0.25, 0.28, 0.35) + iri * 0.12, rule);
+    gl_FragColor = vec4(pow(col, vec3(2.2)), 1.0);
+  }
+`
+const RULING_VERT = /* glsl */`
+  varying vec2 vUv;
+  void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+`
+
+function Grating({ linesPerMm }) {
+  const mat = useMemo(() => new THREE.ShaderMaterial({
+    vertexShader: RULING_VERT, fragmentShader: RULING_FRAG,
+    uniforms: { uLines: { value: 60 } },
+  }), [])
+  useEffect(() => () => mat.dispose(), [mat])
+  // Visual ruling count scales with line density (not 1:1, which would alias)
+  useEffect(() => { mat.uniforms.uLines.value = 20 + linesPerMm / 15 }, [mat, linesPerMm])
+  return (
+    <group>
+      <mesh position={[0, 0, -0.02]}>
+        <boxGeometry args={[0.16, 3.0, 0.3]} />
+        <meshStandardMaterial color="#1e293b" metalness={0.85} roughness={0.3} />
+      </mesh>
+      <mesh position={[0.085, 0, 0.0]} rotation={[0, 0, 0]} material={mat}>
+        <planeGeometry args={[0.05, 2.6]} />
+      </mesh>
+      <mesh position={[0, 0, 0.14]} material={mat}>
+        <planeGeometry args={[0.14, 2.6]} />
+      </mesh>
+    </group>
+  )
+}
+
+function Lamp() {
+  return (
+    <group position={[SRC_X, 0, 0]}>
+      <mesh position={[-0.35, 0, 0]}>
+        <boxGeometry args={[0.7, 0.9, 0.5]} />
+        <meshStandardMaterial color="#1e293b" metalness={0.8} roughness={0.35} />
+      </mesh>
+      <mesh position={[0.02, 0, 0.26]}>
+        <planeGeometry args={[0.06, BEAM_W]} />
+        <meshBasicMaterial color={[2.4, 2.35, 2.1]} toneMapped={false} />
+      </mesh>
+      {/* Collimating slit jaws */}
+      {[1, -1].map((s) => (
+        <mesh key={s} position={[0.45, s * (BEAM_W / 2 + 0.25), 0]}>
+          <boxGeometry args={[0.08, 0.5, 0.4]} />
+          <meshStandardMaterial color="#334155" metalness={0.9} roughness={0.25} />
+        </mesh>
       ))}
+    </group>
+  )
+}
+
+function Screen() {
+  const geo = useMemo(() => {
+    // Arc of ±80° at radius R, a thin ribbon facing the grating
+    const p = [], idx = []
+    const N = 160
+    for (let i = 0; i <= N; i++) {
+      const a = (-80 + (i / N) * 160) * Math.PI / 180
+      p.push(Math.cos(a) * (R + 0.02), Math.sin(a) * (R + 0.02), -0.05, Math.cos(a) * (R + 0.22), Math.sin(a) * (R + 0.22), -0.05)
+      if (i > 0) { const b = i * 2; idx.push(b - 2, b - 1, b + 1, b - 2, b + 1, b) }
+    }
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3))
+    g.setIndex(idx)
+    return g
+  }, [])
+  useEffect(() => () => geo.dispose(), [geo])
+  return (
+    <mesh geometry={geo}>
+      <meshStandardMaterial color="#111827" metalness={0.4} roughness={0.7} side={THREE.DoubleSide} />
+    </mesh>
+  )
+}
+
+export default function DiffractionGrating({ linesPerMm = 600 }) {
+  const dNm = 1e6 / linesPerMm
+  const ref = useRef()
+  return (
+    <group ref={ref} position={[-1.6, 0, 0]}>
+      <Screen />
+      <Lamp />
+      <WhiteBeam />
+      <Spectra dNm={dNm} />
+      <Sparks dNm={dNm} />
+      <Grating linesPerMm={linesPerMm} />
     </group>
   )
 }
