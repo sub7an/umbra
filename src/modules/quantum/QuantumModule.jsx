@@ -23,7 +23,7 @@ const VIEWS = [
 
 const CAMERA_POSITIONS = {
   blochsphere:   [1.5, 1.1, 3.1],
-  particleinbox: [0, 0.8, 7],
+  particleinbox: [0, 1.8, 9.5],
   doubleslit:    [0, 0, 11],
   entanglement:  [0, 1.2, 9],
   tunneling:     [0, 1.8, 10],

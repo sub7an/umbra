@@ -1,6 +1,6 @@
 import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Html, Line } from '@react-three/drei'
+import { Line } from '@react-three/drei'
 import * as THREE from 'three'
 import useModuleStore from '../../store/useModuleStore'
 import { particleInBoxWavefunction, particleInBoxEnergy } from './qmMath'
@@ -14,31 +14,69 @@ const Z_SPREAD  = 0.50
 const WAVE_AMP  = 1.0    // visual amplitude of the drawn wavefunction curve
 
 // 3D surface mesh constants
-const SURF_NX     = 64
-const SURF_NZ     = 28
+const SURF_NX     = 180
+const SURF_NZ     = 64
 const SURF_AMP    = 0.88
 const SURF_Z_SPAN = 3.2
 
+// The surface is displaced on the GPU: height h(x, z) = ψ-quantity(x) · taper(z),
+// with analytic normals so it can be properly lit.
 const SURF_VERT = /* glsl */`
+  uniform float uN, uCos, uSin, uMode, uAmp;
   varying float vH;
+  varying vec3  vNormal;
+  varying vec3  vView;
+  const float LEFT = ${BOX_LEFT.toFixed(2)}, W = ${BOX_W.toFixed(2)}, ZS = ${SURF_Z_SPAN.toFixed(2)};
+  const float PI = 3.14159265;
   void main() {
-    vH = position.y;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    vec3 p = position;
+    float xi = (p.x - LEFT) / W;
+    float k = uN * PI;
+    float psi  = sqrt(2.0) * sin(k * xi);
+    float dpsi = sqrt(2.0) * k / W * cos(k * xi);
+    float tp   = sin(PI * (p.z / ZS + 0.5));
+    float dtp  = PI / ZS * cos(PI * (p.z / ZS + 0.5));
+    float f, df;
+    if (uMode < 0.5)      { f = psi * psi * 0.52; df = 2.0 * psi * dpsi * 0.52; }
+    else if (uMode < 1.5) { f = psi * uCos;       df = dpsi * uCos; }
+    else                  { f = psi * uSin;       df = dpsi * uSin; }
+    float h = f * tp * uAmp;
+    p.y = h;
+    vH = h;
+    vec3 n = normalize(vec3(-df * tp * uAmp, 1.0, -f * dtp * uAmp));
+    vNormal = normalize(normalMatrix * n);
+    vec4 mv = modelViewMatrix * vec4(p, 1.0);
+    vView = -mv.xyz;
+    gl_Position = projectionMatrix * mv;
   }
 `
 
 const SURF_FRAG = /* glsl */`
   varying float vH;
+  varying vec3  vNormal;
+  varying vec3  vView;
   void main() {
     float t = clamp(vH * 1.3 + 0.5, 0.0, 1.0);
     vec3 low  = vec3(0.32, 0.02, 0.58);
-    vec3 zero = vec3(0.01, 0.03, 0.12);
+    vec3 zero = vec3(0.02, 0.05, 0.16);
     vec3 high = vec3(0.05, 0.58, 0.96);
-    vec3 col = t < 0.5
-      ? mix(low, zero, t * 2.0)
-      : mix(zero, high, (t - 0.5) * 2.0);
-    // sRGB-authored colour → linear (the post-processing chain encodes on output)
-    gl_FragColor = vec4(pow(max(col, 0.0), vec3(2.2)), 0.78);
+    vec3 base = t < 0.5 ? mix(low, zero, t * 2.0) : mix(zero, high, (t - 0.5) * 2.0);
+    base = pow(base, vec3(2.2));
+
+    vec3 N = normalize(vNormal);
+    if (!gl_FrontFacing) N = -N;
+    vec3 V = normalize(vView);
+    vec3 L = normalize(vec3(0.35, 0.9, 0.5));
+    float diff = max(dot(N, L), 0.0);
+    float spec = pow(max(dot(N, normalize(L + V)), 0.0), 48.0);
+    float fres = pow(1.0 - max(dot(N, V), 0.0), 3.0);
+    // Contour lines every 0.1 in height
+    float c = abs(fract(vH * 10.0 + 0.5) - 0.5) / fwidth(vH * 10.0);
+    float contour = (1.0 - min(c, 1.0)) * smoothstep(0.02, 0.08, abs(vH));
+
+    vec3 col = base * (0.35 + 0.9 * diff) + vec3(0.9, 0.95, 1.0) * spec * 0.5 + base * fres * 1.2;
+    col += base * contour * 1.5;
+    gl_FragColor = vec4(col, 0.88);
   }
 `
 
@@ -93,77 +131,30 @@ const FRAG = /* glsl */`
 // ── 3D wavefunction surface ───────────────────────────────────────────────────
 
 function WaveSurface3D({ n, En, vizMode }) {
-  const meshRef  = useRef()
-  const tRef     = useRef(0)
-  const nRef     = useRef(n)
-  const EnRef    = useRef(En)
-  const modeRef  = useRef(vizMode)
-  nRef.current   = n
-  EnRef.current  = En
-  modeRef.current = vizMode
-
   const geo = useMemo(() => {
-    const pos    = new Float32Array(SURF_NX * SURF_NZ * 3)
-    const idxArr = new Uint32Array((SURF_NX - 1) * (SURF_NZ - 1) * 6)
-    for (let j = 0; j < SURF_NZ; j++) {
-      for (let i = 0; i < SURF_NX; i++) {
-        const k = (j * SURF_NX + i) * 3
-        pos[k]     = BOX_LEFT + (i / (SURF_NX - 1)) * BOX_W
-        pos[k + 1] = 0
-        pos[k + 2] = (j / (SURF_NZ - 1) - 0.5) * SURF_Z_SPAN
-      }
-    }
-    let p = 0
-    for (let j = 0; j < SURF_NZ - 1; j++) {
-      for (let i = 0; i < SURF_NX - 1; i++) {
-        const a = j * SURF_NX + i, b = a + 1, c = a + SURF_NX, d = c + 1
-        idxArr[p++] = a; idxArr[p++] = c; idxArr[p++] = b
-        idxArr[p++] = b; idxArr[p++] = c; idxArr[p++] = d
-      }
-    }
-    const g = new THREE.BufferGeometry()
-    g.setAttribute('position', new THREE.BufferAttribute(pos, 3))
-    g.setIndex(new THREE.BufferAttribute(idxArr, 1))
+    const g = new THREE.PlaneGeometry(BOX_W, SURF_Z_SPAN, SURF_NX - 1, SURF_NZ - 1)
+    g.rotateX(-Math.PI / 2)
     return g
   }, [])
+  const mat = useMemo(() => new THREE.ShaderMaterial({
+    vertexShader: SURF_VERT, fragmentShader: SURF_FRAG,
+    uniforms: { uN: { value: 1 }, uCos: { value: 1 }, uSin: { value: 0 }, uMode: { value: 0 }, uAmp: { value: SURF_AMP } },
+    side: THREE.DoubleSide, transparent: true,
+  }), [])
+  useEffect(() => () => { geo.dispose(); mat.dispose() }, [geo, mat])
+  useEffect(() => {
+    mat.uniforms.uN.value = n
+    mat.uniforms.uMode.value = vizMode === 'prob' ? 0 : vizMode === 'real' ? 1 : 2
+  }, [mat, n, vizMode])
 
-  useEffect(() => () => geo.dispose(), [geo])
-
+  const tRef = useRef(0)
   useFrame((_, delta) => {
     tRef.current += Math.min(delta, 0.033)
-    const t    = tRef.current
-    const nn   = nRef.current
-    const En_  = EnRef.current
-    const mode = modeRef.current
-    const cosEt = Math.cos(En_ * t * 0.9)
-    const sinEt = Math.sin(En_ * t * 0.9)
-    if (!meshRef.current) return
-    const attr = meshRef.current.geometry.attributes.position
-    for (let j = 0; j < SURF_NZ; j++) {
-      const zTaper = Math.sin((j / (SURF_NZ - 1)) * Math.PI)  // taper to 0 at edges
-      for (let i = 0; i < SURF_NX; i++) {
-        const xi  = i / (SURF_NX - 1)
-        const psi = particleInBoxWavefunction(nn, xi, 1)
-        let y
-        if (mode === 'prob')       y = psi * psi * SURF_AMP * 0.52 * zTaper
-        else if (mode === 'real')  y = psi * cosEt * SURF_AMP * zTaper
-        else                       y = psi * sinEt * SURF_AMP * zTaper
-        attr.setY(j * SURF_NX + i, y)
-      }
-    }
-    attr.needsUpdate = true
+    mat.uniforms.uCos.value = Math.cos(En * tRef.current * 0.9)
+    mat.uniforms.uSin.value = Math.sin(En * tRef.current * 0.9)
   })
 
-  return (
-    <mesh ref={meshRef} geometry={geo} frustumCulled={false}>
-      <shaderMaterial
-        vertexShader={SURF_VERT}
-        fragmentShader={SURF_FRAG}
-        side={THREE.DoubleSide}
-        transparent
-      />
-    </mesh>
-  )
+  return <mesh geometry={geo} material={mat} position={[(BOX_LEFT + BOX_RIGHT) / 2, 0, 0]} frustumCulled={false} />
 }
 
 // ── CPU sampling ──────────────────────────────────────────────────────────────
@@ -265,9 +256,10 @@ function WaveCurve({ n, En, vizMode }) {
     return g
   }, [])
   const mat = useMemo(() => new THREE.LineBasicMaterial({
-    color: new THREE.Color('#7c8cff'),
+    color: new THREE.Color("#7c8cff"),
     transparent: true,
-    opacity: 0.7,
+    opacity: 0.95,
+    toneMapped: false,
   }), [])
   useEffect(() => () => { geo.dispose(); mat.dispose() }, [geo, mat])
 
@@ -314,61 +306,87 @@ function NodeMarkers({ n }) {
     <>
       {nodes.map((x, i) => (
         <mesh key={i} position={[x, 0, 0]}>
-          <sphereGeometry args={[0.055, 8, 8]} />
-          <meshStandardMaterial color="#232836" emissive="#7c8cff" emissiveIntensity={0.6} />
+          <sphereGeometry args={[0.05, 16, 16]} />
+          <meshBasicMaterial color={[2.2, 2.2, 2.6]} toneMapped={false} />
         </mesh>
       ))}
     </>
   )
 }
 
-// ── Wall glow planes ──────────────────────────────────────────────────────────
-function WallGlow({ x }) {
+// ── Infinite potential walls: slabs whose glow fades upward ───────────────────
+const WALL_FRAG = /* glsl */`
+  varying vec2 vUv;
+  void main() {
+    // Diagonal hatching, brighter at the inner face, fading toward the top
+    float hatch = smoothstep(0.35, 0.5, abs(fract((vUv.x + vUv.y * 2.4) * 9.0) - 0.5));
+    float fade = 1.0 - smoothstep(0.35, 1.0, vUv.y);
+    vec3 col = pow(vec3(0.49, 0.55, 1.0), vec3(2.2)) * (0.03 + hatch * 0.07) * fade;
+    gl_FragColor = vec4(col, 1.0);
+  }
+`
+const WALL_VERT = /* glsl */`
+  varying vec2 vUv;
+  void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+`
+
+function PotentialWall({ side }) {
+  const mat = useMemo(() => new THREE.ShaderMaterial({
+    vertexShader: WALL_VERT, fragmentShader: WALL_FRAG,
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+  }), [])
+  useEffect(() => () => mat.dispose(), [mat])
+  const x = side < 0 ? BOX_LEFT : BOX_RIGHT
+  const SLAB = 0.9
   return (
-    <mesh position={[x, 0, -0.15]}>
-      <planeGeometry args={[0.25, WALL_H * 1.05]} />
-      <meshBasicMaterial color={new THREE.Color('#7c8cff')} transparent opacity={0.06} blending={THREE.AdditiveBlending} depthWrite={false} />
-    </mesh>
+    <group position={[x, 0, 0]}>
+      {/* Hatched slab on the outside of the well */}
+      <mesh position={[side * SLAB / 2, 0.4, 0]} material={mat}>
+        <planeGeometry args={[SLAB, WALL_H + 0.8]} />
+      </mesh>
+      <mesh position={[0, 0.4, 0]}>
+        <boxGeometry args={[0.03, WALL_H + 0.8, 0.03]} />
+        <meshBasicMaterial color={[0.9, 1.0, 2.2]} toneMapped={false} />
+      </mesh>
+    </group>
   )
 }
 
-// ── Energy ladder ─────────────────────────────────────────────────────────────
+// ── Energy ladder: levels at E ∝ n², the active one glowing ──────────────────
 
 function EnergyLadder({ n }) {
   const lines = useMemo(() => {
-    const result = []
-    for (let k = 1; k <= 6; k++) {
-      const Ek   = particleInBoxEnergy(k)
-      const Emax = particleInBoxEnergy(6)
-      const y    = (Ek / Emax) * (WALL_H - 0.4) - WALL_H / 2 + 0.2
-      result.push({ k, y, active: k === n })
-    }
-    return result
-  }, [n])
+    const Emax = particleInBoxEnergy(6)
+    return Array.from({ length: 6 }, (_, i) => {
+      const k = i + 1
+      return { k, y: (particleInBoxEnergy(k) / Emax) * (WALL_H - 0.4) - WALL_H / 2 + 0.2 }
+    })
+  }, [])
+  const glow = useRef()
+  useFrame(({ clock }) => {
+    if (glow.current) glow.current.material.opacity = 0.35 + 0.2 * Math.sin(clock.elapsedTime * 3)
+  })
+  const active = lines[n - 1]
 
   return (
-    <group position={[BOX_RIGHT + 0.15, 0, 0]}>
-      {lines.map(({ k, y, active }) => (
-        <group key={k}>
-          <Line
-            points={[[0, y, 0], [0.5, y, 0]]}
-            color={active ? '#f59e0b' : '#232836'}
-            lineWidth={active ? 2 : 1}
-            transparent
-            opacity={active ? 1 : 0.5}
-          />
-          <Html position={[0.6, y, 0]} center style={{ pointerEvents: 'none' }}>
-            <span style={{
-              fontFamily: 'JetBrains Mono, monospace',
-              fontSize: 11,
-              color: active ? '#f59e0b' : '#4a7a74',
-              whiteSpace: 'nowrap',
-            }}>
-              n={k}
-            </span>
-          </Html>
-        </group>
+    <group position={[BOX_RIGHT + 1.15, 0, 0]}>
+      <Line points={[[0, -WALL_H / 2 + 0.05, 0], [0, WALL_H / 2 + 0.1, 0]]} color="#334155" lineWidth={1} />
+      {lines.map(({ k, y }) => (
+        <Line
+          key={k}
+          points={[[0, y, 0], [0.7, y, 0]]}
+          color={k === n ? '#fbbf24' : '#475569'}
+          lineWidth={k === n ? 3 : 1.5}
+          transparent
+          opacity={k === n ? 1 : 0.6}
+        />
       ))}
+      {active && (
+        <mesh ref={glow} position={[0.35, active.y, -0.01]}>
+          <planeGeometry args={[1.0, 0.16]} />
+          <meshBasicMaterial color="#fbbf24" transparent opacity={0.4} blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
+        </mesh>
+      )}
     </group>
   )
 }
@@ -381,72 +399,33 @@ export default function ParticleInBox() {
   const En     = useMemo(() => particleInBoxEnergy(n), [n])
 
   return (
-    <group position={[0, 0.2, 0]}>
-      {/* ── Potential wall glows ── */}
-      <WallGlow x={BOX_LEFT} />
-      <WallGlow x={BOX_RIGHT} />
+    <group position={[-0.4, 0.2, 0]}>
+      <PotentialWall side={-1} />
+      <PotentialWall side={1} />
 
-      {/* ── Box walls ── */}
-      <mesh position={[BOX_LEFT, 0, 0]}>
-        <boxGeometry args={[0.05, WALL_H, 0.05]} />
-        <meshStandardMaterial color="#7c8cff" emissive="#7c8cff" emissiveIntensity={0.7} roughness={0.3} />
+      {/* Floor of the well */}
+      <mesh position={[0, -WALL_H / 2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[BOX_W, SURF_Z_SPAN]} />
+        <meshStandardMaterial color="#0b1020" metalness={0.5} roughness={0.6} transparent opacity={0.35} />
       </mesh>
-      <mesh position={[BOX_RIGHT, 0, 0]}>
-        <boxGeometry args={[0.05, WALL_H, 0.05]} />
-        <meshStandardMaterial color="#7c8cff" emissive="#7c8cff" emissiveIntensity={0.7} roughness={0.3} />
-      </mesh>
-      <pointLight position={[BOX_LEFT, 0, 0.3]} color="#7c8cff" intensity={0.5} distance={1.5} />
-      <pointLight position={[BOX_RIGHT, 0, 0.3]} color="#7c8cff" intensity={0.5} distance={1.5} />
 
-      {/* ── Floor ── */}
-      <Line
-        points={[[BOX_LEFT, -WALL_H / 2, 0], [BOX_RIGHT, -WALL_H / 2, 0]]}
-        color="#232836"
-        lineWidth={1}
-        transparent
-        opacity={0.6}
-      />
-
-      {/* ── Zero axis ── */}
+      {/* Zero axis */}
       <Line
         points={[[BOX_LEFT, 0, 0], [BOX_RIGHT, 0, 0]]}
-        color="#232836"
+        color="#334155"
         lineWidth={1}
         transparent
-        opacity={0.3}
+        opacity={0.5}
         dashed
         dashSize={0.2}
         gapSize={0.1}
       />
 
-      {/* ── 3D wavefunction surface mesh ── */}
       <WaveSurface3D n={n} En={En} vizMode={vizMode} />
-
-      {/* ── Oscillating wavefunction curve ── */}
       <WaveCurve n={n} En={En} vizMode={vizMode} />
-
-      {/* ── Node zero-crossing markers ── */}
       <NodeMarkers n={n} />
-
-      {/* ── Monte Carlo particle cloud ── */}
       <ParticleCloud n={n} vizMode={vizMode} En={En} />
-
-      {/* ── Energy ladder ── */}
       <EnergyLadder n={n} />
-
-      {/* ── Labels ── */}
-      <Html position={[BOX_LEFT - 0.15, WALL_H / 2 + 0.2, 0]} center style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#4a7a74', whiteSpace: 'nowrap' }}>V=∞</span>
-      </Html>
-      <Html position={[BOX_RIGHT + 0.15, WALL_H / 2 + 0.2, 0]} center style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#4a7a74', whiteSpace: 'nowrap' }}>V=∞</span>
-      </Html>
-
-      <Html position={[0, -WALL_H / 2 - 0.45, 0]} center style={{ pointerEvents: 'none', textAlign: 'center' }}>
-        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: '#f59e0b', textShadow: '0 0 8px rgba(245,158,11,0.5)', whiteSpace: 'nowrap' }}>
-          n = {n} · E_n = {En.toFixed(2)} (ℏ²/2mL²)
-        </div>
-      </Html>
     </group>
   )
 }
