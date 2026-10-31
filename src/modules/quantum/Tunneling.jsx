@@ -3,7 +3,7 @@
 // barrier contact rather than a full PDE solve.
 import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Html } from '@react-three/drei'
+import { Html, Line } from '@react-three/drei'
 import * as THREE from 'three'
 import useModuleStore from '../../store/useModuleStore'
 
@@ -30,7 +30,8 @@ function transmissionCoeff(V0, k0) {
   const a = BARRIER_W
   const E = 0.5 * k0 * k0
   if (V0 <= 0) return 1
-  if (Math.abs(E - V0) < 1e-6) return 1 / (1 + 0.25 * V0 * a * a)
+  // E → V0 limit of both branches: 1 / (1 + V0·a²/2)   (ħ = m = 1)
+  if (Math.abs(E - V0) < 1e-6) return 1 / (1 + 0.5 * V0 * a * a)
   if (E < V0) {
     const kappa = Math.sqrt(2 * (V0 - E))
     const s = Math.sinh(kappa * a)
@@ -81,6 +82,8 @@ function buildRibbonGeo() {
   return g
 }
 
+const LABEL = { fontFamily: 'Inter, system-ui, sans-serif', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }
+
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function Tunneling() {
   const V0 = useModuleStore((s) => s.qm.tunnelV0)
@@ -122,11 +125,13 @@ export default function Tunneling() {
   })
 
   const barrierH = V0 * 0.38
+  const E = 0.5 * k0 * k0
+  const energyH = E * 0.38 // same scale as the barrier height
+  const T = transmissionCoeff(V0, k0)
+  const forbidden = E < V0
 
   return (
     <group>
-      <ambientLight intensity={0.05} color="#030a10" />
-      <pointLight position={[0, 5, 4]} intensity={0.7} color="#38bdf8" distance={18} decay={2} />
 
       {/* Probability density ribbon */}
       <mesh geometry={ribbonGeo}>
@@ -144,7 +149,7 @@ export default function Tunneling() {
 
       {/* Baseline */}
       <line geometry={BASELINE_GEO}>
-        <lineBasicMaterial color="#0d2030" />
+        <lineBasicMaterial color="#475569" />
       </line>
 
       {/* Barrier box */}
@@ -158,26 +163,44 @@ export default function Tunneling() {
       <pointLight position={[0, barrierH, 0]}
         color="#f59e0b" intensity={0.4} distance={3} decay={2} />
 
-      {/* ── Live readout ── */}
-      <Html position={[5.0, 1.6, 0]} center style={{ pointerEvents: 'none' }}>
+      {/* Particle energy E vs barrier height V0 (same vertical scale) */}
+      <Line points={[[X_MIN, energyH, 0.02], [X_MAX, energyH, 0.02]]} color="#4ade80" lineWidth={1.5} dashed dashSize={0.25} gapSize={0.15} />
+      <Html position={[-4.6, energyH + 0.25, 0]} center style={{ pointerEvents: 'none' }}>
+        <span style={{ ...LABEL, color: '#4ade80' }}>Particle energy E</span>
+      </Html>
+      <Html position={[0, barrierH + 0.3, 0]} center style={{ pointerEvents: 'none' }}>
+        <span style={{ ...LABEL, color: '#fbbf24' }}>Barrier V₀</span>
+      </Html>
+      <Html position={[-3.6, 1.35, 0]} center style={{ pointerEvents: 'none' }}>
+        <span style={{ ...LABEL, color: '#f87171' }}>Reflected {((1 - T) * 100).toFixed(0)}%</span>
+      </Html>
+      <Html position={[3.6, 1.35, 0]} center style={{ pointerEvents: 'none' }}>
+        <span style={{ ...LABEL, color: '#38bdf8' }}>Transmitted {(T * 100).toFixed(T < 0.1 ? 1 : 0)}%</span>
+      </Html>
+
+      {/* ── Readout, pinned to the scene corner ── */}
+      <Html calculatePosition={(_, __, size) => [size.width - 216, 52]} style={{ pointerEvents: 'none' }}>
         <div style={{
-          fontFamily: 'JetBrains Mono, monospace',
-          background: 'rgba(3,8,16,0.90)',
-          border: '1px solid rgba(56,189,248,0.20)',
-          borderRadius: 3, padding: '7px 10px', minWidth: 132,
+          width: 204, padding: '10px 12px', borderRadius: 10,
+          background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
+          fontFamily: 'Inter, system-ui, sans-serif', color: 'rgb(var(--c-text))', backdropFilter: 'blur(8px)', fontSize: 12,
         }}>
-          <div style={{ fontSize: 11, color: 'rgba(56,189,248,0.75)', letterSpacing: '0.14em', marginBottom: 5 }}>
-            TUNNELING
+          <div style={{ fontSize: 13, fontWeight: 600 }}>Quantum tunnelling</div>
+          <div style={{ color: forbidden ? '#4ade80' : 'rgb(var(--c-text-muted))', marginBottom: 8 }}>
+            {forbidden ? 'E < V₀: classically forbidden — yet some of the wave gets through' : 'E > V₀: passes over the barrier, but some still reflects'}
           </div>
-          <div style={{ fontSize: 11, color: 'rgba(56,189,248,0.75)', marginBottom: 2 }}>
-            T = <span ref={tDom} style={{ color: '#38bdf8' }}>—</span>
+          <div style={{ display: 'flex', height: 10, borderRadius: 4, overflow: 'hidden' }}>
+            <div style={{ width: `${T * 100}%`, background: '#38bdf8' }} />
+            <div style={{ flex: 1, background: '#f87171' }} />
           </div>
-          <div style={{ fontSize: 11, color: 'rgba(248,113,113,0.75)', marginBottom: 2 }}>
-            R = <span ref={rDom} style={{ color: '#f87171' }}>—</span>
-          </div>
-          <div style={{ fontSize: 11, color: 'rgba(251,191,36,0.75)' }}>
-            E/V₀ = <span ref={evDom} style={{ color: '#fbbf24' }}>—</span>
-          </div>
+          <dl style={{ display: 'grid', gridTemplateColumns: '1fr auto', rowGap: 4, marginTop: 8 }}>
+            <dt style={{ color: 'rgb(var(--c-text-muted))' }}>Transmitted T</dt>
+            <dd ref={tDom} style={{ fontFamily: 'JetBrains Mono, monospace', textAlign: 'right', color: '#38bdf8' }}>—</dd>
+            <dt style={{ color: 'rgb(var(--c-text-muted))' }}>Reflected R = 1 − T</dt>
+            <dd ref={rDom} style={{ fontFamily: 'JetBrains Mono, monospace', textAlign: 'right', color: '#f87171' }}>—</dd>
+            <dt style={{ color: 'rgb(var(--c-text-muted))' }}>E / V₀</dt>
+            <dd ref={evDom} style={{ fontFamily: 'JetBrains Mono, monospace', textAlign: 'right', color: '#4ade80' }}>—</dd>
+          </dl>
         </div>
       </Html>
     </group>
