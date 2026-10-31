@@ -928,36 +928,6 @@ export default function StoryMode() {
 
   return (
     <>
-      {/* JOURNEYS button — only on home screen */}
-      {!activeModule && (
-        <button
-          onClick={() => setOpen(v => !v)}
-          title="Story Mode — guided journeys through physics (J)"
-          style={{
-            position: 'fixed', top: 64, left: 20, zIndex: 10100,
-            display: 'flex', alignItems: 'center', gap: 7,
-            padding: '7px 13px',
-            fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.14em',
-            color: open ? '#e8f4f0' : 'rgba(200,230,220,0.58)',
-            background: open ? 'rgba(124,140,255,0.08)' : 'rgba(8,9,10,0.72)',
-            border: `1px solid ${open ? 'rgba(124,140,255,0.3)' : 'rgba(124,140,255,0.12)'}`,
-            borderRadius: 5,
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
-            cursor: 'pointer',
-            transition: 'all 0.15s',
-          }}
-        >
-          <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-            <path d="M1 2h9M1 5.5h6M1 9h8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-          </svg>
-          JOURNEYS
-          {totalXP > 0 && (
-            <span style={{ color: '#7c8cff', marginLeft: 2 }}>{totalXP} XP</span>
-          )}
-        </button>
-      )}
-
       {/* Journey selection panel */}
       {open && !activeModule && (
         <div style={{

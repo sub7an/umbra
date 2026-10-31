@@ -90,39 +90,6 @@ export default function SurpriseMe() {
     <>
       {toast && <Toast scene={toast} />}
 
-      <button
-        onClick={go}
-        disabled={spinning}
-        title="Jump to a dramatic random physics scene"
-        style={{
-          position: 'fixed', bottom: 20, left: '50%',
-          transform: `translateX(calc(-50% + 240px))`,
-          zIndex: 10040,
-          display: 'flex', alignItems: 'center', gap: 7,
-          padding: '7px 14px',
-          fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.16em',
-          color: spinning ? 'rgba(124,140,255,0.3)' : 'rgba(124,140,255,0.55)',
-          background: 'rgba(8,9,10,0.72)',
-          border: '1px solid rgba(124,140,255,0.12)',
-          borderRadius: 5,
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
-          cursor: spinning ? 'wait' : 'pointer',
-          transition: 'all 0.15s',
-          userSelect: 'none',
-        }}
-        onMouseEnter={e => { if (!spinning) { e.currentTarget.style.color = 'rgba(124,140,255,0.9)'; e.currentTarget.style.borderColor = 'rgba(124,140,255,0.3)' }}}
-        onMouseLeave={e => { e.currentTarget.style.color = 'rgba(124,140,255,0.55)'; e.currentTarget.style.borderColor = 'rgba(124,140,255,0.12)' }}
-      >
-        <svg width="11" height="11" viewBox="0 0 11 11" fill="none"
-          style={{ animation: spinning ? 'umbra-spin 0.6s linear infinite' : 'none' }}>
-          <path d="M9 2H7M9 2V4M9 2L6.5 4.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M2 9h2M2 9V7M2 9l2.5-2.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M5.5 1.5L8 4" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.4"/>
-          <path d="M3 7l2.5-2.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.4"/>
-        </svg>
-        SURPRISE ME
-      </button>
     </>
   )
 }

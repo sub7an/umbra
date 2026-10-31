@@ -133,8 +133,10 @@ export default function ProfilePanel() {
       if (window.__UMBRA_PALETTE_OPEN) return
       setOpen(v => !v)
     }
+    const openEv = () => setOpen(v => !v)
     window.addEventListener('keydown', h)
-    return () => window.removeEventListener('keydown', h)
+    window.addEventListener('umbra-profile-open', openEv)
+    return () => { window.removeEventListener('keydown', h); window.removeEventListener('umbra-profile-open', openEv) }
   }, [])
 
   // Derived data from localStorage
@@ -168,42 +170,11 @@ export default function ProfilePanel() {
 
   return (
     <>
-      {/* PROFILE button — shown on home screen */}
-      <button
-        onClick={() => setOpen(v => !v)}
-        title="Your profile — level, XP, badges, progress (P)"
-        style={{
-          position: 'fixed', top: 64, right: 20, zIndex: 10100,
-          display: 'flex', alignItems: 'center', gap: 7,
-          padding: '7px 13px',
-          fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.14em',
-          color: open ? '#7c8cff' : 'rgba(200,230,220,0.55)',
-          background: open ? 'rgba(124,140,255,0.07)' : 'rgba(8,9,10,0.72)',
-          border: `1px solid ${open ? 'rgba(124,140,255,0.28)' : 'rgba(255,255,255,0.07)'}`,
-          borderRadius: 5,
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
-          cursor: 'pointer', transition: 'all 0.15s',
-        }}
-      >
-        {/* Level badge */}
-        <div style={{
-          width: 18, height: 18, borderRadius: '50%',
-          background: `${levelColor}20`, border: `1px solid ${levelColor}50`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontFamily: 'JetBrains Mono, monospace', fontSize: 11, fontWeight: 700,
-          color: levelColor, lineHeight: 1,
-        }}>{level}</div>
-        PROFILE
-        {totalXP > 0 && (
-          <span style={{ color: levelColor, fontWeight: 700 }}>{totalXP} XP</span>
-        )}
-      </button>
 
       {/* Panel */}
       {open && (
         <div style={{
-          position: 'fixed', top: 104, right: 20, zIndex: 10100,
+          position: 'fixed', top: 72, right: 20, zIndex: 10100,
           width: 320,
           background: 'rgba(8,9,10,0.97)',
           border: '1px solid rgba(124,140,255,0.12)',

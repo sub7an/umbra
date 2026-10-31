@@ -2,35 +2,12 @@ import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import useModuleStore from '../store/useModuleStore'
-import PhysicsBg from './PhysicsBg'
 import CardPreview from './CardPreview'
 import ConstellationMap from './ConstellationMap'
 import FeatureRail from './FeatureRail'
 import { useGesture } from '../context/GestureContext'
 import { useAuth } from '../context/AuthContext'
-import DecodeText from './DecodeText'
 import { getTheme, toggleTheme } from '../lib/theme'
-
-// ── Scroll-reveal: fade-up cards as they enter the viewport ───────────────────
-function useReveal(idx = 0) {
-  const ref = useRef()
-  const [vis, setVis] = useState(false)
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) { setVis(true); io.disconnect() }
-    }, { threshold: 0.12 })
-    io.observe(el)
-    return () => io.disconnect()
-  }, [])
-  const delay = (idx % 4) * 90
-  return [ref, {
-    opacity: vis ? 1 : 0,
-    transform: vis ? 'none' : 'translateY(24px)',
-    transition: `opacity 0.65s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.65s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
-  }]
-}
 
 const SECRET_PHRASE = 'sabrina'
 const STORE_KEY     = 'umbra_unlocked'
@@ -44,17 +21,7 @@ function AccountButton() {
 
   if (!user) {
     return (
-      <button
-        onClick={() => window.dispatchEvent(new CustomEvent('umbra-auth-open'))}
-        className="font-mono-data text-[12px] tracking-[0.14em] uppercase"
-        style={{
-          color: 'rgba(124,140,255,0.75)', background: 'transparent',
-          border: '1px solid rgba(124,140,255,0.18)', borderRadius: 3,
-          cursor: 'pointer', padding: '4px 8px', transition: 'color 0.15s, border-color 0.15s',
-        }}
-        onMouseEnter={(e) => { e.currentTarget.style.color = '#7c8cff'; e.currentTarget.style.borderColor = 'rgba(124,140,255,0.4)' }}
-        onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(124,140,255,0.60)'; e.currentTarget.style.borderColor = 'rgba(124,140,255,0.18)' }}
-      >
+      <button type="button" onClick={() => window.dispatchEvent(new CustomEvent('umbra-auth-open'))} className="ui-btn">
         Sign in
       </button>
     )
@@ -62,43 +29,24 @@ function AccountButton() {
 
   const initial = (user.email || '?')[0].toUpperCase()
   return (
-    <div style={{ position: 'relative' }}>
-      <button
-        onClick={() => setMenu(v => !v)}
-        style={{
-          display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer',
-          background: 'transparent', border: '1px solid rgba(124,140,255,0.2)',
-          borderRadius: 3, padding: '3px 8px 3px 4px',
-        }}
-      >
-        <span style={{
-          width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'rgba(124,140,255,0.18)', color: '#a5b0ff',
-          fontFamily: 'Inter, sans-serif', fontSize: 13, fontWeight: 700,
-        }}>{initial}</span>
-        {isPro && (
-          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.12em', color: '#0b0d12', background: '#7c8cff', borderRadius: 2, padding: '1px 4px' }}>PRO</span>
-        )}
-        <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 3L4 5.5L6.5 3" stroke="rgba(124,140,255,0.7)" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/></svg>
+    <div className="relative">
+      <button type="button" onClick={() => setMenu(v => !v)} aria-expanded={menu} aria-label="Account menu" className="ui-btn px-1.5 gap-1.5">
+        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-cyan-glow/20 text-cyan-mid text-[13px] font-semibold">{initial}</span>
+        {isPro && <span className="px-1.5 rounded text-[11px] font-semibold bg-cyan-glow text-ground">Pro</span>}
+        <svg width="10" height="10" viewBox="0 0 8 8" fill="none" aria-hidden="true"><path d="M1.5 3L4 5.5L6.5 3" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/></svg>
       </button>
       {menu && (
-        <div style={{
-          position: 'absolute', top: 30, right: 0, zIndex: 30, minWidth: 190,
-          background: 'rgba(17,20,27,0.98)', border: '1px solid rgba(124,140,255,0.25)',
-          borderRadius: 5, padding: 8, boxShadow: '0 12px 40px rgba(0,0,0,0.6)',
-        }}>
-          <div style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, color: 'rgba(247,248,248,0.75)', padding: '4px 6px 8px', wordBreak: 'break-all' }}>
-            {user.email}
-          </div>
+        <div className="absolute top-11 right-0 z-30 min-w-[220px] p-2 rounded-lg bg-panel border border-border-subtle shadow-card">
+          <div className="px-2 pt-1 pb-2 text-[13px] text-text-dim break-all">{user.email}</div>
           {!isPro && (
-            <button onClick={() => { setMenu(false); window.dispatchEvent(new CustomEvent('umbra-pricing-open')) }}
-              style={{ width: '100%', textAlign: 'left', padding: '6px', borderRadius: 3, cursor: 'pointer', background: 'rgba(124,140,255,0.1)', border: 'none', color: '#a5b0ff', fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.1em', marginBottom: 4 }}>
-              ↑ UPGRADE TO PRO
+            <button type="button" onClick={() => { setMenu(false); window.dispatchEvent(new CustomEvent('umbra-pricing-open')) }}
+              className="w-full text-left px-2 h-9 rounded-md text-[14px] font-medium text-cyan-mid hover:bg-panel-hover">
+              Upgrade to Pro
             </button>
           )}
-          <button onClick={() => { setMenu(false); signOut() }}
-            style={{ width: '100%', textAlign: 'left', padding: '6px', borderRadius: 3, cursor: 'pointer', background: 'transparent', border: 'none', color: 'rgba(247,248,248,0.75)', fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.1em' }}>
-            SIGN OUT
+          <button type="button" onClick={() => { setMenu(false); signOut() }}
+            className="w-full text-left px-2 h-9 rounded-md text-[14px] text-text-primary hover:bg-panel-hover">
+            Sign out
           </button>
         </div>
       )}
@@ -108,24 +56,12 @@ function AccountButton() {
 
 function ThemeButton() {
   const [theme, setTheme] = useState(getTheme())
+  const label = theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'
   return (
-    <button
-      onClick={() => setTheme(toggleTheme())}
-      title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
-      className="font-mono-data text-[12px] tracking-[0.14em] uppercase"
-      style={{
-        display: 'flex', alignItems: 'center', gap: 5,
-        color: 'rgba(124,140,255,0.75)', background: 'transparent',
-        border: '1px solid rgba(124,140,255,0.18)', borderRadius: 3,
-        cursor: 'pointer', padding: '4px 8px', transition: 'color 0.15s, border-color 0.15s',
-      }}
-      onMouseEnter={(e) => { e.currentTarget.style.color = '#7c8cff'; e.currentTarget.style.borderColor = 'rgba(124,140,255,0.4)' }}
-      onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(124,140,255,0.60)'; e.currentTarget.style.borderColor = 'rgba(124,140,255,0.18)' }}
-    >
+    <button type="button" onClick={() => setTheme(toggleTheme())} title={label} aria-label={label} className="ui-btn-ghost w-9 px-0">
       {theme === 'light'
-        ? <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M9 6.5A4 4 0 1 1 4.5 2 3.2 3.2 0 0 0 9 6.5Z" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round"/></svg>
-        : <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><circle cx="5.5" cy="5.5" r="2.2" stroke="currentColor" strokeWidth="1.1"/><path d="M5.5 1V2M5.5 9V10M1 5.5H2M9 5.5H10M2.3 2.3L3 3M8 8L8.7 8.7M8.7 2.3L8 3M3 8L2.3 8.7" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg>}
-      {theme === 'light' ? 'Dark' : 'Light'}
+        ? <svg width="16" height="16" viewBox="0 0 11 11" fill="none" aria-hidden="true"><path d="M9 6.5A4 4 0 1 1 4.5 2 3.2 3.2 0 0 0 9 6.5Z" stroke="currentColor" strokeWidth="0.9" strokeLinejoin="round"/></svg>
+        : <svg width="16" height="16" viewBox="0 0 11 11" fill="none" aria-hidden="true"><circle cx="5.5" cy="5.5" r="2.2" stroke="currentColor" strokeWidth="0.9"/><path d="M5.5 1V2M5.5 9V10M1 5.5H2M9 5.5H10M2.3 2.3L3 3M8 8L8.7 8.7M8.7 2.3L8 3M3 8L2.3 8.7" stroke="currentColor" strokeWidth="0.9" strokeLinecap="round"/></svg>}
     </button>
   )
 }
@@ -291,6 +227,23 @@ const MODULES = [
     color: 'violet',
     formula: 'f_n = nf₀,  λ_n = 2L/n',
   },
+]
+
+// Catalogue grouping (by area of the physics syllabus)
+const TOPICS = [
+  { id: 'all',        label: 'All modules' },
+  { id: 'waves',      label: 'Waves & optics',        modules: ['wave-mechanics', 'optics', 'acoustic-physics'] },
+  { id: 'fields',     label: 'Fields & motion',       modules: ['physics-sandbox', 'electromagnetism', 'dynamical-systems'] },
+  { id: 'relativity', label: 'Relativity & cosmos',   modules: ['special-relativity', 'general-relativity', 'frontier-physics'] },
+  { id: 'quantum',    label: 'Quantum',               modules: ['quantum-mechanics'] },
+  { id: 'thermal',    label: 'Thermal & fluids',      modules: ['thermodynamics', 'fluid-dynamics'] },
+]
+const topicOf = (id) => TOPICS.find((t) => t.modules?.includes(id))?.label ?? ''
+
+const NAV_LINKS = [
+  { label: 'Journeys',   event: 'umbra-journeys-open' },
+  { label: 'Challenges', event: 'umbra-challenges-open' },
+  { label: 'Rooms',      event: 'umbra-rooms-open' },
 ]
 
 const ACCENT_HEX = {
@@ -526,7 +479,6 @@ function HeroActiveScene({ idx }) {
 
 function HeroCanvas() {
   const [idx,      setIdx]     = useState(0)
-  const [fadeIn,   setFadeIn]  = useState(true)
   const [labelOpacity, setLO]  = useState(1)
 
   useEffect(() => {
@@ -544,41 +496,13 @@ function HeroCanvas() {
   const cycle = HERO_CYCLES[idx]
 
   return (
-    <div
-      className="relative w-full h-full overflow-hidden"
-      style={{
-        borderRadius: 4,
-        border: '1px solid rgba(124,140,255,0.14)',
-        boxShadow: '0 0 48px rgba(124,140,255,0.05), 0 24px 64px rgba(0,0,0,0.6)',
-      }}
-    >
-      {/* Window chrome top bar */}
+    <div className="relative w-full h-full overflow-hidden">
       <div
-        className="absolute top-0 left-0 right-0 z-10 flex items-center gap-2.5 px-3.5 py-2.5"
-        style={{
-          background: 'rgba(8,9,10,0.88)',
-          backdropFilter: 'blur(12px)',
-          borderBottom: '1px solid rgba(124,140,255,0.08)',
-        }}
+        className="absolute top-3 left-3 z-10 flex items-center gap-2 h-7 px-2.5 rounded-md bg-ground/75 border border-border-subtle backdrop-blur-sm text-[12px] font-medium text-text-primary"
+        style={{ transition: 'opacity 0.4s', opacity: labelOpacity }}
       >
-        <div className="flex gap-1.5">
-          <div className="w-2 h-2 rounded-full" style={{ background: 'rgba(124,140,255,0.18)' }} />
-          <div className="w-2 h-2 rounded-full" style={{ background: 'rgba(124,140,255,0.18)' }} />
-          <div className="w-2 h-2 rounded-full" style={{ background: 'rgba(124,140,255,0.55)' }} />
-        </div>
-        <span
-          className="font-mono-data text-[11px] tracking-[0.22em] uppercase ml-1"
-          style={{ color: 'rgba(255,255,255,0.75)', transition: 'opacity 0.4s', opacity: labelOpacity }}
-        >
-          {cycle.label}
-        </span>
-        <div className="ml-auto flex items-center gap-1.5">
-          <div
-            className="w-1.5 h-1.5 rounded-full"
-            style={{ background: '#7c8cff', boxShadow: '0 0 6px #7c8cff', animation: 'umbra-pulse 1.8s ease-in-out infinite' }}
-          />
-          <span className="font-mono-data text-[11px] tracking-wider" style={{ color: 'rgba(124,140,255,0.75)' }}>LIVE</span>
-        </div>
+        <span className="w-2 h-2 rounded-full" style={{ background: cycle.color }} aria-hidden="true" />
+        {cycle.label.charAt(0) + cycle.label.slice(1).toLowerCase()}
       </div>
 
       {/* 3D Canvas */}
@@ -592,36 +516,12 @@ function HeroCanvas() {
         <HeroActiveScene idx={idx} />
       </Canvas>
 
-      {/* Bottom formula bar */}
       <div
-        className="absolute bottom-0 left-0 right-0 z-10 flex items-center px-3.5 py-2.5"
-        style={{
-          background: 'rgba(8,9,10,0.88)',
-          backdropFilter: 'blur(12px)',
-          borderTop: '1px solid rgba(124,140,255,0.06)',
-          transition: 'opacity 0.4s',
-          opacity: labelOpacity,
-        }}
+        className="absolute bottom-3 left-3 z-10 h-7 flex items-center px-2.5 rounded-md bg-ground/75 border border-border-subtle backdrop-blur-sm font-mono-data text-[12px] text-text-dim"
+        style={{ transition: 'opacity 0.4s', opacity: labelOpacity }}
       >
-        <span className="font-mono-data text-[11px] tracking-wider" style={{ color: 'rgba(255,255,255,0.75)' }}>
-          {cycle.formula}
-        </span>
-        <span
-          className="ml-auto font-mono-data text-[11px] tracking-[0.15em] uppercase"
-          style={{ color: 'rgba(124,140,255,0.75)' }}
-        >
-          GPU · REAL-TIME
-        </span>
+        {cycle.formula}
       </div>
-
-      {/* Subtle corner glow */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: `radial-gradient(ellipse at 80% 20%, ${cycle.color}0a 0%, transparent 60%)`,
-          transition: 'background 0.5s',
-        }}
-      />
     </div>
   )
 }
@@ -636,89 +536,44 @@ const STATS = [
 ]
 
 // ── Module card ────────────────────────────────────────────────────────────────
-function ModuleCard({ module, onEnter, onHoverIn, onHoverOut, cardRef, idx = 0 }) {
-  const hex    = ACCENT_HEX[module.color]
-  const hexRgb = parseInt(hex.slice(1), 16)
-  const r = (hexRgb >> 16) & 0xff
-  const g = (hexRgb >>  8) & 0xff
-  const b =  hexRgb        & 0xff
-  const [revealRef, revealStyle] = useReveal(idx)
-
+function ModuleCard({ module, onEnter, onHoverIn, onHoverOut, cardRef }) {
+  const hex = ACCENT_HEX[module.color]
   return (
-    <div ref={revealRef} style={revealStyle} className="flex">
     <button
+      type="button"
       ref={cardRef}
       onClick={onEnter}
       onMouseEnter={(e) => onHoverIn(e.currentTarget)}
-      onMouseLeave={onHoverOut}
-      className="group relative flex flex-col flex-1 text-left p-5 rounded-sm cursor-pointer focus:outline-none focus-visible:ring-1"
-      style={{
-        background: 'rgba(17,20,27, 0.72)',
-        backdropFilter: 'blur(14px)',
-        WebkitBackdropFilter: 'blur(14px)',
-        border: `1px solid rgba(${r},${g},${b},0.18)`,
-        transition: 'border-color 0.15s, box-shadow 0.15s',
-        transformStyle: 'preserve-3d',
-        willChange: 'transform',
-      }}
-      onMouseMove={(e) => {
-        const rect = e.currentTarget.getBoundingClientRect()
-        const dx = (e.clientX - rect.left - rect.width  / 2) / (rect.width  / 2)
-        const dy = (e.clientY - rect.top  - rect.height / 2) / (rect.height / 2)
-        const rotY =  dx * 9
-        const rotX = -dy * 7
-        e.currentTarget.style.transform = `perspective(900px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(1.025) translateZ(4px)`
-        e.currentTarget.style.borderColor = `rgba(${r},${g},${b},0.75)`
-        e.currentTarget.style.boxShadow   = `0 0 24px 3px rgba(${r},${g},${b},0.18), inset 0 1px 0 rgba(${r},${g},${b},0.1), ${-rotY*0.8}px ${-rotX*0.8}px 22px rgba(${r},${g},${b},0.09)`
-        const glare = e.currentTarget.querySelector('[data-glare]')
-        if (glare) glare.style.background = `radial-gradient(circle at ${(dx+1)/2*100}% ${(dy+1)/2*100}%, rgba(255,255,255,0.10) 0%, transparent 65%)`
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform   = 'perspective(900px) rotateX(0deg) rotateY(0deg) scale(1) translateZ(0)'
-        e.currentTarget.style.borderColor = `rgba(${r},${g},${b},0.18)`
-        e.currentTarget.style.boxShadow   = 'none'
-        const glare = e.currentTarget.querySelector('[data-glare]')
-        if (glare) glare.style.background = 'none'
-        onHoverOut(e.currentTarget)
-      }}
+      onMouseLeave={(e) => onHoverOut(e.currentTarget)}
+      onFocus={(e) => onHoverIn(e.currentTarget)}
+      onBlur={(e) => onHoverOut(e.currentTarget)}
+      className="group relative flex flex-col text-left p-5 rounded-xl bg-panel border border-border-subtle transition-[border-color,background-color,transform] duration-200 hover:bg-panel-hover hover:-translate-y-0.5"
+      style={{ '--accent': hex }}
     >
-      <div
-        className="font-display text-[42px] font-bold leading-none mb-3"
-        style={{ color: hex, textShadow: `0 0 20px rgba(${r},${g},${b},0.5)` }}
-      >
-        {module.abbr}
+      <span className="absolute inset-x-5 top-0 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-200" style={{ background: hex }} aria-hidden="true" />
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <span
+          className="flex items-center justify-center w-10 h-10 rounded-lg text-[20px] font-semibold"
+          style={{ color: hex, background: `${hex}1a`, border: `1px solid ${hex}33` }}
+          aria-hidden="true"
+        >
+          {module.abbr}
+        </span>
+        <span className="text-[12px] text-text-dim">{topicOf(module.id)}</span>
       </div>
-      <div className="mb-3">
-        <h2 className="font-display text-[15px] font-semibold text-text-primary mb-1 leading-tight tracking-wide">
-          {module.name}
-        </h2>
-        <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12, lineHeight: 1.5, color: `rgba(${r},${g},${b},0.85)`, margin: 0 }}>
-          {module.tagline}
-        </p>
+      <h3 className="text-[17px] font-semibold text-text-primary leading-tight mb-1">{module.name}</h3>
+      <p className="text-[13px] font-medium mb-3" style={{ color: hex }}>{module.tagline}</p>
+      <p className="text-[14px] leading-relaxed text-text-dim mb-5 flex-1 line-clamp-3">{module.description}</p>
+      <div className="flex items-center justify-between gap-3">
+        <code className="font-mono-data text-[12px] px-2 py-1 rounded-md bg-ground border border-border-subtle text-text-primary/90 truncate">
+          {module.formula}
+        </code>
+        <span className="flex items-center gap-1 text-[13px] font-medium text-text-dim group-hover:text-text-primary transition-colors shrink-0">
+          Open
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="transition-transform duration-200 group-hover:translate-x-0.5"><path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        </span>
       </div>
-      <p className="font-body leading-relaxed mb-4 flex-1" style={{ fontSize: 13, color: 'rgba(247,248,248,0.75)' }}>
-        {module.description}
-      </p>
-      <div
-        className="self-start font-mono-data text-[13px] px-2 py-0.5 rounded border"
-        style={{
-          color: hex,
-          borderColor: `rgba(${r},${g},${b},0.3)`,
-          background: `rgba(${r},${g},${b},0.07)`,
-        }}
-      >
-        {module.formula}
-      </div>
-      <div
-        className="absolute bottom-4 right-4 font-mono-data text-[12px] tracking-[0.18em] uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-        style={{ color: hex }}
-      >
-        ENTER →
-      </div>
-      {/* Glare overlay */}
-      <div data-glare="1" className="absolute inset-0 rounded-sm pointer-events-none" style={{ transition: 'background 0.08s' }} />
     </button>
-    </div>
   )
 }
 
@@ -793,6 +648,7 @@ export default function ModulePicker() {
   const [unlocked,       setUnlocked]       = useState(checkUnlocked)
   const [justUnlocked,   setJustUnlocked]   = useState(false)
   const [viewMode,       setViewMode]       = useState('grid')
+  const [topic,          setTopic]          = useState('all')
   const [recentIds]                         = useState(() => {
     try { return JSON.parse(localStorage.getItem('umbra_recent') || '[]') } catch { return [] }
   })
@@ -800,14 +656,6 @@ export default function ModulePicker() {
   const cardRefs  = useRef({})
   const gridRef   = useRef(null)
   const gesture   = useGesture()
-
-  const handleMouseMove = useCallback((e) => {
-    const rect = e.currentTarget.getBoundingClientRect()
-    mouseRef.current = {
-      x:  (e.clientX - rect.left)  / rect.width  * 2 - 1,
-      y: -((e.clientY - rect.top)  / rect.height * 2 - 1),
-    }
-  }, [])
 
   useEffect(() => {
     let typed = ''
@@ -870,410 +718,231 @@ export default function ModulePicker() {
     return () => cancelAnimationFrame(rafId)
   }, [gesture.enabled, gesture.pointerRef, gesture.justPinchedRef, setActiveModule])
 
-  const totalModules = unlocked ? MODULES.length + 1 : MODULES.length
+
+  const visibleModules = topic === 'all'
+    ? MODULES
+    : MODULES.filter((m) => TOPICS.find((t) => t.id === topic)?.modules.includes(m.id))
+  const recent = recentIds.map((id) => MODULES.find((m) => m.id === id)).filter(Boolean)
+  const navTo = (event) => window.dispatchEvent(new CustomEvent(event))
 
   return (
-    <div
-      className="relative w-full h-full overflow-hidden"
-      style={{ background: '#0b0d12' }}
-      onMouseMove={handleMouseMove}
-    >
-      <style>{`@keyframes umbra-pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }`}</style>
-
-      {/* ── Live physics background ── */}
-      <Canvas
-        style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
-        camera={{ position: [0, 0, 12], fov: 60 }}
-        gl={{ antialias: false, alpha: false }}
-      >
-        <color attach="background" args={['#0b0d12']} />
-        <PhysicsBg mouseRef={mouseRef} hoveredModule={hoveredModule} />
-      </Canvas>
-
-      {/* ── Content layer ── */}
-      <div className="relative flex flex-col h-full overflow-y-auto thin-scroll" style={{ zIndex: 10 }}>
+    <div className="relative w-full h-full overflow-hidden bg-ground">
+      <div className="relative flex flex-col h-full overflow-y-auto thin-scroll">
 
         {/* ── Navbar ── */}
-        <nav className="shrink-0 flex items-center justify-between px-8 py-4" style={{ borderBottom: '1px solid rgba(124,140,255,0.07)' }}>
-          <button
-            onClick={handleTitleTap}
-            className="flex items-baseline gap-3 select-none focus:outline-none"
-            style={{ cursor: 'default' }}
-          >
-            <span
-              className="font-display text-[22px] font-bold tracking-[0.14em] uppercase leading-none"
-              style={{
-                color: '#7c8cff',
-                textShadow: '0 0 24px rgba(124,140,255,0.35), 0 0 48px rgba(124,140,255,0.12)',
-              }}
-            >
-              UMBRA
-            </span>
-            <span className="font-mono-data text-[12px] tracking-[0.22em] uppercase text-text-dim hidden sm:block">
-              Physics Visualizer
-            </span>
-          </button>
-
-          <div className="flex items-center gap-3">
+        <header className="sticky top-0 z-20 shrink-0 bg-ground/85 backdrop-blur-md border-b border-border-subtle">
+          <nav className="flex items-center gap-2 h-16 px-4 sm:px-8 max-w-[1280px] mx-auto w-full" aria-label="Main">
             <button
-              onClick={() => window.dispatchEvent(new CustomEvent('umbra-about-open'))}
-              className="font-mono-data text-[12px] tracking-[0.14em] uppercase"
-              style={{
-                color: 'rgba(124,140,255,0.75)', background: 'transparent', border: 'none',
-                cursor: 'pointer', padding: '4px 6px', transition: 'color 0.15s',
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = '#7c8cff' }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(124,140,255,0.60)' }}
+              type="button"
+              onClick={handleTitleTap}
+              className="flex items-center gap-2.5 mr-2 select-none rounded-md"
+              style={{ cursor: 'default' }}
+              aria-label="Umbra home"
             >
-              About
+              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-cyan-glow text-ground font-bold text-[15px]" aria-hidden="true">U</span>
+              <span className="text-[17px] font-semibold tracking-[-0.01em] text-text-primary">Umbra</span>
             </button>
-            <button
-              onClick={() => window.dispatchEvent(new CustomEvent('umbra-telescopes-open'))}
-              className="font-mono-data text-[12px] tracking-[0.14em] uppercase"
-              style={{
-                display: 'flex', alignItems: 'center', gap: 5,
-                color: 'rgba(124,140,255,0.75)', background: 'transparent', border: 'none',
-                cursor: 'pointer', padding: '4px 6px', transition: 'color 0.15s',
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = '#7c8cff' }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(124,140,255,0.60)' }}
-            >
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 5px #22c55e', display: 'inline-block' }} />
-              Live
-            </button>
-            <button
-              onClick={() => window.dispatchEvent(new CustomEvent('umbra-pricing-open'))}
-              className="font-mono-data text-[12px] tracking-[0.14em] uppercase"
-              style={{
-                color: 'rgba(124,140,255,0.75)', background: 'transparent', border: 'none',
-                cursor: 'pointer', padding: '4px 6px', transition: 'color 0.15s',
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = '#7c8cff' }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(124,140,255,0.60)' }}
-            >
-              Pricing
-            </button>
-            <ThemeButton />
-            <AccountButton />
-            <button
-              onClick={() => window.dispatchEvent(new CustomEvent('umbra-palette-open'))}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 5,
-                fontFamily: 'JetBrains Mono, monospace', fontSize: 12,
-                letterSpacing: '0.08em', color: 'rgba(124,140,255,0.75)',
-                border: '1px solid rgba(124,140,255,0.12)',
-                borderRadius: 3, padding: '4px 8px', cursor: 'pointer',
-                background: 'transparent', transition: 'color 0.15s, border-color 0.15s',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.color = 'rgba(124,140,255,0.7)'; e.currentTarget.style.borderColor = 'rgba(124,140,255,0.28)' }}
-              onMouseLeave={e => { e.currentTarget.style.color = 'rgba(124,140,255,0.38)'; e.currentTarget.style.borderColor = 'rgba(124,140,255,0.12)' }}
-            >
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                <circle cx="4.5" cy="4.5" r="3.2" stroke="currentColor" strokeWidth="1.2"/>
-                <path d="M7.2 7.2L9 9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-              </svg>
-              ⌘K
-            </button>
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded"
-              style={{ border: '1px solid rgba(124,140,255,0.14)', background: 'rgba(124,140,255,0.04)' }}>
-              <span className="w-1.5 h-1.5 rounded-full"
-                style={{ background: '#7c8cff', boxShadow: '0 0 5px #7c8cff', animation: 'umbra-pulse 2s ease-in-out infinite' }} />
-              <span className="font-mono-data text-[12px] tracking-wider" style={{ color: 'rgba(124,140,255,0.8)' }}>
-                {totalModules} MODULES ACTIVE
-              </span>
-            </div>
-          </div>
-        </nav>
 
-        {/* ── Hero section ── */}
-        <section className="shrink-0 flex flex-col lg:flex-row items-center gap-10 lg:gap-16 px-8 lg:px-14 pt-14 pb-16 lg:min-h-[calc(100vh-56px)]">
-
-          {/* Left: headline + CTA */}
-          <div className="flex-1 max-w-[540px]">
-            <p className="font-mono-data text-[13px] tracking-[0.28em] uppercase mb-6"
-              style={{ color: 'rgba(124,140,255,0.75)' }}>
-              Interactive · Real-time · Browser-native
-            </p>
-
-            <h1 className="font-display font-bold leading-[1.05] mb-6">
-              <DecodeText
-                text="Explore physics."
-                duration={950}
-                as="span"
-                className="block text-white"
-                style={{ fontSize: 'clamp(40px, 5.5vw, 74px)' }}
-              />
-              <DecodeText
-                text="In real time."
-                delay={350}
-                duration={950}
-                as="span"
-                className="block"
-                style={{
-                  fontSize: 'clamp(40px, 5.5vw, 74px)',
-                  color: '#7c8cff',
-                  textShadow: '0 0 40px rgba(124,140,255,0.28), 0 0 80px rgba(124,140,255,0.10)',
-                }}
-              />
-            </h1>
-
-            <p className="font-body leading-relaxed mb-10 max-w-[400px]"
-              style={{ fontSize: 15, color: 'rgba(255,255,255,0.75)' }}>
-              <span style={{ color: 'rgba(124,140,255,0.85)', fontWeight: 500 }}>
-                {MODULES.length} modules. Zero downloads.
-              </span>{' '}
-              From quantum tunneling to gravitational N-body — all running on your GPU, all in your browser.
-            </p>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                onClick={() => gridRef.current?.scrollIntoView({ behavior: 'smooth' })}
-                className="inline-flex items-center gap-2 font-mono-data text-[13px] tracking-[0.14em] uppercase px-6 py-3 rounded transition-all duration-200"
-                style={{
-                  border: '1px solid rgba(124,140,255,0.45)',
-                  background: 'rgba(124,140,255,0.07)',
-                  color: '#7c8cff',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(124,140,255,0.14)'
-                  e.currentTarget.style.borderColor = 'rgba(124,140,255,0.75)'
-                  e.currentTarget.style.boxShadow = '0 0 16px rgba(124,140,255,0.12)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(124,140,255,0.07)'
-                  e.currentTarget.style.borderColor = 'rgba(124,140,255,0.45)'
-                  e.currentTarget.style.boxShadow = 'none'
-                }}
-              >
-                Browse all modules →
+            <div className="hidden md:flex items-center gap-1">
+              <button type="button" className="ui-btn-ghost" onClick={() => gridRef.current?.scrollIntoView({ behavior: 'smooth' })}>Modules</button>
+              {NAV_LINKS.map((l) => (
+                <button key={l.label} type="button" className="ui-btn-ghost" onClick={() => navTo(l.event)}>{l.label}</button>
+              ))}
+              <button type="button" className="ui-btn-ghost" onClick={() => navTo('umbra-telescopes-open')}>
+                <span className="w-2 h-2 rounded-full bg-emerald-glow" aria-hidden="true" />
+                Live
               </button>
-              <span className="font-mono-data text-[12px] tracking-wider hidden sm:block"
-                style={{ color: 'rgba(255,255,255,0.75)' }}>
-                No account required
-              </span>
             </div>
-          </div>
 
-          {/* Right: floating 3D preview card */}
-          <div
-            className="shrink-0 w-full lg:w-[480px] xl:w-[520px]"
-            style={{ height: 'clamp(280px, 38vh, 420px)' }}
-          >
-            <HeroCanvas />
-          </div>
-        </section>
-
-        {/* ── Ways to explore ── */}
-        <FeatureRail />
-
-        {/* ── Stats strip ── */}
-        <div
-          className="shrink-0 flex items-stretch"
-          style={{ borderTop: '1px solid rgba(124,140,255,0.06)', borderBottom: '1px solid rgba(124,140,255,0.06)' }}
-        >
-          {STATS.map((s, i) => (
-            <div
-              key={i}
-              className="flex-1 flex flex-col items-center justify-center gap-1.5 py-7 px-4"
-              style={{ borderRight: i < STATS.length - 1 ? '1px solid rgba(124,140,255,0.06)' : 'none' }}
-            >
-              <span
-                className="font-display font-bold tabular-nums leading-none"
-                style={{
-                  fontSize: 'clamp(22px, 3vw, 36px)',
-                  color: s.live ? '#7c8cff' : '#ffffff',
-                  textShadow: s.live ? '0 0 20px rgba(124,140,255,0.5)' : '0 0 20px rgba(124,140,255,0.18)',
-                }}
-              >
-                {s.live ? <LiveParticleCount /> : s.value}
-              </span>
-              <div className="flex items-center gap-1.5">
-                {s.live && (
-                  <span className="w-1 h-1 rounded-full" style={{ background: '#7c8cff', boxShadow: '0 0 4px #7c8cff', animation: 'umbra-pulse 1.2s ease-in-out infinite' }} />
-                )}
-                <span className="font-mono-data text-[13px] tracking-[0.18em] uppercase text-center" style={{ color: '#8d8d96' }}>
-                  {s.label}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* ── Module grid header + view toggle ── */}
-        <div ref={gridRef} className="shrink-0 flex items-center gap-4 px-8 pt-10 pb-5">
-          <div className="flex-1 h-px" style={{ background: 'rgba(124,140,255,0.08)' }} />
-          <span className="font-mono-data text-[12px] tracking-[0.24em] uppercase px-1" style={{ color: '#8d8d96' }}>
-            // SELECT MODULE
-          </span>
-          <div className="flex-1 h-px" style={{ background: 'rgba(124,140,255,0.08)' }} />
-          {/* View toggle */}
-          <div className="flex shrink-0" style={{ border: '1px solid rgba(124,140,255,0.12)', borderRadius: 4, overflow: 'hidden' }}>
-            {[['grid', '≡ GRID'], ['constellation', '⊕ MAP']].map(([mode, label]) => (
+            <div className="flex items-center gap-1.5 ml-auto">
               <button
-                key={mode}
-                onClick={() => setViewMode(mode)}
-                style={{
-                  fontFamily: 'JetBrains Mono, monospace', fontSize: 12,
-                  letterSpacing: '0.1em', padding: '5px 10px', cursor: 'pointer',
-                  border: 'none', borderRight: mode === 'grid' ? '1px solid rgba(124,140,255,0.12)' : 'none',
-                  background: viewMode === mode ? 'rgba(124,140,255,0.10)' : 'transparent',
-                  color: viewMode === mode ? '#7c8cff' : 'rgba(124,140,255,0.3)',
-                  transition: 'background 0.15s, color 0.15s',
-                }}
-              >{label}</button>
+                type="button"
+                onClick={() => navTo('umbra-palette-open')}
+                className="ui-btn text-text-dim hidden sm:inline-flex"
+                aria-label="Search modules and commands"
+              >
+                <svg width="14" height="14" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                  <circle cx="4.5" cy="4.5" r="3.2" stroke="currentColor" strokeWidth="1.1"/>
+                  <path d="M7.2 7.2L9 9" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
+                </svg>
+                <span className="hidden lg:inline">Search</span>
+                <kbd className="font-mono-data text-[11px] px-1.5 rounded border border-border-subtle text-text-dim">⌘K</kbd>
+              </button>
+              <ThemeButton />
+              <button type="button" className="ui-btn-ghost w-9 px-0" onClick={() => navTo('umbra-profile-open')} aria-label="Your profile and progress" title="Profile (P)">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="5.5" r="2.8" stroke="currentColor" strokeWidth="1.3"/><path d="M2.5 14c.8-2.8 3-4.2 5.5-4.2s4.7 1.4 5.5 4.2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
+              </button>
+              <AccountButton />
+            </div>
+          </nav>
+          {/* Compact nav for small screens */}
+          <div className="md:hidden flex items-center gap-1 px-3 pb-2 overflow-x-auto thin-scroll">
+            {NAV_LINKS.map((l) => (
+              <button key={l.label} type="button" className="ui-btn-ghost h-8 shrink-0" onClick={() => navTo(l.event)}>{l.label}</button>
             ))}
+            <button type="button" className="ui-btn-ghost h-8 shrink-0" onClick={() => navTo('umbra-telescopes-open')}>Live</button>
           </div>
-        </div>
+        </header>
 
-        {/* ── Recently visited strip ── */}
-        {recentIds.length > 0 && (() => {
-          const recent = recentIds.map(id => MODULES.find(m => m.id === id)).filter(Boolean)
-          if (!recent.length) return null
-          return (
-            <div className="px-8 pb-5">
-              <p className="font-mono-data text-[12px] tracking-[0.22em] uppercase mb-3" style={{ color: 'rgba(124,140,255,0.75)' }}>
-                Recently visited
+        <div className="w-full max-w-[1280px] mx-auto">
+
+          {/* ── Hero ── */}
+          <section className="flex flex-col lg:flex-row items-center gap-10 lg:gap-14 px-4 sm:px-8 pt-12 sm:pt-16 pb-14">
+            <div className="flex-1 max-w-[560px]">
+              <p className="inline-flex items-center gap-2 min-h-7 py-1 px-3 mb-6 rounded-2xl text-[13px] font-medium text-text-dim bg-panel border border-border-subtle">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-glow" aria-hidden="true" />
+                {MODULES.length} interactive simulations · mapped to A-level & IB
               </p>
+              <h1 className="text-[clamp(36px,5vw,60px)] font-semibold leading-[1.05] tracking-[-0.025em] text-text-primary mb-5">
+                See the physics.<br />
+                <span className="text-cyan-mid">Then change it.</span>
+              </h1>
+              <p className="text-[17px] leading-relaxed text-text-dim mb-8 max-w-[480px]">
+                Real-time 3D simulations from quantum tunnelling to black holes, each with the governing
+                equation, a guided lesson and an AI tutor that sees what you see. Free, in the browser.
+              </p>
+              <div className="flex flex-wrap items-center gap-3">
+                <button type="button" onClick={() => gridRef.current?.scrollIntoView({ behavior: 'smooth' })} className="ui-btn-primary h-11 px-5 text-[15px]">
+                  Explore the modules
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3v10M4 9l4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                </button>
+                <button type="button" onClick={() => navTo('umbra-journeys-open')} className="ui-btn h-11 px-5 text-[15px]">
+                  Start a guided journey
+                </button>
+              </div>
+              <p className="mt-5 text-[13px] text-text-dim">No account needed · works on any laptop or projector</p>
+            </div>
+
+            <div className="w-full lg:w-[520px] shrink-0 rounded-2xl overflow-hidden border border-border-subtle bg-panel" style={{ height: 'clamp(280px, 42vh, 440px)' }}>
+              <HeroCanvas />
+            </div>
+          </section>
+
+          {/* ── Continue where you left off ── */}
+          {recent.length > 0 && (
+            <section className="px-4 sm:px-8 pb-10" aria-labelledby="recent-h">
+              <h2 id="recent-h" className="ui-eyebrow mb-3">Continue where you left off</h2>
               <div className="flex flex-wrap gap-2">
-                {recent.map(mod => {
+                {recent.map((mod) => {
                   const hex = ACCENT_HEX[mod.color]
                   return (
-                    <button
-                      key={mod.id}
-                      onClick={() => setActiveModule(mod.id)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 7,
-                        padding: '5px 11px',
-                        background: `${hex}0c`,
-                        border: `1px solid ${hex}28`,
-                        borderRadius: 3, cursor: 'pointer',
-                        fontFamily: 'inherit', transition: 'background 0.1s, border-color 0.1s',
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.background = `${hex}1c`; e.currentTarget.style.borderColor = `${hex}55` }}
-                      onMouseLeave={e => { e.currentTarget.style.background = `${hex}0c`; e.currentTarget.style.borderColor = `${hex}28` }}
-                    >
-                      <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, fontWeight: 700, color: hex }}>
-                        {mod.abbr}
-                      </span>
-                      <span style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12, color: 'rgba(223,242,237,0.75)', letterSpacing: '0.01em' }}>
-                        {mod.name}
-                      </span>
+                    <button key={mod.id} type="button" onClick={() => setActiveModule(mod.id)} className="ui-btn h-10 pl-2 pr-3.5">
+                      <span className="flex items-center justify-center w-6 h-6 rounded-md text-[13px] font-semibold" style={{ color: hex, background: `${hex}1a` }} aria-hidden="true">{mod.abbr}</span>
+                      {mod.name}
                     </button>
                   )
                 })}
               </div>
-            </div>
-          )
-        })()}
-
-        <main className="flex-1 px-8 pb-8">
-          {viewMode === 'constellation' ? (
-            <ConstellationMap onNavigate={setActiveModule} />
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {MODULES.map((mod, mi) => (
-                <ModuleCard
-                  key={mod.id}
-                  idx={mi}
-                  module={mod}
-                  cardRef={(el) => { cardRefs.current[mod.id] = el }}
-                  onEnter={() => setActiveModule(mod.id)}
-                  onHoverIn={(el) => { setHoveredModule(mod.id); setHoveredCardEl(el) }}
-                  onHoverOut={() => { setHoveredModule(null); setHoveredCardEl(null) }}
-                />
-              ))}
-              {unlocked && (
-                <SabrinaCard
-                  cardRef={(el) => { cardRefs.current['sabrina'] = el }}
-                  onEnter={() => setActiveModule('sabrina')}
-                  onHoverIn={() => setHoveredModule('sabrina')}
-                  onHoverOut={() => setHoveredModule(null)}
-                  bloomIn={justUnlocked}
-                />
-              )}
-            </div>
+            </section>
           )}
-        </main>
 
-        {/* ── For educators / use-cases strip ── */}
-        <section className="shrink-0 px-8 lg:px-14 pt-16 pb-14" style={{ borderTop: '1px solid rgba(124,140,255,0.07)' }}>
-          <p className="font-mono-data text-[13px] tracking-[0.28em] uppercase mb-3" style={{ color: 'rgba(124,140,255,0.75)' }}>
-            For classrooms · For the curious
-          </p>
-          <h2 className="font-display font-bold text-white mb-10" style={{ fontSize: 'clamp(26px, 3vw, 40px)' }}>
-            Physics you can hand to a student.
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-[1100px]">
-            {[
-              {
-                title: 'Teach with it',
-                desc: 'Every simulation embeds in Canvas, Moodle, Notion, or any webpage with one copied line. Project it, let students drive it, set the daily challenges as homework.',
-                accent: '#7c8cff',
-                tag: 'EMBED ANYWHERE',
-              },
-              {
-                title: 'Learn with it',
-                desc: 'Guided story journeys walk you from Galileo to Hawking. The built-in AI tutor answers questions about exactly what is on screen — no context switching.',
-                accent: '#10b981',
-                tag: 'AI-GUIDED',
-              },
-              {
-                title: 'Explore with it',
-                desc: 'Multiplayer rooms sync the simulation for everyone in them. Record clips, share exact parameter states by link, control the camera with hand gestures.',
-                accent: '#f59e0b',
-                tag: 'REAL-TIME · TOGETHER',
-              },
-            ].map((c) => (
-              <div key={c.title} className="p-6 rounded-sm" style={{
-                background: 'rgba(17,20,27,0.72)', border: `1px solid ${c.accent}26`,
-                backdropFilter: 'blur(10px)',
-              }}>
-                <div className="font-mono-data text-[12px] tracking-[0.2em] mb-3" style={{ color: c.accent }}>{c.tag}</div>
-                <div className="font-display font-bold text-[17px] text-white mb-2">{c.title}</div>
-                <p className="font-body text-[14px] leading-relaxed m-0" style={{ color: 'rgba(247,248,248,0.75)' }}>{c.desc}</p>
+          {/* ── Module catalogue ── */}
+          <section ref={gridRef} className="px-4 sm:px-8 pb-16 scroll-mt-20" aria-labelledby="modules-h">
+            <div className="flex flex-wrap items-end justify-between gap-4 mb-5">
+              <div>
+                <h2 id="modules-h" className="text-[26px] font-semibold tracking-[-0.02em] text-text-primary">Modules</h2>
+                <p className="text-[15px] text-text-dim mt-1">Pick a topic, open a simulation, and follow the lesson beside it.</p>
+              </div>
+              <div role="radiogroup" aria-label="Layout" className="flex p-1 rounded-lg bg-panel border border-border-subtle">
+                {[['grid', 'Grid'], ['constellation', 'Concept map']].map(([mode, label]) => (
+                  <button key={mode} type="button" role="radio" aria-checked={viewMode === mode} onClick={() => setViewMode(mode)}
+                    className={`h-8 px-3 rounded-md text-[13px] font-medium transition-colors ${viewMode === mode ? 'bg-panel-hover text-text-primary' : 'text-text-dim hover:text-text-primary'}`}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {viewMode === 'constellation' ? (
+              <ConstellationMap onNavigate={setActiveModule} />
+            ) : (
+              <>
+                <div role="tablist" aria-label="Filter by topic" className="flex gap-1.5 mb-6 overflow-x-auto thin-scroll pb-1">
+                  {TOPICS.map((t) => (
+                    <button key={t.id} type="button" role="tab" aria-selected={topic === t.id} onClick={() => setTopic(t.id)}
+                      className={`h-9 px-3.5 rounded-full text-[14px] font-medium whitespace-nowrap border transition-colors ${
+                        topic === t.id ? 'bg-text-primary text-ground border-text-primary' : 'bg-panel text-text-dim border-border-subtle hover:text-text-primary'
+                      }`}>
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {visibleModules.map((mod) => (
+                    <ModuleCard
+                      key={mod.id}
+                      module={mod}
+                      cardRef={(el) => { cardRefs.current[mod.id] = el }}
+                      onEnter={() => setActiveModule(mod.id)}
+                      onHoverIn={(el) => { setHoveredModule(mod.id); setHoveredCardEl(el) }}
+                      onHoverOut={() => { setHoveredModule(null); setHoveredCardEl(null) }}
+                    />
+                  ))}
+                  {unlocked && topic === 'all' && (
+                    <SabrinaCard
+                      cardRef={(el) => { cardRefs.current['sabrina'] = el }}
+                      onEnter={() => setActiveModule('sabrina')}
+                      onHoverIn={() => setHoveredModule('sabrina')}
+                      onHoverOut={() => setHoveredModule(null)}
+                      bloomIn={justUnlocked}
+                    />
+                  )}
+                </div>
+              </>
+            )}
+          </section>
+
+          {/* ── Ways to learn ── */}
+          <FeatureRail />
+
+          {/* ── For classrooms ── */}
+          <section className="px-4 sm:px-8 py-16 border-t border-border-subtle" aria-labelledby="teach-h">
+            <p className="ui-eyebrow mb-3">For classrooms</p>
+            <h2 id="teach-h" className="text-[clamp(26px,3vw,36px)] font-semibold tracking-[-0.02em] text-text-primary mb-8 max-w-[620px]">
+              Physics you can project, set as homework, and hand to a student.
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[
+                { title: 'Teach with it', desc: 'Embed any simulation in Canvas, Moodle, Notion or a webpage with one line. Present mode hides the interface for projectors.', tag: 'Embed anywhere' },
+                { title: 'Learn with it', desc: 'Guided journeys from Galileo to Hawking, predict-first checkpoints in every lesson, and an AI tutor that answers about exactly what is on screen.', tag: 'Guided' },
+                { title: 'Explore together', desc: 'Rooms keep a whole class on the same simulation. Record clips, and share exact parameter settings with a link.', tag: 'Real-time' },
+              ].map((c) => (
+                <div key={c.title} className="ui-card p-6">
+                  <p className="text-[12px] font-semibold text-cyan-mid mb-3">{c.tag}</p>
+                  <h3 className="text-[17px] font-semibold text-text-primary mb-2">{c.title}</h3>
+                  <p className="text-[15px] leading-relaxed text-text-dim">{c.desc}</p>
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-wrap items-center gap-4 mt-8">
+              <button type="button" onClick={() => navTo('umbra-pricing-open')} className="ui-btn h-11 px-5 text-[15px]">
+                School & university licensing
+              </button>
+              <span className="text-[14px] text-text-dim">Free for individual learners, forever.</span>
+            </div>
+          </section>
+
+          {/* ── Stats ── */}
+          <dl className="grid grid-cols-2 md:grid-cols-5 border-y border-border-subtle mx-4 sm:mx-8">
+            {STATS.map((st, i) => (
+              <div key={i} className="flex flex-col items-center gap-1 py-6 px-3 text-center">
+                <dd className="text-[26px] font-semibold tabular-nums text-text-primary order-1">{st.live ? <LiveParticleCount /> : st.value}</dd>
+                <dt className="text-[13px] text-text-dim order-2">{st.label}</dt>
               </div>
             ))}
-          </div>
-          <div className="flex flex-wrap items-center gap-4 mt-10">
-            <button
-              onClick={() => window.dispatchEvent(new CustomEvent('umbra-pricing-open'))}
-              className="inline-flex items-center gap-2 font-mono-data text-[13px] tracking-[0.14em] uppercase px-6 py-3 rounded cursor-pointer transition-all duration-200"
-              style={{ border: '1px solid rgba(124,140,255,0.45)', background: 'rgba(124,140,255,0.07)', color: '#7c8cff' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(124,140,255,0.14)'
-                e.currentTarget.style.borderColor = 'rgba(124,140,255,0.75)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(124,140,255,0.07)'
-                e.currentTarget.style.borderColor = 'rgba(124,140,255,0.45)'
-              }}
-            >
-              School & university licensing →
-            </button>
-            <span className="font-mono-data text-[12px] tracking-wider" style={{ color: 'rgba(255,255,255,0.75)' }}>
-              Free for individual learners, forever
-            </span>
-          </div>
-        </section>
+          </dl>
 
-        {/* ── Footer ── */}
-        <footer className="shrink-0 px-8 pb-6 pt-2">
-          <div className="h-px mb-4" style={{ background: 'rgba(124,140,255,0.06)' }} />
-          <p className="font-mono-data text-[12px] tracking-wider" style={{ color: '#8d8d96' }}>
-            UMBRA · All visualizations run in your browser — no server, no data sent.
-          </p>
-        </footer>
-      </div>
-
-      {/* Hovered module name overlay */}
-      {hoveredModule && (
-        <div
-          className="absolute bottom-5 right-8 font-mono-data text-[13px] tracking-[0.18em] uppercase pointer-events-none transition-opacity duration-200"
-          style={{ zIndex: 20, color: '#8d8d96' }}
-        >
-          {MODULES.find((m) => m.id === hoveredModule)?.name || 'For Sabrina'}
+          {/* ── Footer ── */}
+          <footer className="flex flex-wrap items-center justify-between gap-4 px-4 sm:px-8 py-8 pb-24">
+            <p className="text-[13px] text-text-dim">Umbra · every simulation runs in your browser. No data leaves your device.</p>
+            <div className="flex items-center gap-1">
+              <button type="button" className="ui-btn-ghost h-8 text-[13px]" onClick={() => navTo('umbra-about-open')}>About</button>
+              <button type="button" className="ui-btn-ghost h-8 text-[13px]" onClick={() => navTo('umbra-pricing-open')}>Pricing</button>
+              <button type="button" className="ui-btn-ghost h-8 text-[13px]" onClick={() => navTo('umbra-telescopes-open')}>Live from orbit</button>
+            </div>
+          </footer>
         </div>
-      )}
+      </div>
 
       <CardPreview moduleId={hoveredModule} cardEl={hoveredCardEl} />
     </div>

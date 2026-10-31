@@ -299,45 +299,6 @@ export default function MultiplayerRoom() {
         </div>
       )}
 
-      {/* ROOMS button — on home screen */}
-      {!activeModule && (
-        <button
-          onClick={() => setPanelOpen(v => !v)}
-          title="Multiplayer rooms — collaborate in real-time (M)"
-          style={{
-            position: 'fixed', top: 64, left: 158, zIndex: 10100,
-            display: 'flex', alignItems: 'center', gap: 7,
-            padding: '7px 13px',
-            fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.16em',
-            color: inRoom ? '#7c8cff' : panelOpen ? 'rgba(200,230,220,0.8)' : 'rgba(200,230,220,0.45)',
-            background: inRoom ? 'rgba(124,140,255,0.07)' : panelOpen ? 'rgba(255,255,255,0.04)' : 'rgba(8,9,10,0.72)',
-            border: `1px solid ${inRoom ? 'rgba(124,140,255,0.3)' : panelOpen ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.07)'}`,
-            borderRadius: 5,
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
-            cursor: 'pointer',
-            transition: 'all 0.15s',
-          }}
-        >
-          {/* People icon */}
-          <svg width="12" height="11" viewBox="0 0 12 11" fill="none">
-            <circle cx="4.5" cy="3" r="2" stroke="currentColor" strokeWidth="1.2"/>
-            <path d="M1 10c0-1.93 1.567-3.5 3.5-3.5S8 8.07 8 10" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-            <circle cx="9" cy="3.5" r="1.5" stroke="currentColor" strokeWidth="1.1" opacity="0.6"/>
-            <path d="M11 9.5c0-1.38-.895-2.5-2-2.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" opacity="0.6"/>
-          </svg>
-          ROOMS
-          {inRoom && (
-            <span style={{
-              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              width: 16, height: 16, borderRadius: '50%',
-              background: '#7c8cff', color: '#0b0d12',
-              fontSize: 11, fontWeight: 700,
-            }}>{memberCount}</span>
-          )}
-        </button>
-      )}
-
       {/* Main panel */}
       {panelOpen && (
         <div style={{

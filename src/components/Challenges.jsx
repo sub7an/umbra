@@ -210,37 +210,6 @@ export default function Challenges() {
 
   return (
     <>
-      {/* Trigger button on home screen */}
-      {!activeModule && (
-        <button
-          onClick={() => setOpen(true)}
-          style={{
-            position: 'fixed', top: 64, right: 172, zIndex: 10050,
-            display: 'flex', alignItems: 'center', gap: 7,
-            padding: '7px 14px',
-            fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.14em',
-            color: allDone ? '#10b981' : 'rgba(124,140,255,0.55)',
-            background: 'rgba(8,9,10,0.75)',
-            border: `1px solid ${allDone ? 'rgba(16,185,129,0.3)' : 'rgba(124,140,255,0.14)'}`,
-            borderRadius: 4, cursor: 'pointer', backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-            transition: 'color 0.15s, border-color 0.15s',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.color = allDone ? '#10b981' : 'rgba(124,140,255,0.9)'; e.currentTarget.style.borderColor = allDone ? 'rgba(16,185,129,0.5)' : 'rgba(124,140,255,0.35)' }}
-          onMouseLeave={e => { e.currentTarget.style.color = allDone ? '#10b981' : 'rgba(124,140,255,0.55)'; e.currentTarget.style.borderColor = allDone ? 'rgba(16,185,129,0.3)' : 'rgba(124,140,255,0.14)' }}
-        >
-          <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-            <path d="M5.5 1L6.8 4H10L7.4 6L8.3 9.5L5.5 7.5L2.7 9.5L3.6 6L1 4H4.2L5.5 1Z" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round"/>
-          </svg>
-          CHALLENGES
-          {doneToday > 0 && (
-            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: '#10b981', background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 3, padding: '1px 5px' }}>
-              {doneToday}/{CHALLENGES.length}
-            </span>
-          )}
-        </button>
-      )}
-
       {/* Verify panel when in module */}
       {showVerify && (
         <VerifyPanel challenge={active} onSuccess={handleSuccess} onDismiss={() => setActive(null)} />
