@@ -262,7 +262,7 @@ export default function ElectromagnetismModule() {
               </ControlGroup>
               <ControlGroup label="Display layers">
                 <ToggleRow label="Field lines"   value={showFieldLines} onChange={setShowFieldLines} />
-                <ToggleRow label="Heatmap slice" value={showHeatmap}    onChange={setShowHeatmap} />
+                <ToggleRow label="Iron filings slice" value={showHeatmap} onChange={setShowHeatmap} />
                 <ToggleRow label="Particle flow" value={showParticles}  onChange={setShowParticles} />
               </ControlGroup>
             </>
@@ -271,7 +271,7 @@ export default function ElectromagnetismModule() {
       }
     >
       <SceneWrapper
-        cameraPosition={isLorentz ? [4, 1, 12] : [0, 4, 9]}
+        cameraPosition={isLorentz ? [4, 1, 12] : [1.2, 1.6, 10]}
         showGrid={false}
         minDist={2}
         maxDist={22}
