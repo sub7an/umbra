@@ -122,7 +122,14 @@ export default function NBody() {
 
   // Refs for meshes and trail geos (rebuilt per preset)
   const meshRefs  = useRef([])
-  const trailGeos = useRef([])
+  // Trail geometries belong to the current preset; the rendered <line>s and
+  // the per-frame writes must use the same objects (the old ref-based rebuild
+  // swapped them on mount, so writes went to geometries nothing rendered).
+  const trailGeos = useMemo(
+    () => Array.from({ length: PRESETS[presetKey].bodies.length }, () => makeTrailGeo()),
+    [presetKey],
+  )
+  useEffect(() => () => trailGeos.forEach((g) => g.dispose()), [trailGeos])
 
   // DOM refs for live readout
   const driftRef  = useRef()
@@ -150,16 +157,11 @@ export default function NBody() {
   useEffect(() => {
     const p = PRESETS[presetKey]
     simRef.current = initSim(p)
-
-    // Rebuild trail geos
-    trailGeos.current.forEach(g => g.dispose())
-    trailGeos.current = Array.from({length: p.bodies.length}, () => makeTrailGeo())
   }, [presetKey])  // eslint-disable-line
 
   // Initial init
   useMemo(() => {
     simRef.current = initSim(preset)
-    trailGeos.current = Array.from({length: N}, () => makeTrailGeo())
     meshRefs.current = new Array(N).fill(null)
   }, [])  // eslint-disable-line
 
@@ -190,7 +192,7 @@ export default function NBody() {
       if (tr.fill < TRAIL) tr.fill++
 
       // Write trail geo
-      const geo = trailGeos.current[i]
+      const geo = trailGeos[i]
       if (!geo) continue
       const pa = geo.attributes.position, ca = geo.attributes.color
       const fill = tr.fill
@@ -210,7 +212,7 @@ export default function NBody() {
     const E0 = e0Ref.current ?? E
     const drift = Math.abs((E - E0) / (Math.abs(E0) + 1e-12)) * 100
     if (eRef.current)     eRef.current.textContent     = E.toFixed(4)
-    if (driftRef.current) driftRef.current.textContent = `ΔE/E₀ = ${drift.toFixed(4)}%`
+    if (driftRef.current) driftRef.current.textContent = `${drift.toFixed(4)}%`
   })
 
   const presetList = Object.entries(PRESETS)
@@ -237,11 +239,11 @@ export default function NBody() {
             </mesh>
 
             {/* Trail */}
-            {trailGeos.current[i] && (
-              <line geometry={trailGeos.current[i]}>
+            {trailGeos[i] && (
+              <line geometry={trailGeos[i]}>
                 <lineBasicMaterial
-                  vertexColors transparent opacity={0.75}
-                  blending={THREE.AdditiveBlending} depthWrite={false}
+                  vertexColors transparent opacity={0.95}
+                  blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false}
                 />
               </line>
             )}
@@ -249,44 +251,31 @@ export default function NBody() {
         )
       })}
 
-      {/* ── Live readout ── */}
-      <Html position={[5.5, 0, 0]} center style={{ pointerEvents: 'none' }}>
+      {/* ── Readout + presets, pinned to the scene corner ── */}
+      <Html calculatePosition={(_, __, size) => [size.width - 216, 52]} style={{ pointerEvents: 'auto' }}>
         <div style={{
-          fontFamily: 'JetBrains Mono, monospace',
-          background: 'rgba(4,6,14,0.88)',
-          border: '1px solid rgba(245,158,11,0.18)',
-          borderRadius: 3, padding: '7px 10px', minWidth: 148,
+          width: 204, padding: '10px 12px', borderRadius: 10,
+          background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
+          fontFamily: 'Inter, system-ui, sans-serif', color: 'rgb(var(--c-text))', backdropFilter: 'blur(8px)', fontSize: 12,
         }}>
-          <div style={{ fontSize: 11, color: 'rgba(245,158,11,0.75)', letterSpacing: '0.14em', marginBottom: 4 }}>
-            {preset.label.toUpperCase()}
+          <div style={{ fontSize: 13, fontWeight: 600 }}>{preset.label}</div>
+          <div style={{ color: 'rgb(var(--c-text-muted))', marginBottom: 8 }}>{preset.desc}</div>
+          <div role="radiogroup" aria-label="Orbit preset" style={{ display: 'grid', gap: 4, marginBottom: 8 }}>
+            {presetList.map(([key, p]) => (
+              <button key={key} type="button" role="radio" aria-checked={presetKey === key} onClick={() => setPresetKey(key)}
+                className="ui-btn h-8 justify-start"
+                style={presetKey === key ? { borderColor: 'rgba(251,191,36,0.6)', background: 'rgba(251,191,36,0.12)' } : undefined}>
+                {p.label}
+              </button>
+            ))}
           </div>
-          <div style={{ fontSize: 11, color: 'rgba(245,158,11,0.75)', marginBottom: 6 }}>
-            {preset.desc}
-          </div>
-          <div style={{ fontSize: 11, color: 'rgba(245,158,11,0.75)', marginBottom: 2 }}>
-            E = <span ref={eRef} style={{ color: '#fbbf24' }}>—</span>
-          </div>
-          <div ref={driftRef} style={{ fontSize: 7, color: 'rgba(245,158,11,0.75)', letterSpacing: '0.08em' }}>
-            ΔE/E₀ = —
-          </div>
-        </div>
-      </Html>
-
-      {/* ── Preset selector ── */}
-      <Html position={[0, -4.5, 0]} center style={{ pointerEvents: 'all' }}>
-        <div style={{ display: 'flex', gap: 4, fontFamily: 'JetBrains Mono,monospace' }}>
-          {presetList.map(([key, p]) => (
-            <button key={key} onClick={() => setPresetKey(key)} style={{
-              fontSize: 11, letterSpacing: '0.12em',
-              padding: '4px 10px',
-              background: presetKey === key ? 'rgba(245,158,11,0.10)' : 'rgba(4,6,14,0.85)',
-              border: `1px solid ${presetKey === key ? 'rgba(245,158,11,0.45)' : 'rgba(245,158,11,0.14)'}`,
-              color: presetKey === key ? '#fbbf24' : 'rgba(245,158,11,0.40)',
-              borderRadius: 2, cursor: 'pointer',
-            }}>
-              {p.label.toUpperCase()}
-            </button>
-          ))}
+          <dl style={{ display: 'grid', gridTemplateColumns: '1fr auto', rowGap: 4, borderTop: '1px solid rgb(var(--c-border))', paddingTop: 8 }}>
+            <dt style={{ color: 'rgb(var(--c-text-muted))' }}>Total energy E</dt>
+            <dd ref={eRef} style={{ fontFamily: 'JetBrains Mono, monospace', textAlign: 'right', color: '#fbbf24' }}>—</dd>
+            <dt style={{ color: 'rgb(var(--c-text-muted))' }}>Energy drift</dt>
+            <dd ref={driftRef} style={{ fontFamily: 'JetBrains Mono, monospace', textAlign: 'right' }}>—</dd>
+          </dl>
+          <div style={{ marginTop: 6, color: 'rgb(var(--c-text-muted))' }}>Near-zero drift = the RK4 integrator conserves energy.</div>
         </div>
       </Html>
     </group>
