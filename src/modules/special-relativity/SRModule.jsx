@@ -17,8 +17,8 @@ const VIEWS = [
 
 const CAMERA_POSITIONS = {
   lightcone: [0, 2, 9],
-  timedilation: [0, 1, 8],
-  lengthcontraction: [0, 1.5, 8],
+  timedilation: [0, 0.6, 9],
+  lengthcontraction: [0, 1.8, 8.2],
 }
 
 function buildExplanation(view, velocity, gamma, eventX, eventT) {
@@ -387,7 +387,7 @@ export default function SRModule() {
       controls={<ControlPanel title="Parameters" controls={controls} onReset={resetSr} />}
     >
       {/* Single persistent Canvas — swap content, never remount */}
-      <SceneWrapper cameraPosition={camPos}>
+      <SceneWrapper cameraPosition={camPos} idleRotate={activeView === 'lightcone'} showGrid={activeView === 'lightcone'}>
         {activeView === 'lightcone' && <LightCone />}
         {activeView === 'timedilation' && <TimeDilation />}
         {activeView === 'lengthcontraction' && <LengthContraction />}

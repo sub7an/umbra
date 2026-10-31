@@ -1,308 +1,183 @@
+// Time dilation with light clocks.
+//
+// A light clock ticks each time a photon makes a round trip between two
+// mirrors a distance H apart. In the lab frame, the moving clock's photon
+// must travel a longer diagonal path at the same speed c, so its vertical
+// speed is only c·√(1−β²) = c/γ and every tick takes γ times longer. The tick
+// counters make the ratio visible: rest ticks / moving ticks → γ.
 import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Html, RoundedBox, Line } from '@react-three/drei'
+import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 import useModuleStore from '../../store/useModuleStore'
 import { lorentzFactor } from './srMath'
 
-// ── Tick-pulse ring pool emitted by each clock ────────────────────────────────
-const RING_N = 10
-const RING_SPEED = 1.8   // units/s expansion
-const RING_MAX_R = 2.6
+const C     = 2.6   // speed of light in scene units / s
+const H     = 2.4   // mirror separation
+const SPAN  = 3.8   // how far the moving clock travels before wrapping
+const TRAIL = 220   // samples in the moving photon's zigzag trail
+const REST_X = -3.1
+const MOVE_X0 = -1.1
 
-function TickRings({ position, color, rate }) {
-  const rings = useRef(Array.from({ length: RING_N }, () => ({ r: -1, alive: false })))
-  const cooldown = useRef(rate > 0 ? 1 / rate : 9999)
-  const meshRefs = useRef(Array.from({ length: RING_N }, () => null))
-
-  const mats = useMemo(() =>
-    Array.from({ length: RING_N }, () =>
-      new THREE.MeshBasicMaterial({
-        color: new THREE.Color(color),
-        transparent: true,
-        opacity: 0,
-        side: THREE.DoubleSide,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      })
-    )
-  , [color])
-
-  useEffect(() => () => mats.forEach((m) => m.dispose()), [mats])
-
-  // keep cooldown in sync with rate prop changes (γ changes as slider moves)
-  useEffect(() => {
-    cooldown.current = rate > 0 ? 1 / rate : 9999
-  }, [rate])
-
-  const timeToNextRef = useRef(0.1)
-
-  useFrame((_, delta) => {
-    timeToNextRef.current -= delta
-    if (timeToNextRef.current <= 0) {
-      timeToNextRef.current = cooldown.current
-      const idx = rings.current.findIndex((r) => !r.alive)
-      if (idx >= 0) rings.current[idx] = { r: 0.01, alive: true }
-    }
-
-    for (let i = 0; i < RING_N; i++) {
-      const ring = rings.current[i]
-      const ref = meshRefs.current[i]
-      if (!ref) continue
-      if (!ring.alive) { mats[i].opacity = 0; continue }
-      ring.r += delta * RING_SPEED
-      if (ring.r > RING_MAX_R) { ring.alive = false; mats[i].opacity = 0; continue }
-      const p = ring.r / RING_MAX_R
-      mats[i].opacity = Math.pow(1 - p, 1.4) * 0.75
-      ref.scale.set(ring.r, ring.r, 1)
-    }
-  })
-
+function Mirror({ y, color }) {
   return (
-    <group position={position}>
-      {Array.from({ length: RING_N }, (_, i) => (
-        <mesh
-          key={i}
-          ref={(el) => { meshRefs.current[i] = el }}
-          rotation={[-Math.PI / 2, 0, 0]}
-          material={mats[i]}
-        >
-          <ringGeometry args={[0.88, 1.0, 64]} />
-        </mesh>
-      ))}
-    </group>
+    <mesh position={[0, y, 0]}>
+      <boxGeometry args={[1.3, 0.08, 0.6]} />
+      <meshStandardMaterial color="#cbd5e1" metalness={0.95} roughness={0.08} emissive={color} emissiveIntensity={0.15} />
+    </mesh>
   )
 }
 
-// ── Elapsed tick counter (column of glowing dots) ─────────────────────────────
-const DOT_INTERVAL = 0.6   // seconds of lab time per dot
-
-function TickCounter({ position, color, rate }) {
-  const dotCount = useRef(0)
-  const accum = useRef(0)
-  const MAX_DOTS = 20
-
-  const dotRefs = useRef(Array.from({ length: MAX_DOTS }, () => null))
-  const dotMats = useMemo(() =>
-    Array.from({ length: MAX_DOTS }, () =>
-      new THREE.MeshBasicMaterial({ color: new THREE.Color(color), transparent: true, opacity: 0 })
-    )
-  , [color])
-
-  useEffect(() => () => dotMats.forEach((m) => m.dispose()), [dotMats])
-
-  useFrame((_, delta) => {
-    accum.current += delta * rate
-    while (accum.current >= 1 && dotCount.current < MAX_DOTS) {
-      accum.current -= 1
-      dotMats[dotCount.current].opacity = 0.85
-      dotCount.current++
-    }
-  })
-
-  return (
-    <group position={position}>
-      {Array.from({ length: MAX_DOTS }, (_, i) => (
-        <mesh
-          key={i}
-          ref={(el) => { dotRefs.current[i] = el }}
-          position={[0, i * 0.14, 0]}
-          material={dotMats[i]}
-        >
-          <sphereGeometry args={[0.045, 6, 6]} />
-        </mesh>
-      ))}
-    </group>
-  )
-}
-
-// ── Connecting time-stream between clocks (particles flowing rightward) ───────
-const STREAM_N = 24
-function TimeStream({ gamma }) {
-  const posArr = useRef(new Float32Array(STREAM_N * 3))
-  const phases = useRef(Array.from({ length: STREAM_N }, (_, i) => i / STREAM_N))
-  const opacities = useRef(new Float32Array(STREAM_N))
-
-  const geo = useMemo(() => {
-    const g = new THREE.BufferGeometry()
-    g.setAttribute('position', new THREE.BufferAttribute(posArr.current, 3))
-    return g
-  }, [])
-
-  useEffect(() => () => geo.dispose(), [geo])
-
-  useFrame((_, delta) => {
-    const speed = 0.55
-    for (let i = 0; i < STREAM_N; i++) {
-      phases.current[i] = (phases.current[i] + delta * speed) % 1
-      const p = phases.current[i]
-      const x = -2.2 + p * 4.4
-      const y = Math.sin(p * Math.PI * 2) * 0.08
-      posArr.current[i * 3] = x
-      posArr.current[i * 3 + 1] = y
-      posArr.current[i * 3 + 2] = 0
-    }
-    geo.attributes.position.needsUpdate = true
-  })
-
-  return (
-    <points geometry={geo}>
-      <pointsMaterial
-        color="#f59e0b"
-        size={0.06}
-        transparent
-        opacity={0.45}
-        blending={THREE.AdditiveBlending}
-        depthWrite={false}
-        sizeAttenuation
-      />
-    </points>
-  )
-}
-
-// ── Clock face ────────────────────────────────────────────────────────────────
-function ClockFace({ position, color, tRef, label, sublabel }) {
-  const minuteRef = useRef()
-  const secondRef = useRef()
-
-  useFrame(() => {
-    const t = tRef.current
-    if (minuteRef.current) minuteRef.current.rotation.z = -(t % (Math.PI * 2)) * 0.5
-    if (secondRef.current) secondRef.current.rotation.z = -(t % (Math.PI * 2)) * 6
-  })
-
-  return (
-    <group position={position}>
-      {/* Outer glow disc */}
-      <mesh position={[0, 0, -0.01]}>
-        <circleGeometry args={[0.95, 48]} />
-        <meshBasicMaterial color={new THREE.Color(color)} transparent opacity={0.04} blending={THREE.AdditiveBlending} depthWrite={false} />
-      </mesh>
-
-      {/* Bezel */}
-      <RoundedBox args={[1.7, 1.7, 0.12]} radius={0.08} smoothness={4}>
-        <meshStandardMaterial color="#11141b" emissive={color} emissiveIntensity={0.06} roughness={0.8} metalness={0.3} />
-      </RoundedBox>
-
-      {/* Face disc */}
-      <mesh position={[0, 0, 0.07]}>
-        <circleGeometry args={[0.66, 48]} />
-        <meshStandardMaterial color="#07090c" roughness={0.9} />
-      </mesh>
-
-      {/* Hour markers */}
-      {Array.from({ length: 12 }).map((_, i) => {
-        const angle = (i / 12) * Math.PI * 2
-        const r = 0.54
-        const major = i % 3 === 0
-        return (
-          <mesh key={i} position={[Math.sin(angle) * r, Math.cos(angle) * r, 0.08]}>
-            <boxGeometry args={[major ? 0.04 : 0.025, major ? 0.1 : 0.06, 0.01]} />
-            <meshStandardMaterial color={color} emissive={color} emissiveIntensity={major ? 1.2 : 0.6} />
-          </mesh>
-        )
-      })}
-
-      {/* Center pivot */}
-      <mesh position={[0, 0, 0.1]}>
-        <sphereGeometry args={[0.04, 8, 8]} />
-        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={2} />
-      </mesh>
-
-      {/* Minute hand */}
-      <group ref={minuteRef} position={[0, 0, 0.09]}>
-        <mesh position={[0, 0.22, 0]}>
-          <boxGeometry args={[0.025, 0.44, 0.015]} />
-          <meshStandardMaterial color={color} emissive={color} emissiveIntensity={1.5} />
-        </mesh>
-      </group>
-
-      {/* Second hand */}
-      <group ref={secondRef} position={[0, 0, 0.1]}>
-        <mesh position={[0, 0.28, 0]}>
-          <boxGeometry args={[0.012, 0.56, 0.012]} />
-          <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={2} />
-        </mesh>
-        <mesh position={[0, -0.12, 0]}>
-          <boxGeometry args={[0.012, 0.14, 0.012]} />
-          <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={1.5} />
-        </mesh>
-      </group>
-
-      <pointLight color={color} intensity={1.0} distance={3.5} position={[0, 0, 0.5]} />
-
-      <Html position={[0, -1.1, 0]} center style={{ pointerEvents: 'none', textAlign: 'center' }}>
-        <div style={{ fontFamily: 'Inter,sans-serif', fontSize: 12, color, letterSpacing: '0.14em', whiteSpace: 'nowrap', textShadow: `0 0 6px ${color}` }}>
-          {label}
-        </div>
-        {sublabel && (
-          <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 12, color: '#4a7a74', marginTop: 3, whiteSpace: 'nowrap' }}>
-            {sublabel}
-          </div>
-        )}
-      </Html>
-    </group>
-  )
-}
-
-// ── Clock instances ───────────────────────────────────────────────────────────
-const LAB_RATE = 0.6  // rad/s
-
-function LabClock({ position }) {
-  const tRef = useRef(0)
-  useFrame((_, delta) => { tRef.current += delta * LAB_RATE })
-  return <ClockFace position={position} color="#7c8cff" tRef={tRef} label="LAB FRAME" sublabel="stationary" />
-}
-
-function MovingClock({ position, velocity, gamma }) {
-  const tRef = useRef(0)
-  useFrame((_, delta) => { tRef.current += (delta * LAB_RATE) / gamma })
-  return <ClockFace position={position} color="#e040fb" tRef={tRef} label="MOVING FRAME" sublabel={`β = ${velocity.toFixed(3)}`} />
-}
-
-// ── Main ──────────────────────────────────────────────────────────────────────
-export default function TimeDilation() {
-  const velocity = useModuleStore((s) => s.sr.velocity)
-  const gamma = lorentzFactor(velocity)
-
-  const pct = ((1 - 1 / gamma) * 100).toFixed(1)
-
-  // Tick rate = one ring per half-rotation (π rad), scaled to real time
-  const labRate = LAB_RATE / Math.PI        // rings/s for lab clock
-  const movRate = labRate / gamma           // rings/s for moving clock
-
+function ClockFrame({ color }) {
   return (
     <group>
-      {/* ── Frame labels ── */}
-      <Html position={[-2.2, 2.2, 0]} center style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'Inter,sans-serif', fontSize: 13, color: '#4a7a74', letterSpacing: '0.18em' }}>STATIONARY</span>
-      </Html>
-      <Html position={[2.2, 2.2, 0]} center style={{ pointerEvents: 'none' }}>
-        <span style={{ fontFamily: 'Inter,sans-serif', fontSize: 13, color: '#4a7a74', letterSpacing: '0.18em' }}>MOVING</span>
-      </Html>
+      <Mirror y={H / 2} color={color} />
+      <Mirror y={-H / 2} color={color} />
+      {/* struts */}
+      {[-0.6, 0.6].map((x) => (
+        <mesh key={x} position={[x, 0, -0.25]}>
+          <boxGeometry args={[0.04, H, 0.04]} />
+          <meshStandardMaterial color="#475569" metalness={0.7} roughness={0.35} />
+        </mesh>
+      ))}
+    </group>
+  )
+}
 
-      {/* ── Tick rings ── */}
-      <TickRings position={[-2.2, 0, -0.1]} color="#7c8cff" rate={labRate} />
-      <TickRings position={[2.2, 0, -0.1]} color="#e040fb" rate={movRate} />
+function Photon({ color }) {
+  return (
+    <group>
+      <mesh>
+        <sphereGeometry args={[0.09, 20, 20]} />
+        <meshBasicMaterial color="#ffffff" toneMapped={false} />
+      </mesh>
+      <mesh>
+        <sphereGeometry args={[0.2, 20, 20]} />
+        <meshBasicMaterial color={color} transparent opacity={0.35} blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
+      </mesh>
+    </group>
+  )
+}
 
-      {/* ── Elapsed tick counters ── */}
-      <TickCounter position={[-3.3, -1.3, 0]} color="#7c8cff" rate={labRate * 2} />
-      <TickCounter position={[3.0, -1.3, 0]} color="#e040fb" rate={(labRate * 2) / gamma} />
+// Triangle wave in [−H/2, H/2] for a photon moving vertically at speed vy
+function bounceY(dist) {
+  const period = 2 * H
+  const p = ((dist % period) + period) % period
+  return p < H ? -H / 2 + p : H / 2 - (p - H)
+}
 
-      {/* ── Clock faces ── */}
-      <LabClock position={[-2.2, 0, 0]} />
-      <MovingClock position={[2.2, 0, 0]} velocity={velocity} gamma={gamma} />
+export default function TimeDilation() {
+  const beta  = useModuleStore((s) => s.sr.velocity)
+  const gamma = lorentzFactor(beta)
 
-      {/* ── Time-stream connection ── */}
-      <TimeStream gamma={gamma} />
+  const restClock = useRef()
+  const restPhoton = useRef()
+  const moveClock = useRef()
+  const movePhoton = useRef()
+  const card = useRef()
 
-      {/* ── γ central readout ── */}
-      <Html position={[0, 0.55, 0]} center style={{ pointerEvents: 'none', textAlign: 'center' }}>
-        <div style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 18, color: '#f59e0b', textShadow: '0 0 10px rgba(245,158,11,0.6)', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
-          γ = {gamma.toFixed(4)}
-        </div>
-        <div style={{ fontFamily: 'Inter,sans-serif', fontSize: 12, color: '#4a7a74', marginTop: 6, letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>
-          MOVING CLOCK: {pct}% SLOWER
+  const state = useRef({ t: 0, restDist: 0, moveDist: 0, x: 0, restTicks: 0, moveTicks: 0 })
+  useEffect(() => { Object.assign(state.current, { restDist: 0, moveDist: 0, x: 0, restTicks: 0, moveTicks: 0 }) }, [beta])
+
+  const trail = useMemo(() => {
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(TRAIL * 3), 3))
+    g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(TRAIL * 3), 3))
+    g.setDrawRange(0, 0)
+    return { g, buf: new Float32Array(TRAIL * 3), n: 0, head: 0 }
+  }, [])
+  useEffect(() => () => trail.g.dispose(), [trail])
+
+  useFrame((_, delta) => {
+    const dt = Math.min(delta, 0.05)
+    const s = state.current
+    // Rest clock: photon moves vertically at c
+    const prevRest = Math.floor(s.restDist / (2 * H))
+    s.restDist += C * dt
+    if (Math.floor(s.restDist / (2 * H)) > prevRest) s.restTicks++
+    // Moving clock: horizontal speed βc, so the photon's vertical speed is c/γ
+    const prevMove = Math.floor(s.moveDist / (2 * H))
+    s.moveDist += (C / gamma) * dt
+    if (Math.floor(s.moveDist / (2 * H)) > prevMove) s.moveTicks++
+    s.x += beta * C * dt
+    let wrapped = false
+    if (s.x > SPAN) { s.x -= SPAN; wrapped = true }
+
+    if (restPhoton.current) restPhoton.current.position.set(0, bounceY(s.restDist), 0)
+    const mx = MOVE_X0 + s.x
+    const my = bounceY(s.moveDist)
+    if (moveClock.current) moveClock.current.position.x = mx
+    if (movePhoton.current) movePhoton.current.position.set(mx, my, 0)
+
+    // Zigzag trail of the moving photon (cleared when the clock wraps)
+    if (wrapped) { trail.n = 0; trail.head = 0 }
+    const i = trail.head
+    trail.buf[i * 3] = mx; trail.buf[i * 3 + 1] = my; trail.buf[i * 3 + 2] = 0
+    trail.head = (i + 1) % TRAIL
+    trail.n = Math.min(TRAIL, trail.n + 1)
+    const pos = trail.g.attributes.position.array, col = trail.g.attributes.color.array
+    for (let k = 0; k < trail.n; k++) {
+      const src = (trail.head - trail.n + k + TRAIL) % TRAIL
+      pos[k * 3] = trail.buf[src * 3]; pos[k * 3 + 1] = trail.buf[src * 3 + 1]; pos[k * 3 + 2] = 0
+      const a = k / trail.n
+      col[k * 3] = 0.98 * a; col[k * 3 + 1] = 0.75 * a; col[k * 3 + 2] = 0.3 * a
+    }
+    trail.g.attributes.position.needsUpdate = true
+    trail.g.attributes.color.needsUpdate = true
+    trail.g.setDrawRange(0, trail.n)
+
+    const c = card.current
+    if (c) {
+      const set = (sel, v) => { const el = c.querySelector(sel); if (el) el.textContent = v }
+      set('.td-rest', s.restTicks)
+      set('.td-move', s.moveTicks)
+      set('.td-ratio', s.moveTicks > 0 ? (s.restTicks / s.moveTicks).toFixed(2) : '–')
+    }
+  })
+
+  return (
+    <group position={[-0.7, 0, 0]}>
+      {/* Clock at rest */}
+      <group ref={restClock} position={[REST_X, 0, 0]}>
+        <ClockFrame color="#38bdf8" />
+        <group ref={restPhoton}><Photon color="#38bdf8" /></group>
+      </group>
+
+      {/* Moving clock + its zigzag light path */}
+      <group ref={moveClock} position={[MOVE_X0, 0, 0]}>
+        <ClockFrame color="#fbbf24" />
+      </group>
+      <group ref={movePhoton}><Photon color="#fbbf24" /></group>
+      <line geometry={trail.g} frustumCulled={false}>
+        <lineBasicMaterial vertexColors transparent opacity={0.95} toneMapped={false} />
+      </line>
+
+      {/* Track the moving clock rides along */}
+      <mesh position={[MOVE_X0 + SPAN / 2, -H / 2 - 0.22, 0]}>
+        <boxGeometry args={[SPAN + 1.6, 0.04, 0.5]} />
+        <meshStandardMaterial color="#1e293b" metalness={0.6} roughness={0.5} />
+      </mesh>
+
+      <Html calculatePosition={(_, __, size) => [size.width - 216, 52]} style={{ pointerEvents: 'none' }}>
+        <div ref={card} style={{
+          width: 204, padding: '10px 12px', borderRadius: 10,
+          background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
+          fontFamily: 'Inter, system-ui, sans-serif', color: 'rgb(var(--c-text))', backdropFilter: 'blur(8px)', fontSize: 12,
+        }}>
+          <div style={{ fontSize: 13, fontWeight: 600 }}>Light clocks</div>
+          <div style={{ color: 'rgb(var(--c-text-muted))', marginBottom: 8 }}>
+            One tick = light bouncing down and back. The moving photon zigzags a longer path at the same speed c, so it ticks slower.
+          </div>
+          <dl style={{ display: 'grid', gridTemplateColumns: '1fr auto', rowGap: 4 }}>
+            <dt><span style={{ color: '#38bdf8' }}>●</span> Clock at rest</dt>
+            <dd className="td-rest" style={{ fontFamily: 'JetBrains Mono, monospace', textAlign: 'right' }}>0</dd>
+            <dt><span style={{ color: '#fbbf24' }}>●</span> Moving clock (β = {beta.toFixed(2)})</dt>
+            <dd className="td-move" style={{ fontFamily: 'JetBrains Mono, monospace', textAlign: 'right' }}>0</dd>
+            <dt style={{ color: 'rgb(var(--c-text-muted))' }}>Tick ratio</dt>
+            <dd className="td-ratio" style={{ fontFamily: 'JetBrains Mono, monospace', textAlign: 'right', color: '#fbbf24' }}>–</dd>
+            <dt style={{ color: 'rgb(var(--c-text-muted))' }}>γ = 1/√(1−β²)</dt>
+            <dd style={{ fontFamily: 'JetBrains Mono, monospace', textAlign: 'right', color: '#fbbf24' }}>{gamma.toFixed(2)}</dd>
+          </dl>
         </div>
       </Html>
     </group>
