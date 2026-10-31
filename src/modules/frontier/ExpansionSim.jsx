@@ -12,13 +12,13 @@ const EXPAND_MAX = 2.6    // reset expansion when a reaches this
 const EXPAND_RATE= 0.065  // a units per scene-second (at hubble=1)
 
 // ── Redshift color: blue-white at d=0 → orange-red at max separation ─────────
-function redshiftColor(comoving, a, hubble) {
-  const properD  = comoving * a
-  const zVis     = Math.min(hubble * properD * 0.28, 1.0)  // visual z in [0,1]
-  const r = 0.75 + 0.25 * zVis
-  const g = 0.82 - 0.32 * zVis
-  const b = 1.00 - 0.55 * zVis
-  return new THREE.Color(r, g, b)
+const NEAR = new THREE.Color('#93c5fd')
+const MIDZ = new THREE.Color('#fde68a')
+const FAR  = new THREE.Color('#f87171')
+function redshiftColor(comoving, a, hubble, out = new THREE.Color()) {
+  const properD = comoving * a
+  const zVis    = Math.min(hubble * properD * 0.16, 1.0) // visual z in [0,1]
+  return zVis < 0.5 ? out.copy(NEAR).lerp(MIDZ, zVis * 2) : out.copy(MIDZ).lerp(FAR, (zVis - 0.5) * 2)
 }
 
 function buildGrid() {
@@ -121,13 +121,8 @@ function HubbleSphere({ hubble }) {
       })}
 
       <Html position={[radius * 0.72, 0, radius * 0.72]} center style={{ pointerEvents: 'none' }}>
-        <div style={{
-          fontFamily: 'JetBrains Mono, monospace',
-          fontSize: 11, color: '#38bdf8',
-          letterSpacing: '0.12em',
-          textShadow: '0 0 6px rgba(56,189,248,0.5)',
-        }}>
-          c/H₀
+        <div style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: 12, fontWeight: 600, color: '#7dd3fc', whiteSpace: 'nowrap' }}>
+          Hubble radius c/H₀
         </div>
       </Html>
     </>
@@ -135,7 +130,11 @@ function HubbleSphere({ hubble }) {
 }
 
 // ── Grid reference lines ──────────────────────────────────────────────────────
-function GridLines() {
+// Comoving grid: it stretches with the scale factor a — space itself expands,
+// galaxies are not flying through a fixed grid.
+function GridLines({ scaleRef }) {
+  const ref = useRef()
+  useFrame(() => { if (ref.current) ref.current.scale.setScalar(scaleRef.current) })
   const extent = GRID_N * SPACING * 1.0
   const geo = useMemo(() => {
     const pts = []
@@ -148,8 +147,8 @@ function GridLines() {
   }, [])
   useEffect(() => () => geo.dispose(), [geo])
   return (
-    <lineSegments geometry={geo}>
-      <lineBasicMaterial color="#0c1a24" transparent opacity={0.5} />
+    <lineSegments ref={ref} geometry={geo}>
+      <lineBasicMaterial color="#334155" transparent opacity={0.55} />
     </lineSegments>
   )
 }
@@ -163,119 +162,113 @@ export default function ExpansionSim() {
 
   const instancedRef = useRef()
   const dummy        = useMemo(() => new THREE.Object3D(), [])
+  const col          = useMemo(() => new THREE.Color(), [])
   const timeRef      = useRef(0)
   const scaleRef     = useRef(1)
-  const scaleReadRef = useRef()
-  const aRef         = useRef(1)
+  const cardRef      = useRef()
+  const plotClock    = useRef(0)
+
+  // Hubble-diagram axis limits (max proper distance in the run)
+  const D_MAX = Math.SQRT2 * (GRID_N - 1) / 2 * SPACING * EXPAND_MAX
+  const V_MAX = D_MAX * 2.5
 
   useFrame((_, delta) => {
     timeRef.current += delta * EXPAND_RATE * hubble
-
     let a = 1 + timeRef.current
-    if (a > EXPAND_MAX) {
-      // Hard reset — monotonic expansion then snap back to start
-      timeRef.current = 0
-      a = 1
-    }
+    if (a > EXPAND_MAX) { timeRef.current = 0; a = 1 } // monotonic expansion, then restart
     scaleRef.current = a
-    aRef.current = a
 
-    if (!instancedRef.current) return
-
+    const inst = instancedRef.current
+    if (!inst) return
     for (let i = 0; i < N; i++) {
       const { x: x0, z: z0, comoving } = gridPositions[i]
       dummy.position.set(x0 * a, 0, z0 * a)
-      dummy.scale.setScalar(0.10)
+      dummy.rotation.set(0, i * 1.7, 0.35)
+      dummy.scale.set(0.15, 0.04, 0.15) // flattened disc galaxies
       dummy.updateMatrix()
-      instancedRef.current.setMatrixAt(i, dummy.matrix)
-
-      // Redshift coloring per-frame
-      instancedRef.current.setColorAt(i, redshiftColor(comoving, a, hubble))
+      inst.setMatrixAt(i, dummy.matrix)
+      inst.setColorAt(i, redshiftColor(comoving, a, hubble, col))
     }
-    instancedRef.current.instanceMatrix.needsUpdate = true
-    if (instancedRef.current.instanceColor)
-      instancedRef.current.instanceColor.needsUpdate = true
+    inst.instanceMatrix.needsUpdate = true
+    if (inst.instanceColor) inst.instanceColor.needsUpdate = true
 
-    // Scale readout
-    if (scaleReadRef.current)
-      scaleReadRef.current.textContent = `a = ${a.toFixed(2)}`
+    // Card: scale factor + live Hubble diagram (v = H₀·d for every galaxy)
+    const card = cardRef.current
+    if (!card) return
+    const aEl = card.querySelector('.x-a')
+    if (aEl) aEl.textContent = a.toFixed(2)
+    plotClock.current += delta
+    if (plotClock.current < 0.2) return
+    plotClock.current = 0
+    const dots = card.querySelectorAll('.x-dot')
+    for (let i = 0; i < N && i < dots.length; i++) {
+      const d = gridPositions[i].comoving * a
+      const v = hubbleExpansion(d, hubble)
+      dots[i].setAttribute('cx', ((d / D_MAX) * 100).toFixed(1))
+      dots[i].setAttribute('cy', (100 - Math.min(1, v / V_MAX) * 100).toFixed(1))
+      dots[i].setAttribute('fill', `#${redshiftColor(gridPositions[i].comoving, a, hubble, col).getHexString()}`)
+    }
   })
+
+  const lineEnd = Math.min(1, (hubbleExpansion(D_MAX, hubble)) / V_MAX)
 
   return (
     <group>
-      <ambientLight intensity={0.06} color="#060a18" />
-      <pointLight position={[0, 12, 0]} intensity={0.5} color="#d4e8ff" distance={20} decay={2} />
-      <pointLight position={[0, 3, 0]}  intensity={0.8} color="#fff8d0" distance={5} decay={2} />
-
-      {/* Reference galaxy — Milky Way analogue, always at origin */}
+      {/* You: reference galaxy at the origin */}
       <mesh>
-        <sphereGeometry args={[0.20, 14, 14]} />
-        <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={1.4} />
+        <sphereGeometry args={[0.2, 20, 20]} />
+        <meshStandardMaterial color="#fbbf24" emissive="#f59e0b" emissiveIntensity={1.6} />
       </mesh>
-      <pointLight color="#f59e0b" intensity={1.6} distance={3.5} decay={2} />
-
-      <Html position={[0, 0.5, 0]} center style={{ pointerEvents: 'none' }}>
-        <div style={{
-          fontFamily: 'JetBrains Mono, monospace',
-          fontSize: 11, color: '#f59e0b',
-          letterSpacing: '0.10em',
-          textShadow: '0 0 8px rgba(245,158,11,0.7)',
-        }}>★ YOU</div>
+      <Html position={[0, 0.55, 0]} center style={{ pointerEvents: 'none' }}>
+        <span style={{ ...LABEL, color: '#fbbf24' }}>You are here</span>
       </Html>
 
-      {/* Expanding galaxies with per-frame redshift color */}
+      {/* Galaxies, coloured by redshift */}
       <instancedMesh ref={instancedRef} args={[null, null, N]}>
-        <sphereGeometry args={[1, 8, 8]} />
-        <meshStandardMaterial
-          color="#ffffff" emissive="#aac8ff"
-          emissiveIntensity={0.55} toneMapped={false}
-        />
+        <sphereGeometry args={[1, 16, 12]} />
+        <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={0.35} roughness={0.5} />
       </instancedMesh>
 
-      {/* Velocity arrows */}
       <VelocityArrows gridPositions={gridPositions} hubble={hubble} scaleRef={scaleRef} />
-
-      {/* Hubble sphere boundary */}
       <HubbleSphere hubble={hubble} />
+      <GridLines scaleRef={scaleRef} />
 
-      {/* Grid */}
-      <GridLines />
-
-      {/* Scale factor readout */}
-      <Html position={[3.2, 0, -3.2]} center style={{ pointerEvents: 'none' }}>
-        <div style={{
-          fontFamily: 'JetBrains Mono, monospace',
-          background: 'rgba(4,6,14,0.82)',
-          border: '1px solid rgba(56,189,248,0.18)',
-          borderRadius: 3, padding: '5px 10px',
+      {/* Pinned card */}
+      <Html calculatePosition={(_, __, size) => [size.width - 216, 52]} style={{ pointerEvents: 'none' }}>
+        <div ref={cardRef} style={{
+          width: 204, padding: '10px 12px', borderRadius: 10,
+          background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
+          fontFamily: 'Inter, system-ui, sans-serif', color: 'rgb(var(--c-text))', backdropFilter: 'blur(8px)', fontSize: 12,
         }}>
-          <div ref={scaleReadRef} style={{ fontSize: 13, color: '#38bdf8', letterSpacing: '0.1em' }}>
-            a = 1.00
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+            <span style={{ fontSize: 13, fontWeight: 600 }}>Hubble's law</span>
+            <span style={{ color: 'rgb(var(--c-text-muted))' }}>a = <span className="x-a" style={{ fontFamily: 'JetBrains Mono, monospace', color: 'rgb(var(--c-text))' }}>1.00</span></span>
           </div>
-          <div style={{ fontSize: 11, color: 'rgba(56,189,248,0.75)', letterSpacing: '0.12em', marginTop: 2 }}>
-            SCALE FACTOR
+          <div style={{ color: 'rgb(var(--c-text-muted))', marginBottom: 6 }}>Every galaxy: recession speed vs distance</div>
+          <div style={{ position: 'relative', height: 96, borderLeft: '1px solid rgb(var(--c-border))', borderBottom: '1px solid rgb(var(--c-border))' }}>
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }}>
+              <line x1="0" y1="100" x2="100" y2={100 - lineEnd * 100} stroke="#fbbf24" strokeWidth="1.2" strokeDasharray="3 2" vectorEffect="non-scaling-stroke" />
+              {gridPositions.map((_, i) => <circle key={i} className="x-dot" r="2.2" cx="0" cy="100" fill="#93c5fd" />)}
+            </svg>
+            <span style={{ position: 'absolute', left: 4, top: 2, fontSize: 11, color: 'rgb(var(--c-text-muted))' }}>v</span>
           </div>
-        </div>
-      </Html>
-
-      {/* Legend */}
-      <Html position={[-3.5, 0, -3.2]} center style={{ pointerEvents: 'none' }}>
-        <div style={{
-          fontFamily: 'JetBrains Mono, monospace',
-          fontSize: 11, color: 'rgba(180,200,240,0.75)',
-          lineHeight: 1.7,
-          letterSpacing: '0.10em',
-          background: 'rgba(4,6,14,0.75)',
-          border: '1px solid rgba(255,255,255,0.05)',
-          borderRadius: 3, padding: '5px 9px',
-        }}>
-          <div style={{ color: '#38bdf8', marginBottom: 2 }}>BLUE → RED</div>
-          <div>Cosmological redshift</div>
-          <div>z ∝ H₀ · d</div>
-          <div style={{ marginTop: 5, color: '#f59e0b' }}>── ARROWS</div>
-          <div>v = H₀ · d (Hubble law)</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'rgb(var(--c-text-muted))', marginTop: 3 }}>
+            <span>0</span><span>distance d →</span>
+          </div>
+          <div style={{ marginTop: 6, color: 'rgb(var(--c-text-muted))' }}>
+            <span style={{ color: '#fbbf24' }}>- -</span> slope = H₀ (v = H₀d)
+          </div>
+          <div style={{ height: 8, borderRadius: 3, marginTop: 8, background: 'linear-gradient(90deg, #93c5fd, #fde68a, #f87171)' }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginTop: 3, color: 'rgb(var(--c-text-muted))' }}>
+            <span>near · low z</span><span>far · redshifted</span>
+          </div>
+          <div style={{ marginTop: 8, color: 'rgb(var(--c-text-muted))' }}>
+            The grid stretches too: space itself expands.
+          </div>
         </div>
       </Html>
     </group>
   )
 }
+
+const LABEL = { fontFamily: 'Inter, system-ui, sans-serif', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }
