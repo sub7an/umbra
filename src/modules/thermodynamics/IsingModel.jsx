@@ -41,9 +41,11 @@ export default function IsingModel({ temperature }) {
   const meshRef  = useRef()
   const dummy    = useMemo(() => new THREE.Object3D(), [])
 
-  // DOM refs for live readout
+  // DOM refs for live readout + |M|(t) trace
   const mDom = useRef()
   const eDom = useRef()
+  const traceDom = useRef()
+  const trace = useMemo(() => ({ v: new Float32Array(100), n: 0, clock: 0 }), [])
 
   // Reset lattice when temperature crosses Tc
   const prevPhaseRef = useRef(temperature < TC ? 'ferro' : 'para')
@@ -104,7 +106,23 @@ export default function IsingModel({ temperature }) {
     const E = sumE / N
     if (mDom.current) mDom.current.textContent = M.toFixed(3)
     if (eDom.current) eDom.current.textContent = E.toFixed(3)
+
+    trace.clock += 1 / 60
+    if (trace.clock >= 0.2) {
+      trace.clock = 0
+      if (trace.n < trace.v.length) trace.v[trace.n++] = M
+      else { trace.v.copyWithin(0, 1); trace.v[trace.v.length - 1] = M }
+      if (traceDom.current && trace.n > 1) {
+        const pts = []
+        for (let k = 0; k < trace.n; k++) pts.push(`${(k / (trace.v.length - 1) * 100).toFixed(1)},${(100 - trace.v[k] * 92).toFixed(1)}`)
+        traceDom.current.setAttribute('points', pts.join(' '))
+      }
+    }
   })
+
+  const ordered = temperature < TC
+  const tPos = Math.min(100, (temperature / 3) * 100)
+  const tcPos = (TC / 3) * 100
 
   const gridSpan = (L - 1) * SPACING / 2
 
@@ -124,30 +142,46 @@ export default function IsingModel({ temperature }) {
         <lineBasicMaterial color="#0d2030" transparent opacity={0.5} />
       </lineSegments>
 
-      {/* ── Live readout (un-rotate back to world space) ── */}
-      <group rotation={[Math.PI / 2, 0, 0]}>
-        <Html position={[gridSpan + 0.6, 0, -1.0]} center style={{ pointerEvents: 'none' }}>
-          <div style={{
-            fontFamily: 'JetBrains Mono, monospace',
-            background: 'rgba(3,8,16,0.90)',
-            border: '1px solid rgba(56,189,248,0.20)',
-            borderRadius: 3, padding: '7px 10px', minWidth: 128,
-          }}>
-            <div style={{ fontSize: 11, color: 'rgba(56,189,248,0.75)', letterSpacing: '0.14em', marginBottom: 5 }}>
-              ORDER PARAM
-            </div>
-            <div style={{ fontSize: 11, color: 'rgba(56,189,248,0.75)', marginBottom: 2 }}>
-              |M| = <span ref={mDom} style={{ color: '#38bdf8' }}>—</span>
-            </div>
-            <div style={{ fontSize: 11, color: 'rgba(251,191,36,0.75)', marginBottom: 4 }}>
-              E/N = <span ref={eDom} style={{ color: '#fbbf24' }}>—</span>
-            </div>
-            <div style={{ fontSize: 7, color: 'rgba(56,189,248,0.75)' }}>
-              T_c ≈ {TC.toFixed(3)}
-            </div>
+      {/* ── Live readout, pinned to the scene corner ── */}
+      <Html calculatePosition={(_, __, size) => [size.width - 216, 52]} style={{ pointerEvents: 'none' }}>
+        <div style={{
+          width: 204, padding: '10px 12px', borderRadius: 10,
+          background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
+          fontFamily: 'Inter, system-ui, sans-serif', color: 'rgb(var(--c-text))', backdropFilter: 'blur(8px)', fontSize: 12,
+        }}>
+          <div style={{ fontSize: 13, fontWeight: 600 }}>Phase transition</div>
+          <div style={{ color: ordered ? '#38bdf8' : '#f472b6', marginBottom: 8 }}>
+            {ordered ? 'Ordered — ferromagnet (T < T_c)' : 'Disordered — paramagnet (T > T_c)'}
           </div>
-        </Html>
-      </group>
+
+          {/* Temperature scale with the critical point */}
+          <div style={{ position: 'relative', height: 8, borderRadius: 4, background: 'linear-gradient(90deg, #38bdf8, #a78bfa 75%, #f472b6)' }}>
+            <div style={{ position: 'absolute', left: `${tcPos}%`, top: -4, bottom: -4, borderLeft: '2px solid #fbbf24' }} />
+            <div style={{ position: 'absolute', left: `calc(${tPos}% - 6px)`, top: -3, width: 12, height: 14, borderRadius: 3, background: 'rgb(var(--c-text))' }} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginTop: 4, color: 'rgb(var(--c-text-muted))' }}>
+            <span>T = {temperature.toFixed(2)}</span><span style={{ color: '#fbbf24' }}>T_c ≈ {TC.toFixed(3)}</span>
+          </div>
+
+          <div style={{ position: 'relative', height: 54, margin: '10px 0 4px', borderLeft: '1px solid rgb(var(--c-border))', borderBottom: '1px solid rgb(var(--c-border))' }}>
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+              <polyline ref={traceDom} fill="none" stroke="#38bdf8" strokeWidth="2" vectorEffect="non-scaling-stroke" points="" />
+            </svg>
+            <span style={{ position: 'absolute', left: 4, top: 0, fontSize: 11, color: 'rgb(var(--c-text-muted))' }}>|M|(t)</span>
+          </div>
+
+          <dl style={{ display: 'grid', gridTemplateColumns: '1fr auto', rowGap: 4, borderTop: '1px solid rgb(var(--c-border))', paddingTop: 8 }}>
+            <dt style={{ color: 'rgb(var(--c-text-muted))' }}>Magnetisation |M|</dt>
+            <dd ref={mDom} style={{ fontFamily: 'JetBrains Mono, monospace', textAlign: 'right', color: '#38bdf8' }}>—</dd>
+            <dt style={{ color: 'rgb(var(--c-text-muted))' }}>Energy per spin E/N</dt>
+            <dd ref={eDom} style={{ fontFamily: 'JetBrains Mono, monospace', textAlign: 'right', color: '#fbbf24' }}>—</dd>
+          </dl>
+          <div style={{ display: 'flex', gap: 10, marginTop: 8, color: 'rgb(var(--c-text-muted))' }}>
+            <span><span style={{ color: '#38bdf8' }}>■</span> spin up</span>
+            <span><span style={{ color: '#f472b6' }}>■</span> spin down</span>
+          </div>
+        </div>
+      </Html>
     </group>
   )
 }
