@@ -5,6 +5,7 @@ import * as THREE from 'three'
 const GRID = 64
 const SIZE = 8
 const G2 = 32
+const WIRE_VERTS = (G2 + 1) * GRID * 4
 
 function warpY(x, z, mass) {
   const r = Math.sqrt(x * x + z * z)
@@ -26,7 +27,10 @@ const FRAG = `
     vec3 c1 = vec3(0.30, 0.14, 0.04);
     vec3 c2 = vec3(0.90, 0.40, 0.05);
     vec3 col = t < 0.5 ? mix(c0, c1, t * 2.0) : mix(c1, c2, (t - 0.5) * 2.0);
-    gl_FragColor = vec4(col, 0.94);
+    // Colours above are authored in sRGB; the post-processing chain treats
+    // shader output as linear and encodes it at the end, so convert here or
+    // the surface washes out to a pale grey.
+    gl_FragColor = vec4(pow(col, vec3(2.2)), 0.94);
   }
 `
 
@@ -126,15 +130,10 @@ export default function SpacetimeCurvature({ mass }) {
     sg.setAttribute('position', new THREE.BufferAttribute(posArr, 3))
     sg.setIndex(idxArr)
 
-    const wireVerts = new Float32Array((G2 + 1) * 4 * 3)
-    let vi = 0
-    for (let i = 0; i <= G2; i++) {
-      const s = (i / G2 - 0.5) * SIZE * 2
-      wireVerts[vi++] = -SIZE; wireVerts[vi++] = 0; wireVerts[vi++] = s
-      wireVerts[vi++] =  SIZE; wireVerts[vi++] = 0; wireVerts[vi++] = s
-      wireVerts[vi++] = s;     wireVerts[vi++] = 0; wireVerts[vi++] = -SIZE
-      wireVerts[vi++] = s;     wireVerts[vi++] = 0; wireVerts[vi++] =  SIZE
-    }
+    // Grid lines that follow the curvature: every line is split into GRID
+    // short segments so it dips into the well instead of cutting straight
+    // across it. (G2 + 1) lines in each direction, 2 vertices per segment.
+    const wireVerts = new Float32Array(WIRE_VERTS * 3)
     const wg = new THREE.BufferGeometry()
     wg.setAttribute('position', new THREE.BufferAttribute(wireVerts, 3))
 
@@ -160,10 +159,16 @@ export default function SpacetimeCurvature({ mass }) {
     let vi = 0
     for (let i = 0; i <= G2; i++) {
       const s = (i / G2 - 0.5) * SIZE * 2
-      wPos.setXYZ(vi++, -SIZE, warpY(-SIZE, s, m), s)
-      wPos.setXYZ(vi++,  SIZE, warpY( SIZE, s, m), s)
-      wPos.setXYZ(vi++, s, warpY(s, -SIZE, m), -SIZE)
-      wPos.setXYZ(vi++, s, warpY(s,  SIZE, m),  SIZE)
+      for (let k = 0; k < GRID; k++) {
+        const a = (k / GRID - 0.5) * SIZE * 2
+        const b = ((k + 1) / GRID - 0.5) * SIZE * 2
+        // line along x at z = s
+        wPos.setXYZ(vi++, a, warpY(a, s, m) + 0.01, s)
+        wPos.setXYZ(vi++, b, warpY(b, s, m) + 0.01, s)
+        // line along z at x = s
+        wPos.setXYZ(vi++, s, warpY(s, a, m) + 0.01, a)
+        wPos.setXYZ(vi++, s, warpY(s, b, m) + 0.01, b)
+      }
     }
     wPos.needsUpdate = true
 
@@ -192,7 +197,7 @@ export default function SpacetimeCurvature({ mass }) {
       </mesh>
 
       <lineSegments ref={wireRef} geometry={wireGeo} frustumCulled={false}>
-        <lineBasicMaterial color="#7c8cff" transparent opacity={0.22} />
+        <lineBasicMaterial color="#a5b0ff" transparent opacity={0.35} depthWrite={false} />
       </lineSegments>
 
       {/* Infalling matter swirl */}

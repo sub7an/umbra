@@ -1,17 +1,27 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { OrbitControls, Grid, MeshReflectorMaterial } from '@react-three/drei'
+import { OrbitControls, Grid, MeshReflectorMaterial, Environment, Lightformer } from '@react-three/drei'
 import * as THREE from 'three'
 import { useGesture } from '../context/GestureContext'
 import CinematicEffects from './CinematicEffects'
 
+// Studio-style lighting for every module. A small procedural environment
+// (built from Lightformers, so nothing is downloaded) gives physical
+// materials real reflections and readable form; key/fill/rim lights add
+// shading direction. Emissive/additive sims are unaffected.
 function DefaultLighting() {
   return (
     <>
-      <ambientLight intensity={0.15} color="#0a2030" />
-      <directionalLight position={[5, 8, 5]} intensity={0.6} color="#c0f0e8" castShadow />
-      <pointLight position={[-4, 4, -4]} intensity={0.3} color="#7c8cff" />
-      <pointLight position={[4, -2, 4]} intensity={0.15} color="#f59e0b" />
+      <hemisphereLight args={['#c7d2ff', '#0b0d12', 0.55]} />
+      <directionalLight position={[6, 9, 5]} intensity={1.15} color="#f2f4ff" />
+      <directionalLight position={[-7, 3, -4]} intensity={0.35} color="#7c8cff" />
+      <pointLight position={[0, -3, 6]} intensity={0.25} color="#fbbf24" distance={20} />
+      <Environment resolution={128} frames={1}>
+        <Lightformer form="rect" intensity={2.2} color="#ffffff" position={[0, 6, -6]} scale={[10, 3, 1]} />
+        <Lightformer form="rect" intensity={1.2} color="#a5b0ff" position={[-8, 2, 2]} rotation-y={Math.PI / 2} scale={[8, 4, 1]} />
+        <Lightformer form="rect" intensity={0.8} color="#fde68a" position={[8, 1, 2]} rotation-y={-Math.PI / 2} scale={[6, 3, 1]} />
+        <Lightformer form="ring" intensity={1.5} color="#ffffff" position={[0, 10, 0]} rotation-x={Math.PI / 2} scale={4} />
+      </Environment>
     </>
   )
 }
@@ -41,12 +51,12 @@ function CinematicFloor() {
       <Grid
         args={[20, 20]}
         cellSize={1}
-        cellThickness={0.4}
-        cellColor="#16161c"
+        cellThickness={0.5}
+        cellColor="#1e2330"
         sectionSize={5}
-        sectionThickness={0.8}
-        sectionColor="#232332"
-        fadeDistance={18}
+        sectionThickness={1}
+        sectionColor="#3a4260"
+        fadeDistance={22}
         fadeStrength={1.2}
         infiniteGrid={false}
         position={[0, -0.01, 0]}

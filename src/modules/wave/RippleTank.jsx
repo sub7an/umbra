@@ -32,7 +32,8 @@ const FRAG = /* glsl */`
     vec3 col = t < 0.5
       ? mix(deep, mid, t * 2.0)
       : mix(mid, peak, pow((t - 0.5) * 2.0, 1.4));
-    gl_FragColor = vec4(col, 0.97);
+    // sRGB-authored colour → linear (the post-processing chain encodes on output)
+    gl_FragColor = vec4(pow(max(col, 0.0), vec3(2.2)), 0.97);
   }
 `
 

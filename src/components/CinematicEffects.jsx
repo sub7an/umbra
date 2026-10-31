@@ -1,23 +1,21 @@
-import { EffectComposer, Bloom, ChromaticAberration, Vignette } from '@react-three/postprocessing'
+import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing'
 
-/**
- * Shared film-grade post-processing stack.
- * Bloom for light bleed, faint chromatic fringing at the frame edge,
- * vignette to pull the eye centre-frame. No depth of field — it blurs
- * wide simulations where the whole scene is the subject.
- */
-export default function CinematicEffects({ bloomIntensity = 0.9 }) {
+// Post-processing tuned for legibility: bloom only on genuinely bright
+// emitters with a tight halo (5 mip levels, so one hot core can't haze the
+// whole frame and thin lines, rays and grids stay crisp), a light vignette
+// to focus the eye, and no chromatic aberration (it smeared fine detail).
+export default function CinematicEffects({ bloomIntensity = 0.75 }) {
   return (
     <EffectComposer multisampling={4}>
       <Bloom
         intensity={bloomIntensity}
-        luminanceThreshold={0.3}
-        luminanceSmoothing={0.3}
+        luminanceThreshold={0.8}
+        luminanceSmoothing={0.2}
         mipmapBlur
-        radius={0.6}
+        levels={5}
+        radius={0.45}
       />
-      <ChromaticAberration offset={[0.0004, 0.0004]} radialModulation modulationOffset={0.6} />
-      <Vignette eskil={false} offset={0.22} darkness={0.65} />
+      <Vignette eskil={false} offset={0.3} darkness={0.45} />
     </EffectComposer>
   )
 }
