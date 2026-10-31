@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useEffect, useCallback } from 'react'
+import { Fragment, useState, useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import * as THREE from 'three'
@@ -191,19 +191,153 @@ function PolarJets({ Rs }) {
   )
 }
 
+// ── Shadow: an opaque core so the far side of the flat disc is hidden behind
+//    the hole (it reappears lensed, below) ─────────────────────────────────────
+function Shadow({ Rs }) {
+  return (
+    <mesh renderOrder={1}>
+      <sphereGeometry args={[Rs * 2.45, 48, 48]} />
+      <meshBasicMaterial color="#000000" />
+    </mesh>
+  )
+}
+
+// ── Lensed image of the disc ──────────────────────────────────────────────────
+// Light from the far side of the disc is bent over the top and under the
+// bottom of the shadow. Approximated as a camera-facing glow: a thin photon
+// ring hugging the shadow plus broad arcs above/below, Doppler-brighter on the
+// side moving toward the camera, and fading to a symmetric ring face-on.
+const LENS_VERT = /* glsl */`
+varying vec2 vP;
+void main() { vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+`
+const LENS_FRAG = /* glsl */`
+uniform float uB;        // critical impact parameter (shadow radius)
+uniform float uTime;
+uniform float uSide;     // +1: approaching side is screen-right, −1: screen-left
+uniform float uEdgeOn;   // 1 = camera in the disc plane, 0 = face-on
+varying vec2 vP;
+void main() {
+  float r = length(vP) / uB;
+  float psi = atan(vP.y, vP.x);
+  if (r < 1.0) discard;
+  // Thin photon ring just outside the shadow
+  float ring = exp(-pow((r - 1.04) / 0.035, 2.0)) * 1.6;
+  // Broad lensed arcs, strongest over the top and bottom when seen edge-on
+  float vert = mix(1.0, pow(abs(sin(psi)), 1.6), uEdgeOn);
+  float arc  = exp(-(r - 1.05) / 0.32) * smoothstep(1.0, 1.08, r) * vert;
+  // Swirling texture moving round the hole
+  float swirl = 0.65 + 0.35 * sin(psi * 7.0 - uTime * 1.6 + r * 9.0);
+  // Doppler: brighter on the approaching side
+  float dop = 1.0 + 0.75 * uSide * cos(psi);
+  float I = (ring + arc * swirl) * max(dop, 0.15);
+  vec3 col = mix(vec3(1.0, 0.55, 0.15), vec3(1.0, 0.93, 0.78), clamp(ring, 0.0, 1.0));
+  float a = clamp(I, 0.0, 1.0) * 0.95;
+  if (a < 0.004) discard;
+  gl_FragColor = vec4(pow(col, vec3(2.2)) * I, a);
+}
+`
+function LensedDisk({ Rs }) {
+  const b = Rs * 2.598
+  const ref = useRef()
+  const mat = useMemo(() => new THREE.ShaderMaterial({
+    vertexShader: LENS_VERT, fragmentShader: LENS_FRAG,
+    uniforms: { uB: { value: b }, uTime: { value: 0 }, uSide: { value: 1 }, uEdgeOn: { value: 1 } },
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+  }), []) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { mat.uniforms.uB.value = b }, [mat, b])
+  useEffect(() => () => mat.dispose(), [mat])
+  const right = useMemo(() => new THREE.Vector3(), [])
+  useFrame(({ camera, clock }) => {
+    if (ref.current) ref.current.quaternion.copy(camera.quaternion)
+    mat.uniforms.uTime.value = clock.getElapsedTime()
+    // Which screen side is approaching? Disc point under the camera's right
+    // vector moves along (−sinφ, 0, cosφ); compare with the direction to camera.
+    right.set(1, 0, 0).applyQuaternion(camera.quaternion).setY(0)
+    if (right.lengthSq() > 1e-6) {
+      right.normalize()
+      const phi = Math.atan2(right.z, right.x)
+      const vx = -Math.sin(phi), vz = Math.cos(phi)
+      const toCam = camera.position.clone().normalize()
+      mat.uniforms.uSide.value = Math.sign(vx * toCam.x + vz * toCam.z) || 1
+    }
+    const len = camera.position.length() || 1
+    mat.uniforms.uEdgeOn.value = 1 - Math.min(1, Math.abs(camera.position.y) / len)
+  })
+  return (
+    <mesh ref={ref} renderOrder={4} material={mat}>
+      <planeGeometry args={[b * 4.4, b * 4.4]} />
+    </mesh>
+  )
+}
+
+// ── Anatomy labels ────────────────────────────────────────────────────────────
+function Anatomy({ Rs }) {
+  const items = [
+    { pos: [0, -Rs * 2.45 - 0.05, 0], text: 'Shadow (event horizon inside, r = Rₛ)' },
+    { pos: [-Rs * 2.6, Rs * 1.9, 0], text: 'Photon ring (r = 1.5 Rₛ, light orbits)' },
+    { pos: [Rs * 3.0, 0.08, Rs * 0.4], text: 'Inner edge, ISCO (3 Rₛ)' },
+    { pos: [-Rs * 7.2, 0.1, 0], text: 'Accretion disc' },
+    { pos: [0, Rs * 7, 0], text: 'Relativistic jet' },
+  ]
+  return items.map((it) => (
+    <Html key={it.text} position={it.pos} center style={{ pointerEvents: 'none' }}>
+      <span style={{
+        fontFamily: 'Inter, system-ui, sans-serif', fontSize: 12, fontWeight: 500, whiteSpace: 'nowrap',
+        color: 'rgb(var(--c-text))', background: 'rgb(var(--c-panel) / 0.8)', border: '1px solid rgb(var(--c-border))',
+        borderRadius: 6, padding: '2px 7px',
+      }}>{it.text}</span>
+    </Html>
+  ))
+}
+
 // ── Main export ────────────────────────────────────────────────────────────────
 
 export default function BlackHole({ hiRes }) {
   const bhMass   = useModuleStore((s) => s.fp.bhMass)
   const Rs       = bhMass * 0.5
   const unlocked = typeof window !== 'undefined' && sessionStorage.getItem('umbra_unlocked') === '1'
+  const [labels, setLabels] = useState(true)
 
   return (
     <group>
       <StarBackground Rs={Rs} hiRes={hiRes} />
+      <Shadow         Rs={Rs} />
       <PhotonSphere   Rs={Rs} />
       <AccretionDisk  Rs={Rs} />
+      <LensedDisk     Rs={Rs} />
       <PolarJets      Rs={Rs} />
+      {labels && <Anatomy Rs={Rs} />}
+
+      <Html calculatePosition={(_, __, size) => [size.width - 216, 52]} style={{ pointerEvents: 'auto' }}>
+        <div style={{
+          width: 204, padding: '10px 12px', borderRadius: 10,
+          background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
+          fontFamily: 'Inter, system-ui, sans-serif', color: 'rgb(var(--c-text))', backdropFilter: 'blur(8px)', fontSize: 12,
+        }}>
+          <div style={{ fontSize: 13, fontWeight: 600 }}>Schwarzschild black hole</div>
+          <div style={{ color: 'rgb(var(--c-text-muted))', marginBottom: 8 }}>Radii scale with mass M (Rₛ = 2GM/c²)</div>
+          <dl style={{ display: 'grid', gridTemplateColumns: '1fr auto', rowGap: 4 }}>
+            {[
+              ['Event horizon Rₛ', Rs],
+              ['Photon sphere 1.5 Rₛ', Rs * 1.5],
+              ['Shadow edge b = 2.6 Rₛ', Rs * 2.598],
+              ['ISCO 3 Rₛ', Rs * 3],
+            ].map(([k, v]) => (
+              <Fragment key={k}>
+                <dt style={{ color: 'rgb(var(--c-text-muted))' }}>{k}</dt>
+                <dd style={{ fontFamily: 'JetBrains Mono, monospace', textAlign: 'right' }}>{v.toFixed(2)}</dd>
+              </Fragment>
+            ))}
+          </dl>
+          <div style={{ marginTop: 8, color: 'rgb(var(--c-text-muted))' }}>
+            The disc's far side appears bent over and under the shadow; the side moving toward you is brighter (Doppler beaming).
+          </div>
+          <button type="button" onClick={() => setLabels((v) => !v)} aria-pressed={labels} className="ui-btn w-full h-8 mt-2">
+            {labels ? 'Hide labels' : 'Show labels'}
+          </button>
+        </div>
+      </Html>
       {unlocked && (
         <Html position={[0, 2.2, 0]} center style={{ pointerEvents: 'none', textAlign: 'center' }}>
           <div style={{
