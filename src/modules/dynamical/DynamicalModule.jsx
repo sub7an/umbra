@@ -406,7 +406,8 @@ export default function DynamicalModule() {
       }
     >
       <SceneWrapper
-        cameraPosition={isSabrina ? [0, 0, 11] : isPendulum ? [0, 2.5, 8] : isPhaseSpace ? [0, 0, 9] : [0, 3, 8]}
+        cameraPosition={isSabrina ? [0, 0, 11] : isPendulum ? [0, 2.5, 8] : isPhaseSpace ? [0, 0, 8] : [0, 3, 8]}
+        idleRotate={!isPhaseSpace}
         showGrid={false}
         minDist={2}
         maxDist={24}
