@@ -6,30 +6,13 @@ import * as THREE from 'three'
 
 const W   = 96
 const H   = 96
-const AMP = 0.50
+const AMP = 0.9
 const L   = 9.0   // membrane side length in scene units
 
-const VERT = `
-  varying float vH;
-  void main() {
-    vH = position.y;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  }
-`
-const FRAG = `
-  varying float vH;
-  void main() {
-    float t = clamp(vH * 1.3 + 0.5, 0.0, 1.0);
-    vec3 low  = vec3(0.42, 0.04, 0.65);
-    vec3 zero = vec3(0.02, 0.04, 0.14);
-    vec3 high = vec3(0.04, 0.88, 0.98);
-    vec3 col  = t < 0.5
-      ? mix(low, zero, t * 2.0)
-      : mix(zero, high, (t - 0.5) * 2.0);
-    // sRGB-authored colour → linear (the post-processing chain encodes on output)
-    gl_FragColor = vec4(pow(max(col, 0.0), vec3(2.2)), 0.97);
-  }
-`
+// Height colour map: trough (violet) → rest (deep navy) → crest (cyan)
+const C_LOW  = new THREE.Color('#a21caf')
+const C_ZERO = new THREE.Color('#0b1640')
+const C_HIGH = new THREE.Color('#22d3ee')
 
 export const MODES = [
   [1, 1], [1, 2], [2, 1],
@@ -91,9 +74,11 @@ export default function NormalModes({ modeIdx = 0 }) {
     }
     const g = new THREE.BufferGeometry()
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3))
+    g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(W * H * 3), 3))
     g.setIndex(new THREE.BufferAttribute(idxArr, 1))
     return g
   }, [])
+  const tmpC = useMemo(() => new THREE.Color(), [])
 
   const meshRef    = useRef()
   const nodalRef   = useRef()
@@ -109,6 +94,7 @@ export default function NormalModes({ modeIdx = 0 }) {
 
     if (!meshRef.current) return
     const attr = meshRef.current.geometry.attributes.position
+    const col  = meshRef.current.geometry.attributes.color
 
     for (let j = 0; j < H; j++) {
       for (let i = 0; i < W; i++) {
@@ -123,9 +109,17 @@ export default function NormalModes({ modeIdx = 0 }) {
           u = (u1 + u2) * 0.65
         }
         attr.setY(j * W + i, u * AMP)
+        // colour by displacement, normalised to ±1
+        const k = Math.max(-1, Math.min(1, u / (sup ? 1.3 : 1)))
+        if (k < 0) tmpC.copy(C_ZERO).lerp(C_LOW, -k)
+        else tmpC.copy(C_ZERO).lerp(C_HIGH, k)
+        col.setXYZ(j * W + i, tmpC.r, tmpC.g, tmpC.b)
       }
     }
     attr.needsUpdate = true
+    col.needsUpdate = true
+    // Lit surface: recompute normals so crests and troughs catch the light
+    meshRef.current.geometry.computeVertexNormals()
 
     // Update nodal lines
     if (nodalRef.current) {
@@ -150,94 +144,60 @@ export default function NormalModes({ modeIdx = 0 }) {
 
   return (
     <group>
-      <ambientLight intensity={0.08} color="#06041a" />
-      <directionalLight position={[5, 10, 4]} intensity={0.45} color="#a0e0ff" />
-      <pointLight position={[0, 6, 0]} intensity={1.0} color="#22d3ee" distance={18} decay={2} />
-
-      {/* Membrane */}
+      {/* Membrane: lit, shaded drum skin coloured by displacement */}
       <mesh ref={meshRef} geometry={geo} frustumCulled={false}>
-        <shaderMaterial vertexShader={VERT} fragmentShader={FRAG} side={THREE.DoubleSide} transparent />
+        <meshStandardMaterial vertexColors side={THREE.DoubleSide} roughness={0.35} metalness={0.15} envMapIntensity={0.8} />
       </mesh>
 
-      {/* Membrane border */}
-      <lineSegments frustumCulled={false}>
-        <edgesGeometry args={[new THREE.PlaneGeometry(L, L)]} />
-        <lineBasicMaterial color="#22d3ee" transparent opacity={0.18} />
-      </lineSegments>
+      {/* Clamped frame (the edges are fixed: u = 0 on the boundary) */}
+      {[[0, -L / 2 - 0.12, L + 0.48, 0.24], [0, L / 2 + 0.12, L + 0.48, 0.24]].map(([x, z, w, d], i) => (
+        <mesh key={`h${i}`} position={[x, -0.05, z]}>
+          <boxGeometry args={[w, 0.22, d]} />
+          <meshStandardMaterial color="#64748b" metalness={0.8} roughness={0.3} />
+        </mesh>
+      ))}
+      {[[-L / 2 - 0.12, 0], [L / 2 + 0.12, 0]].map(([x, z], i) => (
+        <mesh key={`v${i}`} position={[x, -0.05, z]}>
+          <boxGeometry args={[0.24, 0.22, L]} />
+          <meshStandardMaterial color="#64748b" metalness={0.8} roughness={0.3} />
+        </mesh>
+      ))}
 
-      {/* Nodal lines (only shown for single-mode view) */}
+      {/* Nodal lines (single-mode view): where the membrane never moves */}
       {nodalGeo && (
         <lineSegments ref={nodalRef} geometry={nodalGeo}>
-          <lineBasicMaterial color="#ffffff" transparent opacity={0.55} linewidth={2} />
+          <lineBasicMaterial color="#fef3c7" transparent opacity={0.9} toneMapped={false} />
         </lineSegments>
       )}
 
-      {/* ── Eigenfrequency readout ── */}
-      <Html position={[L / 2 + 0.5, 0.5, 0]} style={{ pointerEvents: 'none' }}>
+      {/* ── Pinned card: mode info + superposition ── */}
+      <Html calculatePosition={(_, __, size) => [size.width - 216, 52]} style={{ pointerEvents: 'auto' }}>
         <div style={{
-          fontFamily: 'JetBrains Mono, monospace',
-          background: 'rgba(4,6,14,0.88)',
-          border: '1px solid rgba(34,211,238,0.18)',
-          borderRadius: 3, padding: '7px 10px', width: 160,
+          width: 204, padding: '10px 12px', borderRadius: 10,
+          background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
+          fontFamily: 'Inter, system-ui, sans-serif', color: 'rgb(var(--c-text))', backdropFilter: 'blur(8px)', fontSize: 12,
         }}>
-          <div style={{ fontSize: 11, color: 'rgba(34,211,238,0.75)', letterSpacing: '0.14em', marginBottom: 4 }}>
-            MODE ({m1},{n1})
+          <div style={{ fontSize: 13, fontWeight: 600 }}>Mode ({m1}, {n1})</div>
+          <div ref={freqRef} style={{ fontFamily: 'JetBrains Mono, monospace', color: '#22d3ee', margin: '2px 0' }}>ω/π = √({m1}²+{n1}²)</div>
+          <div style={{ color: 'rgb(var(--c-text-muted))', marginBottom: 8 }}>
+            {m1 - 1 + n1 - 1} nodal line{m1 - 1 + n1 - 1 === 1 ? '' : 's'} (pale yellow)
           </div>
-          <div ref={freqRef} style={{ fontSize: 11, color: '#22d3ee', marginBottom: 3 }}>
-            ω/π = √({m1}²+{n1}²)
+          <div style={{ height: 8, borderRadius: 3, background: 'linear-gradient(90deg, #a21caf, #0b1640 50%, #22d3ee)' }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginTop: 3, color: 'rgb(var(--c-text-muted))' }}>
+            <span>trough</span><span>rest</span><span>crest</span>
           </div>
-          <div style={{ fontSize: 11, color: 'rgba(34,211,238,0.75)', marginBottom: 6 }}>
-            {(m1 - 1)} vert · {(n1 - 1)} horiz nodal lines
-          </div>
-          {superpose && (
-            <div style={{ fontSize: 11, color: 'rgba(232,121,249,0.75)', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 5 }}>
-              ⊕ MODE ({m2},{n2}) · ω/π={Math.sqrt(m2*m2+n2*n2).toFixed(2)}
-            </div>
-          )}
-        </div>
-      </Html>
-
-      {/* ── Superposition controls ── */}
-      <Html position={[-L / 2 - 0.5, 0, 0]} style={{ pointerEvents: 'all' }}>
-        <div style={{
-          fontFamily: 'JetBrains Mono, monospace',
-          background: 'rgba(4,6,14,0.88)',
-          border: '1px solid rgba(34,211,238,0.15)',
-          borderRadius: 3, padding: '7px 8px', width: 100,
-        }}>
-          <div style={{ fontSize: 11, color: 'rgba(34,211,238,0.75)', letterSpacing: '0.13em', marginBottom: 5 }}>
-            SUPERPOSE
-          </div>
-
-          <button onClick={() => setSuperpose(s => !s)} style={{
-            fontFamily: 'JetBrains Mono, monospace',
-            fontSize: 11, letterSpacing: '0.1em',
-            width: '100%', marginBottom: 5,
-            padding: '3px 0',
-            background: superpose ? 'rgba(232,121,249,0.12)' : 'rgba(34,211,238,0.05)',
-            border: `1px solid ${superpose ? 'rgba(232,121,249,0.4)' : 'rgba(34,211,238,0.18)'}`,
-            color: superpose ? '#e879f9' : 'rgba(34,211,238,0.5)',
-            borderRadius: 2, cursor: 'pointer',
-          }}>
-            {superpose ? '⊕ ON' : '⊕ OFF'}
+          <button type="button" onClick={() => setSuperpose((v) => !v)} aria-pressed={superpose} className="ui-btn w-full h-8 mt-3"
+            style={superpose ? { borderColor: 'rgba(232,121,249,0.6)', background: 'rgba(232,121,249,0.12)' } : undefined}>
+            {superpose ? 'Superposition on' : 'Add a second mode'}
           </button>
-
           {superpose && (
             <>
-              <div style={{ fontSize: 7, color: 'rgba(232,121,249,0.75)', marginBottom: 3, letterSpacing: '0.1em' }}>
-                2ND MODE
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
+              <div style={{ color: 'rgb(var(--c-text-muted))', margin: '8px 0 4px' }}>Second mode ({m2}, {n2})</div>
+              <div role="radiogroup" aria-label="Second mode" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4 }}>
                 {MODES.map(([mm, nn], i) => (
-                  <button key={i} onClick={() => setMode2Idx(i)} style={{
-                    fontFamily: 'JetBrains Mono, monospace',
-                    fontSize: 7,
-                    padding: '2px 0',
-                    background: mode2Idx === i ? 'rgba(232,121,249,0.15)' : 'rgba(4,6,14,0.6)',
-                    border: `1px solid ${mode2Idx === i ? 'rgba(232,121,249,0.45)' : 'rgba(255,255,255,0.06)'}`,
-                    color: mode2Idx === i ? '#e879f9' : 'rgba(255,255,255,0.3)',
-                    borderRadius: 1, cursor: 'pointer',
-                  }}>
+                  <button key={i} type="button" role="radio" aria-checked={mode2Idx === i} onClick={() => setMode2Idx(i)}
+                    className="ui-btn h-7 px-0 font-mono-data text-[12px]"
+                    style={mode2Idx === i ? { borderColor: 'rgba(232,121,249,0.6)', background: 'rgba(232,121,249,0.12)' } : undefined}>
                     {mm},{nn}
                   </button>
                 ))}
