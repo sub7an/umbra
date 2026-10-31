@@ -103,7 +103,7 @@ const EQUATIONS = {
 }
 
 const EXPLANATION =
-  `Place sources anywhere on the field and watch 900 tracer particles respond. ` +
+  `Place sources anywhere on the field and watch 5,000 tracer particles respond. ` +
   `Each attractor pulls particles inward with inverse-square gravity. ` +
   `Repulsors push them out. Vortices apply a tangential Biot-Savart force, spinning particles ` +
   `around the source without attracting them. ` +
@@ -133,7 +133,7 @@ export default function SandboxModule() {
   }, [])
 
   const metrics = [
-    { label: 'Particles',  value: '900',              color: 'cyan'  },
+    { label: 'Particles',  value: '5,000',            color: 'cyan'  },
     { label: 'Sources',    value: `${sources.length}`, color: 'amber' },
     { label: 'Softening ε', value: '0.55',            color: 'cyan'  },
     { label: 'Mode',       value: MODES.find(m => m.id === mode)?.label ?? mode, color: 'dim' },
@@ -143,7 +143,7 @@ export default function SandboxModule() {
     <ModuleShell
       title="Physics Sandbox"
       accent={ACCENT}
-      readout={<>{sources.length} source{sources.length === 1 ? '' : 's'} · 900 particles</>}
+      readout={<>{sources.length} source{sources.length === 1 ? '' : 's'} · 5,000 particles</>}
       lesson={
         <InfoPanel
           domain={EQUATIONS.domain}
@@ -159,7 +159,7 @@ export default function SandboxModule() {
       controls={
         <ControlPanel
           title="Build a field"
-          footer="Superposition · 2D field · 900 tracers"
+          footer="Superposition · 2D field · 5,000 tracers"
           controls={[{ label: 'Source strength', min: 0.2, max: 3.0, step: 0.05, value: strength, onChange: setStrength }]}
         >
           <ControlGroup label="Place">
