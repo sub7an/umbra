@@ -24,7 +24,7 @@ const VIEWS = [
 const CAMERA_POSITIONS = {
   blochsphere:   [1.8, 1.5, 3.8],
   particleinbox: [0, 0.8, 7],
-  doubleslit:    [0, 3.5, 9],
+  doubleslit:    [0, 0, 11],
   entanglement:  [0, 1.2, 9],
   tunneling:     [0, 1.8, 10],
 }
@@ -436,7 +436,7 @@ export default function QuantumModule() {
         </ControlPanel>
       }
     >
-      <SceneWrapper cameraPosition={camPos} showGrid={activeView !== 'tunneling'}>
+      <SceneWrapper cameraPosition={camPos} idleRotate={activeView !== 'doubleslit'} showGrid={activeView !== 'tunneling' && activeView !== 'doubleslit'}>
         {activeView === 'blochsphere'   && <BlochSphere />}
         {activeView === 'particleinbox' && <ParticleInBox />}
         {activeView === 'doubleslit'    && <DoubleSlit />}
