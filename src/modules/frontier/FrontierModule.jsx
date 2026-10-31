@@ -27,7 +27,7 @@ const VIEWS = [
 const CAMERA_POSITIONS = {
   rotationcurve: [0, 8.5, 7.5],
   expansion: [0, 8, 12],
-  blackhole: [0, 2.5, 6],
+  blackhole: [0, 2.6, 14],
   nbody: [0, 7, 8],
 }
 
