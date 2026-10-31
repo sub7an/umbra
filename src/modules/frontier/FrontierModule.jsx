@@ -25,7 +25,7 @@ const VIEWS = [
 ]
 
 const CAMERA_POSITIONS = {
-  rotationcurve: [0, 4.5, 9],
+  rotationcurve: [0, 8.5, 7.5],
   expansion: [0, 8, 12],
   blackhole: [0, 2.5, 6],
   nbody: [0, 7, 8],
@@ -281,7 +281,7 @@ export default function FrontierModule() {
         </ControlPanel>
       }
     >
-      <SceneWrapper cameraPosition={camPos} showGrid={!isBlackHole && !isNBody} minDist={isBlackHole ? 2.5 : 2}>
+      <SceneWrapper cameraPosition={camPos} showGrid={activeView === 'expansion'} minDist={isBlackHole ? 2.5 : 2}>
         {activeView === 'rotationcurve' && <RotationCurve />}
         {activeView === 'expansion' && <ExpansionSim />}
         {isBlackHole && <BlackHole hiRes={bhHiRes} />}
