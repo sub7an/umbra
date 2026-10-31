@@ -3,6 +3,8 @@ import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import useModuleStore from '../../store/useModuleStore'
 import InfoPanel from '../../components/InfoPanel'
+import ModuleShell, { SceneCaption, Legend } from '../../components/ModuleShell'
+import ControlPanel, { ControlGroup } from '../../components/ControlPanel'
 import SandboxScene, { SOURCE_DEFS } from './SandboxScene'
 import CinematicEffects from '../../components/CinematicEffects'
 
@@ -109,64 +111,14 @@ const EXPLANATION =
   `pair two vortices to watch them co-rotate, or trap particles between a repulsor and two attractors. ` +
   `Particle color encodes speed: deep blue = slow, cyan = medium, orange = fast, white = maximum.`
 
-function ModeButton({ m, active, onClick }) {
-  return (
-    <button
-      onClick={() => onClick(m.id)}
-      style={{
-        width: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
-        padding: '7px 10px',
-        borderRadius: 4,
-        border: `1px solid ${active ? m.color : 'rgba(255,255,255,0.07)'}`,
-        background: active ? `rgba(${hexToRgb(m.color)},0.10)` : 'transparent',
-        cursor: 'pointer',
-        transition: 'all 0.15s',
-        textAlign: 'left',
-      }}
-    >
-      <span style={{
-        fontFamily: 'monospace', fontSize: 16, lineHeight: 1,
-        color: m.color, textShadow: active ? `0 0 8px ${m.color}` : 'none',
-        width: 20, textAlign: 'center',
-      }}>
-        {m.symbol}
-      </span>
-      <span style={{
-        fontFamily: 'JetBrains Mono, monospace',
-        fontSize: 12, letterSpacing: '0.12em',
-        textTransform: 'uppercase',
-        color: active ? m.color : 'rgba(255,255,255,0.35)',
-      }}>
-        {m.label}
-      </span>
-    </button>
-  )
-}
 
 function hexToRgb(hex) {
   const n = parseInt(hex.slice(1), 16)
   return `${(n>>16)&255},${(n>>8)&255},${n&255}`
 }
 
-function Slider({ label, value, min, max, step, decimals, onChange }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.75)' }}>{label}</span>
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, color: ACCENT }}>{value.toFixed(decimals)}</span>
-      </div>
-      <input type="range" min={min} max={max} step={step} value={value}
-        onChange={(e) => onChange(parseFloat(e.target.value))}
-        style={{ width: '100%', height: 2, cursor: 'pointer', accentColor: ACCENT }} />
-    </div>
-  )
-}
 
 export default function SandboxModule() {
-  const setActiveModule = useModuleStore((s) => s.setActiveModule)
   const [sources,  setSources]  = useState([])
   const mode        = useModuleStore((s) => s.sandbox.mode)
   const strength    = useModuleStore((s) => s.sandbox.strength)
@@ -188,238 +140,133 @@ export default function SandboxModule() {
   ]
 
   return (
-    <div className="flex flex-col w-full h-full bg-ground">
-      {/* ── Top bar ── */}
-      <header className="flex items-center justify-between px-5 py-2 bg-panel border-b border-border-subtle shrink-0">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => setActiveModule(null)}
-            className="font-mono-data text-[13px] tracking-widest text-text-dim uppercase flex items-center gap-1.5"
-            style={{ color: 'rgba(132,204,22,0.75)' }}
-          >
-            ← MODULES
-          </button>
-          <div className="w-px h-4 bg-border-subtle" />
-          <h1 className="font-display text-base font-semibold text-text-primary tracking-wide">Physics Sandbox</h1>
-          <span className="font-mono-data text-[11px] tracking-wider uppercase px-2 py-0.5 border rounded"
-            style={{ borderColor: 'rgba(132,204,22,0.3)', color: 'rgba(132,204,22,0.75)', background: 'rgba(132,204,22,0.05)' }}>
-            Click to place · Emergent fields
-          </span>
-        </div>
-        <div className="font-mono-data text-sm tabular-nums" style={{ color: ACCENT }}>
-          {sources.length} sources · 900 particles
-        </div>
-      </header>
-
-      <div className="flex flex-1 overflow-hidden" style={{ minHeight: 0 }}>
-        {/* ── Left: Info panel ── */}
-        <div className="w-72 shrink-0 flex flex-col overflow-hidden">
-          <InfoPanel
-            title="Physics Sandbox"
-            domain={EQUATIONS.domain}
-            syllabus={EQUATIONS.syllabus}
-            primaryEq={EQUATIONS.primaryEq}
-            derivedEqs={EQUATIONS.derivedEqs}
-            explanation={EXPLANATION}
-            tryThis={EQUATIONS.tryThis}
-            checkpoint={EQUATIONS.checkpoint}
-            metrics={metrics}
-            footer="SANDBOX · INTERACTIVE · 900 PARTICLES"
-            accentColor="cyan"
-          />
-        </div>
-
-        {/* ── Center: Canvas ── */}
-        <main className="flex-1 relative overflow-hidden" style={{ minHeight: 0 }}>
-          <Canvas className="sim-dark"
-            camera={{ position: [0, 0, 12], fov: 55, near: 0.1, far: 100 }}
-            gl={{ antialias: false, alpha: false, preserveDrawingBuffer: true }}
-            style={{ width: '100%', height: '100%', display: 'block', background: '#0b0d12' }}
-          >
-            <color attach="background" args={['#0b0d12']} />
-            <SandboxScene
-              sources={sources}
-              mode={mode}
-              strength={strength}
-              onAdd={addSource}
-              onRemove={removeSource}
-            />
-            <OrbitControls
-              enableRotate={false}
-              enablePan
-              enableZoom
-              panSpeed={0.8}
-              zoomSpeed={0.8}
-              minDistance={4}
-              maxDistance={28}
-            />
-            <CinematicEffects dof={false} bloomIntensity={1.0} />
-          </Canvas>
-
-          {/* Mode overlay */}
-          <div className="absolute top-3 left-4 pointer-events-none">
-            <span className="font-display text-[12px] tracking-[0.2em] uppercase text-text-dim">
-              {mode === 'erase'
-                ? 'ERASE MODE · Click a source to remove it'
-                : `PLACING: ${MODES.find(m => m.id === mode)?.label} · Click anywhere`}
-            </span>
-          </div>
-
-          {/* Empty state hint */}
-          {sources.length === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div style={{
-                fontFamily: 'JetBrains Mono, monospace',
-                fontSize: 12,
-                letterSpacing: '0.2em',
-                textTransform: 'uppercase',
-                color: 'rgba(255,255,255,0.75)',
-                textAlign: 'center',
-                lineHeight: 2,
-              }}>
-                <div style={{ fontSize: 28, marginBottom: 8, color: ACCENT, opacity: 0.4 }}>◎</div>
-                Click to place a source
-              </div>
+    <ModuleShell
+      title="Physics Sandbox"
+      accent={ACCENT}
+      readout={<>{sources.length} source{sources.length === 1 ? '' : 's'} · 900 particles</>}
+      lesson={
+        <InfoPanel
+          domain={EQUATIONS.domain}
+          syllabus={EQUATIONS.syllabus}
+          primaryEq={EQUATIONS.primaryEq}
+          derivedEqs={EQUATIONS.derivedEqs}
+          explanation={EXPLANATION}
+          tryThis={EQUATIONS.tryThis}
+          checkpoint={EQUATIONS.checkpoint}
+          metrics={metrics}
+        />
+      }
+      controls={
+        <ControlPanel
+          title="Build a field"
+          footer="Superposition · 2D field · 900 tracers"
+          controls={[{ label: 'Source strength', min: 0.2, max: 3.0, step: 0.05, value: strength, onChange: setStrength }]}
+        >
+          <ControlGroup label="Place">
+            <div role="radiogroup" aria-label="Source type" className="grid grid-cols-2 gap-1.5">
+              {MODES.map((m) => {
+                const active = mode === m.id
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => setMode(m.id)}
+                    className={`flex items-center gap-2 h-10 px-2.5 rounded-md border text-[13px] font-medium transition-colors duration-150 ${
+                      active ? 'border-cyan-glow/60 bg-cyan-glow/10 text-text-primary' : 'border-border-subtle bg-ground/40 text-text-dim hover:text-text-primary hover:bg-panel-hover'
+                    }`}
+                  >
+                    <span style={{ color: m.color }} aria-hidden="true">{m.symbol}</span>
+                    {m.label}
+                  </button>
+                )
+              })}
             </div>
-          )}
-        </main>
+          </ControlGroup>
 
-        {/* ── Right: Controls ── */}
-        <aside className="w-52 shrink-0 flex flex-col overflow-hidden bg-panel osc-grid border-l border-border-subtle">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle">
-            <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full animate-pulse-glow"
-                style={{ backgroundColor: ACCENT, boxShadow: `0 0 4px 1px rgba(132,204,22,0.6)` }} />
-              <span className="font-display text-xs tracking-[0.18em] uppercase text-text-dim">Source Type</span>
-            </div>
-            <button
-              onClick={clearAll}
-              className="font-mono-data text-[12px] tracking-wider text-text-dim uppercase px-2 py-1 border border-border-subtle rounded"
-              style={{ '--hover-color': '#ef4444' }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)' }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = ''; e.currentTarget.style.borderColor = '' }}
-            >
-              CLR
-            </button>
-          </div>
-
-          <div className="flex-1 px-4 py-4 flex flex-col gap-3 overflow-y-auto thin-scroll">
-            {/* Mode selector */}
-            <div className="flex flex-col gap-1.5">
-              {MODES.map((m) => (
-                <ModeButton key={m.id} m={m} active={mode === m.id} onClick={setMode} />
+          <ControlGroup label="Presets">
+            <div className="grid grid-cols-2 gap-1.5">
+              {PRESETS.map((p) => (
+                <button key={p.name} type="button" onClick={() => loadPreset(p)} title={p.desc} className="ui-btn justify-start h-9 px-2.5 text-[13px]">
+                  <span className="text-text-dim" aria-hidden="true">{p.icon}</span>
+                  {p.name}
+                </button>
               ))}
             </div>
+          </ControlGroup>
 
-            <div className="h-px bg-border-subtle" />
+          <ControlGroup label="Particle speed">
+            <Legend items={[
+              { color: '#3b4a9a', label: 'Slow' },
+              { color: '#7c8cff', label: 'Medium' },
+              { color: '#fb923c', label: 'Fast' },
+              { color: '#ffffff', label: 'Maximum' },
+            ]} />
+          </ControlGroup>
 
-            {/* Strength slider */}
-            <Slider
-              label="Strength"
-              value={strength} min={0.2} max={3.0} step={0.05} decimals={2}
-              onChange={setStrength}
-            />
+          {sources.length > 0 && (
+            <ControlGroup label={`Placed sources (${sources.length})`}>
+              <ul className="flex flex-col gap-1">
+                {sources.map((src) => {
+                  const def = SOURCE_DEFS[src.type]
+                  return (
+                    <li key={src.id} className="flex items-center justify-between h-8 px-2 rounded-md bg-ground/40 border border-border-subtle">
+                      <span className="flex items-center gap-2 text-[13px] text-text-primary">
+                        <span style={{ color: def.color }} aria-hidden="true">{def.symbol}</span>
+                        {def.label}
+                      </span>
+                      <button type="button" onClick={() => removeSource(src.id)} aria-label={`Remove ${def.label}`}
+                        className="w-7 h-7 rounded text-text-dim hover:text-red-400 hover:bg-panel-hover">✕</button>
+                    </li>
+                  )
+                })}
+              </ul>
+              <button type="button" onClick={clearAll} className="ui-btn w-full hover:text-red-300">Clear all</button>
+            </ControlGroup>
+          )}
+        </ControlPanel>
+      }
+    >
+      <Canvas className="sim-dark"
+        camera={{ position: [0, 0, 12], fov: 55, near: 0.1, far: 100 }}
+        gl={{ antialias: false, alpha: false, preserveDrawingBuffer: true }}
+        style={{ width: '100%', height: '100%', display: 'block', background: '#0b0d12' }}
+      >
+        <color attach="background" args={['#0b0d12']} />
+        <SandboxScene
+          sources={sources}
+          mode={mode}
+          strength={strength}
+          onAdd={addSource}
+          onRemove={removeSource}
+        />
+        <OrbitControls
+          enableRotate={false}
+          enablePan
+          enableZoom
+          panSpeed={0.8}
+          zoomSpeed={0.8}
+          minDistance={4}
+          maxDistance={28}
+        />
+        <CinematicEffects dof={false} bloomIntensity={1.0} />
+      </Canvas>
 
-            <div className="h-px bg-border-subtle" />
+      <SceneCaption>
+        {mode === 'erase'
+          ? 'Erase mode · click a source to remove it'
+          : `Placing ${MODES.find((m) => m.id === mode)?.label?.toLowerCase()} · click anywhere`}
+      </SceneCaption>
 
-            {/* Presets */}
-            <div>
-              <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase text-text-dim mb-2">Presets</p>
-              <div className="flex flex-col gap-1">
-                {PRESETS.map((p) => (
-                  <button
-                    key={p.name}
-                    onClick={() => loadPreset(p)}
-                    title={p.desc}
-                    style={{
-                      width: '100%',
-                      display: 'flex', alignItems: 'center', gap: 7,
-                      padding: '5px 8px',
-                      borderRadius: 3,
-                      border: '1px solid rgba(255,255,255,0.06)',
-                      background: 'transparent',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      transition: 'all 0.15s',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = `rgba(132,204,22,0.35)`
-                      e.currentTarget.style.background = `rgba(132,204,22,0.06)`
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'
-                      e.currentTarget.style.background = 'transparent'
-                    }}
-                  >
-                    <span style={{ fontFamily: 'monospace', fontSize: 12, color: ACCENT, width: 22, textAlign: 'center', flexShrink: 0 }}>
-                      {p.icon}
-                    </span>
-                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.75)', textTransform: 'uppercase' }}>
-                      {p.name}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="h-px bg-border-subtle" />
-
-            {/* Color legend */}
-            <div>
-              <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase text-text-dim mb-2">Speed</p>
-              <div className="flex flex-col gap-1">
-                {[
-                  { color: '#0b1247', label: 'Slow' },
-                  { color: '#7c8cff', label: 'Medium' },
-                  { color: '#fb923c', label: 'Fast' },
-                  { color: '#ffffff', label: 'Maximum' },
-                ].map(({ color, label }) => (
-                  <div key={label} className="flex items-center gap-2">
-                    <span style={{ width: 10, height: 10, borderRadius: '50%', background: color, display: 'inline-block', border: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }} />
-                    <span className="font-mono-data text-[11px] text-text-dim">{label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="h-px bg-border-subtle" />
-
-            {/* Placed sources list */}
-            {sources.length > 0 && (
-              <div>
-                <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase text-text-dim mb-2">
-                  Active ({sources.length})
-                </p>
-                <div className="flex flex-col gap-1">
-                  {sources.map((src) => {
-                    const def = SOURCE_DEFS[src.type]
-                    return (
-                      <div key={src.id} className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5">
-                          <span style={{ color: def.color, fontSize: 13 }}>{def.symbol}</span>
-                          <span className="font-mono-data text-[11px] text-text-dim">{def.label}</span>
-                        </div>
-                        <button
-                          onClick={() => removeSource(src.id)}
-                          className="font-mono-data text-[11px] text-text-dim"
-                          onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
-                          onMouseLeave={(e) => e.currentTarget.style.color = ''}
-                        >✕</button>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
+      {sources.length === 0 && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="text-center px-5 py-4 rounded-lg bg-ground/60 border border-border-subtle backdrop-blur-sm">
+            <p className="text-[15px] font-medium text-text-primary">Click anywhere to place a source</p>
+            <p className="text-[13px] text-text-dim mt-1">or load a preset from Controls</p>
           </div>
-
-          <div className="px-4 py-3 border-t border-border-subtle">
-            <p className="font-mono-data text-[11px] text-text-dim tracking-wider">
-              SANDBOX · SUPERPOSITION · 2D
-            </p>
-          </div>
-        </aside>
-      </div>
-    </div>
+        </div>
+      )}
+    </ModuleShell>
   )
 }

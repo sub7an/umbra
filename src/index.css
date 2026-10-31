@@ -175,3 +175,9 @@ html.light video {
     @apply rounded-lg bg-panel border border-border-subtle;
   }
 }
+
+/* Floating toolbar: icon-only on module screens until there's room */
+.tb svg { width: 15px; height: 15px; flex-shrink: 0; }
+@media (max-width: 1279px) {
+  .tb-compact .tb-label { display: none; }
+}

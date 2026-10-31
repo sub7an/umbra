@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import SceneWrapper from '../../components/SceneWrapper'
-import ControlPanel from '../../components/ControlPanel'
+import ControlPanel, { ToggleRow } from '../../components/ControlPanel'
 import InfoPanel from '../../components/InfoPanel'
+import ModuleShell, { SceneCaption } from '../../components/ModuleShell'
 import RotationCurve from './RotationCurve'
 import ExpansionSim from './ExpansionSim'
 import BlackHole, { isMobile } from './BlackHole'
@@ -17,9 +18,9 @@ import {
 } from './frontierMath'
 
 const VIEWS = [
-  { id: 'rotationcurve', label: 'Rotation Curves' },
-  { id: 'expansion', label: 'Hubble Expansion' },
-  { id: 'blackhole', label: 'Black Hole' },
+  { id: 'rotationcurve', label: 'Rotation curves' },
+  { id: 'expansion', label: 'Hubble expansion' },
+  { id: 'blackhole', label: 'Black hole' },
   { id: 'nbody', label: 'N-Body' },
 ]
 
@@ -184,7 +185,6 @@ export default function FrontierModule() {
   const setFpHubble  = useModuleStore((s) => s.setFpHubble)
   const setFpBhMass  = useModuleStore((s) => s.setFpBhMass)
   const resetFp      = useModuleStore((s) => s.resetFp)
-  const setActiveModule = useModuleStore((s) => s.setActiveModule)
 
   const vo     = observedRotationVelocity(fpRadius)
   const vk     = keplerianVelocity(fpRadius)
@@ -200,7 +200,7 @@ export default function FrontierModule() {
       { label: 'H₀ (expansion rate)', min: 0.2, max: 2.5, step: 0.05, value: hubble, onChange: setFpHubble, unit: '×' },
     ],
     blackhole: [
-      { label: 'BH Mass', min: 0.3, max: 1.5, step: 0.05, value: bhMass, onChange: setFpBhMass, unit: ' M' },
+      { label: 'Black hole mass', min: 0.3, max: 1.5, step: 0.05, value: bhMass, onChange: setFpBhMass, unit: ' M' },
     ],
     nbody: [],
   }
@@ -247,105 +247,47 @@ export default function FrontierModule() {
   const isNBody     = activeView === 'nbody'
 
   return (
-    <div className="flex flex-col w-full h-full bg-ground">
-      {/* Top bar */}
-      <header className="flex items-center justify-between px-5 py-2 bg-panel border-b border-border-subtle shrink-0">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => setActiveModule(null)}
-            className="font-mono-data text-[13px] tracking-widest text-text-dim hover:text-amber-glow transition-colors duration-200 uppercase flex items-center gap-1.5"
-          >
-            ← MODULES
-          </button>
-          <div className="w-px h-4 bg-border-subtle" />
-          <h1 className="font-display text-base font-semibold text-text-primary tracking-wide">
-            Frontier Physics
-          </h1>
-          <span className="font-mono-data text-[11px] tracking-wider uppercase px-2 py-0.5 border border-amber-glow/30 text-amber-glow/60 rounded bg-amber-glow/5">
-            Evidence-based · mechanism unconfirmed
-          </span>
-        </div>
-
-        <nav className="flex gap-1 items-center" role="tablist" aria-label="Scene views">
-          {VIEWS.map((v) => {
-            const isActive = activeView === v.id
-            return (
-              <button
-                key={v.id}
-                role="tab"
-                aria-selected={isActive}
-                onClick={() => setActiveView(v.id)}
-                className={[
-                  'font-mono-data text-[13px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
-                  isActive
-                    ? 'border-amber-glow text-amber-glow shadow-glow-amber bg-amber-glow/5'
-                    : 'border-border-subtle text-text-dim hover:border-amber-mid hover:text-text-primary',
-                ].join(' ')}
-              >
-                {v.label}
-              </button>
-            )
-          })}
-        </nav>
-
-        <div className="font-mono-data text-sm text-amber-glow tabular-nums" style={{ textShadow: '0 0 8px rgba(245,158,11,0.5)' }}>
-          {isBlackHole ? 'R_s = 2GM/c²' : isNBody ? 'F = Gm₁m₂/r²' : 'v = H₀·d'}
-        </div>
-      </header>
-
-      {/* Main layout */}
-      <div className="flex flex-1 overflow-hidden" style={{ minHeight: 0 }}>
-        <div className="w-72 shrink-0 flex flex-col overflow-hidden">
-          <InfoPanel
-            title="Analysis"
-            domain={domain}
-            syllabus={syllabus}
-            primaryEq={primaryEq}
-            derivedEqs={derivedEqs}
-            explanation={explanation}
-            tryThis={tryThis}
-            checkpoint={checkpoint}
-            metrics={metricsByView[activeView]}
-            footer="FRONTIER PHYSICS · OBSERVED ≠ EXPLAINED"
-          />
-        </div>
-
-        <main className="flex-1 relative overflow-hidden" style={{ minHeight: 0 }}>
-          <SceneWrapper cameraPosition={camPos} showGrid={!isBlackHole && !isNBody} minDist={isBlackHole ? 2.5 : 2}>
-            {activeView === 'rotationcurve' && <RotationCurve />}
-            {activeView === 'expansion' && <ExpansionSim />}
-            {isBlackHole && <BlackHole hiRes={bhHiRes} />}
-            {isNBody && <NBody />}
-          </SceneWrapper>
-
-          <div className="absolute top-3 left-4 pointer-events-none">
-            <span className="font-display text-[12px] tracking-[0.2em] uppercase text-text-dim">
-              {VIEWS.find((v) => v.id === activeView)?.label}
-            </span>
-          </div>
-
+    <ModuleShell
+      title="Frontier Physics"
+      accent="#fbbf24"
+      views={VIEWS}
+      activeView={activeView}
+      onViewChange={setActiveView}
+      readout={isBlackHole ? 'R_s = 2GM/c²' : isNBody ? 'F = Gm₁m₂/r²' : activeView === 'expansion' ? 'v = H₀·d' : `r = ${fpRadius.toFixed(2)}`}
+      lesson={
+        <InfoPanel
+          domain={domain}
+          syllabus={syllabus}
+          primaryEq={primaryEq}
+          derivedEqs={derivedEqs}
+          explanation={explanation}
+          tryThis={tryThis}
+          checkpoint={checkpoint}
+          metrics={metricsByView[activeView]}
+        >
+          <p className="px-5 py-4 text-[13px] leading-snug text-text-dim">
+            Evidence-based: these effects are observed, but their underlying mechanisms are still unconfirmed.
+          </p>
+        </InfoPanel>
+      }
+      controls={
+        <ControlPanel title="Parameters" controls={controlsByView[activeView]} onReset={resetFp} footer="Normalised units">
           {isBlackHole && (
-            <div className="absolute bottom-3 right-3 pointer-events-auto">
-              <button
-                onClick={() => setBhHiRes((v) => !v)}
-                className={[
-                  'font-mono-data text-[12px] tracking-[0.12em] uppercase px-2.5 py-1 rounded border transition-all duration-200',
-                  bhHiRes
-                    ? 'border-cyan-glow/50 text-cyan-glow bg-cyan-glow/5'
-                    : 'border-border-subtle text-text-dim hover:border-amber-glow/40 hover:text-text-primary',
-                ].join(' ')}
-                title={bhHiRes ? 'Switch to low-res (mobile / low-end GPU)' : 'Switch to hi-res (3 star scales + nebula)'}
-              >
-                {bhHiRes ? '◉ HI-RES' : '◎ LO-RES'}
-              </button>
-            </div>
+            <ToggleRow label="High-resolution render" value={bhHiRes} onChange={setBhHiRes} />
           )}
-        </main>
-
-        <div className="w-52 shrink-0 flex flex-col overflow-hidden">
-          <ControlPanel title="Parameters" controls={controlsByView[activeView]} onReset={resetFp} />
-        </div>
-      </div>
-    </div>
+          {isNBody && (
+            <p className="text-sm text-text-dim">Pick a preset orbit inside the scene.</p>
+          )}
+        </ControlPanel>
+      }
+    >
+      <SceneWrapper cameraPosition={camPos} showGrid={!isBlackHole && !isNBody} minDist={isBlackHole ? 2.5 : 2}>
+        {activeView === 'rotationcurve' && <RotationCurve />}
+        {activeView === 'expansion' && <ExpansionSim />}
+        {isBlackHole && <BlackHole hiRes={bhHiRes} />}
+        {isNBody && <NBody />}
+      </SceneWrapper>
+      <SceneCaption>{VIEWS.find((v) => v.id === activeView)?.label}</SceneCaption>
+    </ModuleShell>
   )
 }

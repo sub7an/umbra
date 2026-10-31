@@ -147,22 +147,21 @@ export default function GestureHUD() {
           onClick={toggle}
           title={enabled ? 'Turn off hand tracking' : 'Control Umbra with your hand via webcam'}
           style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.12em',
-            color: enabled ? '#a5b0ff' : 'rgba(124,140,255,0.6)',
-            background: 'rgba(8,9,10,0.72)', backdropFilter: 'blur(8px)',
-            border: `1px solid ${enabled ? 'rgba(139,156,247,0.45)' : 'rgba(124,140,255,0.2)'}`,
-            borderRadius: 3, padding: '5px 10px', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 8,
+            fontSize: 13, fontWeight: 500, height: 36,
+            color: enabled ? 'rgb(var(--c-text))' : 'rgb(var(--c-text-muted))',
+            background: 'rgb(var(--c-panel) / 0.9)', backdropFilter: 'blur(8px)',
+            border: `1px solid ${enabled ? 'rgb(var(--c-brand) / 0.6)' : 'rgb(var(--c-border))'}`,
+            borderRadius: 8, padding: '0 12px', cursor: 'pointer',
             transition: 'color 0.15s, border-color 0.15s',
           }}
+          aria-pressed={enabled}
         >
-          <span style={{
-            width: 6, height: 6, borderRadius: '50%',
-            background: enabled ? '#a5b0ff' : 'rgba(124,140,255,0.35)',
-            boxShadow: enabled ? '0 0 6px #a5b0ff' : 'none',
-            animation: enabled ? 'umbra-pulse 1.6s ease-in-out infinite' : 'none',
+          <span aria-hidden="true" style={{
+            width: 8, height: 8, borderRadius: '50%',
+            background: enabled ? '#4ade80' : 'rgb(var(--c-text-muted) / 0.5)',
           }} />
-          GESTURE
+          Hand control
         </button>
 
         {initError && (

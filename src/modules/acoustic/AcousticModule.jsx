@@ -3,14 +3,15 @@ import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import SceneWrapper from '../../components/SceneWrapper'
 import InfoPanel from '../../components/InfoPanel'
+import ModuleShell from '../../components/ModuleShell'
 import useModuleStore from '../../store/useModuleStore'
 
 const ACCENT = '#a855f7'
 
 const VIEWS = [
-  { id: 'cymatics',  label: 'CYMATICS' },
-  { id: 'harmonics', label: 'HARMONICS' },
-  { id: 'lissajous', label: 'LISSAJOUS' },
+  { id: 'cymatics',  label: 'Cymatics' },
+  { id: 'harmonics', label: 'Harmonics' },
+  { id: 'lissajous', label: 'Lissajous' },
 ]
 const CAMERA = {
   cymatics:  [0, 4.5, 3.2],
@@ -388,7 +389,6 @@ function buildExplanation(view) {
 // MAIN MODULE
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function AcousticModule() {
-  const setActiveModule = useModuleStore(s => s.setActiveModule)
 
   const view            = useModuleStore(s => s.acoustic.viewType)
   const modeIdx         = useModuleStore(s => s.acoustic.modeIdx)
@@ -525,108 +525,60 @@ export default function AcousticModule() {
   const { a: lA, b: lB, color: lColor } = LISSAJOUS_PRESETS[presetIdx]
 
   return (
-    <div style={{
-      width:'100%', height:'100%', background:'#0b0d12',
-      display:'flex', flexDirection:'column',
-      fontFamily:'JetBrains Mono, monospace',
-    }}>
+    <ModuleShell
+      title="Acoustic Physics"
+      accent={ACCENT}
+      views={VIEWS}
+      activeView={view}
+      onViewChange={setView}
+      readout={view === 'cymatics' ? `Chladni mode · ${CHLADNI_MODES[modeIdx].freq} Hz` : view === 'harmonics' ? '8 strings · harmonics of C3' : <>{lA}:{lB} · {lissBaseFreq} Hz</>}
+      lesson={
+        <InfoPanel
+          domain={eq.domain}
+          syllabus={eq.syllabus}
+          primaryEq={eq.primaryEq}
+          derivedEqs={eq.derivedEqs}
+          explanation={buildExplanation(view)}
+          tryThis={eq.tryThis}
+          checkpoint={eq.checkpoint}
+        />
+      }
+    >
       <style>{`
-        @keyframes umbra-pulse{0%,100%{opacity:1}50%{opacity:.3}}
         .ac-btn{
-          font-family:'JetBrains Mono',monospace;
-          font-size:9px;letter-spacing:.14em;text-transform:uppercase;
-          padding:5px 10px;border-radius:2px;cursor:pointer;
-          border:1px solid rgba(168,85,247,.22);
-          background:transparent;color:rgba(168,85,247,.55);
-          transition:all .13s;
+          font-family:var(--font-body);font-size:13px;font-weight:500;
+          height:32px;padding:0 12px;border-radius:6px;cursor:pointer;
+          border:1px solid rgb(var(--c-border));
+          background:rgb(var(--c-panel) / .85);color:rgb(var(--c-text-muted));
+          transition:background-color .15s,color .15s,border-color .15s;
+          backdrop-filter:blur(8px);
         }
-        .ac-btn:hover{background:rgba(168,85,247,.12);color:#a855f7;}
+        .ac-btn:hover{background:rgb(var(--c-panel-hover));color:rgb(var(--c-text));}
         .ac-btn.active{
-          background:rgba(168,85,247,.14);border-color:rgba(168,85,247,.55);
-          color:#c084fc;box-shadow:0 0 10px rgba(168,85,247,.18);
+          background:rgba(192,132,252,.16);border-color:rgba(192,132,252,.6);color:#e9d5ff;
         }
         .tone-pad{
-          font-family:'JetBrains Mono',monospace;cursor:pointer;
-          border:1px solid rgba(168,85,247,.18);border-radius:3px;
-          background:rgba(8,9,10,.85);transition:all .1s;user-select:none;
+          font-family:var(--font-body);cursor:pointer;
+          border:1px solid rgb(var(--c-border));border-radius:8px;
+          background:rgb(var(--c-panel) / .9);transition:background-color .12s,border-color .12s,transform .08s;user-select:none;
           display:flex;flex-direction:column;align-items:center;
-          justify-content:center;gap:2px;padding:6px 0;
+          justify-content:center;gap:2px;padding:8px 0;min-height:44px;
         }
-        .tone-pad:hover{background:rgba(168,85,247,.09);border-color:rgba(168,85,247,.40);}
-        .tone-pad.active{
-          background:rgba(168,85,247,.16);border-color:rgba(168,85,247,.65);
-          box-shadow:0 0 16px rgba(168,85,247,.22);
-        }
-        .tone-pad:active{transform:scale(0.94);}
+        .tone-pad:hover{background:rgb(var(--c-panel-hover));border-color:rgba(192,132,252,.45);}
+        .tone-pad.active{background:rgba(192,132,252,.16);border-color:rgba(192,132,252,.7);}
+        .tone-pad:active{transform:scale(0.96);}
         input[type=range].ac-slider{
           -webkit-appearance:none;appearance:none;
-          height:3px;border-radius:2px;outline:none;cursor:pointer;
-          background:linear-gradient(90deg,rgba(168,85,247,.6) var(--val,50%),rgba(168,85,247,.1) var(--val,50%));
+          height:4px;border-radius:2px;outline:none;cursor:pointer;
+          background:linear-gradient(90deg,#c084fc var(--val,50%),rgb(var(--c-border)) var(--val,50%));
         }
         input[type=range].ac-slider::-webkit-slider-thumb{
-          -webkit-appearance:none;width:11px;height:11px;border-radius:50%;
-          background:#c084fc;border:none;cursor:pointer;
-          box-shadow:0 0 6px rgba(168,85,247,.5);
+          -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+          background:rgb(var(--c-text));border:2px solid #c084fc;cursor:pointer;
         }
+        input[type=range].ac-slider:focus-visible{outline:2px solid rgb(var(--c-brand));outline-offset:4px;}
       `}</style>
-
-      {/* ── Header ── */}
-      <div style={{
-        display:'flex',alignItems:'center',gap:14,
-        padding:'11px 18px',flexShrink:0,
-        borderBottom:'1px solid rgba(168,85,247,.10)',
-        background:'rgba(8,9,10,.97)',
-      }}>
-        <button onClick={() => setActiveModule(null)} style={{
-          fontFamily:'JetBrains Mono,monospace',fontSize:12,
-          letterSpacing:'.18em',textTransform:'uppercase',
-          color:'rgba(168,85,247,0.75)',background:'none',border:'none',cursor:'pointer',padding:0,
-        }}>← MODULES</button>
-        <div style={{width:1,height:14,background:'rgba(168,85,247,.12)'}}/>
-        <span style={{fontSize:13,letterSpacing:'.28em',textTransform:'uppercase',color:ACCENT,fontWeight:700}}>
-          Acoustic Physics
-        </span>
-        <div style={{
-          display:'flex',alignItems:'center',gap:5,padding:'2px 8px',
-          border:'1px solid rgba(168,85,247,.28)',borderRadius:2,background:'rgba(168,85,247,.05)',
-        }}>
-          <div style={{width:5,height:5,borderRadius:'50%',background:ACCENT,boxShadow:`0 0 6px ${ACCENT}`,animation:'umbra-pulse 1.8s ease-in-out infinite'}}/>
-          <span style={{fontSize:11,letterSpacing:'.2em',color:ACCENT}}>LIVE</span>
-        </div>
-        <div style={{display:'flex',gap:4,marginLeft:'auto'}}>
-          {VIEWS.map(v => (
-            <button key={v.id} role="tab" aria-selected={view===v.id} onClick={() => setView(v.id)} style={{
-              fontFamily:'JetBrains Mono,monospace',fontSize:11,letterSpacing:'.15em',textTransform:'uppercase',
-              padding:'5px 12px',borderRadius:2,cursor:'pointer',
-              background: view===v.id ? 'rgba(168,85,247,.09)' : 'transparent',
-              border:`1px solid ${view===v.id ? 'rgba(168,85,247,.33)' : 'rgba(255,255,255,.07)'}`,
-              color: view===v.id ? '#c084fc' : 'rgba(255,255,255,.33)',
-            }}>{v.label}</button>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Body ── */}
-      <div style={{flex:1,display:'flex',overflow:'hidden',minHeight:0}}>
-
-        {/* Info panel */}
-        <div style={{width:235,flexShrink:0,borderRight:'1px solid rgba(168,85,247,.07)'}}>
-          <InfoPanel
-            title={view==='cymatics'?'Chladni Figures':view==='harmonics'?'Standing Waves':'Lissajous'}
-            domain={eq.domain}
-            syllabus={eq.syllabus}
-            primaryEq={eq.primaryEq}
-            derivedEqs={eq.derivedEqs}
-            explanation={buildExplanation(view)}
-            tryThis={eq.tryThis}
-            checkpoint={eq.checkpoint}
-            accentColor="violet"
-            footer="ACOUSTIC PHYSICS · UMBRA"
-          />
-        </div>
-
-        {/* Scene + controls column */}
-        <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden',minHeight:0}}>
+        <div className="flex flex-col h-full pb-14">
 
           {/* 3-D scene */}
           <div style={{flex:1,position:'relative',overflow:'hidden',minHeight:0}}>
@@ -636,14 +588,6 @@ export default function AcousticModule() {
               {view==='lissajous' && <LissajousScene  presetIdx={presetIdx} phase={lissPhase} />}
             </SceneWrapper>
 
-            <div style={{
-              position:'absolute',bottom:10,left:12,display:'flex',alignItems:'center',gap:7,
-              padding:'4px 10px',border:'1px solid rgba(168,85,247,.18)',borderRadius:2,
-              background:'rgba(8,9,10,.88)',pointerEvents:'none',
-            }}>
-              <div style={{width:4,height:4,borderRadius:'50%',background:ACCENT,boxShadow:`0 0 4px ${ACCENT}`}}/>
-              <span style={{fontSize:11,letterSpacing:'.2em',color:'rgba(168,85,247,0.75)'}}>SIM ACTIVE</span>
-            </div>
 
             {/* Lissajous interval picker (overlay) */}
             {view==='lissajous' && (
@@ -811,7 +755,6 @@ export default function AcousticModule() {
           )}
 
         </div>
-      </div>
-    </div>
+    </ModuleShell>
   )
 }

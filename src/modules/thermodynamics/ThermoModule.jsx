@@ -1,5 +1,7 @@
 import SceneWrapper from '../../components/SceneWrapper'
 import InfoPanel from '../../components/InfoPanel'
+import ModuleShell, { SceneCaption } from '../../components/ModuleShell'
+import ControlPanel from '../../components/ControlPanel'
 import GasSimulation from './GasSimulation'
 import Entropy from './Entropy'
 import HeatEngine from './HeatEngine'
@@ -9,8 +11,8 @@ import useModuleStore from '../../store/useModuleStore'
 const VIEWS = [
   { id: 'gas',    label: 'Gas' },
   { id: 'entropy', label: 'Entropy' },
-  { id: 'engine', label: 'Heat Engine' },
-  { id: 'ising',  label: 'Ising Model' },
+  { id: 'engine', label: 'Heat engine' },
+  { id: 'ising',  label: 'Ising model' },
 ]
 
 const TC = 2.0 / Math.log(1 + Math.sqrt(2))   // ≈ 2.2692
@@ -163,22 +165,8 @@ function buildMetrics(view, temperature) {
   }
 }
 
-function Slider({ label, value, min, max, step, decimals, onChange }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <div className="flex items-center justify-between">
-        <span className="font-mono-data text-[12px] tracking-wider uppercase text-text-dim">{label}</span>
-        <span className="font-mono-data text-[13px] tabular-nums" style={{ color: '#38bdf8' }}>{value.toFixed(decimals)}</span>
-      </div>
-      <input type="range" min={min} max={max} step={step} value={value}
-        onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full h-0.5 cursor-pointer" style={{ accentColor: '#38bdf8' }} />
-    </div>
-  )
-}
 
 export default function ThermoModule() {
-  const setActiveModule  = useModuleStore((s) => s.setActiveModule)
   const temperature      = useModuleStore((s) => s.thermo.temperature)
   const thermoView       = useModuleStore((s) => s.thermo.viewType)
   const setThermoTemp    = useModuleStore((s) => s.setThermoTemp)
@@ -190,122 +178,38 @@ export default function ThermoModule() {
   const metrics     = buildMetrics(thermoView, temperature)
 
   return (
-    <div className="flex flex-col w-full h-full bg-ground">
-      <style>{`@keyframes umbra-pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }`}</style>
-      {/* Top bar */}
-      <header className="flex items-center justify-between px-5 py-2 bg-panel border-b border-border-subtle shrink-0">
-        <div className="flex items-center gap-3 shrink-0">
-          <button onClick={() => setActiveModule(null)}
-            className="font-mono-data text-[13px] tracking-widest text-text-dim hover:text-sky-glow transition-colors duration-200 uppercase flex items-center gap-1.5">
-            ← MODULES
-          </button>
-          <div className="w-px h-4 bg-border-subtle" />
-          <h1 className="font-display text-base font-semibold text-text-primary tracking-wide">Thermodynamics</h1>
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded border shrink-0"
-            style={{ borderColor: 'rgba(56,189,248,0.25)', background: 'rgba(56,189,248,0.05)' }}>
-            <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#38bdf8', boxShadow: '0 0 6px #38bdf8', animation: 'umbra-pulse 1.8s ease-in-out infinite' }} />
-            <span className="font-mono-data text-[11px] tracking-[0.2em]" style={{ color: 'rgba(56,189,248,0.75)' }}>LIVE</span>
-          </div>
-        </div>
-
-        <nav className="flex gap-1">
-          {VIEWS.map((v) => (
-            <button key={v.id} onClick={() => setThermoView(v.id)}
-              role="tab"
-              aria-selected={thermoView === v.id ? 'true' : 'false'}
-              className={[
-                'font-mono-data text-[13px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
-                thermoView === v.id
-                  ? 'border-sky-glow text-sky-glow bg-sky-glow/5 shadow-glow-sky'
-                  : 'border-border-subtle text-text-dim hover:border-sky-glow/50 hover:text-text-primary',
-              ].join(' ')}>
-              {v.label}
-            </button>
-          ))}
-        </nav>
-
-        <div className="font-mono-data text-sm tabular-nums" style={{ color: '#38bdf8', textShadow: '0 0 8px rgba(56,189,248,0.5)' }}>
-          S = k_B ln Ω · T = {temperature.toFixed(2)}
-        </div>
-      </header>
-
-      <div className="flex flex-1 overflow-hidden" style={{ minHeight: 0 }}>
-        <div className="w-72 shrink-0 flex flex-col overflow-hidden">
-          <InfoPanel title="Thermodynamics" domain={domain} syllabus={syllabus} primaryEq={primaryEq}
-            derivedEqs={derivedEqs} explanation={explanation} tryThis={tryThis} checkpoint={checkpoint} metrics={metrics}
-            footer="THERMODYNAMICS · k_B = 1 (units)" accentColor="cyan" />
-        </div>
-
-        <main className="flex-1 relative overflow-hidden" style={{ minHeight: 0 }}>
-          <SceneWrapper cameraPosition={CAMERA[thermoView]} showGrid={false} minDist={2} maxDist={30}>
-            {thermoView === 'gas'    && <GasSimulation  key="gas"    temperature={temperature} />}
-            {thermoView === 'entropy' && <Entropy         key="ent"    temperature={temperature} />}
-            {thermoView === 'engine' && <HeatEngine      key="eng"    temperature={temperature} />}
-            {thermoView === 'ising'  && <IsingModel      key="ising"  temperature={temperature} />}
-          </SceneWrapper>
-          <div className="absolute top-3 left-4 pointer-events-none">
-            <span className="font-display text-[12px] tracking-[0.2em] uppercase text-text-dim">
-              {thermoView === 'gas'     ? 'Maxwell-Boltzmann Distribution · Kinetic Theory'
-               : thermoView === 'entropy' ? 'Entropy Increase · Second Law of Thermodynamics'
-               : thermoView === 'ising'   ? 'Ising Model · Metropolis MC · Phase Transition'
-               : 'Carnot Cycle · PV Diagram · Maximum Efficiency'}
-            </span>
-          </div>
-          <div className="absolute bottom-4 left-4 flex items-center gap-1.5 px-2.5 py-1 rounded border pointer-events-none"
-            style={{ borderColor: 'rgba(56,189,248,0.18)', background: 'rgba(8,9,10,0.85)' }}>
-            <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#38bdf8', boxShadow: '0 0 4px #38bdf8' }} />
-            <span className="font-mono-data text-[11px] tracking-[0.2em]" style={{ color: 'rgba(56,189,248,0.75)' }}>SIM ACTIVE</span>
-          </div>
-          <div className="absolute bottom-4 right-4 font-mono-data text-[11px] tracking-[0.12em] pointer-events-none"
-            style={{ color: 'rgba(56,189,248,0.75)' }}>
-            DRAG TO ORBIT · SCROLL TO ZOOM
-          </div>
-        </main>
-
-        <aside className="w-52 shrink-0 flex flex-col overflow-hidden bg-panel osc-grid border-l border-border-subtle">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle">
-            <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full animate-pulse-glow" style={{ backgroundColor: '#38bdf8', boxShadow: '0 0 4px 1px rgba(56,189,248,0.6)' }} />
-              <span className="font-display text-xs tracking-[0.18em] uppercase text-text-dim">Parameters</span>
-            </div>
-            <button onClick={resetThermo}
-              className="font-mono-data text-[12px] tracking-wider text-text-dim hover:text-sky-glow transition-colors duration-200 uppercase px-2 py-1 border border-border-subtle hover:border-sky-glow/40 rounded">
-              RST
-            </button>
-          </div>
-
-          <div className="flex-1 px-4 py-4 flex flex-col gap-4 overflow-y-auto thin-scroll">
-            <div>
-              <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase text-text-dim mb-2">View</p>
-              <div className="flex flex-col gap-1.5">
-                {VIEWS.map((v) => (
-                  <button key={v.id} onClick={() => setThermoView(v.id)}
-                    className={[
-                      'w-full text-left px-3 py-2 rounded border font-mono-data text-[13px] tracking-wide transition-all duration-150',
-                      thermoView === v.id
-                        ? 'border-sky-glow/60 bg-sky-glow/5 text-text-primary'
-                        : 'border-border-subtle text-text-dim hover:border-sky-glow/30',
-                    ].join(' ')}>
-                    {v.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="h-px bg-border-subtle" />
-            <div>
-              <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase text-text-dim mb-3">Temperature</p>
-              <Slider label="T  temperature" value={temperature} min={0.2} max={3.0} step={0.05} decimals={2} onChange={setThermoTemp} />
-            </div>
-          </div>
-
-          <div className="px-4 py-3 border-t border-border-subtle">
-            <p className="font-mono-data text-[11px] text-text-dim tracking-wider">
-              THERMO · k_B = 1 (NATURAL UNITS)
-            </p>
-          </div>
-        </aside>
-      </div>
-    </div>
+    <ModuleShell
+      title="Thermodynamics"
+      accent="#38bdf8"
+      views={VIEWS}
+      activeView={thermoView}
+      onViewChange={setThermoView}
+      readout={<>T = {temperature.toFixed(2)}</>}
+      lesson={
+        <InfoPanel domain={domain} syllabus={syllabus} primaryEq={primaryEq}
+          derivedEqs={derivedEqs} explanation={explanation} tryThis={tryThis} checkpoint={checkpoint} metrics={metrics} />
+      }
+      controls={
+        <ControlPanel
+          title="Parameters"
+          onReset={resetThermo}
+          footer="Natural units · k_B = 1"
+          controls={[{ label: 'Temperature T', min: 0.2, max: 3.0, step: 0.05, value: temperature, onChange: setThermoTemp }]}
+        />
+      }
+    >
+      <SceneWrapper cameraPosition={CAMERA[thermoView]} showGrid={false} minDist={2} maxDist={30}>
+        {thermoView === 'gas'     && <GasSimulation key="gas"   temperature={temperature} />}
+        {thermoView === 'entropy' && <Entropy       key="ent"   temperature={temperature} />}
+        {thermoView === 'engine'  && <HeatEngine    key="eng"   temperature={temperature} />}
+        {thermoView === 'ising'   && <IsingModel    key="ising" temperature={temperature} />}
+      </SceneWrapper>
+      <SceneCaption>
+        {thermoView === 'gas'     ? 'Maxwell–Boltzmann distribution · kinetic theory'
+         : thermoView === 'entropy' ? 'Entropy increase · second law'
+         : thermoView === 'ising'   ? 'Ising model · Metropolis Monte Carlo · phase transition'
+         : 'Carnot cycle · PV diagram · maximum efficiency'}
+      </SceneCaption>
+    </ModuleShell>
   )
 }

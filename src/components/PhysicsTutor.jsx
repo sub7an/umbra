@@ -557,7 +557,7 @@ export default function PhysicsTutor() {
   const hexFilter = `drop-shadow(0 0 ${2 + glowIntensity * 9}px rgba(${glowRGB},${glowIntensity}))`
 
   return (
-    <div style={{ borderTop: '1px solid rgba(124,140,255,0.07)', background: 'rgba(1,6,12,0.97)', flexShrink: 0, display: 'flex', flexDirection: 'column-reverse' }}>
+    <div style={{ borderTop: '1px solid rgb(var(--c-border))', background: 'rgb(var(--c-panel))', flexShrink: 0, display: 'flex', flexDirection: 'column-reverse' }}>
       <style>{`
         @keyframes umbra-fade-in { from { opacity:0; transform:translateY(3px) } to { opacity:1; transform:translateY(0) } }
         @keyframes umbra-pulse { 0%,100%{opacity:.3} 50%{opacity:1} }
@@ -567,10 +567,12 @@ export default function PhysicsTutor() {
       <button
         onClick={() => { setOpen(o => !o); setTimeout(() => inputRef.current?.focus(), 60) }}
         style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between',
-          padding:'9px 16px', background:'none', border:'none', cursor:'pointer' }}
+          height:44, padding:'0 20px', background:'none', border:'none', cursor:'pointer' }}
+        aria-expanded={open}
+        className="hover:bg-panel-hover transition-colors duration-150"
       >
         <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-          <svg width="11" height="11" viewBox="0 0 12 12" fill="none"
+          <svg width="14" height="14" viewBox="0 0 12 12" fill="none"
             style={{ filter: hexFilter, transition:'filter 0.5s ease' }}>
             <path d="M6 1L10.33 3.5V8.5L6 11L1.67 8.5V3.5L6 1Z"
               stroke={open ? `rgba(${glowRGB},0.9)` : 'rgba(124,140,255,0.35)'}
@@ -579,26 +581,25 @@ export default function PhysicsTutor() {
               style={{ transition:'all .2s' }}
             />
           </svg>
-          <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:11, letterSpacing:'.22em',
-            textTransform:'uppercase', color: open ? '#7c8cff' : 'rgba(124,140,255,0.38)', transition:'color .15s' }}>
-            UMBRA AI
+          <span style={{ fontSize:14, fontWeight:500, color: open ? 'rgb(var(--c-text))' : 'rgb(var(--c-text-muted))', transition:'color .15s' }}>
+            AI tutor
           </span>
           {streaming && (
-            <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:7, letterSpacing:'.15em',
-              color:'#7c8cff', animation:'umbra-pulse 0.8s ease-in-out infinite' }}>THINKING</span>
+            <span style={{ fontSize:11, fontWeight:600,
+              color:'#7c8cff', animation:'umbra-pulse 0.8s ease-in-out infinite' }}>Thinking…</span>
           )}
           {isDreaming && (
-            <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:7, letterSpacing:'.15em',
-              color:'rgba(160,100,255,0.8)', animation:'umbra-pulse 1.4s ease-in-out infinite' }}>DREAMING</span>
+            <span style={{ fontSize:11, fontWeight:600,
+              color:'rgba(160,100,255,0.8)', animation:'umbra-pulse 1.4s ease-in-out infinite' }}>Dreaming…</span>
           )}
           {challenge && !challenge.won && (
-            <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:7, letterSpacing:'.15em', color:'#fbbf24' }}>CHALLENGE</span>
+            <span style={{ fontSize:11, fontWeight:600, color:'#fbbf24' }}>Challenge</span>
           )}
           {challenge?.won && (
-            <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:7, letterSpacing:'.15em', color:'rgba(124,140,255,0.75)' }}>SOLVED</span>
+            <span style={{ fontSize:11, fontWeight:600, color:'rgba(124,140,255,0.75)' }}>Solved</span>
           )}
           {messages.length > 0 && !streaming && !isDreaming && !challenge && (
-            <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:7, letterSpacing:'.12em', color:'rgba(124,140,255,0.75)' }}>
+            <span style={{ fontSize:11, fontWeight:600, color:'rgba(124,140,255,0.75)' }}>
               {messages.filter(m => m.role==='user').length}Q
             </span>
           )}

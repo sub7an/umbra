@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import SceneWrapper from '../../components/SceneWrapper'
-import ControlPanel from '../../components/ControlPanel'
+import ControlPanel, { ControlGroup, ToggleRow } from '../../components/ControlPanel'
 import InfoPanel from '../../components/InfoPanel'
+import ModuleShell, { SceneCaption } from '../../components/ModuleShell'
 import BlochSphere from './BlochSphere'
 import ParticleInBox from './ParticleInBox'
 import DoubleSlit from './DoubleSlit'
@@ -13,9 +14,9 @@ import { blochCoordinates, prob0, prob1, particleInBoxEnergy, interferenceIntens
 const SCREEN_X = 3.8
 
 const VIEWS = [
-  { id: 'blochsphere',   label: 'Bloch Sphere' },
-  { id: 'particleinbox', label: 'Particle in Box' },
-  { id: 'doubleslit',    label: 'Double Slit' },
+  { id: 'blochsphere',   label: 'Bloch sphere' },
+  { id: 'particleinbox', label: 'Particle in a box' },
+  { id: 'doubleslit',    label: 'Double slit' },
   { id: 'entanglement',  label: 'Entanglement' },
   { id: 'tunneling',     label: 'Tunneling' },
 ]
@@ -35,50 +36,6 @@ const VIZ_MODES = [
   { id: 'real', label: 'Re(ψ)' },
   { id: 'imag', label: 'Im(ψ)' },
 ]
-
-function VizModeToggle({ mode, onChange }) {
-  return (
-    <div className="flex gap-1" role="group" aria-label="Visualization mode">
-      {VIZ_MODES.map((m) => {
-        const active = mode === m.id
-        return (
-          <button
-            key={m.id}
-            onClick={() => onChange(m.id)}
-            className={[
-              'font-mono-data text-[12px] tracking-wider uppercase px-2.5 py-1 rounded border transition-all duration-200',
-              active
-                ? 'border-rose-glow text-rose-glow bg-rose-glow/5 shadow-glow-rose'
-                : 'border-border-subtle text-text-dim hover:border-rose-mid hover:text-text-primary',
-            ].join(' ')}
-          >
-            {m.label}
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
-// ── Measurement toggle (DoubleSlit) ───────────────────────────────────────────
-
-function MeasureToggle({ active, onToggle }) {
-  return (
-    <button
-      onClick={onToggle}
-      className={[
-        'font-mono-data text-[13px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
-        active
-          ? 'border-amber-glow text-amber-glow shadow-glow-amber bg-amber-glow/5'
-          : 'border-border-subtle text-text-dim hover:border-amber-mid hover:text-text-primary',
-      ].join(' ')}
-    >
-      {active ? '⊙ MEASURED' : '◎ UNMEASURED'}
-    </button>
-  )
-}
-
-// ── Gate operations ───────────────────────────────────────────────────────────
 
 const GATES = ['H', 'X', 'Y', 'Z', 'S']
 const GATE_TIPS = {
@@ -317,7 +274,6 @@ export default function QuantumModule() {
   const setTunnelV0     = useModuleStore((s) => s.setTunnelV0)
   const setTunnelK0     = useModuleStore((s) => s.setTunnelK0)
   const resetQm         = useModuleStore((s) => s.resetQm)
-  const setActiveModule = useModuleStore((s) => s.setActiveModule)
 
   const bloch = blochCoordinates(theta, phi)
 
@@ -401,159 +357,93 @@ export default function QuantumModule() {
   const showVizToggle  = activeView === 'blochsphere' || activeView === 'particleinbox'
 
   return (
-    <div className="flex flex-col w-full h-full bg-ground">
-      <style>{`@keyframes umbra-pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }`}</style>
-
-      {/* ── Top bar ── */}
-      <header className="flex items-center justify-between px-5 py-2 bg-panel border-b border-border-subtle shrink-0 gap-3">
-        <div className="flex items-center gap-3 shrink-0">
-          <button
-            onClick={() => setActiveModule(null)}
-            className="font-mono-data text-[13px] tracking-widest text-text-dim hover:text-cyan-glow transition-colors duration-200 uppercase flex items-center gap-1.5"
-          >
-            ← MODULES
-          </button>
-          <div className="w-px h-4 bg-border-subtle" />
-          <h1 className="font-display text-base font-semibold text-text-primary tracking-wide whitespace-nowrap">
-            Quantum Mechanics
-          </h1>
-          {/* LIVE badge */}
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded border border-rose-glow/25 bg-rose-glow/5 shrink-0">
-            <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#e040fb', boxShadow: '0 0 6px #e040fb', animation: 'umbra-pulse 1.8s ease-in-out infinite' }} />
-            <span className="font-mono-data text-[11px] tracking-[0.2em] text-rose-glow/70">LIVE</span>
-          </div>
-        </div>
-
-        <nav className="flex gap-1 items-center flex-wrap justify-center" role="tablist" aria-label="Scene views">
-          {/* View tabs */}
-          {VIEWS.map((v) => {
-            const isActive = activeView === v.id
-            return (
-              <button
-                key={v.id}
-                role="tab"
-                aria-selected={isActive}
-                onClick={() => setActiveView(v.id)}
-                className={[
-                  'font-mono-data text-[13px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
-                  isActive
-                    ? 'border-rose-glow text-rose-glow shadow-glow-rose bg-rose-glow/5'
-                    : 'border-border-subtle text-text-dim hover:border-rose-mid hover:text-text-primary',
-                ].join(' ')}
-              >
-                {v.label}
-              </button>
-            )
-          })}
-
-          {/* Divider */}
-          {showVizToggle && <div className="w-px h-5 bg-border-subtle mx-1" />}
-
-          {/* Viz mode toggles (Bloch + PIB only) */}
+    <ModuleShell
+      title="Quantum Mechanics"
+      accent="#f472b6"
+      views={VIEWS}
+      activeView={activeView}
+      onViewChange={setActiveView}
+      readout="iℏ ∂ψ/∂t = Ĥψ"
+      lesson={
+        <InfoPanel
+          domain={domain}
+          syllabus={syllabus}
+          primaryEq={primaryEq}
+          derivedEqs={derivedEqs}
+          explanation={explanation}
+          tryThis={tryThis}
+          checkpoint={checkpoint}
+          metrics={metricsByView[activeView]}
+        />
+      }
+      controls={
+        <ControlPanel title="Parameters" controls={controlsByView[activeView]} onReset={resetQm} footer="Natural units · ℏ = 1">
           {showVizToggle && (
-            <VizModeToggle mode={activeVizMode} onChange={setActiveVizMode} />
+            <ControlGroup label="Show">
+              <div role="radiogroup" aria-label="Wavefunction display" className="grid grid-cols-3 gap-1 p-1 rounded-md bg-ground border border-border-subtle">
+                {VIZ_MODES.map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={activeVizMode === m.id}
+                    onClick={() => setActiveVizMode(m.id)}
+                    className={`h-8 rounded font-mono-data text-[13px] transition-colors duration-150 ${
+                      activeVizMode === m.id ? 'bg-panel-hover text-text-primary shadow-[inset_0_0_0_1px_rgb(var(--c-border))]' : 'text-text-dim hover:text-text-primary'
+                    }`}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            </ControlGroup>
           )}
-
-          {/* Gate buttons (Bloch Sphere only) */}
           {activeView === 'blochsphere' && (
-            <>
-              <div className="w-px h-5 bg-border-subtle mx-1" />
-              {GATES.map((gate) => (
-                <button
-                  key={gate}
-                  title={GATE_TIPS[gate]}
-                  onClick={() => {
-                    const { theta: nt, phi: np } = applyGateToBloch(gate, theta, phi)
-                    setBlochTheta(nt)
-                    setBlochPhi(np)
-                  }}
-                  className="font-mono-data text-[12px] tracking-wider uppercase px-2 py-1 rounded border border-rose-glow/35 text-rose-glow/75 hover:border-rose-glow hover:text-rose-glow hover:bg-rose-glow/5 transition-all duration-150"
-                >
-                  {gate}
-                </button>
-              ))}
-            </>
+            <ControlGroup label="Apply a gate">
+              <div className="grid grid-cols-5 gap-1.5">
+                {GATES.map((gate) => (
+                  <button
+                    key={gate}
+                    type="button"
+                    title={GATE_TIPS[gate]}
+                    aria-label={GATE_TIPS[gate]}
+                    onClick={() => {
+                      const { theta: nt, phi: np } = applyGateToBloch(gate, theta, phi)
+                      setBlochTheta(nt)
+                      setBlochPhi(np)
+                    }}
+                    className="ui-btn h-10 px-0 font-mono-data"
+                  >
+                    {gate}
+                  </button>
+                ))}
+              </div>
+              <dl className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-md bg-ground border border-border-subtle py-1.5"><dt className="text-[11px] text-text-dim">θ</dt><dd className="font-mono-data text-[13px]">{theta.toFixed(2)}</dd></div>
+                <div className="rounded-md bg-ground border border-border-subtle py-1.5"><dt className="text-[11px] text-text-dim">φ</dt><dd className="font-mono-data text-[13px]">{phi.toFixed(2)}</dd></div>
+                <div className="rounded-md bg-ground border border-border-subtle py-1.5"><dt className="text-[11px] text-text-dim">P(0)</dt><dd className="font-mono-data text-[13px] text-amber-glow">{(prob0(theta) * 100).toFixed(0)}%</dd></div>
+              </dl>
+            </ControlGroup>
           )}
-
-          {/* DoubleSlit measure toggle */}
-          {activeView === 'doubleslit' && (
-            <MeasureToggle active={measured} onToggle={() => setSlitMeasured(!measured)} />
-          )}
-        </nav>
-
-        <div className="font-mono-data text-sm text-rose-glow tabular-nums shrink-0" style={{ textShadow: '0 0 8px rgba(224,64,251,0.5)' }}>
-          iℏ∂ψ/∂t = Ĥψ
-        </div>
-      </header>
-
-      {/* ── Main layout ── */}
-      <div className="flex flex-1 overflow-hidden" style={{ minHeight: 0 }}>
-        <div className="w-72 shrink-0 flex flex-col overflow-hidden">
-          <InfoPanel
-            title="Analysis"
-            domain={domain}
-            syllabus={syllabus}
-            primaryEq={primaryEq}
-            derivedEqs={derivedEqs}
-            explanation={explanation}
-            tryThis={tryThis}
-            checkpoint={checkpoint}
-            metrics={metricsByView[activeView]}
-            footer="QUANTUM MECHANICS · QM MODULE"
-            accentColor="rose"
-          />
-        </div>
-
-        <main className="flex-1 relative overflow-hidden" style={{ minHeight: 0 }}>
-          <SceneWrapper cameraPosition={camPos} showGrid={activeView !== 'tunneling'}>
-            {activeView === 'blochsphere'   && <BlochSphere />}
-            {activeView === 'particleinbox' && <ParticleInBox />}
-            {activeView === 'doubleslit'    && <DoubleSlit />}
-            {activeView === 'entanglement'  && <Entanglement />}
-            {activeView === 'tunneling'     && <Tunneling />}
-          </SceneWrapper>
-
-          {/* View label top-left */}
-          <div className="absolute top-3 left-4 pointer-events-none">
-            <span className="font-display text-[12px] tracking-[0.2em] uppercase text-text-dim">
-              {VIEWS.find((v) => v.id === activeView)?.label}
-            </span>
-          </div>
-
-          {/* Bloch sphere state readout top-right */}
-          {activeView === 'blochsphere' && (
-            <div className="absolute top-3 right-4 flex flex-col items-end gap-0.5 pointer-events-none">
-              <span className="font-mono-data text-[11px] tracking-[0.15em] text-rose-glow/55">θ {theta.toFixed(3)} rad</span>
-              <span className="font-mono-data text-[11px] tracking-[0.15em] text-rose-glow/55">φ {phi.toFixed(3)} rad</span>
-              <span className="font-mono-data text-[11px] tracking-[0.15em] text-amber-glow/65">P(0) {(prob0(theta) * 100).toFixed(1)}%</span>
-            </div>
-          )}
-
-          {/* Particle in box readout */}
           {activeView === 'particleinbox' && (
-            <div className="absolute top-3 right-4 flex flex-col items-end gap-0.5 pointer-events-none">
-              <span className="font-mono-data text-[11px] tracking-[0.15em] text-rose-glow/55">n = {n}</span>
-              <span className="font-mono-data text-[11px] tracking-[0.15em] text-amber-glow/65">E = {particleInBoxEnergy(n).toFixed(2)} E₁</span>
-              <span className="font-mono-data text-[11px] tracking-[0.15em] text-text-dim/45">NODES: {n - 1}</span>
-            </div>
+            <p className="text-[13px] text-text-dim">
+              n = {n} · E = <span className="font-mono-data text-amber-glow">{particleInBoxEnergy(n).toFixed(2)} E₁</span> · {n - 1} node{n === 2 ? '' : 's'}
+            </p>
           )}
-
-          {/* SIM ACTIVE badge */}
-          <div className="absolute bottom-4 left-4 flex items-center gap-1.5 px-2.5 py-1 rounded border border-rose-glow/18 bg-ground/85 pointer-events-none">
-            <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#e040fb', boxShadow: '0 0 4px #e040fb' }} />
-            <span className="font-mono-data text-[11px] tracking-[0.2em] text-rose-glow/50">SIM ACTIVE</span>
-          </div>
-
-          {/* Orbit hint */}
-          <div className="absolute bottom-4 right-4 font-mono-data text-[11px] tracking-[0.12em] text-text-dim/40 pointer-events-none">
-            DRAG TO ORBIT · SCROLL TO ZOOM
-          </div>
-        </main>
-
-        <div className="w-52 shrink-0 flex flex-col overflow-hidden">
-          <ControlPanel title="Parameters" controls={controlsByView[activeView]} onReset={resetQm} />
-        </div>
-      </div>
-    </div>
+          {activeView === 'doubleslit' && (
+            <ToggleRow label="Measure which slit" value={measured} onChange={setSlitMeasured} />
+          )}
+        </ControlPanel>
+      }
+    >
+      <SceneWrapper cameraPosition={camPos} showGrid={activeView !== 'tunneling'}>
+        {activeView === 'blochsphere'   && <BlochSphere />}
+        {activeView === 'particleinbox' && <ParticleInBox />}
+        {activeView === 'doubleslit'    && <DoubleSlit />}
+        {activeView === 'entanglement'  && <Entanglement />}
+        {activeView === 'tunneling'     && <Tunneling />}
+      </SceneWrapper>
+      <SceneCaption>{VIEWS.find((v) => v.id === activeView)?.label}</SceneCaption>
+    </ModuleShell>
   )
 }

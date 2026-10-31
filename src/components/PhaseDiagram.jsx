@@ -342,35 +342,34 @@ export default function PhaseDiagram() {
   // ── Collapsed toggle ──────────────────────────────────────────────────────
   const accentColor = cfg ? 'rgba(124,140,255,0.6)' : 'rgba(255,255,255,0.15)'
 
+  if (!cfg) return null
+
   return (
-    <div style={{ borderTop: '1px solid rgba(124,140,255,0.06)', background: 'rgba(1,6,12,0.97)', flexShrink: 0 }}>
+    <div style={{ borderTop: '1px solid rgb(var(--c-border))', background: 'rgb(var(--c-panel))', flexShrink: 0 }}>
       {/* Toggle bar */}
       <button
-        onClick={() => cfg && setOpen(o => !o)}
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        aria-expanded={open}
+        className="hover:bg-panel-hover transition-colors duration-150"
         style={{
           width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between',
-          padding:'8px 14px', background:'none', border:'none',
-          cursor: cfg ? 'pointer' : 'default',
+          height:44, padding:'0 20px', background:'none', border:'none', cursor:'pointer',
         }}
       >
-        <div style={{ display:'flex', alignItems:'center', gap:7 }}>
-          <svg width="9" height="9" viewBox="0 0 10 10">
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+          <svg width="14" height="14" viewBox="0 0 10 10" aria-hidden="true">
             <polygon points="5,1 9,3.5 9,6.5 5,9 1,6.5 1,3.5"
-              fill="none" stroke={accentColor} strokeWidth="1.2" />
+              fill="none" stroke={accentColor} strokeWidth="1.1" />
           </svg>
-          <span style={{
-            fontFamily:'JetBrains Mono,monospace', fontSize:11,
-            letterSpacing:'.2em', color: accentColor, userSelect:'none',
-          }}>
-            PHASE DIAGRAM{!cfg ? ' — N/A' : ''}
+          <span style={{ fontSize:14, fontWeight:500, color: open ? 'rgb(var(--c-text))' : 'rgb(var(--c-text-muted))', userSelect:'none' }}>
+            Phase diagram
           </span>
         </div>
-        {cfg && (
-          <svg width="9" height="6" viewBox="0 0 10 6"
-            style={{ color: accentColor, transform: open ? 'rotate(0)' : 'rotate(180deg)', transition:'transform .2s' }}>
-            <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
-          </svg>
-        )}
+        <svg width="10" height="6" viewBox="0 0 10 6" aria-hidden="true"
+          style={{ color: 'rgb(var(--c-text-muted))', transform: open ? 'rotate(0)' : 'rotate(180deg)', transition:'transform .2s' }}>
+          <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+        </svg>
       </button>
 
       {open && cfg && (

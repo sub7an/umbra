@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import SceneWrapper from '../../components/SceneWrapper'
 import InfoPanel from '../../components/InfoPanel'
+import ModuleShell from '../../components/ModuleShell'
+import ControlPanel, { Slider as SharedSlider, ControlGroup, ToggleRow, OptionList } from '../../components/ControlPanel'
 import MagnetLab3D from './MagnetLab3D'
 import LorentzForce from './LorentzForce'
 import useModuleStore from '../../store/useModuleStore'
@@ -193,31 +195,14 @@ function buildMetrics(magnetType) {
   }
 }
 
-function Slider({ label, value, min, max, step, decimals, onChange }) {
-  const ACCENT = '#a855f7'
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 11,
-          letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.75)' }}>
-          {label}
-        </span>
-        <span style={{ fontFamily: 'JetBrains Mono,monospace', fontSize: 12, color: ACCENT }}>
-          {value.toFixed(decimals)}
-        </span>
-      </div>
-      <input type="range" min={min} max={max} step={step} value={value}
-        onChange={e => onChange(parseFloat(e.target.value))}
-        style={{ width: '100%', accentColor: ACCENT, cursor: 'pointer' }} />
-    </div>
-  )
+function Slider({ label, value, min, max, step, onChange }) {
+  return <SharedSlider label={label} value={value} min={min} max={max} step={step} onChange={onChange} />
 }
 
 export default function ElectromagnetismModule() {
   const magnetType      = useModuleStore((s) => s.em.magnetType)
   const setMagnetType   = useModuleStore((s) => s.setEmMagnetType)
   const resetEm         = useModuleStore((s) => s.resetEm)
-  const setActiveModule = useModuleStore((s) => s.setActiveModule)
 
   const [view,           setView]           = useState('field')
   const [showFieldLines, setShowFieldLines] = useState(true)
@@ -234,197 +219,72 @@ export default function ElectromagnetismModule() {
   const activeType = MAGNET_TYPES.find((m) => m.id === magnetType)
 
   return (
-    <div className="flex flex-col w-full h-full bg-ground">
-      {/* Top bar */}
-      <header className="flex items-center justify-between px-5 py-2 bg-panel border-b border-border-subtle shrink-0">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => setActiveModule(null)}
-            className="font-mono-data text-[13px] tracking-widest text-text-dim hover:text-violet-glow transition-colors duration-200 uppercase flex items-center gap-1.5"
-          >
-            ← MODULES
-          </button>
-          <div className="w-px h-4 bg-border-subtle" />
-          <h1 className="font-display text-base font-semibold text-text-primary tracking-wide">
-            Electromagnetism
-          </h1>
-          {/* View toggle */}
-          <div className="flex gap-1">
-            {[{ id: 'field', label: 'Field Lab' }, { id: 'lorentz', label: 'Lorentz' }].map(v => (
-              <button key={v.id} onClick={() => setView(v.id)}
-                className={[
-                  'font-mono-data text-[12px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
-                  view === v.id
-                    ? 'border-violet-glow text-violet-glow bg-violet-glow/5'
-                    : 'border-border-subtle text-text-dim hover:border-violet-glow/40',
-                ].join(' ')}>
-                {v.label}
-              </button>
-            ))}
-          </div>
-        </div>
+    <ModuleShell
+      title="Electromagnetism"
+      accent="#c084fc"
+      views={[{ id: 'field', label: 'Field lab' }, { id: 'lorentz', label: 'Lorentz force' }]}
+      activeView={view}
+      onViewChange={setView}
+      readout={isLorentz ? `B₀ = ${bStrength.toFixed(2)}` : <>∇·B = 0 · {activeType?.label}</>}
+      lesson={
+        <InfoPanel
+          domain={domain}
+          syllabus={syllabus}
+          primaryEq={primaryEq}
+          derivedEqs={derivedEqs}
+          explanation={explanation}
+          tryThis={tryThis}
+          checkpoint={checkpoint}
+          metrics={metrics}
+        />
+      }
+      controls={
+        <ControlPanel
+          title={isLorentz ? 'Parameters' : 'Visualization'}
+          onReset={isLorentz ? () => setBStrength(1.0) : resetEm}
+          footer={isLorentz ? 'Lorentz force · RK4 integrator' : 'Biot–Savart field · RK4 tracing'}
+        >
+          {isLorentz ? (
+            <>
+              <Slider label="Field strength B₀" value={bStrength} min={0.2} max={3.0} step={0.05} onChange={setBStrength} />
+              <ControlGroup label="Legend">
+                <ul className="space-y-1.5 text-[13px] text-text-dim">
+                  <li><span className="text-cyan-mid">━</span> Particle trail</li>
+                  <li><span className="text-cyan-mid">↗</span> Lorentz force F</li>
+                  <li><span className="text-violet-glow">↑</span> B-field arrows</li>
+                </ul>
+              </ControlGroup>
+            </>
+          ) : (
+            <>
+              <ControlGroup label="Magnet type">
+                <OptionList label="Magnet type" options={MAGNET_TYPES} value={magnetType} onChange={setMagnetType} />
+              </ControlGroup>
+              <ControlGroup label="Display layers">
+                <ToggleRow label="Field lines"   value={showFieldLines} onChange={setShowFieldLines} />
+                <ToggleRow label="Heatmap slice" value={showHeatmap}    onChange={setShowHeatmap} />
+                <ToggleRow label="Particle flow" value={showParticles}  onChange={setShowParticles} />
+              </ControlGroup>
+            </>
+          )}
+        </ControlPanel>
+      }
+    >
+      <SceneWrapper
+        cameraPosition={isLorentz ? [4, 1, 12] : [0, 4, 9]}
+        showGrid={false}
+        minDist={2}
+        maxDist={22}
+      >
+        {isLorentz
+          ? <LorentzForce key="lorentz" bStrength={bStrength} />
+          : <MagnetLab3D showFieldLines={showFieldLines} showHeatmap={showHeatmap} showParticles={showParticles} />
+        }
+      </SceneWrapper>
 
-        {/* Magnet type nav (field view only) */}
-        {!isLorentz && (
-        <nav className="flex gap-1" aria-label="Magnet type">
-          {MAGNET_TYPES.map((mt) => {
-            const active = magnetType === mt.id
-            return (
-              <button
-                key={mt.id}
-                onClick={() => setMagnetType(mt.id)}
-                title={mt.desc}
-                className={[
-                  'font-mono-data text-[13px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
-                  active
-                    ? 'border-violet-glow text-violet-glow bg-violet-glow/5 shadow-glow-violet'
-                    : 'border-border-subtle text-text-dim hover:border-violet-glow/50 hover:text-text-primary',
-                ].join(' ')}
-              >
-                {mt.abbr}
-              </button>
-            )
-          })}
-        </nav>
-        )}
-
-        <div className="font-mono-data text-sm text-violet-glow tabular-nums" style={{ textShadow: '0 0 8px rgba(168,85,247,0.5)' }}>
-          ∇·B = 0
-        </div>
-      </header>
-
-      {/* Main layout */}
-      <div className="flex flex-1 overflow-hidden" style={{ minHeight: 0 }}>
-        {/* Info panel */}
-        <div className="w-72 shrink-0 flex flex-col overflow-hidden">
-          <InfoPanel
-            title="Field Analysis"
-            domain={domain}
-            syllabus={syllabus}
-            primaryEq={primaryEq}
-            derivedEqs={derivedEqs}
-            explanation={explanation}
-            tryThis={tryThis}
-            checkpoint={checkpoint}
-            metrics={metrics}
-            footer="ELECTROMAGNETISM · BIOT-SAVART LAW"
-            accentColor="rose"
-          />
-        </div>
-
-        {/* 3D scene */}
-        <main className="flex-1 relative overflow-hidden" style={{ minHeight: 0 }}>
-          <SceneWrapper
-            cameraPosition={isLorentz ? [4, 1, 12] : [0, 4, 9]}
-            showGrid={false}
-            minDist={2}
-            maxDist={22}
-          >
-            {isLorentz
-              ? <LorentzForce key="lorentz" bStrength={bStrength} />
-              : <MagnetLab3D showFieldLines={showFieldLines} showHeatmap={showHeatmap} showParticles={showParticles} />
-            }
-          </SceneWrapper>
-
-          <div className="absolute top-3 left-4 pointer-events-none">
-            <span className="font-display text-[12px] tracking-[0.2em] uppercase text-text-dim">
-              {isLorentz ? 'Lorentz Force · Cyclotron Motion · F = qv×B' : `MagnetLab 3D · ${activeType?.label}`}
-            </span>
-          </div>
-          <div className="absolute bottom-4 left-4 flex items-center gap-1.5 px-2.5 py-1 rounded border pointer-events-none"
-            style={{ borderColor: 'rgba(168,85,247,0.18)', background: 'rgba(8,9,10,0.85)' }}>
-            <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#a855f7', boxShadow: '0 0 4px #a855f7' }} />
-            <span className="font-mono-data text-[11px] tracking-[0.2em]" style={{ color: 'rgba(168,85,247,0.75)' }}>SIM ACTIVE</span>
-          </div>
-          <div className="absolute bottom-4 right-4 font-mono-data text-[11px] tracking-[0.12em] pointer-events-none"
-            style={{ color: 'rgba(168,85,247,0.75)' }}>
-            DRAG TO ORBIT · SCROLL TO ZOOM
-          </div>
-        </main>
-
-        {/* Right control panel */}
-        <aside className="w-52 shrink-0 flex flex-col overflow-hidden bg-panel osc-grid border-l border-border-subtle">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle">
-            <div className="flex items-center gap-2">
-              <span
-                className="w-1.5 h-1.5 rounded-full animate-pulse-glow bg-violet-glow"
-                style={{ boxShadow: '0 0 4px 1px rgba(168,85,247,0.6)' }}
-              />
-              <span className="font-display text-xs tracking-[0.18em] uppercase text-text-dim">
-                Visualization
-              </span>
-            </div>
-            <button
-              onClick={resetEm}
-              className="font-mono-data text-[12px] tracking-wider text-text-dim hover:text-violet-glow transition-colors duration-200 uppercase px-2 py-1 border border-border-subtle hover:border-violet-glow/40 rounded"
-            >
-              RST
-            </button>
-          </div>
-
-          <div className="flex-1 px-4 py-5 flex flex-col gap-3 overflow-y-auto thin-scroll">
-            {isLorentz ? (
-              <>
-                <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase text-text-dim mb-0.5">
-                  Field Strength
-                </p>
-                <Slider label="B₀  field" value={bStrength} min={0.2} max={3.0} step={0.05} decimals={2}
-                  onChange={setBStrength} />
-                <div className="h-px bg-border-subtle my-1" />
-                <div className="font-mono-data text-[11px] text-text-dim space-y-1.5">
-                  <p style={{ color: '#7c8cff' }}>─ particle trail</p>
-                  <p style={{ color: '#7c8cff' }}>↗ Lorentz force F</p>
-                  <p style={{ color: '#a855f7' }}>↑ B field arrows</p>
-                </div>
-              </>
-            ) : (
-              <>
-                {/* Display toggles */}
-                <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase text-text-dim mb-0.5">
-                  Display layers
-                </p>
-                {[
-                  { label: 'Field Lines',   value: showFieldLines, set: setShowFieldLines },
-                  { label: 'Heatmap Slice', value: showHeatmap,    set: setShowHeatmap    },
-                  { label: 'Particle Flow', value: showParticles,  set: setShowParticles  },
-                ].map(({ label, value, set }) => (
-                  <button key={label} onClick={() => set((v) => !v)}
-                    className={[
-                      'w-full flex items-center justify-between px-3 py-2 rounded border font-mono-data text-[13px] tracking-wider uppercase transition-all duration-200',
-                      value
-                        ? 'border-violet-glow/50 text-violet-glow bg-violet-glow/5'
-                        : 'border-border-subtle text-text-dim hover:border-violet-glow/30',
-                    ].join(' ')}>
-                    {label}<span>{value ? '◉' : '○'}</span>
-                  </button>
-                ))}
-                <div className="h-px bg-border-subtle my-2" />
-                <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase text-text-dim mb-0.5">
-                  Magnet type
-                </p>
-                {MAGNET_TYPES.map((mt) => (
-                  <button key={mt.id} onClick={() => setMagnetType(mt.id)}
-                    className={[
-                      'w-full flex flex-col items-start px-3 py-2 rounded border font-mono-data text-left transition-all duration-200',
-                      magnetType === mt.id
-                        ? 'border-violet-glow/50 text-violet-glow bg-violet-glow/5'
-                        : 'border-border-subtle text-text-dim hover:border-violet-glow/30',
-                    ].join(' ')}>
-                    <span className="text-[13px] tracking-wider uppercase">{mt.label}</span>
-                    <span className="text-[11px] text-text-dim mt-0.5 leading-tight">{mt.desc}</span>
-                  </button>
-                ))}
-              </>
-            )}
-          </div>
-
-          <div className="px-4 py-3 border-t border-border-subtle">
-            <p className="font-mono-data text-[12px] text-text-dim leading-relaxed">
-              EM · BIOT-SAVART · RK4
-            </p>
-          </div>
-        </aside>
+      <div className="absolute top-3 left-3 pointer-events-none px-2.5 py-1 rounded-md bg-ground/70 border border-border-subtle text-[12px] text-text-dim backdrop-blur-sm">
+        {isLorentz ? 'Lorentz force · cyclotron motion · F = qv × B' : `Magnet lab · ${activeType?.label}`}
       </div>
-    </div>
+    </ModuleShell>
   )
 }

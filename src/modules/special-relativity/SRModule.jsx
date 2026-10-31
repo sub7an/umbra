@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import SceneWrapper from '../../components/SceneWrapper'
 import ControlPanel from '../../components/ControlPanel'
 import InfoPanel from '../../components/InfoPanel'
+import ModuleShell from '../../components/ModuleShell'
 import LightCone from './LightCone'
 import TimeDilation from './TimeDilation'
 import LengthContraction from './LengthContraction'
@@ -232,7 +233,7 @@ function DiagnosticsPanel({ velocity, gamma }) {
   const m2 = E * E - p * p
 
   return (
-    <aside className="flex flex-col shrink-0 bg-panel osc-grid border-r border-t border-border-subtle">
+    <section className="flex flex-col border-b border-border-subtle">
       {/* Header / collapse toggle */}
       <button
         onClick={() => setIsOpen((o) => !o)}
@@ -240,8 +241,8 @@ function DiagnosticsPanel({ velocity, gamma }) {
         aria-expanded={isOpen}
       >
         <div className="flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-cyan-glow shadow-glow-cyan animate-pulse-glow" />
-          <span className="font-display text-xs tracking-[0.18em] uppercase text-text-dim group-hover:text-text-primary transition-colors duration-200">
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-glow shadow-glow-cyan" />
+          <span className="ui-eyebrow group-hover:text-text-primary transition-colors duration-200">
             System Diagnostics
           </span>
         </div>
@@ -314,7 +315,7 @@ function DiagnosticsPanel({ velocity, gamma }) {
           </div>
         </>
       )}
-    </aside>
+    </section>
   )
 }
 
@@ -328,7 +329,6 @@ export default function SRModule() {
   const eventT = useModuleStore((s) => s.sr.eventT)
   const setSrVelocity = useModuleStore((s) => s.setSrVelocity)
   const resetSr = useModuleStore((s) => s.resetSr)
-  const setActiveModule = useModuleStore((s) => s.setActiveModule)
 
   const gamma = lorentzFactor(velocity)
   const Lc = contractedLength(3.0, velocity)
@@ -363,88 +363,35 @@ export default function SRModule() {
   const camPos = CAMERA_POSITIONS[activeView]
 
   return (
-    <div className="flex flex-col w-full h-full bg-ground">
-      {/* ── Top bar ── */}
-      <header className="flex items-center justify-between px-5 py-2 bg-panel border-b border-border-subtle shrink-0">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => setActiveModule(null)}
-            className="font-mono-data text-[13px] tracking-widest text-text-dim hover:text-cyan-glow transition-colors duration-200 uppercase flex items-center gap-1.5"
-          >
-            ← MODULES
-          </button>
-          <div className="w-px h-4 bg-border-subtle" />
-          <h1 className="font-display text-base font-semibold text-text-primary tracking-wide">
-            Special Relativity
-          </h1>
-        </div>
-
-        {/* View selector tabs */}
-        <nav className="flex gap-1" role="tablist" aria-label="Scene views">
-          {VIEWS.map((v) => {
-            const isActive = activeView === v.id
-            return (
-              <button
-                key={v.id}
-                role="tab"
-                aria-selected={isActive}
-                onClick={() => setActiveView(v.id)}
-                className={[
-                  'font-mono-data text-[13px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
-                  isActive
-                    ? 'border-cyan-glow text-cyan-glow shadow-glow-cyan bg-cyan-glow/5'
-                    : 'border-border-subtle text-text-dim hover:border-cyan-dim hover:text-text-primary',
-                ].join(' ')}
-              >
-                {v.label}
-              </button>
-            )
-          })}
-        </nav>
-
-        <div className="font-mono-data text-sm text-amber-glow glow-amber tabular-nums">
-          γ = {gamma.toFixed(4)}
-        </div>
-      </header>
-
-      {/* ── Main layout: Info | Scene | Controls ── */}
-      <div className="flex flex-1 overflow-hidden" style={{ minHeight: 0 }}>
-        {/* Left column: Analysis + Diagnostics stacked */}
-        <div className="w-72 shrink-0 flex flex-col overflow-hidden">
-          <InfoPanel
-            title="Analysis"
-            domain={domain}
-            syllabus={syllabus}
-            primaryEq={primaryEq}
-            derivedEqs={derivedEqs}
-            explanation={explanation}
-            tryThis={tryThis}
-            checkpoint={checkpoint}
-            metrics={metrics}
-          />
+    <ModuleShell
+      title="Special Relativity"
+      accent="#22d3ee"
+      views={VIEWS}
+      activeView={activeView}
+      onViewChange={setActiveView}
+      readout={<>γ = {gamma.toFixed(4)}</>}
+      lesson={
+        <InfoPanel
+          domain={domain}
+          syllabus={syllabus}
+          primaryEq={primaryEq}
+          derivedEqs={derivedEqs}
+          explanation={explanation}
+          tryThis={tryThis}
+          checkpoint={checkpoint}
+          metrics={metrics}
+        >
           <DiagnosticsPanel velocity={velocity} gamma={gamma} />
-        </div>
-
-        {/* Single persistent Canvas — swap content, never remount */}
-        <main className="flex-1 relative overflow-hidden" style={{ minHeight: 0 }}>
-          <SceneWrapper cameraPosition={camPos}>
-            {activeView === 'lightcone' && <LightCone />}
-            {activeView === 'timedilation' && <TimeDilation />}
-            {activeView === 'lengthcontraction' && <LengthContraction />}
-          </SceneWrapper>
-
-          {/* Scene label */}
-          <div className="absolute top-3 left-4 pointer-events-none">
-            <span className="font-display text-[12px] tracking-[0.2em] uppercase text-text-dim">
-              {VIEWS.find((v) => v.id === activeView)?.label}
-            </span>
-          </div>
-        </main>
-
-        <div className="w-52 shrink-0 flex flex-col overflow-hidden">
-          <ControlPanel title="Parameters" controls={controls} onReset={resetSr} />
-        </div>
-      </div>
-    </div>
+        </InfoPanel>
+      }
+      controls={<ControlPanel title="Parameters" controls={controls} onReset={resetSr} />}
+    >
+      {/* Single persistent Canvas — swap content, never remount */}
+      <SceneWrapper cameraPosition={camPos}>
+        {activeView === 'lightcone' && <LightCone />}
+        {activeView === 'timedilation' && <TimeDilation />}
+        {activeView === 'lengthcontraction' && <LengthContraction />}
+      </SceneWrapper>
+    </ModuleShell>
   )
 }

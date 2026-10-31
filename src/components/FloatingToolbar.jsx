@@ -45,33 +45,34 @@ function getBestMime() {
 }
 
 // ── Individual action buttons ─────────────────────────────────────────────────
+const BTN_TONE = {
+  '#7c8cff': '124 140 255',
+  '#a855f7': '192 132 252',
+  '#ef4444': '248 113 113',
+}
+
 function Btn({ label, icon, onClick, active, color = '#7c8cff', title }) {
-  const base = `rgba(${color === '#7c8cff' ? '124,140,255' : color === '#a855f7' ? '168,85,247' : '239,68,68'},`
+  const rgb = BTN_TONE[color] ?? BTN_TONE['#7c8cff']
   return (
     <button
+      type="button"
       onClick={onClick}
       title={title}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 6,
-        padding: '6px 12px',
-        fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.10em',
-        color: active ? color : `${base}0.45)`,
-        background: active ? `${base}0.10)` : `rgba(8,9,10,0.0)`,
-        border: 'none', borderRadius: 3, cursor: 'pointer',
-        transition: 'color 0.15s, background 0.15s',
-        userSelect: 'none', whiteSpace: 'nowrap',
-      }}
-      onMouseEnter={e => { e.currentTarget.style.color = color; e.currentTarget.style.background = `${base}0.08)` }}
-      onMouseLeave={e => { e.currentTarget.style.color = active ? color : `${base}0.45)`; e.currentTarget.style.background = active ? `${base}0.10)` : 'transparent' }}
+      aria-label={label}
+      aria-pressed={active || undefined}
+      className={`tb-btn inline-flex items-center gap-2 h-9 px-2.5 rounded-md text-[13px] font-medium whitespace-nowrap select-none transition-colors duration-150 ${
+        active ? '' : 'text-text-dim hover:text-text-primary hover:bg-panel-hover'
+      }`}
+      style={active ? { color: `rgb(${rgb})`, background: `rgb(${rgb} / 0.14)` } : undefined}
     >
       {icon}
-      {label}
+      <span className="tb-label">{label}</span>
     </button>
   )
 }
 
 function Divider() {
-  return <div style={{ width: 1, height: 18, background: 'rgba(124,140,255,0.1)', flexShrink: 0 }} />
+  return <div className="w-px h-5 mx-0.5 bg-border-subtle shrink-0" aria-hidden="true" />
 }
 
 // ── Share action ──────────────────────────────────────────────────────────────
@@ -101,7 +102,7 @@ function ShareAction({ activeModule }) {
         ? <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7.5L8 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
         : <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M4 2.5H3C2.45 2.5 2 2.95 2 3.5V7.5C2 8.05 2.45 8.5 3 8.5H7C7.55 8.5 8 8.05 8 7.5V6.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/><path d="M5.5 1.5H8.5V4.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/><path d="M8.5 1.5L5 5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg>
       }
-      label={status === 'copied' ? 'COPIED' : status === 'error' ? 'ERROR' : 'SHARE'}
+      label={status === 'copied' ? 'Copied' : status === 'error' ? 'Error' : 'Share'}
     />
   )
 }
@@ -128,7 +129,7 @@ function SoundAction() {
       color="#7c8cff"
       title={muted ? 'Unmute interface sounds' : 'Mute interface sounds'}
       icon={<svg width="10" height="10" viewBox="0 0 11 11" fill="none"><path d="M1.5 4V7H3.5L6 9.5V1.5L3.5 4H1.5Z" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round"/>{muted ? <path d="M7.5 4L10 6.5M10 4L7.5 6.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/> : <path d="M7.5 3.5C8.3 4.3 8.3 6.7 7.5 7.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>}</svg>}
-      label={muted ? 'MUTED' : 'SND'}
+      label={muted ? 'Muted' : 'Sound'}
     />
   )
 }
@@ -145,7 +146,7 @@ function ThemeAction() {
       icon={theme === 'light'
         ? <svg width="10" height="10" viewBox="0 0 11 11" fill="none"><path d="M9 6.5A4 4 0 1 1 4.5 2 3.2 3.2 0 0 0 9 6.5Z" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round"/></svg>
         : <svg width="10" height="10" viewBox="0 0 11 11" fill="none"><circle cx="5.5" cy="5.5" r="2.2" stroke="currentColor" strokeWidth="1.1"/><path d="M5.5 1V2M5.5 9V10M1 5.5H2M9 5.5H10" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg>}
-      label={theme === 'light' ? 'DARK' : 'LIGHT'}
+      label={theme === 'light' ? 'Dark' : 'Light'}
     />
   )
 }
@@ -174,7 +175,7 @@ function EmbedAction({ activeModule }) {
         ? <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7.5L8 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
         : <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3.5 3L1.5 5L3.5 7M6.5 3L8.5 5L6.5 7" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/></svg>
       }
-      label={status === 'copied' ? 'COPIED' : 'EMBED'}
+      label={status === 'copied' ? 'Copied' : 'Embed'}
     />
   )
 }
@@ -243,7 +244,7 @@ function RecordAction({ activeModule }) {
           ? <span style={{ display:'inline-block', width:7, height:7, borderRadius:'50%', background:'#ef4444', boxShadow:'0 0 6px #ef4444', animation:'umbra-pulse 0.9s ease-in-out infinite' }} />
           : <span style={{ display:'inline-block', width:7, height:7, borderRadius:'50%', background:'rgba(239,68,68,0.55)' }} />
         }
-        label={done ? 'SAVED' : recording ? `${fmt(elapsed)} STOP` : 'REC'}
+        label={done ? 'Saved' : recording ? `${fmt(elapsed)} Stop` : 'Record'}
       />
     </div>
   )
@@ -305,7 +306,7 @@ function AskAction() {
         color="#a855f7"
         title="Describe a physics scenario in plain English (press /)"
         icon={<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="3.8" stroke="currentColor" strokeWidth="1.1"/><path d="M3.5 4C3.5 3.1 4.2 2.5 5 2.5C5.8 2.5 6.4 3.1 6.4 4C6.4 4.7 5.9 5.1 5 5.4V6.2" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/><circle cx="5" cy="7.5" r="0.5" fill="currentColor"/></svg>}
-        label="ASK"
+        label="Ask"
       />
       {open && (
         <div
@@ -434,7 +435,7 @@ function SnapshotAction({ activeModule }) {
           ? <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7.5L8 2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
           : <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="1.5" y="1.5" width="7" height="5.5" rx="1" stroke="currentColor" strokeWidth="1.1"/><circle cx="5" cy="4" r="1.2" stroke="currentColor" strokeWidth="1"/><path d="M1.5 8.5h7" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg>
       }
-      label={status === 'saving' ? '…' : status === 'done' ? 'SAVED' : 'SNAP'}
+      label={status === 'saving' ? '…' : status === 'done' ? 'Saved' : 'Snapshot'}
     />
   )
 }
@@ -465,7 +466,7 @@ function TutorAction() {
           />
         </svg>
       }
-      label="TUTOR"
+      label="Tutor"
     />
   )
 }
@@ -489,22 +490,11 @@ export default function FloatingToolbar({ explainActive, onExplainToggle }) {
   }, [])
 
   return (
-    <div style={{
-      position: 'fixed',
-      bottom: 20,
-      left: '50%',
-      transform: 'translateX(-50%)',
-      zIndex: 10050,
-      display: 'flex',
-      alignItems: 'center',
-      background: 'rgba(8,9,10,0.82)',
-      border: '1px solid rgba(124,140,255,0.10)',
-      borderRadius: 5,
-      backdropFilter: 'blur(10px)',
-      WebkitBackdropFilter: 'blur(10px)',
-      boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-      overflow: 'hidden',
-    }}>
+    <div
+      role="toolbar"
+      aria-label="Tools"
+      className={`tb fixed bottom-4 left-1/2 -translate-x-1/2 z-[10050] flex items-center gap-0.5 p-1 rounded-lg bg-panel/90 border border-border-subtle shadow-card backdrop-blur-md max-w-[calc(100vw-24px)] overflow-x-auto ${hasModule ? 'tb-compact' : ''}`}
+    >
       <SoundAction />
       <ThemeAction />
       <Divider />
@@ -519,7 +509,7 @@ export default function FloatingToolbar({ explainActive, onExplainToggle }) {
             color="#7c8cff"
             title="Click anywhere in the simulation to get a plain English explanation (E)"
             icon={<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" stroke="currentColor" strokeWidth="1.1"/><path d="M5 3v2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><circle cx="5" cy="7.2" r="0.55" fill="currentColor"/></svg>}
-            label={explainActive ? 'CLICK ANYTHING' : 'EXPLAIN'}
+            label={explainActive ? 'Click anything' : 'Explain'}
           />
         </>
       )}

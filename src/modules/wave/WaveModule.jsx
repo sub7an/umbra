@@ -2,6 +2,8 @@ import { useState } from 'react'
 import useModuleStore from '../../store/useModuleStore'
 import SceneWrapper from '../../components/SceneWrapper'
 import InfoPanel from '../../components/InfoPanel'
+import ModuleShell, { SceneCaption } from '../../components/ModuleShell'
+import ControlPanel, { ControlGroup, OptionList } from '../../components/ControlPanel'
 import RippleTank from './RippleTank'
 import DoubleSlit from './DoubleSlit'
 import NormalModes, { MODES } from './NormalModes'
@@ -9,9 +11,9 @@ import NormalModes, { MODES } from './NormalModes'
 const ACCENT = '#22d3ee'
 
 const VIEWS = [
-  { id: 'ripple', label: 'RIPPLE TANK' },
-  { id: 'slit',   label: 'DOUBLE SLIT' },
-  { id: 'modes',  label: 'NORMAL MODES' },
+  { id: 'ripple', label: 'Ripple tank' },
+  { id: 'slit',   label: 'Double slit' },
+  { id: 'modes',  label: 'Normal modes' },
 ]
 
 const CAMERA = {
@@ -87,7 +89,6 @@ function buildExplanation(view) {
 }
 
 export default function WaveModule() {
-  const setActiveModule = useModuleStore((s) => s.setActiveModule)
   const view                    = useModuleStore((s) => s.wave.viewType)
   const modeIdx                 = useModuleStore((s) => s.wave.modeIdx)
   const slitMode                = useModuleStore((s) => s.wave.slitMode)
@@ -101,194 +102,78 @@ export default function WaveModule() {
   const [m, n] = MODES[modeIdx]
 
   return (
-    <div style={{
-      width: '100%', height: '100%',
-      background: '#0b0d12',
-      display: 'flex', flexDirection: 'column',
-      fontFamily: 'JetBrains Mono, monospace',
-    }}>
-      <style>{`
-        @keyframes umbra-pulse {
-          0%, 100% { opacity: 1; }
-          50%       { opacity: 0.3; }
-        }
-      `}</style>
-      {/* ── Header ── */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 14,
-        padding: '11px 18px',
-        borderBottom: '1px solid rgba(34,211,238,0.10)',
-        background: 'rgba(8,9,10,0.97)',
-        flexShrink: 0,
-      }}>
-        <button
-          onClick={() => setActiveModule(null)}
-          style={{
-            fontFamily: 'JetBrains Mono, monospace',
-            fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase',
-            color: 'rgba(34,211,238,0.75)', background: 'none',
-            border: 'none', cursor: 'pointer', padding: 0,
-          }}
-        >← MODULES</button>
-
-        <div style={{ width: 1, height: 14, background: 'rgba(34,211,238,0.12)' }} />
-
-        <span style={{ fontSize: 13, letterSpacing: '0.28em', textTransform: 'uppercase', color: ACCENT, fontWeight: 700 }}>
-          Wave Mechanics
-        </span>
-
-        {/* LIVE badge */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 5,
-          padding: '2px 8px',
-          border: '1px solid rgba(34,211,238,0.28)',
-          borderRadius: 2,
-          background: 'rgba(34,211,238,0.05)',
-        }}>
-          <div style={{
-            width: 5, height: 5, borderRadius: '50%',
-            background: ACCENT, boxShadow: `0 0 6px ${ACCENT}`,
-            animation: 'umbra-pulse 1.8s ease-in-out infinite',
-          }} />
-          <span style={{ fontSize: 11, letterSpacing: '0.2em', color: ACCENT }}>LIVE</span>
-        </div>
-
-        {/* Stat readout */}
-        <span style={{ fontSize: 11, letterSpacing: '0.12em', color: 'rgba(34,211,238,0.75)' }}>
-          {view === 'ripple' && `SOURCES: ${sourceCount}`}
-          {view === 'modes'  && `MODE: (${m},${n})  ω = π·${Math.sqrt(m*m+n*n).toFixed(2)}c/L`}
-        </span>
-
-        {/* View tabs */}
-        <div style={{ display: 'flex', gap: 4, marginLeft: 'auto' }}>
-          {VIEWS.map((v) => (
-            <button key={v.id} onClick={() => setView(v.id)} style={{
-              fontFamily: 'JetBrains Mono, monospace',
-              fontSize: 11, letterSpacing: '0.15em', textTransform: 'uppercase',
-              padding: '5px 12px',
-              background: view === v.id ? 'rgba(34,211,238,0.09)' : 'transparent',
-              border: `1px solid ${view === v.id ? 'rgba(34,211,238,0.33)' : 'rgba(255,255,255,0.07)'}`,
-              color: view === v.id ? ACCENT : 'rgba(255,255,255,0.33)',
-              borderRadius: 2, cursor: 'pointer',
-            }}>
-              {v.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Body ── */}
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
-        {/* Info panel */}
-        <div style={{ width: 235, flexShrink: 0, borderRight: '1px solid rgba(34,211,238,0.07)' }}>
-          <InfoPanel
-            title="Wave Equation"
-            domain={eq.domain}
-            syllabus={eq.syllabus}
-            primaryEq={eq.primaryEq}
-            derivedEqs={eq.derivedEqs}
-            explanation={buildExplanation(view)}
-            tryThis={eq.tryThis}
-            checkpoint={eq.checkpoint}
-            accentColor="cyan"
-            footer="WAVE MECHANICS · UMBRA"
-          />
-        </div>
-
-        {/* 3D scene */}
-        <div style={{ flex: 1, position: 'relative', overflow: 'hidden', minHeight: 0 }}>
-          <SceneWrapper
-            cameraPosition={CAMERA[view]}
-            showGrid={false}
-            minDist={4}
-            maxDist={28}
-          >
-            {view === 'ripple' && <RippleTank onSourceCount={setCount} slitMode={slitMode} clearCount={clearCount} />}
-            {view === 'slit'   && <DoubleSlit />}
-            {view === 'modes'  && <NormalModes modeIdx={modeIdx} />}
-          </SceneWrapper>
-
-          {/* SIM ACTIVE badge */}
-          <div style={{
-            position: 'absolute', bottom: 16, left: 16,
-            display: 'flex', alignItems: 'center', gap: 7,
-            padding: '4px 10px',
-            border: '1px solid rgba(34,211,238,0.18)',
-            borderRadius: 2,
-            background: 'rgba(8,9,10,0.88)',
-            pointerEvents: 'none',
-          }}>
-            <div style={{ width: 4, height: 4, borderRadius: '50%', background: ACCENT, boxShadow: `0 0 4px ${ACCENT}` }} />
-            <span style={{ fontSize: 11, letterSpacing: '0.2em', color: 'rgba(34,211,238,0.75)' }}>SIM ACTIVE</span>
-          </div>
-
-          {/* Ripple controls: slit mode + clear */}
+    <ModuleShell
+      title="Wave Mechanics"
+      accent={ACCENT}
+      views={VIEWS}
+      activeView={view}
+      onViewChange={setView}
+      readout={view === 'ripple' ? `${sourceCount} source${sourceCount === 1 ? '' : 's'}` : view === 'modes' ? <>mode ({m},{n}) · ω = π·{Math.sqrt(m * m + n * n).toFixed(2)} c/L</> : 'Two-slit interference'}
+      lesson={
+        <InfoPanel
+          domain={eq.domain}
+          syllabus={eq.syllabus}
+          primaryEq={eq.primaryEq}
+          derivedEqs={eq.derivedEqs}
+          explanation={buildExplanation(view)}
+          tryThis={eq.tryThis}
+          checkpoint={eq.checkpoint}
+        />
+      }
+      controls={
+        <ControlPanel title="Controls" footer="128 × 128 wave mesh · finite differences">
           {view === 'ripple' && (
-            <div style={{
-              position: 'absolute', bottom: 16, right: 16,
-              display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6,
-              pointerEvents: 'all',
-            }}>
-              {/* Slit selector */}
-              <div style={{ display: 'flex', gap: 3 }}>
-                {[
-                  { id: 0, label: 'OPEN' },
-                  { id: 1, label: '1 SLIT' },
-                  { id: 2, label: '2 SLITS' },
-                ].map((s) => (
-                  <button key={s.id} onClick={() => setSlitMode(s.id)} style={{
-                    fontFamily: 'JetBrains Mono, monospace',
-                    fontSize: 11, letterSpacing: '0.1em',
-                    padding: '4px 9px',
-                    background: slitMode === s.id ? 'rgba(34,211,238,0.12)' : 'rgba(8,9,10,0.88)',
-                    border: `1px solid ${slitMode === s.id ? 'rgba(34,211,238,0.4)' : 'rgba(34,211,238,0.12)'}`,
-                    color: slitMode === s.id ? ACCENT : 'rgba(34,211,238,0.38)',
-                    borderRadius: 2, cursor: 'pointer',
-                  }}>{s.label}</button>
+            <>
+              <ControlGroup label="Barrier">
+                <OptionList
+                  label="Barrier"
+                  options={[
+                    { id: 0, label: 'Open water' },
+                    { id: 1, label: 'Single slit', desc: 'Watch the wave diffract' },
+                    { id: 2, label: 'Double slit', desc: 'Two sources interfere' },
+                  ]}
+                  value={slitMode}
+                  onChange={setSlitMode}
+                />
+              </ControlGroup>
+              <ControlGroup label="Sources">
+                <p className="text-[13px] text-text-dim">Click the water surface to drop an oscillating source.</p>
+                <button type="button" onClick={() => setClear((c) => c + 1)} className="ui-btn w-full">Clear sources</button>
+              </ControlGroup>
+            </>
+          )}
+          {view === 'modes' && (
+            <ControlGroup label="Normal mode (m, n)">
+              <div role="radiogroup" aria-label="Normal mode" className="grid grid-cols-3 gap-1.5">
+                {MODES.map(([mm, nn], i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    role="radio"
+                    aria-checked={modeIdx === i}
+                    onClick={() => setModeIdx(i)}
+                    className={`h-10 rounded-md border font-mono-data text-[13px] transition-colors duration-150 ${
+                      modeIdx === i ? 'border-cyan-glow/60 bg-cyan-glow/10 text-text-primary' : 'border-border-subtle bg-ground/40 text-text-dim hover:text-text-primary hover:bg-panel-hover'
+                    }`}
+                  >
+                    {mm},{nn}
+                  </button>
                 ))}
               </div>
-              {/* Clear button + hint */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 11, letterSpacing: '0.1em', color: 'rgba(34,211,238,0.75)' }}>
-                  CLICK SURFACE · ADD SOURCE
-                </span>
-                <button onClick={() => setClear((c) => c + 1)} style={{
-                  fontFamily: 'JetBrains Mono, monospace',
-                  fontSize: 11, letterSpacing: '0.1em',
-                  padding: '4px 9px',
-                  background: 'rgba(8,9,10,0.88)',
-                  border: '1px solid rgba(34,211,238,0.12)',
-                  color: 'rgba(34,211,238,0.75)',
-                  borderRadius: 2, cursor: 'pointer',
-                }}>CLEAR</button>
-              </div>
-            </div>
+            </ControlGroup>
           )}
-
-          {/* Normal mode selector */}
-          {view === 'modes' && (
-            <div style={{
-              position: 'absolute', bottom: 16, right: 16,
-              display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4,
-              pointerEvents: 'all',
-            }}>
-              {MODES.map(([mm, nn], i) => (
-                <button key={i} onClick={() => setModeIdx(i)} style={{
-                  fontFamily: 'JetBrains Mono, monospace',
-                  fontSize: 11, letterSpacing: '0.08em',
-                  padding: '4px 6px',
-                  background: modeIdx === i ? 'rgba(34,211,238,0.12)' : 'rgba(8,9,10,0.85)',
-                  border: `1px solid ${modeIdx === i ? 'rgba(34,211,238,0.4)' : 'rgba(34,211,238,0.12)'}`,
-                  color: modeIdx === i ? ACCENT : 'rgba(34,211,238,0.4)',
-                  borderRadius: 2, cursor: 'pointer',
-                }}>
-                  {mm},{nn}
-                </button>
-              ))}
-            </div>
+          {view === 'slit' && (
+            <p className="text-sm text-text-dim">Orbit and zoom the scene to compare the bright and dark fringes.</p>
           )}
-        </div>
-      </div>
-    </div>
+        </ControlPanel>
+      }
+    >
+      <SceneWrapper cameraPosition={CAMERA[view]} showGrid={false} minDist={4} maxDist={28}>
+        {view === 'ripple' && <RippleTank onSourceCount={setCount} slitMode={slitMode} clearCount={clearCount} />}
+        {view === 'slit'   && <DoubleSlit />}
+        {view === 'modes'  && <NormalModes modeIdx={modeIdx} />}
+      </SceneWrapper>
+      <SceneCaption>{VIEWS.find((v) => v.id === view)?.label}</SceneCaption>
+    </ModuleShell>
   )
 }

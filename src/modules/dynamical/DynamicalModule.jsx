@@ -1,6 +1,8 @@
 import { useState, useMemo, useEffect } from 'react'
 import SceneWrapper from '../../components/SceneWrapper'
 import InfoPanel from '../../components/InfoPanel'
+import ModuleShell from '../../components/ModuleShell'
+import ControlPanel, { Slider as SharedSlider } from '../../components/ControlPanel'
 import AttractorViz from './AttractorViz'
 import PhaseSpace from './PhaseSpace'
 import SabrinaAttractor from './SabrinaAttractor'
@@ -230,29 +232,8 @@ function buildMetrics(type, p) {
   }
 }
 
-function Slider({ label, value, min, max, step, decimals, onChange }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <div className="flex items-center justify-between">
-        <span className="font-mono-data text-[12px] tracking-wider uppercase text-text-dim">
-          {label}
-        </span>
-        <span className="font-mono-data text-[13px] text-emerald-glow tabular-nums">
-          {value.toFixed(decimals)}
-        </span>
-      </div>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full h-0.5 accent-emerald-glow cursor-pointer"
-        style={{ accentColor: '#10b981' }}
-      />
-    </div>
-  )
+function Slider({ label, value, min, max, step, onChange }) {
+  return <SharedSlider label={label} value={value} min={min} max={max} step={step} onChange={onChange} />
 }
 
 export default function DynamicalModule() {
@@ -260,7 +241,6 @@ export default function DynamicalModule() {
   const phaseMu          = useModuleStore((s) => s.ds.phaseMu)
   const setAttractorType = useModuleStore((s) => s.setDsAttractorType)
   const setPhaseMu       = useModuleStore((s) => s.setDsPhaseMu)
-  const setActiveModule  = useModuleStore((s) => s.setActiveModule)
 
   // ── Sabrina unlock: hidden unless the site-wide secret has been triggered ──
   // (type "sabrina" anywhere — here or on the picker — or tap UMBRA 5×)
@@ -346,7 +326,7 @@ export default function DynamicalModule() {
             <Slider label="β  beta"  value={beta}  min={0.5} max={5.0} step={0.1} decimals={2} onChange={setBeta}  />
             {rho > 24.74 && (
               <div className="flex items-center gap-1.5 px-2 py-1.5 rounded border border-rose-glow/40 bg-rose-glow/5">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-glow animate-pulse-glow" />
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-glow" />
                 <span className="font-mono-data text-[12px] tracking-wider text-rose-glow uppercase">Chaotic</span>
               </div>
             )}
@@ -386,196 +366,70 @@ export default function DynamicalModule() {
   }
 
   return (
-    <div className="flex flex-col w-full h-full bg-ground">
-      {/* Top bar */}
-      <header className="flex items-center justify-between px-5 py-2 bg-panel border-b border-border-subtle shrink-0">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => setActiveModule(null)}
-            className="font-mono-data text-[13px] tracking-widest text-text-dim hover:text-emerald-glow transition-colors duration-200 uppercase flex items-center gap-1.5"
-          >
-            ← MODULES
-          </button>
-          <div className="w-px h-4 bg-border-subtle" />
-          <h1 className="font-display text-base font-semibold text-text-primary tracking-wide">
-            Dynamical Systems
-          </h1>
-          <span className="font-mono-data text-[11px] tracking-wider uppercase px-2 py-0.5 border border-emerald-glow/30 text-emerald-glow/60 rounded bg-emerald-glow/5">
-            Strange Attractors · RK4 · Phase Space
-          </span>
-        </div>
-
-        {/* Attractor nav */}
-        <nav className="flex gap-1" aria-label="Attractor type">
-          {visibleAttractors.map((a) => {
-            const active = attractorType === a.id
-            return (
-              <button
-                key={a.id}
-                onClick={() => setAttractorType(a.id)}
-                title={a.desc}
-                className={[
-                  'font-mono-data text-[13px] tracking-wider uppercase px-3 py-1 rounded border transition-all duration-200',
-                  active
-                    ? 'border-emerald-glow text-emerald-glow bg-emerald-glow/5 shadow-glow-emerald'
-                    : 'border-border-subtle text-text-dim hover:border-emerald-glow/50 hover:text-text-primary',
-                ].join(' ')}
-              >
-                {a.abbr}
-              </button>
-            )
-          })}
-        </nav>
-
-        <div
-          className="font-mono-data text-sm tabular-nums"
-          style={{ color: '#10b981', textShadow: '0 0 8px rgba(16,185,129,0.5)' }}
+    <ModuleShell
+      title="Dynamical Systems"
+      accent="#34d399"
+      views={visibleAttractors.map((a) => ({ id: a.id, label: a.label, title: a.desc }))}
+      activeView={attractorType}
+      onViewChange={setAttractorType}
+      viewsLabel="System"
+      readout={isSabrina ? 'Sabrina · 700 particles ♡' : isPendulum ? 'Double pendulum · RK4' : isPhaseSpace ? `μ = ${phaseMu.toFixed(2)}` : `${def.name} · 1,800 particles`}
+      lesson={
+        <InfoPanel
+          domain={domain}
+          syllabus={syllabus}
+          primaryEq={primaryEq}
+          derivedEqs={derivedEqs}
+          explanation={explanation}
+          tryThis={tryThis}
+          checkpoint={checkpoint}
+          metrics={metrics}
+        />
+      }
+      controls={
+        <ControlPanel
+          title="Parameters"
+          onReset={resetParams}
+          footer={isPhaseSpace ? 'Van der Pol · RK4 integrator' : isPendulum ? 'Double pendulum · RK4 integrator' : '1,800 particles · RK4 integrator'}
         >
-          {isSabrina ? `Sabrina · 700 particles ♡` : isPendulum ? `Double Pendulum · 8 + chaos · RK4` : isPhaseSpace ? `Van der Pol · μ = ${phaseMu.toFixed(2)}` : `${def.name} · 1,800 particles`}
-        </div>
-      </header>
-
-      {/* Main layout */}
-      <div className="flex flex-1 overflow-hidden" style={{ minHeight: 0 }}>
-        {/* Info panel */}
-        <div className="w-72 shrink-0 flex flex-col overflow-hidden">
-          <InfoPanel
-            title="Phase Space"
-            domain={domain}
-            syllabus={syllabus}
-            primaryEq={primaryEq}
-            derivedEqs={derivedEqs}
-            explanation={explanation}
-            tryThis={tryThis}
-            checkpoint={checkpoint}
-            metrics={metrics}
-            footer="DYNAMICAL SYSTEMS · CHAOS THEORY"
-            accentColor="cyan"
+          <div className="flex flex-col gap-6">
+            <h3 className="ui-eyebrow -mb-2">Equation parameters</h3>
+            {paramSliders()}
+          </div>
+          {!isPhaseSpace && (
+            <div className="flex flex-col gap-6 pt-5 border-t border-border-subtle">
+              <h3 className="ui-eyebrow -mb-2">Simulation</h3>
+              <Slider label="Speed" value={speed} min={0.25} max={3.0} step={0.25} onChange={setSpeed} />
+            </div>
+          )}
+        </ControlPanel>
+      }
+    >
+      <SceneWrapper
+        cameraPosition={isSabrina ? [0, 0, 11] : isPendulum ? [0, 2.5, 8] : isPhaseSpace ? [0, 0, 9] : [0, 3, 8]}
+        showGrid={false}
+        minDist={2}
+        maxDist={24}
+      >
+        {!isPhaseSpace && !isSabrina && !isPendulum && (
+          <AttractorViz
+            key={attractorType}
+            attractorType={attractorType}
+            params={params}
+            speedMultiplier={speed}
           />
-        </div>
+        )}
+        {isPhaseSpace && <PhaseSpace key="phasespace" />}
+        {isSabrina    && <SabrinaAttractor key="sabrina" />}
+        {isPendulum   && <DoublePendulum key="pendulum" />}
+      </SceneWrapper>
 
-        {/* 3D scene */}
-        <main className="flex-1 relative overflow-hidden" style={{ minHeight: 0 }}>
-          <SceneWrapper
-            cameraPosition={isSabrina ? [0, 0, 11] : isPendulum ? [0, 2.5, 8] : isPhaseSpace ? [0, 0, 9] : [0, 3, 8]}
-            showGrid={false}
-            minDist={2}
-            maxDist={24}
-          >
-            {!isPhaseSpace && !isSabrina && !isPendulum && (
-              <AttractorViz
-                key={attractorType}
-                attractorType={attractorType}
-                params={params}
-                speedMultiplier={speed}
-              />
-            )}
-            {isPhaseSpace && <PhaseSpace key="phasespace" />}
-            {isSabrina    && <SabrinaAttractor key="sabrina" />}
-            {isPendulum   && <DoublePendulum key="pendulum" />}
-          </SceneWrapper>
-
-          <div className="absolute top-3 left-4 pointer-events-none">
-            <span className="font-display text-[12px] tracking-[0.2em] uppercase text-text-dim">
-              {isSabrina    ? `Sabrina Curve · Catmull-Rom · 700 particles`
-               : isPendulum  ? `Double Pendulum · 8 pendulums · RK4 × 4 · L = 1.5`
-               : isPhaseSpace ? `Van der Pol · Phase Portrait · RK4 · dt = ${def.dt}`
-               : `${def.name} Attractor · RK4 · dt = ${def.dt}`}
-            </span>
-          </div>
-        </main>
-
-        {/* Right control panel */}
-        <aside className="w-52 shrink-0 flex flex-col overflow-hidden bg-panel osc-grid border-l border-border-subtle">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle">
-            <div className="flex items-center gap-2">
-              <span
-                className="w-1.5 h-1.5 rounded-full animate-pulse-glow"
-                style={{ backgroundColor: '#10b981', boxShadow: '0 0 4px 1px rgba(16,185,129,0.6)' }}
-              />
-              <span className="font-display text-xs tracking-[0.18em] uppercase text-text-dim">
-                Parameters
-              </span>
-            </div>
-            <button
-              onClick={resetParams}
-              className="font-mono-data text-[12px] tracking-wider text-text-dim hover:text-emerald-glow transition-colors duration-200 uppercase px-2 py-1 border border-border-subtle hover:border-emerald-glow/40 rounded"
-            >
-              RST
-            </button>
-          </div>
-
-          <div className="flex-1 px-4 py-4 flex flex-col gap-4 overflow-y-auto thin-scroll">
-            {/* Attractor selector */}
-            <div>
-              <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase text-text-dim mb-2">
-                Attractor
-              </p>
-              <div className="flex flex-col gap-1.5">
-                {visibleAttractors.map((a) => (
-                  <div key={a.id}>
-                    {a.separator && <div className="h-px bg-border-subtle my-1" />}
-                    <button
-                      onClick={() => setAttractorType(a.id)}
-                      className={[
-                        'w-full flex flex-col items-start px-3 py-2 rounded border font-mono-data text-left transition-all duration-200',
-                        attractorType === a.id
-                          ? 'border-emerald-glow/50 bg-emerald-glow/5'
-                          : 'border-border-subtle text-text-dim hover:border-emerald-glow/30',
-                      ].join(' ')}
-                    >
-                      <span className={`text-[13px] tracking-wider uppercase ${attractorType === a.id ? 'text-emerald-glow' : ''}`}>
-                        {a.label}
-                      </span>
-                      <span className="text-[11px] text-text-dim mt-0.5 leading-tight">{a.desc}</span>
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="h-px bg-border-subtle" />
-
-            {/* Parameter sliders for current attractor */}
-            <div>
-              <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase text-text-dim mb-3">
-                ODE Parameters
-              </p>
-              <div className="flex flex-col gap-3">
-                {paramSliders()}
-              </div>
-            </div>
-
-            {!isPhaseSpace && <div className="h-px bg-border-subtle" />}
-
-            {/* Speed */}
-            {!isPhaseSpace && (
-              <div>
-                <p className="font-mono-data text-[11px] tracking-[0.22em] uppercase text-text-dim mb-3">
-                  Simulation Speed
-                </p>
-                <Slider
-                  label="Speed"
-                  value={speed}
-                  min={0.25}
-                  max={3.0}
-                  step={0.25}
-                  decimals={2}
-                  onChange={setSpeed}
-                />
-              </div>
-            )}
-          </div>
-
-          <div className="px-4 py-3 border-t border-border-subtle">
-            <p className="font-mono-data text-[12px] text-text-dim leading-relaxed">
-              {isPhaseSpace ? 'DS · VAN DER POL · RK4'
-               : isPendulum ? 'DS · DOUBLE PENDULUM · RK4'
-               : 'DS · 1,800 PARTICLES · TRAIL 72'}
-            </p>
-          </div>
-        </aside>
+      <div className="absolute top-3 left-3 pointer-events-none px-2.5 py-1 rounded-md bg-ground/70 border border-border-subtle text-[12px] text-text-dim backdrop-blur-sm">
+        {isSabrina    ? 'Sabrina curve · Catmull-Rom · 700 particles'
+         : isPendulum  ? 'Double pendulum · 8 pendulums · RK4 × 4 · L = 1.5'
+         : isPhaseSpace ? `Van der Pol phase portrait · RK4 · dt = ${def.dt}`
+         : `${def.name} attractor · RK4 · dt = ${def.dt}`}
       </div>
-    </div>
+    </ModuleShell>
   )
 }
