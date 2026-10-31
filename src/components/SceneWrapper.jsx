@@ -256,7 +256,7 @@ function CameraDirector({ position, orbitRef, maxDist }) {
 }
 
 // ── Idle drift: slow auto-orbit after 5s of inactivity ────────────────────────
-function IdleDrift({ orbitRef }) {
+function IdleDrift({ orbitRef, enabled }) {
   const idle = useRef(0)
 
   useEffect(() => {
@@ -277,14 +277,16 @@ function IdleDrift({ orbitRef }) {
     const c = orbitRef.current
     if (!c) return
     idle.current += dt
-    c.autoRotate = idle.current > 5
+    c.autoRotate = enabled && idle.current > 5
     c.autoRotateSpeed = 0.22
   })
 
   return null
 }
 
-export default function SceneWrapper({ children, cameraPosition, showGrid = true, minDist = 2, maxDist = 20 }) {
+// idleRotate: slowly orbit after 5 s without input. Turn off for flat,
+// diagram-like scenes, which become unreadable when seen edge-on.
+export default function SceneWrapper({ children, cameraPosition, showGrid = true, minDist = 2, maxDist = 20, idleRotate = true }) {
   const orbitRef = useRef()
   const camPos = cameraPosition || [4, 3, 7]
 
@@ -313,7 +315,7 @@ export default function SceneWrapper({ children, cameraPosition, showGrid = true
           maxPolarAngle={Math.PI * 0.85}
         />
         <GestureCamera orbitRef={orbitRef} minDist={minDist} maxDist={maxDist} />
-        <IdleDrift orbitRef={orbitRef} />
+        <IdleDrift orbitRef={orbitRef} enabled={idleRotate} />
         <CinematicEffects />
       </Canvas>
     </div>

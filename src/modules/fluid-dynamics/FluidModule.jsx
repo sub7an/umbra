@@ -160,9 +160,9 @@ export default function FluidModule() {
               { color: ACCENT, symbol: '·', opacity: 0.7, label: 'Tracers (speed)' },
             ]} />}
             {fluidView === 'vortex' && <Legend items={[
-              { color: '#fb923c', label: 'Positive Γ (counter-clockwise)' },
-              { color: '#38bdf8', label: 'Negative Γ (clockwise)' },
-              { color: ACCENT, symbol: '·', opacity: 0.7, label: 'Vorticity field' },
+              { color: '#f24d4d', label: 'Counter-clockwise vortex (Γ > 0)' },
+              { color: '#4080ff', label: 'Clockwise vortex (Γ < 0)' },
+              { color: '#5eead4', symbol: '·', label: 'Dye from the cylinder' },
             ]} />}
             {fluidView === 'sph' && <Legend items={[
               { color: '#38bdf8', symbol: '■', label: 'Slow (settled)' },
@@ -173,7 +173,7 @@ export default function FluidModule() {
         </ControlPanel>
       }
     >
-      <SceneWrapper cameraPosition={CAMERA[fluidView]} showGrid={false} minDist={3} maxDist={35}>
+      <SceneWrapper cameraPosition={CAMERA[fluidView]} showGrid={false} minDist={3} maxDist={35} idleRotate={fluidView === 'sph'}>
         {fluidView === 'streamlines' && <StreamLines   key="sl"  reynolds={reynolds} />}
         {fluidView === 'vortex'      && <VortexShedding key="vs"  reynolds={reynolds} />}
         {fluidView === 'sph'         && <SPH            key="sph" reynolds={reynolds} />}

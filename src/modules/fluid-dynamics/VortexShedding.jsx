@@ -1,12 +1,20 @@
+// Kármán vortex street: point vortices shed alternately from the cylinder,
+// advected by potential flow + Biot–Savart. A per-pixel vorticity field
+// (red = counter-clockwise, blue = clockwise) and dye released from the
+// cylinder's shoulders reveal the street the way a flow-lab photo does.
 import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
+import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 
 const U_BASE  = 1.5
 const R       = 1.2
 const CORE    = 0.35
 const MAX_V   = 80
-const N_TRACE = 600
+const DYE_TOP = new THREE.Color('#5eead4')
+const DYE_BOT = new THREE.Color('#fbbf24')
+const EMIT_PER_FRAME = 10
+const N_TRACE = 1600 // dye particles
 
 // Potential flow velocity around cylinder
 function potentialFlow(x, y, U) {
@@ -31,8 +39,38 @@ function bsVel(px, py, vxA, vyA, gA, count) {
   return [vx, vy]
 }
 
+const VORT_VERT = `
+  varying vec2 vP;
+  void main() {
+    vP = position.xy;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`
+const VORT_FRAG = `
+  uniform vec3 uV[${MAX_V}];
+  uniform float uN;
+  varying vec2 vP;
+  void main() {
+    float w = 0.0;
+    // Only live vortices, and only ones close enough to matter (exp(-12) ≈ 0)
+    for (int k = 0; k < ${MAX_V}; k++) {
+      if (float(k) >= uN) break;
+      vec2 d = vP - uV[k].xy;
+      float r2 = dot(d, d);
+      if (r2 > 4.2) continue;
+      w += uV[k].z * exp(-r2 / 0.35);
+    }
+    if (dot(vP, vP) < ${(R * R).toFixed(3)}) discard;
+    float m = clamp(abs(w) * 0.55, 0.0, 1.0);
+    vec3 col = w > 0.0 ? vec3(0.95, 0.30, 0.30) : vec3(0.25, 0.50, 1.0);
+    gl_FragColor = vec4(pow(col, vec3(2.2)), m * 0.75);
+  }
+`
+
 export default function VortexShedding({ reynolds }) {
-  const Gamma       = 2.0 + reynolds * 0.8
+  // Strength tuned (offline sweep) so the street forms two staggered rows:
+  // clockwise vortices above the wake axis, counter-clockwise below.
+  const Gamma       = 0.9 + reynolds * 0.3
   const sheddingDt  = Math.max(0.15, 0.55 - reynolds * 0.1)
 
   const vxA  = useRef(new Float32Array(MAX_V))
@@ -44,6 +82,12 @@ export default function VortexShedding({ reynolds }) {
 
   const vGeoRef = useRef()
   const tGeoRef = useRef()
+  const emit    = useRef(0)
+
+  const vortU = useMemo(() => ({
+    uV: { value: Array.from({ length: MAX_V }, () => new THREE.Vector3(1000, 1000, 0)) },
+    uN: { value: 0 },
+  }), [])
 
   const { vPos, vCol, tPos, tCol } = useMemo(() => {
     const vPos = new Float32Array(MAX_V * 3)
@@ -53,10 +97,10 @@ export default function VortexShedding({ reynolds }) {
     const tPos = new Float32Array(N_TRACE * 3)
     const tCol = new Float32Array(N_TRACE * 3)
     for (let i = 0; i < N_TRACE; i++) {
-      tPos[i * 3]     = (Math.random() - 0.3) * 18
-      tPos[i * 3 + 1] = (Math.random() - 0.5) * 10
-      tPos[i * 3 + 2] = 0
-      tCol[i * 3] = 0.17; tCol[i * 3 + 1] = 0.83; tCol[i * 3 + 2] = 0.75
+      tPos[i * 3] = 1000; tPos[i * 3 + 1] = 0; tPos[i * 3 + 2] = 0.05 // parked until emitted
+      const top = i % 2 === 0
+      const c = top ? DYE_TOP : DYE_BOT
+      tCol[i * 3] = c.r; tCol[i * 3 + 1] = c.g; tCol[i * 3 + 2] = c.b
     }
     return { vPos, vCol, tPos, tCol }
   }, [])
@@ -70,8 +114,9 @@ export default function VortexShedding({ reynolds }) {
     if (shed.current >= sheddingDt && vCnt.current < MAX_V - 1) {
       shed.current = 0
       const n = vCnt.current
-      vxA.current[n] = -0.3
-      vyA.current[n] = pha.current === 0 ? R + 0.15 : -(R + 0.15)
+      // Released from the rear, where the boundary layer separates
+      vxA.current[n] = 1.8
+      vyA.current[n] = pha.current === 0 ? 0.95 : -0.95
       gA.current[n]  = pha.current === 0 ? -Gamma : Gamma
       vCnt.current++
       pha.current = 1 - pha.current
@@ -112,9 +157,9 @@ export default function VortexShedding({ reynolds }) {
         if (k < vCnt.current) {
           vPos[k * 3] = vxa[k]; vPos[k * 3 + 1] = vya[k]; vPos[k * 3 + 2] = 0.1
           const pos = ga[k] > 0
-          vCol[k * 3]     = pos ? 0.1 : 1.0
-          vCol[k * 3 + 1] = pos ? 0.45 : 0.15
-          vCol[k * 3 + 2] = pos ? 1.0  : 0.1
+          vCol[k * 3]     = pos ? 1.0 : 0.35
+          vCol[k * 3 + 1] = pos ? 0.45 : 0.6
+          vCol[k * 3 + 2] = pos ? 0.45 : 1.0
         } else {
           vPos[k * 3] = 1000  // hide inactive
         }
@@ -123,40 +168,33 @@ export default function VortexShedding({ reynolds }) {
       vGeo.attributes.color.needsUpdate    = true
     }
 
-    // Advect tracers
+    // Release dye from the shoulders (round-robin over the pool)
     const tGeo = tGeoRef.current
+    for (let e = 0; e < EMIT_PER_FRAME; e++) {
+      const k = emit.current
+      emit.current = (emit.current + 1) % N_TRACE
+      const top = k % 2 === 0
+      // Released at the separation points (where the shear layers roll up)
+      tPos[k * 3]     = 1.35 + Math.random() * 0.25
+      tPos[k * 3 + 1] = (top ? 1 : -1) * (0.85 + Math.random() * 0.2)
+    }
+    // Advect dye with the full velocity (free stream + every vortex)
     for (let i = 0; i < N_TRACE; i++) {
       const tx = tPos[i * 3], ty = tPos[i * 3 + 1]
+      if (tx > 999) continue
       const [fx, fy] = potentialFlow(tx, ty, U)
       const [bx, by] = bsVel(tx, ty, vxa, vya, ga, vCnt.current)
-
       let ox = tx + (fx + bx) * dt, oy = ty + (fy + by) * dt
-
-      const inCyl = ox * ox + oy * oy < R * R * 0.8
-      const out   = ox > 11 || ox < -10 || Math.abs(oy) > 6
-      if (inCyl || out) {
-        ox = -9 + Math.random() * 0.5
-        oy = (Math.random() - 0.5) * 10
-      }
-
+      if (ox * ox + oy * oy < R * R || ox > 15 || Math.abs(oy) > 7) { ox = 1000; oy = 0 }
       tPos[i * 3] = ox; tPos[i * 3 + 1] = oy
+    }
 
-      // Color by local vorticity (sum gamma / distance²)
-      let curl = 0
-      for (let k = 0; k < vCnt.current; k++) {
-        const dx = ox - vxa[k], dy = oy - vya[k]
-        curl += ga[k] / (dx * dx + dy * dy + 1.2)
-      }
-      const c = Math.tanh(curl * 0.6)  // -1 to 1
-      if (c > 0) {
-        tCol[i * 3]     = 0.17 + c * 0.83
-        tCol[i * 3 + 1] = 0.83 - c * 0.63
-        tCol[i * 3 + 2] = 0.75 - c * 0.65
-      } else {
-        tCol[i * 3]     = 0.1 + c * (-0.0)
-        tCol[i * 3 + 1] = 0.45 - c * 0.35
-        tCol[i * 3 + 2] = 1.0
-      }
+    // Vorticity field uniforms
+    vortU.uN.value = vCnt.current * 1.0
+    const vu = vortU.uV.value
+    for (let k = 0; k < MAX_V; k++) {
+      if (k < vCnt.current) vu[k].set(vxa[k], vya[k], ga[k])
+      else vu[k].set(1000, 1000, 0)
     }
     if (tGeo) {
       tGeo.attributes.position.needsUpdate = true
@@ -164,20 +202,35 @@ export default function VortexShedding({ reynolds }) {
     }
   })
 
-  return (
-    <group>
-      <ambientLight intensity={0.25} />
+  const shedRate = 1 / sheddingDt
 
-      {/* Cylinder fill */}
-      <mesh position={[0, 0, -0.08]}>
-        <circleGeometry args={[R, 48]} />
-        <meshBasicMaterial color="#070d14" />
+  return (
+    <group position={[-2.2, 0, 0]}>
+      {/* Vorticity field */}
+      {/* Plane centred on the cylinder so shader coords = flow coords */}
+      <mesh position={[0, 0, -0.02]}>
+        <planeGeometry args={[34, 14]} />
+        <shaderMaterial vertexShader={VORT_VERT} fragmentShader={VORT_FRAG} uniforms={vortU} transparent depthWrite={false} />
       </mesh>
-      {/* Cylinder rim */}
-      <mesh>
-        <ringGeometry args={[R - 0.01, R + 0.07, 48]} />
-        <meshBasicMaterial color="#2dd4bf" transparent opacity={0.8} side={THREE.DoubleSide} />
+
+      {/* Cylinder */}
+      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 0.3]}>
+        <cylinderGeometry args={[R, R, 0.6, 64]} />
+        <meshStandardMaterial color="#334155" metalness={0.7} roughness={0.25} />
       </mesh>
+      <mesh position={[0, 0, 0.61]}>
+        <ringGeometry args={[R - 0.02, R + 0.03, 64]} />
+        <meshBasicMaterial color="#5eead4" toneMapped={false} />
+      </mesh>
+
+      {/* Dye */}
+      <points>
+        <bufferGeometry ref={tGeoRef}>
+          <bufferAttribute attach="attributes-position" args={[tPos, 3]} />
+          <bufferAttribute attach="attributes-color"    args={[tCol, 3]} />
+        </bufferGeometry>
+        <pointsMaterial size={0.09} vertexColors transparent opacity={0.85} depthWrite={false} sizeAttenuation toneMapped={false} />
+      </points>
 
       {/* Vortex cores */}
       <points>
@@ -185,19 +238,31 @@ export default function VortexShedding({ reynolds }) {
           <bufferAttribute attach="attributes-position" args={[vPos, 3]} />
           <bufferAttribute attach="attributes-color"    args={[vCol, 3]} />
         </bufferGeometry>
-        <pointsMaterial size={0.28} vertexColors transparent opacity={0.95}
-          blending={THREE.AdditiveBlending} depthWrite={false} sizeAttenuation />
+        <pointsMaterial size={0.16} vertexColors transparent opacity={0.9} depthWrite={false} sizeAttenuation toneMapped={false} />
       </points>
 
-      {/* Tracer field */}
-      <points>
-        <bufferGeometry ref={tGeoRef}>
-          <bufferAttribute attach="attributes-position" args={[tPos, 3]} />
-          <bufferAttribute attach="attributes-color"    args={[tCol, 3]} />
-        </bufferGeometry>
-        <pointsMaterial size={0.055} vertexColors transparent opacity={0.65}
-          blending={THREE.AdditiveBlending} depthWrite={false} sizeAttenuation />
-      </points>
+      {/* Legend */}
+      <Html calculatePosition={(_, __, size) => [size.width - 206, 52]} style={{ pointerEvents: 'none' }}>
+        <div style={{
+          width: 194, padding: '10px 12px', borderRadius: 10,
+          background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
+          fontFamily: 'Inter, system-ui, sans-serif', color: 'rgb(var(--c-text))', backdropFilter: 'blur(8px)',
+        }}>
+          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Vorticity ω</div>
+          <div style={{ height: 10, borderRadius: 3, background: 'linear-gradient(90deg, #4080ff, transparent 50%, #f24d4d)' }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginTop: 4, color: 'rgb(var(--c-text-muted))' }}>
+            <span>clockwise</span><span>counter-clockwise</span>
+          </div>
+          <div style={{ display: 'grid', gap: 4, marginTop: 10, fontSize: 12, color: 'rgb(var(--c-text-muted))' }}>
+            <span><span style={{ color: '#5eead4' }}>●</span> Dye from the top shoulder</span>
+            <span><span style={{ color: '#fbbf24' }}>●</span> Dye from the bottom shoulder</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, paddingTop: 8, borderTop: '1px solid rgb(var(--c-border))', fontSize: 12 }}>
+            <span style={{ color: 'rgb(var(--c-text-muted))' }}>Vortices shed / s</span>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{shedRate.toFixed(1)}</span>
+          </div>
+        </div>
+      </Html>
     </group>
   )
 }

@@ -199,7 +199,7 @@ export default function ThermoModule() {
         />
       }
     >
-      <SceneWrapper cameraPosition={CAMERA[thermoView]} showGrid={false} minDist={2} maxDist={30}>
+      <SceneWrapper cameraPosition={CAMERA[thermoView]} showGrid={false} minDist={2} maxDist={30} idleRotate={thermoView === 'gas' || thermoView === 'ising'}>
         {thermoView === 'gas'     && <GasSimulation key="gas"   temperature={temperature} />}
         {thermoView === 'entropy' && <Entropy       key="ent"   temperature={temperature} />}
         {thermoView === 'engine'  && <HeatEngine    key="eng"   temperature={temperature} />}
