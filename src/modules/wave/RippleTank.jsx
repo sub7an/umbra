@@ -1,6 +1,7 @@
 import { useRef, useMemo, useCallback, useState, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+import { WATER_FRAG } from './waterShader'
 
 const W     = 128
 const H     = 128
@@ -14,26 +15,41 @@ const BAR_I_LO = 62
 const BAR_I_HI = 65
 const SRC_FREQ  = 2.5   // Hz — fixed so sources are coherent (clean interference)
 
+// Surface displaced on the GPU from the solver's height field (bilinear
+// sampling of a float texture), with normals and curvature from neighbours
 const VERT = /* glsl */`
+  uniform sampler2D uH;
+  uniform float uAmp;
+  varying vec3  vN;
+  varying vec3  vWorld;
   varying float vH;
-  void main() {
-    vH = position.y;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  varying float vFocus;
+  const vec2 RES = vec2(${W.toFixed(1)}, ${H.toFixed(1)});
+  float texel(vec2 ij) {
+    ij = clamp(ij, vec2(0.0), RES - 1.0);
+    return texture2D(uH, (ij + 0.5) / RES).r;
   }
-`
-
-const FRAG = /* glsl */`
-  varying float vH;
+  float hAt(vec2 uv) {
+    vec2 p = uv * (RES - 1.0);
+    vec2 i = floor(p), f = p - i;
+    return mix(mix(texel(i), texel(i + vec2(1, 0)), f.x), mix(texel(i + vec2(0, 1)), texel(i + vec2(1, 1)), f.x), f.y) * uAmp;
+  }
   void main() {
-    float t = clamp(vH * 1.5 + 0.5, 0.0, 1.0);
-    vec3 deep = vec3(0.00, 0.03, 0.14);
-    vec3 mid  = vec3(0.03, 0.48, 0.85);
-    vec3 peak = vec3(1.35, 1.75, 1.90);
-    vec3 col = t < 0.5
-      ? mix(deep, mid, t * 2.0)
-      : mix(mid, peak, pow((t - 0.5) * 2.0, 1.4));
-    // sRGB-authored colour → linear (the post-processing chain encodes on output)
-    gl_FragColor = vec4(pow(max(col, 0.0), vec3(2.2)), 0.97);
+    vec2 st = uv;
+    // Two-cell stencil: smooths the solver's grid-scale noise out of the shading
+    float e = 2.0 / (RES.x - 1.0);
+    float h = hAt(st);
+    float hl = hAt(st - vec2(e, 0.0)), hr = hAt(st + vec2(e, 0.0));
+    float hd = hAt(st - vec2(0.0, e)), hu = hAt(st + vec2(0.0, e));
+    float ws = 10.0 * e;                       // world size of the stencil step
+    vec3 n = normalize(vec3(hl - hr, 2.0 * ws, hd - hu));
+    vFocus = -(hl + hr + hd + hu - 4.0 * h) / (ws * ws) * 0.035;
+    vH = h;
+    vec3 p = vec3((st.x - 0.5) * 10.0, h, (st.y - 0.5) * 10.0);
+    vN = normalize(mat3(modelMatrix) * n);
+    vec4 w = modelMatrix * vec4(p, 1.0);
+    vWorld = w.xyz;
+    gl_Position = projectionMatrix * viewMatrix * w;
   }
 `
 
@@ -82,6 +98,7 @@ function barrierSegments(slitMode) {
 
 export default function RippleTank({ onSourceCount, slitMode = 0, clearCount = 0 }) {
   const meshRef     = useRef()
+  const dippers     = useRef([])
   const [sources, setSources] = useState([{ x: 32, y: H / 2, freq: SRC_FREQ, t: 0 }])
   const srcRef      = useRef(sources)
   const barrierRef  = useRef(buildBarrier(slitMode))
@@ -108,30 +125,27 @@ export default function RippleTank({ onSourceCount, slitMode = 0, clearCount = 0
     if (onSourceCount) onSourceCount(1)
   }, [clearCount, cur, prv, nxt, onSourceCount])
 
-  const { geo } = useMemo(() => {
-    const pos = new Float32Array(W * H * 3)
-    for (let j = 0; j < H; j++) {
-      for (let i = 0; i < W; i++) {
-        const k = (j * W + i) * 3
-        pos[k]     = (i / (W - 1) - 0.5) * 10
-        pos[k + 1] = 0
-        pos[k + 2] = (j / (H - 1) - 0.5) * 10
-      }
-    }
-    const idxArr = new Uint32Array((W - 1) * (H - 1) * 6)
-    let p = 0
-    for (let j = 0; j < H - 1; j++) {
-      for (let i = 0; i < W - 1; i++) {
-        const a = j * W + i, b = a + 1, c = a + W, d = c + 1
-        idxArr[p++] = a; idxArr[p++] = c; idxArr[p++] = b
-        idxArr[p++] = b; idxArr[p++] = c; idxArr[p++] = d
-      }
-    }
-    const geo = new THREE.BufferGeometry()
-    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3))
-    geo.setIndex(new THREE.BufferAttribute(idxArr, 1))
-    return { geo }
+  // Height texture shares memory with the solver's current field
+  const hTex = useMemo(() => {
+    const t = new THREE.DataTexture(cur, W, H, THREE.RedFormat, THREE.FloatType)
+    t.minFilter = t.magFilter = THREE.NearestFilter
+    t.needsUpdate = true
+    return t
+  }, [cur])
+  const mat = useMemo(() => new THREE.ShaderMaterial({
+    vertexShader: VERT, fragmentShader: WATER_FRAG,
+    uniforms: { uH: { value: hTex }, uAmp: { value: AMP } },
+    side: THREE.DoubleSide,
+  }), [hTex])
+  const geo = useMemo(() => {
+    // uv (0,0) ↔ cell (0,0); the plane is laid in xz with uv.y along +z
+    const g = new THREE.PlaneGeometry(10, 10, 255, 255)
+    const uv = g.attributes.uv.array
+    for (let k = 1; k < uv.length; k += 2) uv[k] = 1 - uv[k]
+    g.rotateX(-Math.PI / 2)
+    return g
   }, [])
+  useEffect(() => () => { geo.dispose(); mat.dispose(); hTex.dispose() }, [geo, mat, hTex])
 
   const handleClick = useCallback((e) => {
     e.stopPropagation()
@@ -191,10 +205,12 @@ export default function RippleTank({ onSourceCount, slitMode = 0, clearCount = 0
       }
     }
 
-    if (!meshRef.current) return
-    const attr = meshRef.current.geometry.attributes.position
-    for (let k = 0; k < W * H; k++) attr.setY(k, cur[k] * AMP)
-    attr.needsUpdate = true
+    hTex.needsUpdate = true
+    // Dippers bob with their source's phase
+    dippers.current.forEach((d, i) => {
+      const s = srcRef.current[i]
+      if (d && s) d.position.y = 0.42 + 0.06 * Math.sin(s.t * s.freq * Math.PI * 2)
+    })
   })
 
   // Barrier box world dimensions
@@ -204,14 +220,8 @@ export default function RippleTank({ onSourceCount, slitMode = 0, clearCount = 0
 
   return (
     <group>
-      <ambientLight intensity={0.12} color="#061020" />
-      <directionalLight position={[4, 10, 6]} intensity={0.5} color="#7de8ff" />
-      <pointLight position={[0, 6, 0]} intensity={1.0} color="#22d3ee" distance={20} decay={2} />
-
-      {/* Wave surface */}
-      <mesh ref={meshRef} geometry={geo} onClick={handleClick} frustumCulled={false}>
-        <shaderMaterial vertexShader={VERT} fragmentShader={FRAG} side={THREE.DoubleSide} transparent />
-      </mesh>
+      {/* Water */}
+      <mesh ref={meshRef} geometry={geo} material={mat} onClick={handleClick} frustumCulled={false} />
 
       {/* Invisible click catcher for the flat region */}
       <mesh position={[0, -0.02, 0]} rotation={[-Math.PI / 2, 0, 0]} onClick={handleClick}>
@@ -219,31 +229,46 @@ export default function RippleTank({ onSourceCount, slitMode = 0, clearCount = 0
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
 
-      {/* ── Barrier geometry ── */}
-      {segments.map((seg, i) => (
-        <mesh key={i} position={[BAR_X, 0.22, seg.zCenter]}>
-          <boxGeometry args={[BAR_WIDTH + 0.06, 0.44, seg.depth]} />
-          <meshStandardMaterial
-            color="#0f1d38"
-            emissive="#1e3a6a"
-            emissiveIntensity={0.35}
-            roughness={0.6}
-            metalness={0.4}
-          />
+      {/* Tank: floor and a rim around the water */}
+      <mesh position={[0, -0.35, 0]}>
+        <boxGeometry args={[10.6, 0.1, 10.6]} />
+        <meshStandardMaterial color="#0b1220" metalness={0.3} roughness={0.8} />
+      </mesh>
+      {[[0, 5.15, 10.6, 0.3], [0, -5.15, 10.6, 0.3], [5.15, 0, 0.3, 10.0], [-5.15, 0, 0.3, 10.0]].map(([x, z, w, d], i) => (
+        <mesh key={i} position={[x, -0.05, z]}>
+          <boxGeometry args={[w, 0.6, d]} />
+          <meshStandardMaterial color="#1e293b" metalness={0.75} roughness={0.35} />
         </mesh>
       ))}
 
-      {/* Source markers */}
+      {/* Barrier */}
+      {segments.map((seg, i) => (
+        <mesh key={i} position={[BAR_X, 0.12, seg.zCenter]}>
+          <boxGeometry args={[BAR_WIDTH + 0.06, 0.5, seg.depth]} />
+          <meshStandardMaterial color="#64748b" metalness={0.85} roughness={0.3} />
+        </mesh>
+      ))}
+
+      {/* Sources: dippers that bob in and out of the water */}
       {sources.map((src, i) => {
         const wx = (src.x / (W - 1) - 0.5) * 10
         const wz = (src.y / (H - 1) - 0.5) * 10
         return (
-          <group key={i} position={[wx, 0.18, wz]}>
-            <mesh>
-              <sphereGeometry args={[0.11, 10, 10]} />
-              <meshBasicMaterial color="#22d3ee" />
+          <group key={i} position={[wx, 0, wz]}>
+            <group ref={(el) => (dippers.current[i] = el)} position={[0, 0.42, 0]}>
+              <mesh position={[0, 0.35, 0]}>
+                <cylinderGeometry args={[0.02, 0.02, 0.7, 8]} />
+                <meshStandardMaterial color="#cbd5e1" metalness={0.9} roughness={0.2} />
+              </mesh>
+              <mesh>
+                <sphereGeometry args={[0.07, 16, 16]} />
+                <meshStandardMaterial color="#e2e8f0" metalness={0.9} roughness={0.15} />
+              </mesh>
+            </group>
+            <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+              <ringGeometry args={[0.1, 0.14, 32]} />
+              <meshBasicMaterial color={[0.6, 1.6, 2.0]} transparent opacity={0.7} toneMapped={false} />
             </mesh>
-            <pointLight color="#22d3ee" intensity={0.5} distance={2.5} decay={2} />
           </group>
         )
       })}

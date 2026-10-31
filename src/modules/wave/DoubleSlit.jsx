@@ -1,128 +1,154 @@
-import { useRef, useMemo } from 'react'
+// Young's double slit in a water tank, drawn entirely on the GPU.
+//
+// A plane wave arrives from the left and meets a barrier with two narrow
+// slits. Behind it the surface is the sum of two circular wavelets (Huygens),
+// each from one slit. Where they arrive in phase the water heaves; where they
+// arrive half a wavelength apart it stays flat, so calm nodal lines fan out
+// between rows of large waves. A screen on the far side glows with the
+// time-averaged intensity: the fringes, spaced Δy = λL/d.
+import { useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+import { WATER_FRAG } from './waterShader'
 
-const W = 128
-const H = 128
-const AMP = 0.5
+const HALF   = 5          // tank half-size
+const BAR_X  = -1.6       // barrier position
+const SLIT_D = 1.6        // slit separation d
+const SLIT_A = 0.32       // slit width a
+const LAMBDA = 0.62
+const AMP    = 0.14
+const SCREEN_X = HALF - 0.05
+const L_DIST = SCREEN_X - BAR_X
 
-// Two source positions (in grid coords)
-const SRC = [
-  { x: 20, y: H / 2 - 12 },
-  { x: 20, y: H / 2 + 12 },
-]
-const LAMBDA = 18  // wavelength in grid units
-const K = (2 * Math.PI) / LAMBDA
-
-const VERT = `
+// Height field: shared by the surface and its finite-difference normals
+const HEIGHT_GLSL = /* glsl */`
+  uniform float uT;
+  const float K = ${(2 * Math.PI / LAMBDA).toFixed(4)};
+  const float BAR = ${BAR_X.toFixed(2)};
+  const float HD = ${(SLIT_D / 2).toFixed(3)};
+  const float A = ${SLIT_A.toFixed(3)};
+  float sinc(float x) { return abs(x) < 1e-4 ? 1.0 : sin(x) / x; }
+  float height(vec2 p) {
+    if (p.x < BAR) {
+      // Incoming plane wave, fading in from the left edge
+      return ${AMP.toFixed(3)} * cos(K * p.x - uT) * smoothstep(${(-HALF).toFixed(1)}, ${(-HALF + 1.2).toFixed(1)}, p.x);
+    }
+    float w = 0.0;
+    for (int s = 0; s < 2; s++) {
+      vec2 o = vec2(BAR, s == 0 ? HD : -HD);
+      vec2 d = p - o;
+      float r = length(d);
+      float env = sinc(0.5 * K * A * d.y / max(r, 1e-3)) * smoothstep(0.0, 0.3, d.x);
+      w += env * cos(K * (r + BAR) - uT) / sqrt(r + 0.3);
+    }
+    return ${AMP.toFixed(3)} * 0.95 * w;
+  }
+`
+const VERT = /* glsl */`
+  ${HEIGHT_GLSL}
+  varying vec3  vN;
+  varying vec3  vWorld;
   varying float vH;
+  varying float vFocus;
   void main() {
-    vH = position.y;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    vec2 p = position.xz;
+    float e = 0.04;
+    float h = height(p);
+    float hl = height(p - vec2(e, 0.0)), hr = height(p + vec2(e, 0.0));
+    float hd = height(p - vec2(0.0, e)), hu = height(p + vec2(0.0, e));
+    vec3 n = normalize(vec3(hl - hr, 2.0 * e, hd - hu));
+    vFocus = -(hl + hr + hd + hu - 4.0 * h) / (e * e) * 0.035;
+    vH = h;
+    vN = normalize(mat3(modelMatrix) * n);
+    vec4 w = modelMatrix * vec4(p.x, h, p.y, 1.0);
+    vWorld = w.xyz;
+    gl_Position = projectionMatrix * viewMatrix * w;
   }
 `
 
-const FRAG = `
-  varying float vH;
+// Screen: time-averaged |ψ₁ + ψ₂|² at x = SCREEN_X
+const SCREEN_FRAG = /* glsl */`
+  varying vec2 vUv;
+  const float K = ${(2 * Math.PI / LAMBDA).toFixed(4)};
+  float sinc(float x) { return abs(x) < 1e-4 ? 1.0 : sin(x) / x; }
   void main() {
-    float t = clamp(vH * 1.2 + 0.5, 0.0, 1.0);
-    vec3 dark = vec3(0.01, 0.02, 0.10);
-    vec3 mid  = vec3(0.04, 0.48, 0.82);
-    vec3 brt  = vec3(0.72, 0.95, 1.00);
-    vec3 col = t < 0.5
-      ? mix(dark, mid, t * 2.0)
-      : mix(mid, brt, (t - 0.5) * 2.0);
-    // sRGB-authored colour → linear (the post-processing chain encodes on output)
-    gl_FragColor = vec4(pow(max(col, 0.0), vec3(2.2)), 0.92);
+    float y = (vUv.x - 0.5) * ${(2 * HALF).toFixed(1)};
+    vec2 a = vec2(0.0), d;
+    for (int s = 0; s < 2; s++) {
+      d = vec2(${L_DIST.toFixed(3)}, y - (s == 0 ? ${(SLIT_D / 2).toFixed(3)} : ${(-SLIT_D / 2).toFixed(3)}));
+      float r = length(d);
+      float env = sinc(0.5 * K * ${SLIT_A.toFixed(3)} * d.y / r) / sqrt(r + 0.3);
+      a += env * vec2(cos(K * r), sin(K * r));
+    }
+    float I = dot(a, a) * 0.9;
+    vec3 col = pow(vec3(0.55, 0.92, 1.0), vec3(2.2)) * I * 1.6 + pow(vec3(0.05, 0.08, 0.12), vec3(2.2));
+    gl_FragColor = vec4(col, 1.0);
   }
+`
+const SCREEN_VERT = /* glsl */`
+  varying vec2 vUv;
+  void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
 `
 
 export default function DoubleSlit() {
-  const meshRef = useRef()
-  const tRef = useRef(0)
-
-  const { geo, positions } = useMemo(() => {
-    const pos = new Float32Array(W * H * 3)
-    for (let j = 0; j < H; j++) {
-      for (let i = 0; i < W; i++) {
-        const k = (j * W + i) * 3
-        pos[k]     = (i / (W - 1) - 0.5) * 10
-        pos[k + 1] = 0
-        pos[k + 2] = (j / (H - 1) - 0.5) * 10
-      }
-    }
-    const idxArr = new Uint32Array((W - 1) * (H - 1) * 6)
-    let p = 0
-    for (let j = 0; j < H - 1; j++) {
-      for (let i = 0; i < W - 1; i++) {
-        const a = j * W + i, b = a + 1, c = a + W, d = c + 1
-        idxArr[p++] = a; idxArr[p++] = c; idxArr[p++] = b
-        idxArr[p++] = b; idxArr[p++] = c; idxArr[p++] = d
-      }
-    }
-    const geo = new THREE.BufferGeometry()
-    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3))
-    geo.setIndex(new THREE.BufferAttribute(idxArr, 1))
-    return { geo, positions: pos }
+  const geo = useMemo(() => {
+    const g = new THREE.PlaneGeometry(HALF * 2, HALF * 2, 320, 320)
+    g.rotateX(-Math.PI / 2)
+    return g
   }, [])
+  const mat = useMemo(() => new THREE.ShaderMaterial({
+    vertexShader: VERT, fragmentShader: WATER_FRAG,
+    uniforms: { uT: { value: 0 } }, side: THREE.DoubleSide,
+  }), [])
+  const screenMat = useMemo(() => new THREE.ShaderMaterial({ vertexShader: SCREEN_VERT, fragmentShader: SCREEN_FRAG }), [])
+  useEffect(() => () => { geo.dispose(); mat.dispose(); screenMat.dispose() }, [geo, mat, screenMat])
+  useFrame((_, delta) => { mat.uniforms.uT.value += Math.min(delta, 0.05) * 4.0 })
 
-  useFrame((_, delta) => {
-    tRef.current += Math.min(delta, 0.033)
-    const t = tRef.current
-    const omega = K * 3.5  // angular frequency
-
-    if (!meshRef.current) return
-    const attr = meshRef.current.geometry.attributes.position
-
-    for (let j = 0; j < H; j++) {
-      for (let i = 0; i < W; i++) {
-        let u = 0
-        for (const src of SRC) {
-          const dx = i - src.x
-          const dy = j - src.y
-          const r = Math.sqrt(dx * dx + dy * dy) + 0.001
-          // Attenuate with distance, animate with time
-          u += (1 / (0.5 + r * 0.06)) * Math.sin(K * r - omega * t)
-        }
-        attr.setY(j * W + i, u * AMP * 0.5)
-      }
-    }
-    attr.needsUpdate = true
-  })
-
-  // Barrier geometry: two rectangles with a gap (the slits)
-  const barrierMat = useMemo(() => new THREE.MeshBasicMaterial({ color: '#334' }), [])
-
-  const srcX = (SRC[0].x / (W - 1) - 0.5) * 10  // world x of sources
+  // Barrier: three solid pieces leaving two slits
+  const top = SLIT_D / 2 + SLIT_A / 2, inner = SLIT_D / 2 - SLIT_A / 2
+  const pieces = [
+    [(HALF + top) / 2, HALF - top],
+    [-(HALF + top) / 2, HALF - top],
+    [0, inner * 2],
+  ]
 
   return (
     <group>
-      <ambientLight intensity={0.12} color="#06101a" />
-      <directionalLight position={[5, 10, 4]} intensity={0.5} color="#7de8ff" />
-      <pointLight position={[srcX, 4, 0]} intensity={1.2} color="#22d3ee" distance={18} decay={2} />
+      <mesh geometry={geo} material={mat} frustumCulled={false} />
 
-      <mesh ref={meshRef} geometry={geo} frustumCulled={false}>
-        <shaderMaterial vertexShader={VERT} fragmentShader={FRAG} side={THREE.DoubleSide} transparent />
+      {/* Tank */}
+      <mesh position={[0, -0.35, 0]}>
+        <boxGeometry args={[HALF * 2 + 0.6, 0.1, HALF * 2 + 0.6]} />
+        <meshStandardMaterial color="#0b1220" metalness={0.3} roughness={0.8} />
+      </mesh>
+      {[[0, HALF + 0.15, HALF * 2 + 0.6, 0.3], [0, -HALF - 0.15, HALF * 2 + 0.6, 0.3], [-HALF - 0.15, 0, 0.3, HALF * 2]].map(([x, z, w, d], i) => (
+        <mesh key={i} position={[x, -0.05, z]}>
+          <boxGeometry args={[w, 0.6, d]} />
+          <meshStandardMaterial color="#1e293b" metalness={0.75} roughness={0.35} />
+        </mesh>
+      ))}
+
+      {/* Wave generator: a paddle along the left edge */}
+      <mesh position={[-HALF + 0.15, 0.15, 0]}>
+        <boxGeometry args={[0.12, 0.35, HALF * 2 - 0.2]} />
+        <meshStandardMaterial color="#94a3b8" metalness={0.85} roughness={0.25} />
       </mesh>
 
-      {/* Barrier wall */}
-      <mesh position={[srcX - 0.05, 0.18, 0]} material={barrierMat}>
-        <boxGeometry args={[0.08, 0.35, 10]} />
-      </mesh>
+      {pieces.map(([z, len], i) => (
+        <mesh key={i} position={[BAR_X, 0.1, z]}>
+          <boxGeometry args={[0.12, 0.5, len]} />
+          <meshStandardMaterial color="#64748b" metalness={0.85} roughness={0.3} />
+        </mesh>
+      ))}
 
-      {/* Slit openings — cut by removing the wall section */}
-      {SRC.map((src, i) => {
-        const wz = (src.y / (H - 1) - 0.5) * 10
-        return (
-          <group key={i} position={[srcX, 0.5, wz]}>
-            <mesh>
-              <sphereGeometry args={[0.09, 8, 8]} />
-              <meshBasicMaterial color="#22d3ee" />
-            </mesh>
-            <pointLight color="#22d3ee" intensity={0.4} distance={2.5} decay={2} />
-          </group>
-        )
-      })}
+      {/* Screen showing the fringes */}
+      <mesh position={[SCREEN_X + 0.2, 0.35, 0]} rotation={[0, -Math.PI / 2, 0]} material={screenMat}>
+        <planeGeometry args={[HALF * 2, 0.9]} />
+      </mesh>
+      <mesh position={[SCREEN_X + 0.27, 0.35, 0]}>
+        <boxGeometry args={[0.06, 1.0, HALF * 2 + 0.1]} />
+        <meshStandardMaterial color="#1e293b" metalness={0.75} roughness={0.35} />
+      </mesh>
     </group>
   )
 }

@@ -17,8 +17,8 @@ const VIEWS = [
 ]
 
 const CAMERA = {
-  ripple: [0, 11, 9],
-  slit:   [2, 9, 9],
+  ripple: [0, 9, 8.5],
+  slit:   [-2.5, 8, 9.5],
   modes:  [0, 12, 8],
 }
 
@@ -121,7 +121,7 @@ export default function WaveModule() {
         />
       }
       controls={
-        <ControlPanel title="Controls" footer="128 × 128 wave mesh · finite differences">
+        <ControlPanel title="Controls" footer={view === 'ripple' ? '128 × 128 wave mesh · finite differences' : view === 'slit' ? 'Huygens wavelets · analytic' : 'Membrane modes · analytic'}>
           {view === 'ripple' && (
             <>
               <ControlGroup label="Barrier">
@@ -163,7 +163,7 @@ export default function WaveModule() {
             </ControlGroup>
           )}
           {view === 'slit' && (
-            <p className="text-sm text-text-dim">Orbit and zoom the scene to compare the bright and dark fringes.</p>
+            <p className="text-sm text-text-dim">Orbit and zoom to follow the calm nodal lines from the slits out to the dark fringes on the screen.</p>
           )}
         </ControlPanel>
       }
