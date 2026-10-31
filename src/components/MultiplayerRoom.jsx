@@ -270,7 +270,7 @@ export default function MultiplayerRoom() {
             zIndex: 10150,
             display: 'flex', alignItems: 'center', gap: 8,
             padding: '5px 12px',
-            fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.14em',
+            fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.01em',
             color: 'rgba(124,140,255,0.8)',
             background: 'rgba(8,9,10,0.85)',
             border: '1px solid rgba(124,140,255,0.22)',
@@ -323,7 +323,7 @@ export default function MultiplayerRoom() {
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           }}>
             <div>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.15em', color: 'rgba(124,140,255,0.75)', marginBottom: 4 }}>MULTIPLAYER</div>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.01em', color: 'rgba(124,140,255,0.75)', marginBottom: 4 }}>MULTIPLAYER</div>
               <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, fontWeight: 700, color: '#e8f4f0' }}>
                 {inRoom ? `Room ${roomCode}` : 'Collaboration Rooms'}
               </div>
@@ -341,14 +341,14 @@ export default function MultiplayerRoom() {
                 borderRadius: 6, padding: '10px 12px', marginBottom: 14,
               }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.14em', color: 'rgba(124,140,255,0.75)', marginBottom: 4 }}>ROOM CODE</div>
-                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 20, fontWeight: 700, color: '#7c8cff', letterSpacing: '0.25em' }}>{roomCode}</div>
+                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.01em', color: 'rgba(124,140,255,0.75)', marginBottom: 4 }}>ROOM CODE</div>
+                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 20, fontWeight: 700, color: '#7c8cff', letterSpacing: '0.01em' }}>{roomCode}</div>
                 </div>
                 <button
                   onClick={copyLink}
                   style={{
                     padding: '7px 12px',
-                    fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.10em',
+                    fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.01em',
                     color: copied ? '#0b0d12' : 'rgba(124,140,255,0.7)',
                     background: copied ? '#7c8cff' : 'rgba(124,140,255,0.08)',
                     border: '1px solid rgba(124,140,255,0.25)', borderRadius: 5,
@@ -359,7 +359,7 @@ export default function MultiplayerRoom() {
 
               {/* Members */}
               <div style={{ marginBottom: 14 }}>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.14em', color: 'rgba(200,230,220,0.75)', marginBottom: 8 }}>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.01em', color: 'rgba(200,230,220,0.75)', marginBottom: 8 }}>
                   {memberCount} ONLINE
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -369,7 +369,7 @@ export default function MultiplayerRoom() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, color: '#e8f4f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{MY_NAME}</div>
                     </div>
-                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'rgba(124,140,255,0.75)', letterSpacing: '0.1em' }}>YOU</span>
+                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'rgba(124,140,255,0.75)', letterSpacing: '0.01em' }}>YOU</span>
                     <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#7c8cff', display: 'inline-block', flexShrink: 0, boxShadow: '0 0 5px #7c8cff' }} />
                   </div>
                   {/* Others */}
@@ -392,7 +392,7 @@ export default function MultiplayerRoom() {
 
               {/* Reactions */}
               <div style={{ marginBottom: 14 }}>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.14em', color: 'rgba(200,230,220,0.75)', marginBottom: 8 }}>REACTIONS</div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.01em', color: 'rgba(200,230,220,0.75)', marginBottom: 8 }}>REACTIONS</div>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   {EMOJIS.map(e => (
                     <button
@@ -427,7 +427,7 @@ export default function MultiplayerRoom() {
                 onClick={leaveRoom}
                 style={{
                   width: '100%', padding: '9px 0',
-                  fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.12em',
+                  fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.01em',
                   color: 'rgba(239,68,68,0.75)',
                   background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)',
                   borderRadius: 5, cursor: 'pointer',
@@ -449,7 +449,7 @@ export default function MultiplayerRoom() {
                 onClick={createRoom}
                 style={{
                   width: '100%', padding: '11px 0', marginBottom: 12,
-                  fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.14em',
+                  fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.01em',
                   color: '#0b0d12', background: '#7c8cff',
                   border: 'none', borderRadius: 6, cursor: 'pointer',
                   fontWeight: 700, boxShadow: '0 4px 18px rgba(124,140,255,0.3)',
@@ -462,7 +462,7 @@ export default function MultiplayerRoom() {
               {/* Divider */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
                 <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: 'rgba(255,255,255,0.75)', letterSpacing: '0.12em' }}>OR JOIN</span>
+                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: 'rgba(255,255,255,0.75)', letterSpacing: '0.01em' }}>OR JOIN</span>
                 <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
               </div>
 
@@ -476,7 +476,7 @@ export default function MultiplayerRoom() {
                   maxLength={6}
                   style={{
                     flex: 1, padding: '9px 12px',
-                    fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.22em',
+                    fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.01em',
                     color: '#e8f4f0', background: 'rgba(255,255,255,0.04)',
                     border: `1px solid ${joinError ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.1)'}`,
                     borderRadius: 5, outline: 'none',
@@ -486,7 +486,7 @@ export default function MultiplayerRoom() {
                   onClick={joinRoom}
                   style={{
                     padding: '9px 14px',
-                    fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.10em',
+                    fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.01em',
                     color: 'rgba(124,140,255,0.8)',
                     background: 'rgba(124,140,255,0.07)', border: '1px solid rgba(124,140,255,0.22)',
                     borderRadius: 5, cursor: 'pointer',
@@ -504,7 +504,7 @@ export default function MultiplayerRoom() {
                 background: 'rgba(124,140,255,0.03)', border: '1px solid rgba(124,140,255,0.08)',
                 borderRadius: 5,
               }}>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.12em', color: 'rgba(124,140,255,0.75)', marginBottom: 6 }}>HOW IT WORKS</div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.01em', color: 'rgba(124,140,255,0.75)', marginBottom: 6 }}>HOW IT WORKS</div>
                 {['Create a room — get a 6-character code', 'Share the link — anyone can join by clicking it', 'Explore together — all changes sync instantly', 'React with emoji — visible to all participants'].map((line, i) => (
                   <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
                     <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: 'rgba(124,140,255,0.75)', flexShrink: 0 }}>{i + 1}.</span>
@@ -520,7 +520,7 @@ export default function MultiplayerRoom() {
             padding: '8px 16px',
             borderTop: '1px solid rgba(124,140,255,0.06)',
             fontFamily: 'JetBrains Mono, monospace', fontSize: 12,
-            color: 'rgba(200,230,220,0.75)', letterSpacing: '0.10em', textAlign: 'center',
+            color: 'rgba(200,230,220,0.75)', letterSpacing: '0.01em', textAlign: 'center',
           }}>
             PRESS M TO TOGGLE · REAL-TIME SYNC · NO ACCOUNT NEEDED
           </div>

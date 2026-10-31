@@ -282,7 +282,7 @@ export default function GuideModal() {
                 <div>
                   <div style={{
                     fontFamily: 'JetBrains Mono, monospace', fontSize: 12,
-                    letterSpacing: '0.18em', color: 'rgba(124,140,255,0.75)', marginBottom: 6,
+                    letterSpacing: '0.01em', color: 'rgba(124,140,255,0.75)', marginBottom: 6,
                   }}>
                     {firstRun ? 'WELCOME TO UMBRA' : 'UMBRA GUIDE'}
                   </div>
@@ -321,7 +321,7 @@ export default function GuideModal() {
                     onClick={() => setTab(id)}
                     style={{
                       padding: '5px 14px',
-                      fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.12em',
+                      fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.01em',
                       color: tab === id ? '#0b0d12' : 'rgba(247,248,248,0.55)',
                       background: tab === id ? '#7c8cff' : 'transparent',
                       border: `1px solid ${tab === id ? '#7c8cff' : 'rgba(255,255,255,0.08)'}`,
@@ -345,7 +345,7 @@ export default function GuideModal() {
                 <div style={{ paddingTop: 4 }}>
                   <div style={{
                     fontFamily: 'JetBrains Mono, monospace', fontSize: 12,
-                    letterSpacing: '0.14em', color: 'rgba(124,140,255,0.75)',
+                    letterSpacing: '0.01em', color: 'rgba(124,140,255,0.75)',
                     marginBottom: 12,
                   }}>KEYBOARD SHORTCUTS</div>
                   {SHORTCUTS.map((s, i) => (
@@ -355,7 +355,7 @@ export default function GuideModal() {
                   <div style={{ marginTop: 20 }}>
                     <div style={{
                       fontFamily: 'JetBrains Mono, monospace', fontSize: 11,
-                      letterSpacing: '0.16em', color: 'rgba(124,140,255,0.75)',
+                      letterSpacing: '0.01em', color: 'rgba(124,140,255,0.75)',
                       marginBottom: 12,
                     }}>INSIDE ANY MODULE</div>
                     {[
@@ -367,7 +367,7 @@ export default function GuideModal() {
                   <div style={{ marginTop: 20 }}>
                     <div style={{
                       fontFamily: 'JetBrains Mono, monospace', fontSize: 11,
-                      letterSpacing: '0.16em', color: 'rgba(124,140,255,0.75)',
+                      letterSpacing: '0.01em', color: 'rgba(124,140,255,0.75)',
                       marginBottom: 12,
                     }}>TOOLBAR (BOTTOM OF SCREEN)</div>
                     {[
@@ -390,7 +390,7 @@ export default function GuideModal() {
             }}>
               <div style={{
                 fontFamily: 'JetBrains Mono, monospace', fontSize: 12,
-                color: 'rgba(200,230,220,0.75)', letterSpacing: '0.10em',
+                color: 'rgba(200,230,220,0.75)', letterSpacing: '0.01em',
               }}>
                 PRESS ? ANYTIME TO REOPEN · ESC TO CLOSE
               </div>
@@ -398,7 +398,7 @@ export default function GuideModal() {
                 onClick={close}
                 style={{
                   padding: '7px 20px',
-                  fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.12em',
+                  fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.01em',
                   color: '#0b0d12', background: '#7c8cff',
                   border: 'none', borderRadius: 5, cursor: 'pointer', fontWeight: 700,
                   boxShadow: '0 4px 16px rgba(124,140,255,0.25)',

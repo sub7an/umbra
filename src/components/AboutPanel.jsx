@@ -74,7 +74,7 @@ export default function AboutPanel() {
       <div style={{ width: '100%', maxWidth: 980, animation: 'umbra-slide-up 0.35s cubic-bezier(0.16,1,0.3,1)' }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.3em', color: 'rgba(124,140,255,0.75)', marginBottom: 14 }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.01em', color: 'rgba(124,140,255,0.75)', marginBottom: 14 }}>
             ⬡ UMBRA · THE STORY
           </div>
           <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 'clamp(28px,4.5vw,50px)', color: '#eef0f5', lineHeight: 1.05 }}>
@@ -97,7 +97,7 @@ export default function AboutPanel() {
           {STATS.map((s) => (
             <div key={s.label} style={{ background: 'rgba(17,20,27,0.95)', padding: '22px 16px', textAlign: 'center' }}>
               <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 30, color: '#7c8cff' }}>{s.value}</div>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11.5, letterSpacing: '0.1em', color: 'rgba(247,248,248,0.75)', marginTop: 6, lineHeight: 1.4, textTransform: 'uppercase' }}>{s.label}</div>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11.5, letterSpacing: '0.01em', color: 'rgba(247,248,248,0.75)', marginTop: 6, lineHeight: 1.4 }}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -109,7 +109,7 @@ export default function AboutPanel() {
               background: 'rgba(17,20,27,0.92)', border: `1px solid ${p.accent}26`,
               borderRadius: 8, padding: '22px 22px',
             }}>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.2em', color: p.accent, marginBottom: 10 }}>{p.tag}</div>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.01em', color: p.accent, marginBottom: 10 }}>{p.tag}</div>
               <div style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 18, color: '#eef0f5', marginBottom: 8, lineHeight: 1.25 }}>{p.title}</div>
               <p style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13.5, color: 'rgba(247,248,248,0.75)', lineHeight: 1.65, margin: 0 }}>{p.body}</p>
             </div>
@@ -121,7 +121,7 @@ export default function AboutPanel() {
           background: 'rgba(17,20,27,0.92)', border: '1px solid rgba(124,140,255,0.2)',
           borderRadius: 8, padding: '22px 24px', marginBottom: 28,
         }}>
-          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.2em', color: 'rgba(124,140,255,0.75)', marginBottom: 14 }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.01em', color: 'rgba(124,140,255,0.75)', marginBottom: 14 }}>
             WHERE WE ARE TODAY
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -139,7 +139,7 @@ export default function AboutPanel() {
           <button
             onClick={() => { setOpen(false); window.dispatchEvent(new CustomEvent('umbra-pricing-open')) }}
             style={{
-              fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.12em',
+              fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.01em',
               color: '#0b0d12', background: '#7c8cff', border: 'none', borderRadius: 5,
               padding: '11px 22px', cursor: 'pointer', fontWeight: 700,
             }}
@@ -149,7 +149,7 @@ export default function AboutPanel() {
           <button
             onClick={() => { track('about_contact_click'); navigator.clipboard?.writeText('hamzahatef09@gmail.com').catch(() => {}); }}
             style={{
-              fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.12em',
+              fontFamily: 'JetBrains Mono, monospace', fontSize: 13, letterSpacing: '0.01em',
               color: '#7c8cff', background: 'rgba(124,140,255,0.08)',
               border: '1px solid rgba(124,140,255,0.4)', borderRadius: 5,
               padding: '11px 22px', cursor: 'pointer',

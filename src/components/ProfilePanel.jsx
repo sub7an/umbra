@@ -117,7 +117,7 @@ function StatBlock({ label, value, color = '#7c8cff' }) {
       borderRadius: 6, padding: '10px 12px', textAlign: 'center',
     }}>
       <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 20, fontWeight: 700, color, lineHeight: 1 }}>{value}</div>
-      <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: 'rgba(200,230,220,0.75)', letterSpacing: '0.10em', marginTop: 4 }}>{label}</div>
+      <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: 'rgba(200,230,220,0.75)', letterSpacing: '0.01em', marginTop: 4 }}>{label}</div>
     </div>
   )
 }
@@ -208,7 +208,7 @@ export default function ProfilePanel() {
                   <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 18, fontWeight: 700, color: levelColor, lineHeight: 1 }}>{level}</div>
                 </div>
                 <div>
-                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.14em', color: `${levelColor}cc`, marginBottom: 4 }}>LEVEL {level} · {levelTitle}</div>
+                  <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.01em', color: `${levelColor}cc`, marginBottom: 4 }}>LEVEL {level} · {levelTitle}</div>
                   <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, fontWeight: 700, color: '#e8f4f0' }}>{totalXP} XP</div>
                   <XPBar xp={totalXP} color={levelColor} />
                   <div style={{ fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, color: 'rgba(200,230,220,0.75)', marginTop: 3, letterSpacing: '-0.01em' }}>
@@ -230,7 +230,7 @@ export default function ProfilePanel() {
 
             {/* Journeys */}
             <div>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.14em', color: 'rgba(124,140,255,0.75)', marginBottom: 10 }}>GUIDED JOURNEYS</div>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.01em', color: 'rgba(124,140,255,0.75)', marginBottom: 10 }}>GUIDED JOURNEYS</div>
               <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between' }}>
                 {journeyIds.map(id => (
                   <JourneyBubble key={id} id={id} data={storyData[id]} color={JOURNEY_COLORS[id]} />
@@ -241,7 +241,7 @@ export default function ProfilePanel() {
             {/* Modules explored */}
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.14em', color: 'rgba(124,140,255,0.75)' }}>MODULES EXPLORED</div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.01em', color: 'rgba(124,140,255,0.75)' }}>MODULES EXPLORED</div>
                 <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: 'rgba(200,230,220,0.75)' }}>{recent.length} / {moduleIds.length}</div>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
@@ -255,7 +255,7 @@ export default function ProfilePanel() {
               borderRadius: 6, padding: '10px 12px',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.14em', color: 'rgba(124,140,255,0.75)' }}>TODAY'S CHALLENGES</div>
+                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.01em', color: 'rgba(124,140,255,0.75)' }}>TODAY'S CHALLENGES</div>
                 <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, fontWeight: 700, color: challengesDoneToday === 5 ? '#22c55e' : '#7c8cff' }}>
                   {challengesDoneToday}/5
                 </div>
@@ -280,7 +280,7 @@ export default function ProfilePanel() {
           <div style={{
             padding: '10px 16px', borderTop: '1px solid rgba(124,140,255,0.07)',
             fontFamily: 'JetBrains Mono, monospace', fontSize: 12,
-            color: 'rgba(200,230,220,0.75)', letterSpacing: '0.10em', textAlign: 'center',
+            color: 'rgba(200,230,220,0.75)', letterSpacing: '0.01em', textAlign: 'center',
           }}>PRESS P TO TOGGLE · PROGRESS AUTO-SAVED</div>
         </div>
       )}

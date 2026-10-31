@@ -157,7 +157,7 @@ export default function CommandPalette() {
             <div style={{
               padding: '28px 16px', textAlign: 'center',
               fontFamily: 'JetBrains Mono, monospace', fontSize: 12,
-              color: 'rgba(124,140,255,0.75)', letterSpacing: '0.12em',
+              color: 'rgba(124,140,255,0.75)', letterSpacing: '0.01em',
             }}>
               NO MODULES MATCH
             </div>
@@ -228,7 +228,7 @@ export default function CommandPalette() {
               }}>{key}</kbd>
               <span style={{
                 fontFamily: 'JetBrains Mono, monospace', fontSize: 11,
-                color: 'rgba(124,140,255,0.75)', letterSpacing: '0.09em',
+                color: 'rgba(124,140,255,0.75)', letterSpacing: '0.01em',
               }}>{lbl}</span>
             </div>
           ))}

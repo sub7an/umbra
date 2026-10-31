@@ -187,7 +187,7 @@ export default function ConstellationMap({ onNavigate }) {
         position: 'absolute', bottom: 12, left: 0, right: 0,
         textAlign: 'center', pointerEvents: 'none',
         fontFamily: 'JetBrains Mono, monospace',
-        fontSize: 11, letterSpacing: '0.16em',
+        fontSize: 11, letterSpacing: '0.01em',
         color: hovNode
           ? `rgba(${hovNode.col.join(',')},0.7)`
           : 'rgba(124,140,255,0.2)',

@@ -130,7 +130,7 @@ export default function ShareButton() {
         padding: '7px 13px',
         fontFamily: 'JetBrains Mono, monospace',
         fontSize: 12,
-        letterSpacing: '0.12em',
+        letterSpacing: '0.01em',
         color: status === 'copied' ? '#7c8cff' : 'rgba(124,140,255,0.45)',
         background: status === 'copied' ? 'rgba(124,140,255,0.08)' : 'rgba(8,9,10,0.72)',
         border: `1px solid ${status === 'copied' ? 'rgba(124,140,255,0.4)' : 'rgba(124,140,255,0.14)'}`,

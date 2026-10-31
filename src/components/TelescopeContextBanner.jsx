@@ -44,7 +44,7 @@ export default function TelescopeContextBanner() {
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: line ? 6 : 0 }}>
         <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e', animation: 'umbra-pulse 1.4s ease-in-out infinite', flexShrink: 0 }} />
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.1em', color: '#a5b0ff' }}>
+        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.01em', color: '#a5b0ff' }}>
           JWST IS OBSERVING <span style={{ color: '#eef0f5' }}>{ctx.target}</span> — SIMULATING IT HERE
         </span>
         <button onClick={() => setCtx(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(247,248,248,0.75)', fontSize: 15, lineHeight: 1, padding: 0 }}>×</button>

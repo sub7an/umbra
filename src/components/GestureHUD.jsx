@@ -126,7 +126,7 @@ export default function GestureHUD() {
               <div style={{
                 position: 'absolute', top: 5, left: 7,
                 fontFamily: 'JetBrains Mono, monospace', fontSize: 11,
-                letterSpacing: '0.16em',
+                letterSpacing: '0.01em',
                 color: status === 'pinching' || status === 'twopinch' ? '#a5b0ff' : 'rgba(124,140,255,0.75)',
               }}>
                 {STATUS_LABEL[status] ?? 'TRACKING'}
@@ -135,7 +135,7 @@ export default function GestureHUD() {
             <div style={{
               padding: '5px 8px', borderTop: '1px solid rgba(124,140,255,0.12)',
               fontFamily: 'JetBrains Mono, monospace', fontSize: 11,
-              letterSpacing: '0.08em', lineHeight: 1.7, color: 'rgba(247,248,248,0.75)',
+              letterSpacing: '0.01em', lineHeight: 1.7, color: 'rgba(247,248,248,0.75)',
             }}>
               PINCH = CLICK · DRAG<br />
               EMPTY SPACE = ORBIT · 2 HANDS = ZOOM
@@ -187,7 +187,7 @@ export default function GestureHUD() {
         }}>
           <div style={{
             fontFamily: 'JetBrains Mono, monospace', fontSize: 12,
-            letterSpacing: '0.24em', color: '#a5b0ff', marginBottom: 10,
+            letterSpacing: '0.01em', color: '#a5b0ff', marginBottom: 10,
           }}>
             HAND TRACKING ON
           </div>

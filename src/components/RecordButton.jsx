@@ -107,7 +107,7 @@ export default function RecordButton() {
           padding: '7px 13px',
           fontFamily: 'JetBrains Mono, monospace',
           fontSize: 12,
-          letterSpacing: '0.12em',
+          letterSpacing: '0.01em',
           color: '#ef4444',
           background: 'rgba(239,68,68,0.08)',
           border: '1px solid rgba(239,68,68,0.35)',
@@ -155,7 +155,7 @@ export default function RecordButton() {
         padding: '7px 13px',
         fontFamily: 'JetBrains Mono, monospace',
         fontSize: 12,
-        letterSpacing: '0.12em',
+        letterSpacing: '0.01em',
         color: done
           ? '#ef4444'
           : error

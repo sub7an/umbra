@@ -146,7 +146,7 @@ export default function PhysicsInput() {
           padding: '7px 13px',
           fontFamily: 'JetBrains Mono, monospace',
           fontSize: 12,
-          letterSpacing: '0.12em',
+          letterSpacing: '0.01em',
           color: 'rgba(168,85,247,0.75)',
           background: 'rgba(8,9,10,0.72)',
           border: '1px solid rgba(168,85,247,0.16)',
@@ -203,7 +203,7 @@ export default function PhysicsInput() {
             <path d="M4.5 5.5C4.5 4.2 5.4 3.5 6.5 3.5C7.5 3.5 8.3 4.2 8.3 5.3C8.3 6.1 7.7 6.7 6.5 7.0V8" stroke="rgba(168,85,247,0.7)" strokeWidth="1.2" strokeLinecap="round"/>
             <circle cx="6.5" cy="9.5" r="0.6" fill="rgba(168,85,247,0.7)"/>
           </svg>
-          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.2em', color: 'rgba(168,85,247,0.75)' }}>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.01em', color: 'rgba(168,85,247,0.75)' }}>
             DESCRIBE A PHYSICS SCENARIO
           </span>
           <kbd style={{ marginLeft: 'auto', fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'rgba(168,85,247,0.75)', border: '1px solid rgba(168,85,247,0.12)', borderRadius: 3, padding: '2px 5px' }}>ESC</kbd>
@@ -231,7 +231,7 @@ export default function PhysicsInput() {
         {loading && (
           <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: 'rgba(168,85,247,0.7)', animation: 'umbra-pulse 0.9s ease-in-out infinite' }} />
-            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.14em', color: 'rgba(168,85,247,0.75)' }}>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.01em', color: 'rgba(168,85,247,0.75)' }}>
               ROUTING TO MODULE…
             </span>
           </div>
@@ -280,10 +280,10 @@ export default function PhysicsInput() {
           {[['↵', 'launch simulation'], ['ESC', 'close']].map(([key, lbl]) => (
             <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <kbd style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'rgba(168,85,247,0.75)', border: '1px solid rgba(168,85,247,0.12)', borderRadius: 3, padding: '2px 5px' }}>{key}</kbd>
-              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'rgba(168,85,247,0.75)', letterSpacing: '0.09em' }}>{lbl}</span>
+              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'rgba(168,85,247,0.75)', letterSpacing: '0.01em' }}>{lbl}</span>
             </div>
           ))}
-          <span style={{ marginLeft: 'auto', fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'rgba(168,85,247,0.75)', letterSpacing: '0.09em' }}>
+          <span style={{ marginLeft: 'auto', fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'rgba(168,85,247,0.75)', letterSpacing: '0.01em' }}>
             powered by claude
           </span>
         </div>

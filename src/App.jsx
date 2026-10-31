@@ -150,8 +150,8 @@ class ModuleErrorBoundary extends Component {
   }
 }
 
-const OUT_MS = 520
-const IN_MS  = 560
+const OUT_MS = 180
+const IN_MS  = 220
 
 // ?embed=1 → bare simulation for iframe embedding (LMS, Notion, blogs)
 const IS_EMBED = new URLSearchParams(window.location.search).get('embed') === '1'

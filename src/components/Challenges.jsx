@@ -123,7 +123,7 @@ function VerifyPanel({ challenge, onSuccess, onDismiss }) {
           <div style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, fontWeight: 600, color: '#eef0f5', marginBottom: 3 }}>
             {challenge.title}
           </div>
-          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'rgba(124,140,255,0.75)', letterSpacing: '0.08em' }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'rgba(124,140,255,0.75)', letterSpacing: '0.01em' }}>
             {challenge.points} PTS
           </div>
         </div>
@@ -138,12 +138,12 @@ function VerifyPanel({ challenge, onSuccess, onDismiss }) {
       </p>
 
       {result === true && (
-        <div style={{ padding: '8px 12px', borderRadius: 4, background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', marginBottom: 10, fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: '#10b981', letterSpacing: '0.1em' }}>
+        <div style={{ padding: '8px 12px', borderRadius: 4, background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', marginBottom: 10, fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: '#10b981', letterSpacing: '0.01em' }}>
           ✓ CORRECT — +{challenge.points} PTS
         </div>
       )}
       {result === false && (
-        <div style={{ padding: '8px 12px', borderRadius: 4, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', marginBottom: 10, fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: 'rgba(239,68,68,0.75)', letterSpacing: '0.1em' }}>
+        <div style={{ padding: '8px 12px', borderRadius: 4, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', marginBottom: 10, fontFamily: 'JetBrains Mono, monospace', fontSize: 12, color: 'rgba(239,68,68,0.75)', letterSpacing: '0.01em' }}>
           ✗ NOT QUITE — CHECK THE HINT AND TRY AGAIN
         </div>
       )}
@@ -152,7 +152,7 @@ function VerifyPanel({ challenge, onSuccess, onDismiss }) {
         onClick={verify}
         style={{
           width: '100%', padding: '9px', borderRadius: 4, cursor: 'pointer',
-          fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.14em',
+          fontFamily: 'JetBrains Mono, monospace', fontSize: 12, letterSpacing: '0.01em',
           color: '#7c8cff', background: 'rgba(124,140,255,0.07)',
           border: '1px solid rgba(124,140,255,0.25)',
           transition: 'background 0.15s, border-color 0.15s',
@@ -229,18 +229,18 @@ export default function Challenges() {
             <div style={{ padding:'16px 20px',borderBottom:'1px solid rgba(124,140,255,0.08)',display:'flex',alignItems:'center',gap:12 }}>
               <div>
                 <div style={{ fontFamily:'Inter, sans-serif',fontSize:16,fontWeight:700,color:'#eef0f5',letterSpacing:'0.06em' }}>DAILY CHALLENGES</div>
-                <div style={{ fontFamily:'JetBrains Mono, monospace',fontSize:12,color:'rgba(124,140,255,0.75)',letterSpacing:'0.14em',marginTop:2 }}>{TODAY} · RESETS MIDNIGHT</div>
+                <div style={{ fontFamily:'JetBrains Mono, monospace',fontSize:12,color:'rgba(124,140,255,0.75)',letterSpacing: '0.01em',marginTop:2 }}>{TODAY} · RESETS MIDNIGHT</div>
               </div>
               <div style={{ marginLeft:'auto',display:'flex',alignItems:'center',gap:16 }}>
                 {progress.streak > 0 && (
                   <div style={{ textAlign:'center' }}>
                     <div style={{ fontFamily:'Inter, sans-serif',fontSize:18,fontWeight:700,color:'#f59e0b' }}>{progress.streak}🔥</div>
-                    <div style={{ fontFamily:'JetBrains Mono, monospace',fontSize:12,color:'rgba(245,158,11,0.75)',letterSpacing:'0.12em' }}>DAY STREAK</div>
+                    <div style={{ fontFamily:'JetBrains Mono, monospace',fontSize:12,color:'rgba(245,158,11,0.75)',letterSpacing: '0.01em' }}>DAY STREAK</div>
                   </div>
                 )}
                 <div style={{ textAlign:'center' }}>
                   <div style={{ fontFamily:'Inter, sans-serif',fontSize:18,fontWeight:700,color:'#7c8cff' }}>{totalPts}</div>
-                  <div style={{ fontFamily:'JetBrains Mono, monospace',fontSize:12,color:'rgba(124,140,255,0.75)',letterSpacing:'0.12em' }}>TODAY PTS</div>
+                  <div style={{ fontFamily:'JetBrains Mono, monospace',fontSize:12,color:'rgba(124,140,255,0.75)',letterSpacing: '0.01em' }}>TODAY PTS</div>
                 </div>
               </div>
             </div>
@@ -279,7 +279,7 @@ export default function Challenges() {
                     <div style={{ flex:1,minWidth:0 }}>
                       <div style={{ display:'flex',alignItems:'center',gap:8,marginBottom:3 }}>
                         <span style={{ fontFamily:'Inter, sans-serif',fontSize:12,fontWeight:600,color:done?'rgba(16,185,129,0.7)':'#eef0f5' }}>{ch.title}</span>
-                        <span style={{ fontFamily:'JetBrains Mono, monospace',fontSize:11,letterSpacing:'0.08em',padding:'2px 6px',borderRadius:3,background:diff.bg,color:diff.color,border:`1px solid ${diff.color}30` }}>{ch.difficulty}</span>
+                        <span style={{ fontFamily:'JetBrains Mono, monospace',fontSize:11,letterSpacing: '0.01em',padding:'2px 6px',borderRadius:3,background:diff.bg,color:diff.color,border:`1px solid ${diff.color}30` }}>{ch.difficulty}</span>
                       </div>
                       <div style={{ fontFamily:"'Inter', system-ui, sans-serif",fontSize:13,color:'rgba(255,255,255,0.75)',lineHeight:1.5,letterSpacing:'-0.01em' }}>{ch.description}</div>
                     </div>
@@ -293,7 +293,7 @@ export default function Challenges() {
                           onClick={() => startChallenge(ch)}
                           style={{
                             padding:'5px 12px',borderRadius:3,cursor:'pointer',
-                            fontFamily:'JetBrains Mono, monospace',fontSize:12,letterSpacing:'0.08em',
+                            fontFamily:'JetBrains Mono, monospace',fontSize:12,letterSpacing: '0.01em',
                             color:ch.color,background:`${ch.color}0a`,
                             border:`1px solid ${ch.color}30`,
                             transition:'background 0.1s',
