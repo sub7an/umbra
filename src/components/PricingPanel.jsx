@@ -12,7 +12,7 @@ const TIERS = [
     cta: 'You already have it',
     ctaDisabled: true,
     features: [
-      'All 13 physics modules',
+      'All 12 physics modules',
       'AI tutor & click-to-explain',
       'Guided story journeys',
       'Daily challenges & XP',

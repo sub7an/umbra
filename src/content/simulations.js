@@ -1,0 +1,247 @@
+// Search-facing content for each simulation page (/simulations/<id>).
+// Used at build time by scripts/prerender.mjs to write crawlable HTML, and
+// by the app to set the tab title and meta description as people navigate.
+// Keep titles ≤ 60 characters and descriptions ≤ 155.
+
+export const SITE = {
+  url: 'https://umbrasandbox.com',
+  name: 'Umbra',
+  title: 'Umbra: Interactive 3D Physics Simulations in Your Browser',
+  description: 'Free interactive 3D physics simulations for students and teachers: relativity, quantum, chaos, optics and waves, each with a lesson and AI tutor.',
+  intro: 'Umbra is a free collection of 40 interactive 3D physics simulations that run in your browser. Each one shows the governing equation, a short lesson, predict-first questions and an AI tutor that can see what is on screen. The topics are mapped to A-level and IB physics, and everything works on a laptop or a classroom projector with no account or install.',
+}
+
+export const SIMULATIONS = [
+  {
+    id: 'special-relativity',
+    name: 'Special Relativity',
+    title: 'Special Relativity Simulator: Light Cones & Time Dilation',
+    description: 'Interactive special relativity: drag events across a 3D light cone and watch light clocks slow and spaceships contract near the speed of light.',
+    h1: 'Special relativity simulator',
+    intro: 'Explore Einstein’s special relativity by changing the speed of a moving observer and watching the consequences happen. Three linked views cover the geometry of spacetime, time dilation and length contraction, all driven by one velocity slider and the Lorentz factor γ = 1/√(1 − β²).',
+    syllabus: 'AQA A-level physics (turning points), IB Physics A.5',
+    equations: ['γ = 1 / √(1 − v²/c²)', 'Δt = γ Δt₀', 'L = L₀ / γ', 's² = (ct)² − x²'],
+    views: [
+      { name: 'Light cone', text: 'Drag an event around a three-dimensional light cone and the page tells you whether it is timelike, lightlike or spacelike relative to the origin. A dashed hyperbola shows every place the event can appear for a moving observer, which is why the spacetime interval s² is the same in every frame, while the tilted axes show how a moving observer slices spacetime differently.' },
+      { name: 'Time dilation', text: 'Two light clocks tick side by side: one at rest, one moving. The moving photon zigzags along a longer diagonal path at the same speed c, so each of its ticks takes longer. Live tick counters converge on the ratio γ, turning the formula Δt = γΔt₀ into something you can count.' },
+      { name: 'Length contraction', text: 'Two identical spaceships carry rulers along their hulls. As the moving ship speeds up it shortens along its direction of travel only, and a fixed lab ruler underneath lets you measure L = L₀/γ directly. At 0.8c the ship is 40% shorter.' },
+    ],
+    faq: [
+      { q: 'Why do moving clocks run slow?', a: 'Light travels at the same speed for every observer. In a moving light clock the light has to cover a longer, diagonal path between the mirrors, so each tick takes longer by the factor γ.' },
+      { q: 'What does it mean for an event to be spacelike?', a: 'It lies outside the light cone, so no signal travelling at or below the speed of light can connect it to the origin. Different observers can even disagree about which of the two events happened first.' },
+    ],
+  },
+  {
+    id: 'quantum-mechanics',
+    name: 'Quantum Mechanics',
+    title: 'Quantum Mechanics Simulator: Bloch Sphere, Double Slit',
+    description: 'Interactive quantum mechanics: Bloch sphere qubits, particle in a box, the double-slit experiment, entanglement and tunnelling, visualised live in 3D.',
+    h1: 'Quantum mechanics simulator',
+    intro: 'Five interactive views make the core ideas of quantum mechanics visible: superposition on the Bloch sphere, quantised energy in a box, wave-particle duality in the double slit, entangled measurements and quantum tunnelling through a barrier. Each is computed from the governing equations rather than animated by hand.',
+    syllabus: 'AQA A-level physics, IB Physics HL C.3 and E.1',
+    equations: ['|ψ⟩ = cos(θ/2)|0⟩ + e^{iφ} sin(θ/2)|1⟩', 'ψₙ(x) = √(2/L) sin(nπx/L)', 'Eₙ = n²π²ℏ² / 2mL²', 'd sin θ = mλ'],
+    views: [
+      { name: 'Bloch sphere', text: 'A single qubit is a point on a glass sphere. Set the polar and azimuthal angles, or apply H, X, Y, Z and S gates and watch the state rotate smoothly across the surface. The sphere glows where a measurement is most likely to land, and the Born-rule probabilities update as you move.' },
+      { name: 'Particle in a box', text: 'The wavefunction of a particle trapped between infinite walls, coloured by its complex phase so you can see it evolve in time. Neighbouring lobes always sit on opposite colours, the nodes stay fixed, and an energy ladder shows the levels spaced as n².' },
+      { name: 'Double slit', text: 'A wave passes two slits and the two wavelets interfere: bright bands where they reinforce, calm nodal lines where they cancel. Single particle hits land on the detector one at a time and the fringe pattern builds up from random dots. Turn on which-slit measurement and the fringes vanish.' },
+      { name: 'Entanglement', text: 'Two particles share a single quantum state. Measure one and the other’s result is fixed instantly, with correlations that no local hidden-variable explanation can reproduce.' },
+      { name: 'Tunnelling', text: 'A wave packet meets a barrier higher than its energy and part of it still gets through. Change the barrier height and width to see how the transmission probability falls off exponentially.' },
+    ],
+    faq: [
+      { q: 'Why do the fringes disappear when you measure which slit?', a: 'Knowing which slit the particle used removes the interference term between the two paths, so the probabilities simply add and the pattern becomes two overlapping single-slit humps.' },
+      { q: 'What does a point on the Bloch sphere represent?', a: 'Every pure state of a single qubit. The north and south poles are |0⟩ and |1⟩, and points on the equator are equal superpositions that differ only in phase.' },
+    ],
+  },
+  {
+    id: 'general-relativity',
+    name: 'General Relativity',
+    title: 'General Relativity Simulator: Orbits & Gravitational Waves',
+    description: 'Interactive general relativity: curved spacetime, precessing orbits around a black hole, bent light and the chirp of a black hole merger, computed live.',
+    h1: 'General relativity simulator',
+    intro: 'See how mass curves spacetime and how everything moving through it responds. Three views cover the curved geometry around a mass, orbits and light paths computed from the Schwarzschild geodesic equation, and the gravitational waves sent out by two merging black holes.',
+    syllabus: 'Enrichment beyond A-level, IB Physics A.5',
+    equations: ['G_μν + Λg_μν = 8πG T_μν / c⁴', 'd²u/dφ² = M/L² − u + 3Mu²', 'Δφ = 6πGM / c²a(1 − e²)'],
+    views: [
+      { name: 'Curvature', text: 'A grid of spacetime dips around a central mass. Increase the mass and the well deepens, with the event horizon and photon sphere marked as the curvature becomes extreme.' },
+      { name: 'Geodesics', text: 'Bodies orbit a black hole along true Schwarzschild geodesics, so their orbits rotate a little on every lap: the effect that explained Mercury’s perihelion. A dashed Newtonian ellipse stays fixed beside them for comparison, and light rays bend as they pass the mass.' },
+      { name: 'Gravitational waves', text: 'Two black holes spiral together, speed up and merge, then the remnant rings down. A two-armed spiral of waves ripples outward across spacetime, a ring of test masses stretches and squeezes as it passes, and a strain plot shows the characteristic chirp detected by LIGO.' },
+    ],
+    faq: [
+      { q: 'Why do orbits precess in general relativity?', a: 'The extra 3Mu² term in the geodesic equation slightly strengthens gravity close to the mass, so the orbit does not quite close and its closest point advances a little each time around.' },
+      { q: 'What is a gravitational-wave chirp?', a: 'As two black holes lose energy to gravitational waves they spiral closer, orbit faster and radiate more strongly, so the signal rises in both frequency and amplitude until they merge.' },
+    ],
+  },
+  {
+    id: 'wave-mechanics',
+    name: 'Wave Mechanics',
+    title: 'Ripple Tank & Double Slit Simulator: Interactive Waves',
+    description: 'Interactive wave simulator: a 3D ripple tank you click to add sources, Young’s double slit with a fringe screen, and vibrating drum normal modes.',
+    h1: 'Wave mechanics: ripple tank and interference',
+    intro: 'A live ripple tank solves the wave equation as you watch. Click to drop oscillating sources, add a barrier with one or two slits, and see interference and diffraction form. Two more views show Young’s double slit with its fringe pattern and the normal modes of a vibrating membrane.',
+    syllabus: 'AQA A-level physics 3.3.1–3.3.2, IB Physics C.2–C.3',
+    equations: ['∂²u/∂t² = c² ∇²u', 'Δy = λL / d', 'path difference = mλ (bright), (m + ½)λ (dark)'],
+    views: [
+      { name: 'Ripple tank', text: 'A water surface computed with a finite-difference solver, rendered with realistic caustics. Click to place up to five sources, then switch to a single or double slit barrier to watch the waves diffract and interfere behind it.' },
+      { name: 'Double slit', text: 'Straight waves from a paddle reach two slits; behind them, two circular wavelets overlap. Calm lines fan out where they cancel and a screen on the far side glows with the bright and dark fringes, spaced λL/d apart.' },
+      { name: 'Normal modes', text: 'A square drum skin vibrating in its natural modes, with nodal lines where the membrane never moves. Step through the modes to see how the patterns get more intricate as the frequency rises.' },
+    ],
+    faq: [
+      { q: 'Why does a double slit produce fringes?', a: 'Waves from the two slits travel different distances to each point. Where the path difference is a whole number of wavelengths they add up; where it is a half-wavelength out they cancel.' },
+      { q: 'What is diffraction?', a: 'The spreading of a wave as it passes through a gap or around an edge. It is strongest when the gap is about the same size as the wavelength.' },
+    ],
+  },
+  {
+    id: 'optics',
+    name: 'Optics',
+    title: 'Optics Simulator: Prism, Lens Ray Diagrams & Gratings',
+    description: 'Interactive optics: white light splitting in a prism, a lens bench with real and virtual images and principal rays, and a diffraction grating spectroscope.',
+    h1: 'Optics simulator: prisms, lenses and gratings',
+    intro: 'Three optics benches built from the real equations. Split white light into a spectrum with a glass prism, move an object along an optical bench to see real and virtual images form, and fan light into rainbow orders with a diffraction grating whose line density you control.',
+    syllabus: 'AQA A-level physics 3.3.2, IB Physics C.2 and C.3',
+    equations: ['n₁ sin θ₁ = n₂ sin θ₂', '1/f = 1/u + 1/v', 'm = −v/u', 'd sin θ = mλ'],
+    views: [
+      { name: 'Prism', text: 'Forty-eight wavelengths pass through a glass prism with Cauchy dispersion, so violet bends more than red and a spectrum spreads across the screen. Steepen the prism to push rays past the critical angle into total internal reflection.' },
+      { name: 'Lens lab', text: 'An optical bench with a converging lens. Move the object and the three principal rays and the full light fan trace out the image using 1/f = 1/u + 1/v. Inside the focal length the rays diverge and dashed lines find the virtual, upright, magnified image: the magnifying glass.' },
+      { name: 'Diffraction grating', text: 'A white beam hits a ruled grating and each order fans out as a continuous rainbow onto a curved screen. Change the lines per millimetre and every order spreads or narrows, following d sin θ = mλ.' },
+    ],
+    faq: [
+      { q: 'When is the image from a converging lens virtual?', a: 'When the object is closer to the lens than the focal length. The rays leave the lens diverging, so they only appear to come from a point behind the object, giving an upright, magnified image.' },
+      { q: 'Why does a prism split white light?', a: 'Glass has a slightly higher refractive index for shorter wavelengths, so violet light bends more than red at each surface and the colours separate.' },
+    ],
+  },
+  {
+    id: 'dynamical-systems',
+    name: 'Dynamical Systems',
+    title: 'Lorenz Attractor & Chaos Simulator: Interactive 3D',
+    description: 'Interactive chaos theory: Lorenz, Rössler, Thomas and Aizawa strange attractors in 3D, a Van der Pol phase portrait and a chaotic double pendulum.',
+    h1: 'Chaos and strange attractors',
+    intro: 'Watch deterministic equations produce unpredictable behaviour. Thousands of particles trace four strange attractors in real time, a phase portrait shows trajectories settling onto a limit cycle, and eight double pendulums released a hair apart show the butterfly effect.',
+    syllabus: 'Enrichment: nonlinear dynamics and chaos',
+    equations: ['dx/dt = σ(y − x)', 'dy/dt = x(ρ − z) − y', 'dz/dt = xy − βz', 'ẍ − μ(1 − x²)ẋ + x = 0'],
+    views: [
+      { name: 'Lorenz attractor', text: 'The famous butterfly, traced by 1,800 particles integrated with RK4. Adjust σ, ρ and β and watch the attractor reshape, with its two wing-centre equilibria marked. Above ρ ≈ 24.74 the motion turns chaotic.' },
+      { name: 'Rössler, Thomas and Aizawa', text: 'Three more strange attractors, each with its own geometry: Rössler’s folded band, Thomas’s cyclically symmetric tangle and Aizawa’s sphere with a tube through its axis.' },
+      { name: 'Phase space', text: 'The Van der Pol oscillator’s phase portrait. Thousands of trajectories stream across the plane and converge on a glowing limit cycle that turns into fast relaxation jumps as the nonlinearity μ grows.' },
+      { name: 'Double pendulum', text: 'Eight double pendulums start 0.00001 radians apart. A live graph shows their separation growing exponentially until they disagree completely, with a running estimate of the Lyapunov exponent.' },
+    ],
+    faq: [
+      { q: 'What is a strange attractor?', a: 'A set in phase space that trajectories approach but never repeat on. Nearby starting points separate exponentially, yet every trajectory stays on the same fractal shape.' },
+      { q: 'Why is the double pendulum chaotic?', a: 'Its equations are nonlinear, so tiny differences in the starting angle grow exponentially. After a few seconds the motion is effectively unpredictable even though it is completely deterministic.' },
+    ],
+  },
+  {
+    id: 'electromagnetism',
+    name: 'Electromagnetism',
+    title: 'Magnetic Field Simulator: 3D Field Lines & Lorentz Force',
+    description: 'Interactive electromagnetism: 3D field lines and iron filings for bar magnets, solenoids and Halbach arrays, plus charged particles in B fields.',
+    h1: 'Electromagnetism: magnetic fields in 3D',
+    intro: 'Real field calculations, not drawings. Choose a dipole, bar magnet, solenoid or Halbach array and see its field three ways: field lines traced in 3D, a slice of iron filings lined up with the field, and particles flowing along the lines. A second view sends charged particles spiralling through a magnetic field.',
+    syllabus: 'AQA A-level physics 3.7.5, IB Physics D.3',
+    equations: ['B = (μ₀/4π) [3(m·r̂)r̂ − m] / r³', '∇·B = 0', 'F = qv × B', 'r = mv / qB'],
+    views: [
+      { name: 'Field lab', text: 'Field lines are traced through the true field with RK4 and coloured by strength, with dashes flowing from north to south. A vertical slice shows thousands of iron filings and contours of |B|. The Halbach array shows its one-sided field: strong above, nearly zero below.' },
+      { name: 'Lorentz force', text: 'Charged particles move through a uniform magnetic field and curve into circles and helices. Change the field strength to see the cyclotron radius shrink as r = mv/qB.' },
+    ],
+    faq: [
+      { q: 'Why do magnetic field lines form closed loops?', a: 'There are no magnetic monopoles, so the divergence of B is zero everywhere. Lines leaving a north pole always return to the south pole, continuing through the magnet.' },
+      { q: 'What is a Halbach array?', a: 'An arrangement of magnets whose magnetisation rotates from one block to the next, which reinforces the field on one side and nearly cancels it on the other. It is used in maglev trains and motors.' },
+    ],
+  },
+  {
+    id: 'thermodynamics',
+    name: 'Thermodynamics',
+    title: 'Thermodynamics Simulator: Gas Particles, Entropy, Carnot',
+    description: 'Interactive thermodynamics: an ideal gas with the Maxwell–Boltzmann distribution, entropy increasing, a Carnot engine on a p–V diagram and the Ising model.',
+    h1: 'Thermodynamics and statistical mechanics',
+    intro: 'See temperature, pressure and entropy emerge from particles. Watch an ideal gas settle into the Maxwell–Boltzmann distribution, entropy rise as order dissolves, a Carnot engine trace its cycle on a p–V diagram, and magnetic domains form in the Ising model as it cools.',
+    syllabus: 'AQA A-level physics 3.6.2, IB Physics B.1–B.4',
+    equations: ['pV = NkT', 'S = k_B ln Ω', 'η = 1 − T_C / T_H', '½m⟨c²⟩ = (3/2)kT'],
+    views: [
+      { name: 'Gas', text: 'Hundreds of particles collide elastically in a box while a live histogram of their speeds settles onto the Maxwell–Boltzmann curve. Raise the temperature and the distribution broadens and shifts.' },
+      { name: 'Entropy', text: 'Start with an ordered arrangement and watch it spread out. The entropy, computed from the number of accessible arrangements, rises and does not come back down.' },
+      { name: 'Heat engine', text: 'A Carnot cycle traced on a p–V diagram: two isotherms and two adiabats. The enclosed area is the work done, and the efficiency follows 1 − T_C/T_H.' },
+      { name: 'Ising model', text: 'A grid of magnetic spins that align with their neighbours. Cool it through the critical temperature and domains grow until the whole lattice magnetises.' },
+    ],
+    faq: [
+      { q: 'Why does entropy increase?', a: 'There are vastly more disordered arrangements of particles than ordered ones, so random motion almost always carries a system towards more probable, higher-entropy states.' },
+      { q: 'What limits the efficiency of a heat engine?', a: 'The Carnot limit 1 − T_C/T_H, set only by the temperatures of the hot and cold reservoirs. No real engine between those temperatures can do better.' },
+    ],
+  },
+  {
+    id: 'fluid-dynamics',
+    name: 'Fluid Dynamics',
+    title: 'Fluid Dynamics Simulator: Streamlines & Vortex Shedding',
+    description: 'Interactive fluid dynamics: streamlines and pressure around an obstacle, a Kármán vortex street, and a smoothed-particle hydrodynamics dam break.',
+    h1: 'Fluid dynamics simulator',
+    intro: 'Three ways to see a fluid move. Potential-flow streamlines show how air divides around an obstacle and where pressure builds, a vortex method sheds a Kármán street behind a cylinder, and smoothed-particle hydrodynamics collapses a column of water across a tank.',
+    syllabus: 'Enrichment: fluid mechanics',
+    equations: ['ρ(∂u/∂t + u·∇u) = −∇p + μ∇²u', 'Re = ρvL / μ', 'p + ½ρv² = constant'],
+    views: [
+      { name: 'Streamlines', text: 'Flow around an obstacle, coloured by the pressure coefficient. Streamlines crowd together where the fluid speeds up and pressure drops, as Bernoulli’s principle predicts.' },
+      { name: 'Vortex shedding', text: 'Behind a cylinder, vortices peel off alternately from each side and form a Kármán vortex street. Raise the Reynolds number and the shedding grows stronger.' },
+      { name: 'SPH dam break', text: 'A column of water modelled as thousands of particles collapses, surges across the tank and splashes back, computed with smoothed-particle hydrodynamics.' },
+    ],
+    faq: [
+      { q: 'What is the Reynolds number?', a: 'The ratio of inertial to viscous forces in a flow. Low values give smooth, laminar flow; high values lead to vortex shedding and eventually turbulence.' },
+      { q: 'Why do vortices shed alternately?', a: 'Once the wake behind an obstacle becomes unstable, a vortex forming on one side changes the flow on the other, so they peel off in turn and create a regular, alternating pattern.' },
+    ],
+  },
+  {
+    id: 'acoustic-physics',
+    name: 'Acoustic Physics',
+    title: 'Chladni Plate & Harmonics Simulator: Sound You Can See',
+    description: 'Interactive acoustics: sand forming Chladni figures, the harmonic series on strings you can pluck, and Lissajous figures of musical intervals.',
+    h1: 'Acoustic physics: sound you can see',
+    intro: 'Sound made visible and audible. Sand dances into Chladni figures on a vibrating plate, eight strings show the harmonic series as standing waves you can pluck and hear, and an oscilloscope draws the Lissajous figure of each musical interval.',
+    syllabus: 'AQA A-level physics 3.3.1, IB Physics C.4',
+    equations: ['fₙ = n f₀', 'λₙ = 2L / n', 'x = sin(at), y = sin(bt + δ)'],
+    views: [
+      { name: 'Cymatics', text: 'A square plate vibrates in one of its natural modes and sand gathers along the nodal lines, where the plate stays still. Tap a tone pad to change the mode and hear its frequency.' },
+      { name: 'Harmonics', text: 'Eight strings vibrate in the first eight harmonics of the same fundamental. Pluck one to hear it, and count the nodes: the nth harmonic has n − 1 of them between the ends.' },
+      { name: 'Lissajous', text: 'An oscilloscope in X–Y mode traces two sine waves against each other. Simple frequency ratios such as 1:2 and 2:3 give stable closed figures, which is why those intervals sound consonant.' },
+    ],
+    faq: [
+      { q: 'What are Chladni figures?', a: 'Patterns formed when sand on a vibrating plate collects along the nodal lines, the places that do not move in that mode of vibration.' },
+      { q: 'What is the harmonic series?', a: 'The set of frequencies f₀, 2f₀, 3f₀ and so on at which a string fixed at both ends can vibrate. Together they give an instrument its timbre.' },
+    ],
+  },
+  {
+    id: 'frontier-physics',
+    name: 'Frontier Physics',
+    title: 'Black Hole & Galaxy Simulator: Dark Matter, Expansion',
+    description: 'Interactive astrophysics: a ray-traced black hole, galaxy rotation curves and dark matter, Hubble expansion of the universe and an N-body simulation.',
+    h1: 'Frontier physics: black holes, galaxies and the universe',
+    intro: 'Open questions at the edge of physics, shown with real calculations. A black hole is ray-traced along curved light paths, a living galaxy shows why rotation curves point to dark matter, the universe expands under Hubble’s law, and an N-body simulation builds structure from gravity alone.',
+    syllabus: 'IB Physics E.5, enrichment: astrophysics and cosmology',
+    equations: ['v = H₀ d', 'v_kep = √(GM(r)/r)', 'r_s = 2GM / c²'],
+    views: [
+      { name: 'Black hole', text: 'Every pixel’s light ray is traced backwards through Schwarzschild spacetime, so the accretion disc bends over and under the shadow and Doppler beaming brightens the side moving towards you.' },
+      { name: 'Rotation curves', text: 'Stars in a spiral galaxy orbit at speeds that stay flat far from the centre, instead of falling off as the visible mass predicts. The gap between the two curves is the evidence for dark matter.' },
+      { name: 'Hubble expansion', text: 'Galaxies recede with a speed proportional to their distance. The expansion looks the same from every galaxy, so there is no centre.' },
+      { name: 'N-body', text: 'Hundreds of bodies attract each other under gravity. Start from presets and watch clusters, binaries and slingshots form.' },
+    ],
+    faq: [
+      { q: 'What is the evidence for dark matter from rotation curves?', a: 'Stars far from a galaxy’s centre orbit much faster than the visible matter could hold them. Extra unseen mass is needed to supply that gravity.' },
+      { q: 'What is the black hole shadow?', a: 'The dark region where light rays fall into the event horizon. It appears larger than the horizon itself because gravity bends light around it.' },
+    ],
+  },
+  {
+    id: 'physics-sandbox',
+    name: 'Physics Sandbox',
+    title: 'Physics Sandbox: Build Your Own Force Field Online',
+    description: 'A free physics sandbox: place attractors, repulsors and vortices and watch 5,000 tracer particles respond, with the potential and streamlines drawn live.',
+    h1: 'Physics sandbox: build a force field',
+    intro: 'Drop attractors, repulsors and vortices anywhere on the field and 5,000 tracer particles respond to all of them at once. The background shows the combined potential and the vortex streamlines, so you can see superposition at work. Presets build galaxies, binary stars and spiral arms in one click.',
+    syllabus: 'AQA A-level physics 3.7 (fields), IB Physics D.1–D.2',
+    equations: ['F = Σ Gᵢ r̂ / r² + Γᵢ r̂⊥ / r²'],
+    views: [
+      { name: 'Sources', text: 'Attractors pull particles in like gravity, repulsors push them away, and clockwise or anticlockwise vortices swirl them around. Every source adds to the field independently: the principle of superposition.' },
+      { name: 'Presets', text: 'Galaxy, binary star, dipole, vortex ring, spiral arms and chaos presets show how a few simple sources combine into rich, recognisable structures.' },
+    ],
+    faq: [
+      { q: 'What is the principle of superposition for fields?', a: 'The total field at any point is the vector sum of the fields from each source acting alone. The sandbox adds every source’s pull at every particle, every frame.' },
+    ],
+  },
+]
+
+export const bySimId = Object.fromEntries(SIMULATIONS.map((s) => [s.id, s]))

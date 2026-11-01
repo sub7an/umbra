@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { allowedOrigin, validate } from './ai'
+import { allowedOrigin, validate } from '../api/ai'
 
 describe('AI proxy origin check', () => {
   it('allows the site and local development', () => {

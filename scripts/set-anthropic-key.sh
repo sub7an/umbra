@@ -21,10 +21,15 @@ sed -i '' '/^ANTHROPIC_API_KEY=/d;/^VITE_ANTHROPIC_API_KEY=/d' .env
 printf 'ANTHROPIC_API_KEY=%s\n' "$KEY" >> .env
 echo "✓ Saved to .env"
 
-# Vercel: drop the old browser-exposed variable and any previous server key
-vercel env rm VITE_ANTHROPIC_API_KEY production --yes >/dev/null 2>&1 || true
-vercel env rm ANTHROPIC_API_KEY production --yes >/dev/null 2>&1 || true
-printf '%s' "$KEY" | vercel env add ANTHROPIC_API_KEY production >/dev/null
+# Vercel (only when this checkout is linked to a Vercel project): drop the old
+# browser-exposed variable and any previous server key
+if command -v vercel >/dev/null 2>&1 && [[ -f .vercel/project.json ]]; then
+  vercel env rm VITE_ANTHROPIC_API_KEY production --yes >/dev/null 2>&1 || true
+  vercel env rm ANTHROPIC_API_KEY production --yes >/dev/null 2>&1 || true
+  printf '%s' "$KEY" | vercel env add ANTHROPIC_API_KEY production >/dev/null
+  echo "✓ Saved to Vercel (production); redeploy to pick it up"
+else
+  echo "• Not linked to Vercel; skipped the production key"
+fi
 unset KEY
-echo "✓ Saved to Vercel (production)"
-echo "Done. Tell Claude to redeploy and test."
+echo "Done."

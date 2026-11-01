@@ -14,6 +14,7 @@ import CheckoutBanner from './components/CheckoutBanner'
 import { track } from '@vercel/analytics'
 import { warp, startDrone, stopDrone } from './lib/sound'
 import { prefersReducedMotion } from './lib/motion'
+import { SITE, bySimId } from './content/simulations'
 
 // Overlay panels, fetched after first paint (each renders nothing until opened)
 const Challenges = lazy(() => import('./components/Challenges'))
@@ -159,7 +160,7 @@ const IN_MS  = 220
 // ?embed=1 → bare simulation for iframe embedding (LMS, Notion, blogs)
 const IS_EMBED = new URLSearchParams(window.location.search).get('embed') === '1'
 
-// Modules that can be deep-linked via URL hash
+// Modules with their own page at /simulations/<id> (old #<id> links still work)
 const ROUTABLE = [
   'physics-sandbox', 'wave-mechanics', 'optics',
   'special-relativity', 'quantum-mechanics',
@@ -167,6 +168,24 @@ const ROUTABLE = [
   'general-relativity', 'thermodynamics', 'fluid-dynamics',
   'acoustic-physics',
 ]
+
+const modulePath = (id) => `/simulations/${id}`
+
+// Module named by the URL: /simulations/<id>, or a legacy #<id> link
+function moduleFromLocation() {
+  const m = window.location.pathname.match(/^\/simulations\/([a-z-]+)\/?$/)
+  if (m && ROUTABLE.includes(m[1])) return m[1]
+  const hash = window.location.hash.slice(1)
+  return ROUTABLE.includes(hash) ? hash : null
+}
+
+// Tab title and description follow the page, matching the prerendered HTML
+function applyPageMeta(id) {
+  const page = bySimId[id]
+  document.title = page ? page.title : SITE.title
+  document.querySelector('meta[name="description"]')?.setAttribute('content', page ? page.description : SITE.description)
+  document.querySelector('link[rel="canonical"]')?.setAttribute('href', SITE.url + (page ? modulePath(id) : '/'))
+}
 
 function renderModule(id) {
   let inner = null
@@ -217,7 +236,7 @@ export default function App() {
     setBooted(true)
   }, [])
 
-  // ── URL routing: init from hash on mount, or from shared ?s= state ────────
+  // ── URL routing: init from the path (or a shared ?s= state) on mount ──────
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const shared = params.get('s')
@@ -225,35 +244,46 @@ export default function App() {
       const decoded = decodeShareState(shared)
       if (decoded) {
         applySharedState(decoded)
-        // Clean the ?s= from the URL so refreshes don't re-apply it
-        window.history.replaceState(null, '', window.location.pathname + '#' + decoded.m)
+        // Drop ?s= so refreshes don't re-apply it
+        params.delete('s')
+        const qs = params.toString()
+        window.history.replaceState(null, '', (ROUTABLE.includes(decoded.m) ? modulePath(decoded.m) : '/') + (qs ? `?${qs}` : ''))
         return
       }
     }
-    const hash = window.location.hash.slice(1)
-    if (ROUTABLE.includes(hash)) {
-      setModule(hash)
-    }
+    const id = moduleFromLocation()
+    if (id) setModule(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // ── URL routing: sync hash when module changes ─────────────────────────────
+  // ── URL routing: keep the path in step with the open module ───────────────
+  // The first sync replaces the entry (normalising a legacy #hash link);
+  // later ones push, so Back returns to the previous screen.
+  const firstSync = useRef(true)
   useEffect(() => {
+    applyPageMeta(activeModule)
     if (popRef.current) { popRef.current = false; return }
-    const hash = ROUTABLE.includes(activeModule) ? `#${activeModule}` : ''
-    if (hash) {
-      window.history.pushState(null, '', window.location.pathname + hash)
-    } else {
-      window.history.replaceState(null, '', window.location.pathname)
+    const { pathname, search } = window.location
+    const onModulePath = /^\/simulations\/[a-z-]+\/?$/.test(pathname)
+    let target = null
+    if (ROUTABLE.includes(activeModule)) target = modulePath(activeModule)
+    else if (!activeModule && (onModulePath || window.location.hash)) target = '/'
+    if (target && (target !== pathname || window.location.hash)) {
+      const replace = firstSync.current || !activeModule
+      window.history[replace ? 'replaceState' : 'pushState'](null, '', target + search)
     }
+    firstSync.current = false
   }, [activeModule])
 
   // ── URL routing: back/forward button ──────────────────────────────────────
   useEffect(() => {
     const handler = () => {
-      const hash = window.location.hash.slice(1)
+      const id = moduleFromLocation()
+      // Only flag a pop that actually changes the module; otherwise the flag
+      // would linger and swallow the next real navigation
+      if (id === useModuleStore.getState().activeModule) return
       popRef.current = true
-      setModule(ROUTABLE.includes(hash) ? hash : null)
+      setModule(id)
     }
     window.addEventListener('popstate', handler)
     return () => window.removeEventListener('popstate', handler)

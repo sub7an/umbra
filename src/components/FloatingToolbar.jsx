@@ -150,7 +150,7 @@ function EmbedAction({ activeModule }) {
   const [status, setStatus] = useState('idle')
 
   const handle = useCallback(async () => {
-    const snippet = `<iframe src="https://umbrasandbox.com/?embed=1#${activeModule}" width="800" height="520" style="border:0;border-radius:8px;overflow:hidden" title="Umbra — interactive physics simulation" allowfullscreen></iframe>`
+    const snippet = `<iframe src="https://umbrasandbox.com/simulations/${activeModule}?embed=1" width="800" height="520" style="border:0;border-radius:8px;overflow:hidden" title="Umbra — interactive physics simulation" allowfullscreen></iframe>`
     try {
       await navigator.clipboard.writeText(snippet)
       track('embed_copied', { module: activeModule })
