@@ -1,12 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import Anthropic from '@anthropic-ai/sdk'
+import { askAI } from '../lib/ai'
 import useModuleStore from '../store/useModuleStore'
 import { applySharedState } from './ShareButton'
-
-const client = new Anthropic({
-  apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
-  dangerouslyAllowBrowser: true,
-})
 
 const SYSTEM = `You are a physics simulation router. The user describes a physics scenario or asks a physics question. You must respond with ONLY valid JSON — no explanation, no markdown.
 
@@ -103,13 +98,11 @@ export default function PhysicsInput() {
     setError(null)
     setResult(null)
     try {
-      const msg = await client.messages.create({
-        model: 'claude-haiku-4-5-20251001',
+      const raw = await askAI({
         max_tokens: 256,
         system: SYSTEM,
         messages: [{ role: 'user', content: text }],
       })
-      const raw = msg.content[0]?.text?.trim() || ''
       const json = raw.startsWith('{') ? raw : raw.match(/\{[\s\S]*\}/)?.[0]
       if (!json) throw new Error('No JSON in response')
       const parsed = JSON.parse(json)
@@ -124,7 +117,7 @@ export default function PhysicsInput() {
       setResult({ label: parsed.label, reason: parsed.reason })
       setTimeout(() => setOpen(false), 1400)
     } catch (e) {
-      setError(e.message?.includes('API') ? 'API error — check VITE_ANTHROPIC_API_KEY' : `Could not parse scenario: ${e.message}`)
+      setError(e.message?.includes('API') ? 'AI service unavailable — try again shortly' : `Could not parse scenario: ${e.message}`)
     } finally {
       setLoading(false)
     }

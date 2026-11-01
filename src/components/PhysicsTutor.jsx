@@ -1,11 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import Anthropic from '@anthropic-ai/sdk'
+import { streamAI } from '../lib/ai'
 import useModuleStore from '../store/useModuleStore'
-
-const client = new Anthropic({
-  apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
-  dangerouslyAllowBrowser: true,
-})
 
 // ─── Session journal (module-level, survives React re-renders AND unmounts) ───
 const journal = { visited: [], questions: [], lastModule: null }
@@ -308,7 +303,6 @@ export default function PhysicsTutor() {
 
   const inputRef         = useRef()
   const bottomRef        = useRef()
-  const streamRef        = useRef(null)
   const idleTimerRef     = useRef(null)
   const prevStoreRef     = useRef(null)
   const lastProactiveRef = useRef(0)
@@ -496,17 +490,7 @@ export default function PhysicsTutor() {
       const system = buildSystemPrompt(moduleId, ctx, sessionCtx)
       const apiMsgs = nextMsgs.map(m => ({ role: m.role, content: m.content }))
 
-      const stream = client.messages.stream({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 560,
-        system,
-        messages: apiMsgs,
-      })
-      streamRef.current = stream
-
-      let full = ''
-      stream.on('text', t => { full += t; setStreamText(full) })
-      await stream.finalMessage()
+      const full = await streamAI({ max_tokens: 560, system, messages: apiMsgs }, setStreamText)
 
       applyControls(full)
       const clean = stripControls(full)
@@ -527,13 +511,12 @@ export default function PhysicsTutor() {
     } catch (e) {
       if (!e.message?.includes('abort')) {
         console.error('UMBRA API error:', e)
-        setError(`UMBRA error: ${e.message || e.status || 'unknown'} — check VITE_ANTHROPIC_API_KEY in .env`)
+        setError(`UMBRA error: ${e.message || 'unknown'}`)
         setMessages(prev => prev.slice(0, -1))
       }
       setUmbraMode('idle')
     } finally {
       setStreaming(false)
-      streamRef.current = null
     }
   }, [streaming, messages, moduleId, store])
 

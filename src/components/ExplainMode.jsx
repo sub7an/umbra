@@ -1,11 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import Anthropic from '@anthropic-ai/sdk'
+import { askAI } from '../lib/ai'
 import useModuleStore from '../store/useModuleStore'
-
-const client = new Anthropic({
-  apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
-  dangerouslyAllowBrowser: true,
-})
 
 const MODULE_CONTEXT = {
   'special-relativity':  'Special Relativity — Minkowski spacetime, light cones, Lorentz transforms, time dilation, length contraction',
@@ -142,8 +137,7 @@ export default function ExplainMode({ active, onToggle }) {
       const yPct = Math.round((e.clientY / window.innerHeight) * 100)
 
       const context = MODULE_CONTEXT[activeModule] || activeModule
-      const msg = await client.messages.create({
-        model: 'claude-haiku-4-5-20251001',
+      const reply = await askAI({
         max_tokens: 120,
         messages: [{
           role: 'user',
@@ -157,7 +151,7 @@ export default function ExplainMode({ active, onToggle }) {
         }],
       })
 
-      const text = msg.content[0]?.text?.trim() || 'Could not analyze this area.'
+      const text = reply || 'Could not analyze this area.'
       setCard({ text, position, loading: false })
     } catch (err) {
       setCard({ text: `Could not analyze: ${err.message}`, position, loading: false })

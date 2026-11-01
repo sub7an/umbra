@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { track } from '@vercel/analytics'
 import useModuleStore from '../store/useModuleStore'
 import DecodeText from './DecodeText'
-import { ai, quickAI } from '../lib/ai'
+import { askAI } from '../lib/ai'
 
 // ── The Umbra differentiator: map a live observation to a playable module ─────
 // Checks keywords first (richer), then the science category. Returns the module
@@ -145,7 +145,7 @@ export default function TelescopeLive() {
     setModule(b.module)
   }
   const explainTarget = async () => {
-    if (!cur || !ai) return
+    if (!cur) return
     track('telescope_explain', { target: cur.target })
     if (explainCache.current[cur.target]) {
       setExplain({ text: explainCache.current[cur.target], loading: false, target: cur.target })
@@ -154,11 +154,8 @@ export default function TelescopeLive() {
     setExplain({ text: '', loading: true, target: cur.target })
     try {
       const prompt = `The James Webb Space Telescope is currently observing "${cur.target}" (category: ${cur.category || 'unknown'}; keywords: ${cur.keywords || 'none'}) using ${cur.instrument || 'one of its instruments'}. In 2–3 short sentences, explain what this object likely is and why it's scientifically interesting to observe in infrared. Be concrete and vivid; no preamble.`
-      const msg = await ai.messages.create({
-        model: 'claude-haiku-4-5-20251001', max_tokens: 220,
-        messages: [{ role: 'user', content: prompt }],
-      })
-      const text = msg.content?.[0]?.text?.trim() || 'No explanation available.'
+      const reply = await askAI({ max_tokens: 220, messages: [{ role: 'user', content: prompt }] })
+      const text = reply || 'No explanation available.'
       explainCache.current[cur.target] = text
       setExplain({ text, loading: false, target: cur.target })
     } catch (e) {
@@ -269,7 +266,7 @@ export default function TelescopeLive() {
                   ⚛ {b.label.toUpperCase()} →
                 </button>
               )}
-              {ai && (
+              {(
                 <button
                   onClick={explainTarget}
                   disabled={explain.loading}

@@ -1,17 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import Anthropic from '@anthropic-ai/sdk'
+import { askAI } from '../lib/ai'
 import { track } from '@vercel/analytics'
 import useModuleStore from '../store/useModuleStore'
 import { encodeShareState, decodeShareState, applySharedState } from './ShareButton'
 import { isMuted, setMuted, tick as sndTick, click as sndClick } from '../lib/sound'
 import { useAuth } from '../context/AuthContext'
 import { getTheme, toggleTheme } from '../lib/theme'
-
-// ── Physics scenario AI client ────────────────────────────────────────────────
-const client = new Anthropic({
-  apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
-  dangerouslyAllowBrowser: true,
-})
 
 const NL_SYSTEM = `You are a physics simulation router. Respond with ONLY valid JSON — no explanation, no markdown.
 
@@ -285,8 +279,7 @@ function AskAction() {
     const text = (q || query).trim(); if (!text || loading) return
     setLoading(true); setError(null); setResult(null)
     try {
-      const msg = await client.messages.create({ model: 'claude-haiku-4-5-20251001', max_tokens: 256, system: NL_SYSTEM, messages: [{ role: 'user', content: text }] })
-      const raw = msg.content[0]?.text?.trim() || ''
+      const raw = await askAI({ max_tokens: 256, system: NL_SYSTEM, messages: [{ role: 'user', content: text }] })
       const json = raw.startsWith('{') ? raw : raw.match(/\{[\s\S]*\}/)?.[0]
       if (!json) throw new Error('No JSON in response')
       const parsed = JSON.parse(json)
