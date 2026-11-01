@@ -7,10 +7,10 @@
 // counters make the ratio visible: rest ticks / moving ticks → γ.
 import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 import useModuleStore from '../../store/useModuleStore'
 import { lorentzFactor } from './srMath'
+import SceneCard from '../../components/SceneCard'
 
 const C     = 2.6   // speed of light in scene units / s
 const H     = 2.4   // mirror separation
@@ -158,7 +158,7 @@ export default function TimeDilation() {
         <meshStandardMaterial color="#1e293b" metalness={0.6} roughness={0.5} />
       </mesh>
 
-      <Html calculatePosition={(_, __, size) => [size.width - 216, 52]} style={{ pointerEvents: 'none' }}>
+      <SceneCard>
         <div ref={card} style={{
           width: 204, padding: '10px 12px', borderRadius: 10,
           background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
@@ -179,7 +179,7 @@ export default function TimeDilation() {
             <dd style={{ fontFamily: 'JetBrains Mono, monospace', textAlign: 'right', color: '#fbbf24' }}>{gamma.toFixed(2)}</dd>
           </dl>
         </div>
-      </Html>
+      </SceneCard>
     </group>
   )
 }

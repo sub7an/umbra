@@ -6,6 +6,7 @@ import { useFrame } from '@react-three/fiber'
 import { Html, Line } from '@react-three/drei'
 import * as THREE from 'three'
 import useModuleStore from '../../store/useModuleStore'
+import SceneCard from '../../components/SceneCard'
 
 const NX        = 200
 const X_MIN     = -7
@@ -179,7 +180,7 @@ export default function Tunneling() {
       </Html>
 
       {/* ── Readout, pinned to the scene corner ── */}
-      <Html calculatePosition={(_, __, size) => [size.width - 216, 52]} style={{ pointerEvents: 'none' }}>
+      <SceneCard>
         <div style={{
           width: 204, padding: '10px 12px', borderRadius: 10,
           background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
@@ -202,7 +203,7 @@ export default function Tunneling() {
             <dd ref={evDom} style={{ fontFamily: 'JetBrains Mono, monospace', textAlign: 'right', color: '#4ade80' }}>—</dd>
           </dl>
         </div>
-      </Html>
+      </SceneCard>
     </group>
   )
 }

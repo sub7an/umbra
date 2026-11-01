@@ -5,6 +5,7 @@ import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 import useModuleStore from '../../store/useModuleStore'
 import { hubbleExpansion } from './frontierMath'
+import SceneCard from '../../components/SceneCard'
 
 const GRID_N     = 6      // 6×6 grid, center removed → 35 galaxies
 const SPACING    = 1.0
@@ -234,7 +235,7 @@ export default function ExpansionSim() {
       <GridLines scaleRef={scaleRef} />
 
       {/* Pinned card */}
-      <Html calculatePosition={(_, __, size) => [size.width - 216, 52]} style={{ pointerEvents: 'none' }}>
+      <SceneCard>
         <div ref={cardRef} style={{
           width: 204, padding: '10px 12px', borderRadius: 10,
           background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
@@ -266,7 +267,7 @@ export default function ExpansionSim() {
             The grid stretches too: space itself expands.
           </div>
         </div>
-      </Html>
+      </SceneCard>
     </group>
   )
 }

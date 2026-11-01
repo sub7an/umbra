@@ -3,8 +3,8 @@
 // RK4 integration; Lyapunov exponent estimated from pairwise separation.
 import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Html } from '@react-three/drei'
 import * as THREE from 'three'
+import SceneCard from '../../components/SceneCard'
 
 const N_PEND = 8
 const L      = 1.5          // arm length (scene units)
@@ -217,7 +217,7 @@ export default function DoublePendulum() {
         )
       })}
 
-      <Html calculatePosition={(_, __, size) => [size.width - 216, 52]} style={{ pointerEvents: 'none' }}>
+      <SceneCard>
         <div style={{
           width: 204, padding: '10px 12px', borderRadius: 10,
           background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
@@ -239,7 +239,7 @@ export default function DoublePendulum() {
             <dd ref={lyapRef} style={{ fontFamily: 'JetBrains Mono, monospace', textAlign: 'right', color: '#818cf8' }}>–</dd>
           </dl>
         </div>
-      </Html>
+      </SceneCard>
     </group>
   )
 }

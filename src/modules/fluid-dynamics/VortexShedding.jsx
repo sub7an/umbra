@@ -4,8 +4,8 @@
 // cylinder's shoulders reveal the street the way a flow-lab photo does.
 import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Html } from '@react-three/drei'
 import * as THREE from 'three'
+import SceneCard from '../../components/SceneCard'
 
 const U_BASE  = 1.5
 const R       = 1.2
@@ -240,7 +240,7 @@ export default function VortexShedding({ reynolds }) {
       </points>
 
       {/* Legend */}
-      <Html calculatePosition={(_, __, size) => [size.width - 206, 52]} style={{ pointerEvents: 'none' }}>
+      <SceneCard>
         <div style={{
           width: 194, padding: '10px 12px', borderRadius: 10,
           background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
@@ -260,7 +260,7 @@ export default function VortexShedding({ reynolds }) {
             <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{shedRate.toFixed(1)}</span>
           </div>
         </div>
-      </Html>
+      </SceneCard>
     </group>
   )
 }

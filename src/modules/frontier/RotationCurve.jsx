@@ -13,6 +13,7 @@ import { Html, Line } from '@react-three/drei'
 import * as THREE from 'three'
 import useModuleStore from '../../store/useModuleStore'
 import { keplerianVelocity, observedRotationVelocity } from './frontierMath'
+import SceneCard from '../../components/SceneCard'
 
 const R_MAX     = 6.5          // graph radius range (slider max)
 const DISK_R    = 5.2          // outermost stars
@@ -384,9 +385,9 @@ export default function RotationCurve() {
       <SpeedArrows />
       <OrbitalProbe radius={radius} model={model} />
 
-      <Html calculatePosition={(_, __, size) => [size.width - 236, 52]} style={{ pointerEvents: 'auto' }}>
+      <SceneCard interactive>
         <GraphCard radius={radius} model={model} setModel={setModel} showHalo={showHalo} setShowHalo={setShowHalo} />
-      </Html>
+      </SceneCard>
     </group>
   )
 }

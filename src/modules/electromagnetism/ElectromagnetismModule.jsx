@@ -14,8 +14,6 @@ const MAGNET_TYPES = [
   { id: 'halbach',  abbr: 'HAL', label: 'Halbach',   desc: 'Rotating moment array' },
 ]
 
-const VIEWS = ['field', 'lorentz']
-
 function buildEquations(magnetType) {
   switch (magnetType) {
     case 'dipole':

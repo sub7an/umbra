@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { askAI } from '../lib/ai'
 import { track } from '@vercel/analytics'
 import useModuleStore from '../store/useModuleStore'
-import { encodeShareState, decodeShareState, applySharedState } from './ShareButton'
+import { encodeShareState, applySharedState } from './ShareButton'
 import { isMuted, setMuted, tick as sndTick, click as sndClick } from '../lib/sound'
 import { useAuth } from '../context/AuthContext'
 import { getTheme, toggleTheme } from '../lib/theme'
@@ -66,7 +66,7 @@ function Btn({ label, icon, onClick, active, color = '#7c8cff', title }) {
 }
 
 function Divider() {
-  return <div className="w-px h-5 mx-0.5 bg-border-subtle shrink-0" aria-hidden="true" />
+  return <div className="tb-divider w-px h-5 mx-0.5 bg-border-subtle shrink-0" aria-hidden="true" />
 }
 
 // ── Share action ──────────────────────────────────────────────────────────────
@@ -192,7 +192,7 @@ function RecordAction({ activeModule }) {
   }, [])
 
   useEffect(() => { if (elapsed >= MAX) stop() }, [elapsed, stop])
-  useEffect(() => () => { clearInterval(timerRef.current); recRef.current?.state !== 'inactive' && recRef.current?.stop() }, [])
+  useEffect(() => () => { clearInterval(timerRef.current); if (recRef.current?.state !== 'inactive') recRef.current?.stop() }, [])
 
   const start = useCallback(() => {
     const canvas = [...document.querySelectorAll('canvas')].sort((a,b) => b.width*b.height - a.width*a.height)[0]

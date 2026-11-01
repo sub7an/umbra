@@ -4,8 +4,8 @@
 // coloured by speed ride on top.
 import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Html } from '@react-three/drei'
 import * as THREE from 'three'
+import SceneCard from '../../components/SceneCard'
 
 const R = 1.2
 const N_TRACERS = 520
@@ -191,7 +191,7 @@ export default function StreamLines({ reynolds }) {
       </points>
 
       {/* Legend */}
-      <Html calculatePosition={(_, __, size) => [size.width - 206, 52]} style={{ pointerEvents: 'none' }}>
+      <SceneCard>
         <div style={{
           width: 194, padding: '10px 12px', borderRadius: 10,
           background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
@@ -211,7 +211,7 @@ export default function StreamLines({ reynolds }) {
             <span><span style={{ color: '#fde68a' }}>●</span> Fastest: 2U over the top</span>
           </div>
         </div>
-      </Html>
+      </SceneCard>
     </group>
   )
 }

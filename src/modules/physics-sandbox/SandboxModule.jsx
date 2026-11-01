@@ -112,11 +112,6 @@ const EXPLANATION =
   `Particle color encodes speed: deep blue = slow, cyan = medium, orange = fast, white = maximum.`
 
 
-function hexToRgb(hex) {
-  const n = parseInt(hex.slice(1), 16)
-  return `${(n>>16)&255},${(n>>8)&255},${n&255}`
-}
-
 
 export default function SandboxModule() {
   const [sources,  setSources]  = useState([])

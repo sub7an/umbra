@@ -6,6 +6,7 @@ import { useFrame } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 import useModuleStore from '../../store/useModuleStore'
+import SceneCard from '../../components/SceneCard'
 
 // ── Bloch sphere wireframe ─────────────────────────────────────────────────────
 function BlochWireframe({ color }) {
@@ -362,7 +363,7 @@ export default function Entanglement() {
       </Html>
 
       {/* Pinned card */}
-      <Html calculatePosition={(_, __, size) => [size.width - 226, 52]} style={{ pointerEvents: 'none' }}>
+      <SceneCard>
         <div style={{
           width: 214, padding: '10px 12px', borderRadius: 10,
           background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
@@ -403,7 +404,7 @@ export default function Entanglement() {
             </dl>
           </div>
         </div>
-      </Html>
+      </SceneCard>
     </group>
   )
 }

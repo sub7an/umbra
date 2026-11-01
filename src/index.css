@@ -181,3 +181,12 @@ html.light video {
 @media (max-width: 1279px) {
   .tb-compact .tb-label { display: none; }
 }
+/* Phones: drop the dividers and tighten buttons so the whole bar fits */
+@media (max-width: 480px) {
+  .tb .tb-divider { display: none; }
+  .tb .tb-btn { padding-left: 8px; padding-right: 8px; }
+  .tb { scrollbar-width: none; }
+  .tb::-webkit-scrollbar { display: none; }
+  /* Webcam hand control is a laptop feature; on phones it only overlaps the toolbar */
+  .gesture-toggle { display: none !important; }
+}

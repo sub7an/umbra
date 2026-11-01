@@ -2,8 +2,8 @@
 // Three presets: figure-8 choreography, binary+probe, chaotic 4-body.
 import { useRef, useMemo, useState, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Html } from '@react-three/drei'
 import * as THREE from 'three'
+import SceneCard from '../../components/SceneCard'
 
 const TRAIL    = 600   // history points per body
 const SUBSTEPS = 4     // RK4 sub-steps per frame
@@ -252,7 +252,7 @@ export default function NBody() {
       })}
 
       {/* ── Readout + presets, pinned to the scene corner ── */}
-      <Html calculatePosition={(_, __, size) => [size.width - 216, 52]} style={{ pointerEvents: 'auto' }}>
+      <SceneCard interactive>
         <div style={{
           width: 204, padding: '10px 12px', borderRadius: 10,
           background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
@@ -277,7 +277,7 @@ export default function NBody() {
           </dl>
           <div style={{ marginTop: 6, color: 'rgb(var(--c-text-muted))' }}>Near-zero drift = the RK4 integrator conserves energy.</div>
         </div>
-      </Html>
+      </SceneCard>
     </group>
   )
 }

@@ -4,8 +4,8 @@
 // shifts the peak right and flattens it).
 import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Html } from '@react-three/drei'
 import * as THREE from 'three'
+import SceneCard from '../../components/SceneCard'
 
 const N     = 150
 const BOX   = 4.5   // half-side → box spans ±4.5
@@ -266,7 +266,7 @@ export default function GasSimulation({ temperature }) {
 
       {/* Live speed distribution vs Maxwell–Boltzmann theory */}
       {/* Pinned to the scene's top-right corner so it's always in view */}
-      <Html calculatePosition={(_, __, size) => [size.width - 246, 52]} style={{ pointerEvents: 'none' }}>
+      <SceneCard>
         <div ref={histRef} style={{
           width: 230,
           background: 'rgb(var(--c-panel) / 0.92)',
@@ -324,7 +324,7 @@ export default function GasSimulation({ temperature }) {
             <dd className="r-p" style={{ fontFamily: 'JetBrains Mono, monospace', textAlign: 'right' }}>–</dd>
           </dl>
         </div>
-      </Html>
+      </SceneCard>
     </group>
   )
 }

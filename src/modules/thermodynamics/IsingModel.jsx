@@ -3,8 +3,8 @@
 // Tc = 2/ln(1+√2) ≈ 2.269 (exact Onsager solution for J=k_B=1).
 import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Html } from '@react-three/drei'
 import * as THREE from 'three'
+import SceneCard from '../../components/SceneCard'
 
 const L       = 40     // lattice side
 const N       = L * L
@@ -143,7 +143,7 @@ export default function IsingModel({ temperature }) {
       </lineSegments>
 
       {/* ── Live readout, pinned to the scene corner ── */}
-      <Html calculatePosition={(_, __, size) => [size.width - 216, 52]} style={{ pointerEvents: 'none' }}>
+      <SceneCard>
         <div style={{
           width: 204, padding: '10px 12px', borderRadius: 10,
           background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
@@ -181,7 +181,7 @@ export default function IsingModel({ temperature }) {
             <span><span style={{ color: '#f472b6' }}>■</span> spin down</span>
           </div>
         </div>
-      </Html>
+      </SceneCard>
     </group>
   )
 }

@@ -145,6 +145,7 @@ export default function GestureHUD() {
 
         <button
           onClick={toggle}
+          className="gesture-toggle"
           title={enabled ? 'Turn off hand tracking' : 'Control Umbra with your hand via webcam'}
           style={{
             display: 'flex', alignItems: 'center', gap: 8,

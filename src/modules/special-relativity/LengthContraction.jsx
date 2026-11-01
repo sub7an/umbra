@@ -4,10 +4,11 @@
 // ruler under its lane lets you measure L = L₀/γ directly.
 import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Html, Line } from '@react-three/drei'
+import { Line } from '@react-three/drei'
 import * as THREE from 'three'
 import useModuleStore from '../../store/useModuleStore'
 import { contractedLength, lorentzFactor } from './srMath'
+import SceneCard from '../../components/SceneCard'
 
 const L0      = 3.0   // proper length of each ship
 const LANE_Y  = -1.1  // moving ship's lane
@@ -141,7 +142,7 @@ export default function LengthContraction() {
       </points>
       <LabRuler y={LANE_Y - 0.62} />
 
-      <Html calculatePosition={(_, __, size) => [size.width - 216, 52]} style={{ pointerEvents: 'none' }}>
+      <SceneCard>
         <div style={{
           width: 204, padding: '10px 12px', borderRadius: 10,
           background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
@@ -163,7 +164,7 @@ export default function LengthContraction() {
           </dl>
           <div style={{ marginTop: 6, color: 'rgb(var(--c-text-muted))' }}>Ruler ticks: 0.5 units.</div>
         </div>
-      </Html>
+      </SceneCard>
     </group>
   )
 }

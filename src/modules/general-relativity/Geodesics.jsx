@@ -4,7 +4,6 @@ import { Line } from '@react-three/drei'
 import * as THREE from 'three'
 
 const SIZE = 10
-const GRID = 36
 
 // ─── Physics helpers ────────────────────────────────────────────────────────
 

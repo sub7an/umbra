@@ -1,5 +1,4 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
-import { HandLandmarker, FilesetResolver } from '@mediapipe/tasks-vision'
 
 const WASM_CDN  = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm'
 const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task'
@@ -109,6 +108,8 @@ export default function useHandGesture() {
 
   const initLandmarker = useCallback(async () => {
     if (landmarkerRef.current) return
+    // Loaded on first use: most visitors never turn hand control on
+    const { HandLandmarker, FilesetResolver } = await import('@mediapipe/tasks-vision')
     const vision = await FilesetResolver.forVisionTasks(WASM_CDN)
     landmarkerRef.current = await HandLandmarker.createFromOptions(vision, {
       baseOptions: { modelAssetPath: MODEL_URL, delegate: 'GPU' },

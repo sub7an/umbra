@@ -4,6 +4,7 @@ import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 import useModuleStore from '../../store/useModuleStore'
 import { RT_VERT, RT_FRAG } from './blackHoleRaytrace'
+import SceneCard from '../../components/SceneCard'
 
 // Detect low-end devices at module load time (used to set default quality)
 export const isMobile =
@@ -62,7 +63,7 @@ export default function BlackHole({ hiRes }) {
     <group>
       <RayTraced Rs={Rs} hiRes={hiRes} />
 
-      <Html calculatePosition={(_, __, size) => [size.width - 216, 52]} style={{ pointerEvents: 'none' }}>
+      <SceneCard>
         <div style={{
           width: 204, padding: '10px 12px', borderRadius: 10,
           background: 'rgb(var(--c-panel) / 0.88)', border: '1px solid rgb(var(--c-border))',
@@ -84,7 +85,7 @@ export default function BlackHole({ hiRes }) {
             ))}
           </dl>
         </div>
-      </Html>
+      </SceneCard>
       {unlocked && (
         <Html position={[0, 2.2, 0]} center style={{ pointerEvents: 'none', textAlign: 'center' }}>
           <div style={{

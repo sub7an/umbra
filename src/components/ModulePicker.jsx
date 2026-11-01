@@ -113,7 +113,7 @@ const MODULES = [
     abbr: 'Σ',
     tagline: 'Place sources · Watch them interact · Emergent fields',
     description:
-      'Drop attractors, repulsors, and vortices onto a live particle field. 900 tracers respond to every source simultaneously — combine them to build spiral galaxies, standing waves, or pure chaos.',
+      'Drop attractors, repulsors, and vortices onto a live particle field. 5,000 tracers respond to every source simultaneously — combine them to build spiral galaxies, standing waves, or pure chaos.',
     color: 'lime',
     formula: 'F = Σ G·M/r² + Γ/r²',
   },
@@ -133,7 +133,7 @@ const MODULES = [
     abbr: '◈',
     tagline: 'Ray tracing · Prisms · Lens imaging',
     description:
-      '3D glass prism dispersing 24 spectral wavelengths via Cauchy dispersion. Biconvex lens converging parallel rays to the focal point. Diffraction grating spreading orders m=0,±1,±2 by wavelength.',
+      '3D glass prism dispersing 48 spectral wavelengths via Cauchy dispersion. An optical bench where you move the object and watch real and virtual images form. A grating spectroscope with adjustable line density.',
     color: 'gold',
     formula: 'n₁ sin θ₁ = n₂ sin θ₂',
   },
@@ -529,9 +529,9 @@ function HeroCanvas() {
 // ── Stats strip ────────────────────────────────────────────────────────────────
 const STATS = [
   { value: `${MODULES.length}`,  label: 'Modules' },
-  { value: '50+',  label: 'Simulations' },
+  { value: '40',   label: 'Simulations' },
   { value: 'GPU',  label: 'Accelerated' },
-  { value: '0',    label: 'Server calls' },
+  { value: '100%', label: 'Physics run in your browser' },
   { value: 'LIVE', label: 'Particles computed', live: true },
 ]
 
@@ -593,7 +593,6 @@ function SabrinaCard({ onEnter, onHoverIn, onHoverOut, cardRef, bloomIn }) {
         ref={cardRef}
         onClick={onEnter}
         onMouseEnter={onHoverIn}
-        onMouseLeave={onHoverOut}
         className="group relative flex flex-col text-left p-5 rounded-sm cursor-pointer focus:outline-none transition-all duration-300"
         style={{
           background: 'rgba(17,20,27, 0.72)',
@@ -934,7 +933,7 @@ export default function ModulePicker() {
 
           {/* ── Footer ── */}
           <footer className="flex flex-wrap items-center justify-between gap-4 px-4 sm:px-8 py-8 pb-24">
-            <p className="text-[13px] text-text-dim">Umbra · every simulation runs in your browser. No data leaves your device.</p>
+            <p className="text-[13px] text-text-dim">Umbra · every simulation runs in your browser. Questions you ask the AI tutor are sent to our AI provider to be answered.</p>
             <div className="flex items-center gap-1">
               <button type="button" className="ui-btn-ghost h-8 text-[13px]" onClick={() => navTo('umbra-about-open')}>About</button>
               <button type="button" className="ui-btn-ghost h-8 text-[13px]" onClick={() => navTo('umbra-pricing-open')}>Pricing</button>

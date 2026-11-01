@@ -5,6 +5,7 @@ import { useRef, useMemo, useEffect, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import * as THREE from 'three'
+import SceneCard from '../../components/SceneCard'
 
 const TRAIL  = 280
 const GRID_N = 5
@@ -135,10 +136,11 @@ function ForceArrow({ arrowRef, color }) {
     const arrow = new THREE.ArrowHelper(
       new THREE.Vector3(1, 0, 0), new THREE.Vector3(), 1, color, 0.3, 0.16
     )
-    groupRef.current.add(arrow)
+    const group = groupRef.current
+    group.add(arrow)
     arrowRef.current = arrow
     return () => {
-      groupRef.current?.remove(arrow)
+      group.remove(arrow)
       arrow.line.geometry.dispose()
       arrow.cone.geometry.dispose()
     }
@@ -309,7 +311,7 @@ export default function LorentzForce({ bStrength = 1.0 }) {
       )}
 
       {/* Readout + E×B toggle, pinned to the scene corner */}
-      <Html calculatePosition={(_, __, size) => [size.width - 216, 52]} style={{ pointerEvents: 'auto' }}>
+      <SceneCard interactive>
         <div style={{
           width: 204, padding: '10px 12px', borderRadius: 10,
           background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
@@ -333,7 +335,7 @@ export default function LorentzForce({ bStrength = 1.0 }) {
             </div>
           )}
         </div>
-      </Html>
+      </SceneCard>
     </group>
   )
 }

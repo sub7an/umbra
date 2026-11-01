@@ -7,6 +7,7 @@ import { useRef, useMemo, useCallback, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import * as THREE from 'three'
+import SceneCard from '../../components/SceneCard'
 
 const N      = 400
 const HALF_W = 4.05   // box half-width
@@ -200,7 +201,7 @@ export default function Entropy({ temperature }) {
       </Html>
 
       {/* Readout card, pinned to the scene corner */}
-      <Html calculatePosition={(_, __, size) => [size.width - 226, 52]} style={{ pointerEvents: 'auto' }}>
+      <SceneCard interactive>
         <div ref={cardRef} style={{
           width: 214, padding: '10px 12px', borderRadius: 10,
           background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
@@ -233,7 +234,7 @@ export default function Entropy({ temperature }) {
           </dl>
           <button type="button" onClick={reset} className="ui-btn w-full mt-3 h-8">Reset partition</button>
         </div>
-      </Html>
+      </SceneCard>
     </group>
   )
 }

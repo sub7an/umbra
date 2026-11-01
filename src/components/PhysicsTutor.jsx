@@ -218,7 +218,7 @@ function buildContext(moduleId, s) {
     case 'optics':
       return `view=${s.optics.viewType}, lens f=${s.optics.focalLength.toFixed(1)} (power ${(1/s.optics.focalLength).toFixed(2)} D). Ray tracing: prism dispersion (Cauchy eq.), biconvex lens focusing, diffraction grating`
     case 'physics-sandbox':
-      return `placing=${s.sandbox.mode}, strength=${s.sandbox.strength.toFixed(2)}. 900 tracers responding to user-placed attractors, repulsors, and vortices`
+      return `placing=${s.sandbox.mode}, strength=${s.sandbox.strength.toFixed(2)}. 5,000 tracers responding to user-placed attractors, repulsors, and vortices`
     default: return ''
   }
 }

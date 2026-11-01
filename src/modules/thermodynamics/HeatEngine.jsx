@@ -5,6 +5,7 @@ import { useFrame } from '@react-three/fiber'
 import { Html, Line } from '@react-three/drei'
 import * as THREE from 'three'
 import { hotReservoirT } from './carnot'
+import SceneCard from '../../components/SceneCard'
 
 const STEPS = 200
 
@@ -284,7 +285,7 @@ export default function HeatEngine({ temperature }) {
       <PistonCylinder VRef={VRef} PRef={PRef} phaseRef={phaseRef} VA={VA} Vmax={Vmax} TH={TH} TC={TC} />
 
       {/* Readouts, pinned to the scene corner */}
-      <Html calculatePosition={(_, __, size) => [size.width - 226, 52]} style={{ pointerEvents: 'none' }}>
+      <SceneCard>
         <div style={{
           width: 214, padding: '10px 12px', borderRadius: 10,
           background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
@@ -319,7 +320,7 @@ export default function HeatEngine({ temperature }) {
             ))}
           </dl>
         </div>
-      </Html>
+      </SceneCard>
     </group>
   )
 }

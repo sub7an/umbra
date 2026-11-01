@@ -7,24 +7,27 @@ import TransitionOverlay from './components/TransitionOverlay'
 import BootScreen from './components/BootScreen'
 import CursorAura from './components/CursorAura'
 import CommandPalette from './components/CommandPalette'
-import ShareButton, { decodeShareState, applySharedState } from './components/ShareButton'
+import { decodeShareState, applySharedState } from './components/ShareButton'
 import FloatingToolbar from './components/FloatingToolbar'
-import Challenges from './components/Challenges'
-import ExplainMode from './components/ExplainMode'
-import StoryMode from './components/StoryMode'
-import MultiplayerRoom from './components/MultiplayerRoom'
-import GuideModal from './components/GuideModal'
-import ProfilePanel from './components/ProfilePanel'
-import SurpriseMe from './components/SurpriseMe'
 import { GestureProvider } from './context/GestureContext'
-import PricingPanel from './components/PricingPanel'
-import AboutPanel from './components/AboutPanel'
 import CheckoutBanner from './components/CheckoutBanner'
-import AuthPanel from './components/AuthPanel'
-import TelescopeLive from './components/TelescopeLive'
-import TelescopeContextBanner from './components/TelescopeContextBanner'
 import { track } from '@vercel/analytics'
 import { warp, startDrone, stopDrone } from './lib/sound'
+import { prefersReducedMotion } from './lib/motion'
+
+// Overlay panels, fetched after first paint (each renders nothing until opened)
+const Challenges = lazy(() => import('./components/Challenges'))
+const ExplainMode = lazy(() => import('./components/ExplainMode'))
+const StoryMode = lazy(() => import('./components/StoryMode'))
+const MultiplayerRoom = lazy(() => import('./components/MultiplayerRoom'))
+const GuideModal = lazy(() => import('./components/GuideModal'))
+const ProfilePanel = lazy(() => import('./components/ProfilePanel'))
+const SurpriseMe = lazy(() => import('./components/SurpriseMe'))
+const PricingPanel = lazy(() => import('./components/PricingPanel'))
+const AboutPanel = lazy(() => import('./components/AboutPanel'))
+const AuthPanel = lazy(() => import('./components/AuthPanel'))
+const TelescopeLive = lazy(() => import('./components/TelescopeLive'))
+const TelescopeContextBanner = lazy(() => import('./components/TelescopeContextBanner'))
 
 // Ambient drone base frequency per module — each world has its own tone
 const MOD_DRONE = {
@@ -203,7 +206,7 @@ export default function App() {
   const presentRef = useRef(false)
   const [transTarget, setTarget]    = useState(activeModule)
   const [booted,      setBooted]    = useState(
-    () => sessionStorage.getItem('umbra_booted') === '1'
+    () => sessionStorage.getItem('umbra_booted') === '1' || prefersReducedMotion()
   )
   const prevRef    = useRef(activeModule)
   const popRef     = useRef(false)   // flag: change originated from popstate
@@ -357,9 +360,10 @@ export default function App() {
       <GestureEventBridge />
       <TransitionOverlay phase={phase} targetModule={transTarget} />
       {!booted && <BootScreen onComplete={handleBoot} />}
-      <CursorAura />
+      {!prefersReducedMotion() && <CursorAura />}
       <CommandPalette />
       {!present && <FloatingToolbar explainActive={explainOn} onExplainToggle={() => setExplainOn(v => !v)} />}
+      <Suspense fallback={null}>
       <ExplainMode active={explainOn} onToggle={() => setExplainOn(v => !v)} />
       {!present && <StoryMode />}
       {!present && <MultiplayerRoom />}
@@ -372,10 +376,11 @@ export default function App() {
       {!present && <Challenges />}
       <PricingPanel />
       <AboutPanel />
-      <CheckoutBanner />
       <AuthPanel />
       <TelescopeLive />
       <TelescopeContextBanner />
+      </Suspense>
+      <CheckoutBanner />
       {present && (
         <div style={{
           position: 'fixed', bottom: 14, left: '50%', transform: 'translateX(-50%)',

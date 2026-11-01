@@ -13,8 +13,8 @@
 // plots the strain a detector there would record.
 import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Html } from '@react-three/drei'
 import * as THREE from 'three'
+import SceneCard from '../../components/SceneCard'
 
 const SIZE    = 11            // half-size of the sheet
 const SEG     = 240
@@ -293,7 +293,7 @@ export default function GravitationalWaves({ mass }) {
         </mesh>
       </group>
 
-      <Html calculatePosition={(_, __, size) => [size.width - 216, 52]} style={{ pointerEvents: 'none' }}>
+      <SceneCard>
         <div style={{
           width: 204, padding: '10px 12px', borderRadius: 10,
           background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
@@ -308,7 +308,7 @@ export default function GravitationalWaves({ mass }) {
             <path ref={pathRef} fill="none" stroke="#a5b4fc" strokeWidth="1.5" />
           </svg>
         </div>
-      </Html>
+      </SceneCard>
     </group>
   )
 }

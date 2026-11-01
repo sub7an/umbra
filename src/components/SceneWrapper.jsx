@@ -4,6 +4,7 @@ import { OrbitControls, Grid, MeshReflectorMaterial, Environment, Lightformer } 
 import * as THREE from 'three'
 import { useGesture } from '../context/GestureContext'
 import CinematicEffects from './CinematicEffects'
+import { prefersReducedMotion } from '../lib/motion'
 
 // Studio-style lighting for every module. A small procedural environment
 // (built from Lightformers, so nothing is downloaded) gives physical
@@ -258,6 +259,7 @@ function CameraDirector({ position, orbitRef, maxDist }) {
 // ── Idle drift: slow auto-orbit after 5s of inactivity ────────────────────────
 function IdleDrift({ orbitRef, enabled }) {
   const idle = useRef(0)
+  const reduced = useRef(prefersReducedMotion())
 
   useEffect(() => {
     const reset = () => { idle.current = 0 }
@@ -277,7 +279,7 @@ function IdleDrift({ orbitRef, enabled }) {
     const c = orbitRef.current
     if (!c) return
     idle.current += dt
-    c.autoRotate = enabled && idle.current > 5
+    c.autoRotate = enabled && !reduced.current && idle.current > 5
     c.autoRotateSpeed = 0.22
   })
 

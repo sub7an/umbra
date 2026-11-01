@@ -9,7 +9,7 @@ import DoubleSlit from './DoubleSlit'
 import Entanglement from './Entanglement'
 import Tunneling from './Tunneling'
 import useModuleStore from '../../store/useModuleStore'
-import { blochCoordinates, prob0, prob1, particleInBoxEnergy, interferenceIntensity } from './qmMath'
+import { blochCoordinates, prob0, prob1, particleInBoxEnergy } from './qmMath'
 
 const SCREEN_X = 3.8
 

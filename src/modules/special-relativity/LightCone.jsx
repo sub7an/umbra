@@ -1,9 +1,10 @@
 import { useRef, useMemo, useCallback, useEffect } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { Html, Line } from '@react-three/drei'
+import { Line } from '@react-three/drei'
 import * as THREE from 'three'
 import useModuleStore from '../../store/useModuleStore'
 import { coneRegion } from './srMath'
+import SceneCard from '../../components/SceneCard'
 
 // ── Lorentz-boosted frame overlay ─────────────────────────────────────────────
 // Shows t' axis (moving observer's world line), x' axis (simultaneity lines),
@@ -417,7 +418,7 @@ export default function LightCone() {
       <WorldLine ex={ex} et={et} />
       <EventPoint position={[ex, et, 0]} onDrag={handleDrag} region={region} />
 
-      <Html calculatePosition={(_, __, size) => [size.width - 216, 52]} style={{ pointerEvents: 'none' }}>
+      <SceneCard>
         <div style={{
           width: 204, padding: '10px 12px', borderRadius: 10,
           background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
@@ -437,7 +438,7 @@ export default function LightCone() {
             Drag the gem. Dashed hyperbola: every frame's (x′, ct′) lands on it. Pink axes: the moving observer at β = {velocity.toFixed(2)}.
           </div>
         </div>
-      </Html>
+      </SceneCard>
     </group>
   )
 }

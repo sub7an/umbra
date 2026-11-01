@@ -167,7 +167,8 @@ function drawDiagGraph(ctx, w, h, history) {
     history.forEach((s, i) => {
       const x = xOf(i)
       const y = toY(s[key])
-      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
+      if (i === 0) ctx.moveTo(x, y)
+      else ctx.lineTo(x, y)
     })
     ctx.stroke()
     ctx.setLineDash([])

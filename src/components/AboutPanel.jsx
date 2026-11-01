@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import { track } from '@vercel/analytics'
 
 const STATS = [
-  { value: '13', label: 'Interactive physics worlds' },
-  { value: '50+', label: 'Distinct simulations' },
+  { value: '12', label: 'Interactive physics worlds' },
+  { value: '40', label: 'Distinct simulations' },
   { value: '100%', label: 'Runs in the browser · zero installs' },
   { value: '$0', label: 'Server cost per simulation (GPU-local)' },
 ]
@@ -12,7 +12,7 @@ const PILLARS = [
   {
     tag: 'THE PRODUCT',
     title: 'Physics you can touch, not just read',
-    body: 'Thirteen GPU-accelerated worlds — black holes, quantum tunneling, chaos, electromagnetism — rendered live in the browser. Every parameter is a slider; every result updates in real time. No downloads, no plugins, no lab budget.',
+    body: 'Twelve GPU-accelerated worlds — black holes, quantum tunneling, chaos, electromagnetism — rendered live in the browser. Every parameter is a slider; every result updates in real time. No downloads, no plugins, no lab budget.',
     accent: '#7c8cff',
   },
   {

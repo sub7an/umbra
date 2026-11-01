@@ -1,8 +1,8 @@
 // Rectangular membrane normal modes: standing waves, nodal lines, superposition.
 import { useRef, useMemo, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Html } from '@react-three/drei'
 import * as THREE from 'three'
+import SceneCard from '../../components/SceneCard'
 
 const W   = 96
 const H   = 96
@@ -171,7 +171,7 @@ export default function NormalModes({ modeIdx = 0 }) {
       )}
 
       {/* ── Pinned card: mode info + superposition ── */}
-      <Html calculatePosition={(_, __, size) => [size.width - 216, 52]} style={{ pointerEvents: 'auto' }}>
+      <SceneCard interactive>
         <div style={{
           width: 204, padding: '10px 12px', borderRadius: 10,
           background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
@@ -205,7 +205,7 @@ export default function NormalModes({ modeIdx = 0 }) {
             </>
           )}
         </div>
-      </Html>
+      </SceneCard>
     </group>
   )
 }

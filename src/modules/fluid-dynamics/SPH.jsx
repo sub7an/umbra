@@ -1,7 +1,7 @@
 import { useRef, useMemo, useEffect, useCallback } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Html } from '@react-three/drei'
 import * as THREE from 'three'
+import SceneCard from '../../components/SceneCard'
 
 // ─── 3D SPH — Navier-Stokes via Smoothed Particle Hydrodynamics ─────────────
 // 216 particles (6×6×6 cube) collapsing as a dam break in a 3D box.
@@ -197,7 +197,7 @@ export default function SPH({ reynolds }) {
         <meshStandardMaterial roughness={0.12} metalness={0.05} transparent opacity={0.92} envMapIntensity={1.2} />
       </instancedMesh>
 
-      <Html calculatePosition={(_, __, size) => [size.width - 206, 52]} style={{ pointerEvents: 'auto' }}>
+      <SceneCard interactive>
         <div ref={cardRef} style={{
           width: 194, padding: '10px 12px', borderRadius: 10,
           background: 'rgb(var(--c-panel) / 0.92)', border: '1px solid rgb(var(--c-border))',
@@ -219,7 +219,7 @@ export default function SPH({ reynolds }) {
           </dl>
           <button type="button" onClick={releaseDam} className="ui-btn w-full mt-3 h-8">Release the dam again</button>
         </div>
-      </Html>
+      </SceneCard>
     </group>
   )
 }

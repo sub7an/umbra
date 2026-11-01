@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import useModuleStore from '../store/useModuleStore'
 
 // Shared frame for every module screen: one top bar (back · title · view tabs ·
@@ -49,6 +49,32 @@ const ControlsIcon = (
     <circle cx="5.5" cy="11.5" r="1.8" fill="rgb(var(--c-ground))" stroke="currentColor" strokeWidth="1.3" />
   </svg>
 )
+
+// Scene view tabs. Scrolls sideways when they don't fit, keeping the active
+// tab in view.
+function ViewTabs({ views, activeView, onViewChange, label, className = '' }) {
+  const navRef = useRef(null)
+  useEffect(() => {
+    navRef.current?.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+  }, [activeView])
+  return (
+    <nav ref={navRef} className={`items-center gap-1 min-w-0 overflow-x-auto thin-scroll px-1 ${className}`} role="tablist" aria-label={label}>
+      {views.map((v) => (
+        <button
+          key={v.id}
+          type="button"
+          role="tab"
+          aria-selected={activeView === v.id}
+          title={v.title}
+          onClick={() => onViewChange?.(v.id)}
+          className="ui-tab shrink-0"
+        >
+          {v.label}
+        </button>
+      ))}
+    </nav>
+  )
+}
 
 export default function ModuleShell({
   title,
@@ -112,27 +138,10 @@ export default function ModuleShell({
         </div>
 
         {views.length > 0 && (
-          <nav
-            className="flex items-center gap-1 min-w-0 overflow-x-auto thin-scroll mx-auto px-1"
-            role="tablist"
-            aria-label={viewsLabel}
-          >
-            {views.map((v) => (
-              <button
-                key={v.id}
-                type="button"
-                role="tab"
-                aria-selected={activeView === v.id}
-                title={v.title}
-                onClick={() => onViewChange?.(v.id)}
-                className="ui-tab shrink-0"
-              >
-                {v.label}
-              </button>
-            ))}
-          </nav>
+          <ViewTabs views={views} activeView={activeView} onViewChange={onViewChange} label={viewsLabel}
+            className="hidden md:flex mx-auto" />
         )}
-        {views.length === 0 && <div className="flex-1" />}
+        <div className={`flex-1 ${views.length > 0 ? 'md:hidden' : ''}`} />
 
         {readout && (
           <div className="hidden md:flex items-center h-8 px-2.5 rounded-md bg-ground border border-border-subtle font-mono-data text-[13px] tabular-nums text-text-primary shrink-0">
@@ -151,6 +160,13 @@ export default function ModuleShell({
           )}
         </div>
       </header>
+
+      {/* Phones: views get their own full-width row instead of a clipped strip */}
+      {views.length > 0 && (
+        <div className="md:hidden flex items-center h-11 px-2 bg-panel border-b border-border-subtle shrink-0">
+          <ViewTabs views={views} activeView={activeView} onViewChange={onViewChange} label={viewsLabel} className="flex w-full" />
+        </div>
+      )}
 
       {/* ── Body ── */}
       <div className="relative flex flex-1 min-h-0 overflow-hidden">
