@@ -182,7 +182,10 @@ export default function GuideModal() {
   // Show automatically on first visit (after boot screen has completed)
   useEffect(() => {
     const seen = localStorage.getItem('umbra_guide_seen')
-    if (!seen) {
+    // Don't interrupt someone who landed on a simulation page; they get the
+    // guide on their first visit to the homepage instead
+    const onSimulationPage = window.location.pathname.startsWith('/simulations/')
+    if (!seen && !onSimulationPage) {
       // Delay so boot screen finishes first
       const t = setTimeout(() => {
         setOpen(true)

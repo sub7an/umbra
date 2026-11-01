@@ -225,10 +225,13 @@ export default function App() {
   const presentRef = useRef(false)
   const [transTarget, setTarget]    = useState(activeModule)
   const [booted,      setBooted]    = useState(
-    () => sessionStorage.getItem('umbra_booted') === '1' || prefersReducedMotion()
+    // Visitors landing straight on a simulation (search, shared links) go
+    // directly into it; the boot splash is for the homepage
+    () => sessionStorage.getItem('umbra_booted') === '1' || prefersReducedMotion() || moduleFromLocation() !== null
   )
   const prevRef    = useRef(activeModule)
   const popRef     = useRef(false)   // flag: change originated from popstate
+  const firstInteractionCleanup = useRef(null)
 
   // ── Boot complete ──────────────────────────────────────────────────────────
   const handleBoot = useCallback(() => {
@@ -349,6 +352,18 @@ export default function App() {
       else stopDrone()
     }
     if (dest) track('module_enter', { module: dest })
+    if (dest) {
+      // First real interaction with the simulation or its controls on this visit
+      const startedAt = performance.now()
+      const onFirst = (e) => {
+        if (!e.target.closest?.('main, [role="toolbar"], aside')) return
+        track('first_interaction', { module: dest, seconds: Math.round((performance.now() - startedAt) / 1000) })
+        window.removeEventListener('pointerdown', onFirst, true)
+      }
+      window.addEventListener('pointerdown', onFirst, true)
+      firstInteractionCleanup.current?.()
+      firstInteractionCleanup.current = () => window.removeEventListener('pointerdown', onFirst, true)
+    }
     const t1 = setTimeout(() => { setRendered(dest); setPhase('in') }, OUT_MS)
     const t2 = setTimeout(() => { setPhase('idle') }, OUT_MS + IN_MS)
     return () => { clearTimeout(t1); clearTimeout(t2) }
