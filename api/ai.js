@@ -30,7 +30,7 @@ const RATE_PER_DAY   = 300
 
 const DEFAULT_ORIGINS = ['https://umbrasandbox.com', 'https://www.umbrasandbox.com']
 
-function allowedOrigin(origin) {
+export function allowedOrigin(origin) {
   if (!origin) return true                  // same-origin fetches may omit it
   const extra = (process.env.AI_ALLOWED_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean)
   if ([...DEFAULT_ORIGINS, ...extra].includes(origin)) return true
@@ -64,7 +64,7 @@ async function readBody(req) {
 }
 
 // Accept only plain user/assistant turns with text and (at most one) JPEG/PNG image
-function validate(body) {
+export function validate(body) {
   const { system, messages } = body || {}
   if (system !== undefined && typeof system !== 'string') return 'system must be a string'
   if (!Array.isArray(messages) || messages.length === 0 || messages.length > MAX_MESSAGES) return 'Bad messages'

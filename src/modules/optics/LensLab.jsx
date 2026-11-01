@@ -11,6 +11,7 @@ import { useMemo, useRef, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Line } from '@react-three/drei'
 import * as THREE from 'three'
+import { thinLensImage, traceThrough as traceRay } from './lensMath'
 
 const H       = 0.9    // object height
 const APER    = 1.75   // lens half-aperture
@@ -21,11 +22,7 @@ const FAN_N   = 48
 
 const RAY_COLORS = ['#fbbf24', '#f472b6', '#38bdf8']   // parallel, centre, focal
 
-// Ray from the object tip through height y0 on the lens → { inSlope, outSlope }
-function traceThrough(y0, u, f) {
-  const sIn = (y0 - H) / u
-  return { y0, sIn, sOut: sIn - y0 / f }
-}
+const traceThrough = (y0, u, f) => traceRay(y0, u, f, H)
 
 // ── Lens: biconvex glass, thicker for shorter f ──────────────────────────────
 function LensMesh({ f }) {
@@ -200,10 +197,7 @@ function Bench({ f, u, v, showScreen, imgH }) {
 }
 
 export default function LensLab({ f = 2.5, u = 5 }) {
-  const atFocus = Math.abs(u - f) < 0.03
-  const v = atFocus ? Infinity : (u * f) / (u - f)
-  const m = atFocus ? Infinity : -v / u
-  const real = v > 0 && isFinite(v)
+  const { v, m, real } = thinLensImage(u, f)
   const imgH = H * m
   const showImage = isFinite(v) && v > X_MIN && v < X_MAX && Math.abs(imgH) < 3.2
 

@@ -53,7 +53,8 @@ export function coneRegion(x, t) {
   return s2 > 0 ? 'timelike' : 'spacelike'
 }
 
-// Clamp β strictly below 1 to avoid division by zero
+// Clamp |β| strictly below 1 to avoid division by zero (sign kept, so
+// velocities in opposite directions combine correctly)
 function clampBeta(v) {
-  return Math.min(0.9999, Math.max(0, v))
+  return Math.min(0.9999, Math.max(-0.9999, v))
 }

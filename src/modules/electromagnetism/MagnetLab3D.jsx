@@ -308,7 +308,7 @@ export default function MagnetLab3D({ showFieldLines = true, showHeatmap = true,
   const magnetType = useModuleStore((s) => s.em.magnetType)
   const fieldLines = useMemo(() => {
     const bFunc = (p) => totalBField(p, magnetType)
-    return generateSeeds(magnetType).map((seed) => traceFieldLine(seed, bFunc))
+    return generateSeeds(magnetType).map((seed) => traceFieldLine(seed, bFunc, undefined, undefined, magnetType === 'bar'))
   }, [magnetType])
 
   return (

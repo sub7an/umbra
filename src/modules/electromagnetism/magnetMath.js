@@ -77,9 +77,12 @@ export function totalBField(pos, magnetType, center = [0,0,0]) {
 }
 
 // ── RK4 field line integrator ────────────────────────────────────────────────
-export function traceFieldLine(start, bFunc, steps = 180, dt = 0.09) {
+// stopAtPoles: end the line where it runs into a monopole sink (the bar
+// magnet's poles). Lines of dipoles and solenoids pass through and loop back.
+export function traceFieldLine(start, bFunc, steps = 180, dt = 0.09, stopAtPoles = false) {
   const pts = [[...start]]
   let pos = [...start]
+  let stalled = 0
   for (let i = 0; i < steps; i++) {
     const b1 = norm3(bFunc(pos))
     if (!b1[0] && !b1[1] && !b1[2]) break
@@ -96,6 +99,12 @@ export function traceFieldLine(start, bFunc, steps = 180, dt = 0.09) {
     ]
     const rr = mag3(pos)
     if (!isFinite(rr) || rr > 9 || rr < 0.04) break
+    // At a pole the direction flips every step and the tracer would jitter in
+    // place for its remaining steps; stop there instead
+    if (stopAtPoles) {
+      stalled = mag3(sub3(pos, pts[pts.length - 1])) < dt * 0.5 ? stalled + 1 : 0
+      if (stalled >= 3) { pts.length -= 2; break }
+    }
     pts.push([...pos])
   }
   return pts

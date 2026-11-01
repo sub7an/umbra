@@ -6,6 +6,7 @@ import ControlPanel from '../../components/ControlPanel'
 import RayTracer from './RayTracer'
 import LensLab from './LensLab'
 import DiffractionGrating from './DiffractionGrating'
+import { thinLensImage } from './lensMath'
 
 const ACCENT = '#fcd34d'
 
@@ -99,8 +100,7 @@ export default function OpticsModule() {
   const setGratingLines = useModuleStore((s) => s.setOpticsGratingLines)
 
   // Thin-lens image for the live readouts
-  const imgV = Math.abs(objectDist - focalLength) < 0.03 ? Infinity : (objectDist * focalLength) / (objectDist - focalLength)
-  const imgM = isFinite(imgV) ? -imgV / objectDist : Infinity
+  const { v: imgV, m: imgM } = thinLensImage(objectDist, focalLength)
 
   const eq = buildEquations(view)
 
