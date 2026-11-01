@@ -15,6 +15,7 @@ import { track } from '@vercel/analytics'
 import { warp, startDrone, stopDrone } from './lib/sound'
 import { prefersReducedMotion } from './lib/motion'
 import { SITE, bySimId } from './content/simulations'
+import { viewIdForSlug } from './content/simulationPages'
 
 // Overlay panels, fetched after first paint (each renders nothing until opened)
 const Challenges = lazy(() => import('./components/Challenges'))
@@ -171,20 +172,36 @@ const ROUTABLE = [
 
 const modulePath = (id) => `/simulations/${id}`
 
-// Module named by the URL: /simulations/<id>, or a legacy #<id> link
+const SIM_PATH = /^\/simulations\/([a-z-]+)(?:\/([a-z0-9-]+))?\/?$/
+
+// Module named by the URL: /simulations/<id>[/<view>], or a legacy #<id> link
 function moduleFromLocation() {
-  const m = window.location.pathname.match(/^\/simulations\/([a-z-]+)\/?$/)
+  const m = window.location.pathname.match(SIM_PATH)
   if (m && ROUTABLE.includes(m[1])) return m[1]
   const hash = window.location.hash.slice(1)
   return ROUTABLE.includes(hash) ? hash : null
 }
 
-// Tab title and description follow the page, matching the prerendered HTML
+// View named by /simulations/<id>/<view>, as the module's internal view id
+function viewFromLocation(id) {
+  const m = window.location.pathname.match(SIM_PATH)
+  return m && m[1] === id && m[2] ? viewIdForSlug(id, m[2]) : null
+}
+
+// Open a module (and the view its URL names, if any)
+function openFromLocation(setModule) {
+  const id = moduleFromLocation()
+  const view = id && viewFromLocation(id)
+  useModuleStore.getState().setPendingView(view ? { module: id, view } : null)
+  setModule(id)
+}
+
+// Tab title and description follow in-app navigation. The canonical tag is
+// left as served: crawlers read it from the prerendered HTML.
 function applyPageMeta(id) {
   const page = bySimId[id]
   document.title = page ? page.title : SITE.title
   document.querySelector('meta[name="description"]')?.setAttribute('content', page ? page.description : SITE.description)
-  document.querySelector('link[rel="canonical"]')?.setAttribute('href', SITE.url + (page ? modulePath(id) : '/'))
 }
 
 function renderModule(id) {
@@ -254,8 +271,7 @@ export default function App() {
         return
       }
     }
-    const id = moduleFromLocation()
-    if (id) setModule(id)
+    if (moduleFromLocation()) openFromLocation(setModule)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -264,12 +280,15 @@ export default function App() {
   // later ones push, so Back returns to the previous screen.
   const firstSync = useRef(true)
   useEffect(() => {
-    applyPageMeta(activeModule)
+    // The served page already has the right title on first load
+    if (!firstSync.current) applyPageMeta(activeModule)
     if (popRef.current) { popRef.current = false; return }
     const { pathname, search } = window.location
-    const onModulePath = /^\/simulations\/[a-z-]+\/?$/.test(pathname)
+    const onModulePath = SIM_PATH.test(pathname)
+    // Already on this module's page or one of its view pages
+    const inSync = ROUTABLE.includes(activeModule) && pathname.match(SIM_PATH)?.[1] === activeModule
     let target = null
-    if (ROUTABLE.includes(activeModule)) target = modulePath(activeModule)
+    if (ROUTABLE.includes(activeModule)) target = inSync ? null : modulePath(activeModule)
     else if (!activeModule && (onModulePath || window.location.hash)) target = '/'
     if (target && (target !== pathname || window.location.hash)) {
       const replace = firstSync.current || !activeModule
@@ -286,7 +305,7 @@ export default function App() {
       // would linger and swallow the next real navigation
       if (id === useModuleStore.getState().activeModule) return
       popRef.current = true
-      setModule(id)
+      openFromLocation(setModule)
     }
     window.addEventListener('popstate', handler)
     return () => window.removeEventListener('popstate', handler)

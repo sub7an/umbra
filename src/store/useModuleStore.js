@@ -13,6 +13,11 @@ const useModuleStore = create((set) => ({
 
   setActiveModule: (id) => set({ activeModule: id }),
 
+  // View requested by the URL (/simulations/<module>/<view>); ModuleShell
+  // applies it once the module mounts, then clears it
+  pendingView: null,
+  setPendingView: (v) => set({ pendingView: v }),
+
   setSrVelocity: (v) =>
     set((state) => ({
       sr: { ...state.sr, velocity: Math.min(0.99, Math.max(0, v)) },

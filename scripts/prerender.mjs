@@ -8,6 +8,7 @@
 // without running JavaScript; in a browser the app replaces it on load.
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { SITE, SIMULATIONS } from '../src/content/simulations.js'
+import { VIEW_PAGES } from '../src/content/simulationPages.js'
 
 const DIST = new URL('../dist/', import.meta.url)
 const template = readFileSync(new URL('index.html', DIST), 'utf8')
@@ -15,6 +16,8 @@ const today = new Date().toISOString().slice(0, 10)
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 const simPath = (s) => `/simulations/${s.id}`
+const viewPath = (s, v) => `${simPath(s)}/${v.slug}`
+const viewsOf = (s) => VIEW_PAGES[s.id] ?? []
 
 if (!template.includes('<!-- seo:start -->') || !template.includes('<div id="root"')) {
   throw new Error('prerender: index.html is missing the <!-- seo:start --> block or #root')
@@ -76,7 +79,11 @@ function simulationBody(s) {
     <p>${esc(s.intro)}</p>
     <p class="note">This interactive simulation runs in your browser with WebGL. Free, no account needed.</p>
     <h2>What you can explore</h2>
-    ${s.views.map((v) => `<h3>${esc(v.name)}</h3><p>${esc(v.text)}</p>`).join('\n    ')}
+    ${s.views.map((v, i) => {
+      const page = viewsOf(s)[i]
+      const heading = page ? `<a href="${viewPath(s, page)}">${esc(v.name)}</a>` : esc(v.name)
+      return `<h3>${heading}</h3><p>${esc(v.text)}</p>`
+    }).join('\n    ')}
     <h2>Key equations</h2>
     <ul>${s.equations.map((e) => `<li><code>${esc(e)}</code></li>`).join('')}</ul>
     <h2>Curriculum</h2>
@@ -95,7 +102,8 @@ function hubBody() {
   <main>
     <h1>Interactive physics simulations</h1>
     <p>${esc(SITE.intro)}</p>
-    ${SIMULATIONS.map((s) => `<h2><a href="${simPath(s)}">${esc(s.name)}</a></h2><p>${esc(s.description)}</p>`).join('\n    ')}
+    ${SIMULATIONS.map((s) => `<h2><a href="${simPath(s)}">${esc(s.name)}</a></h2><p>${esc(s.description)}</p>${
+      viewsOf(s).length ? `<ul>${viewsOf(s).map((v) => `<li><a href="${viewPath(s, v)}">${esc(v.name)}</a></li>`).join('')}</ul>` : ''}`).join('\n    ')}
   </main>
 </div></div>`
 }
@@ -182,8 +190,67 @@ for (const s of SIMULATIONS) {
   }))
 }
 
+// One page per simulation view
+function viewBody(s, v) {
+  const siblings = viewsOf(s).filter((x) => x.slug !== v.slug)
+  return `<div class="seo-static"><div class="wrap">
+  <nav aria-label="Breadcrumb"><a href="/">Umbra</a> › <a href="/simulations">Simulations</a> › <a href="${simPath(s)}">${esc(s.name)}</a> › ${esc(v.name)}</nav>
+  <main>
+    <h1>${esc(v.h1)}</h1>
+    <p>${esc(v.intro)}</p>
+    <p class="note">Interactive, free and runs in your browser. Part of the <a href="${simPath(s)}">${esc(s.name)}</a> simulations.</p>
+    <h2>What you will see</h2>
+    <p>${esc(v.see)}</p>
+    <h2>Try this</h2>
+    <ol>${v.tryThis.map((t) => `<li>${esc(t)}</li>`).join('')}</ol>
+    <h2>Common misconception</h2>
+    <p>${esc(v.misconception)}</p>
+    <h2>Exam-style question</h2>
+    <p><strong>${esc(v.question.q)}</strong></p>
+    <p>${esc(v.question.a)}</p>
+    <h2>Key equations</h2>
+    <ul>${v.equations.map((e) => `<li><code>${esc(e)}</code></li>`).join('')}</ul>
+    <h2>Curriculum</h2>
+    <p>${esc(s.syllabus)}.</p>
+    ${siblings.length ? `<h2>More ${esc(s.name.toLowerCase())} simulations</h2>
+    <ul>${siblings.map((x) => `<li><a href="${viewPath(s, x)}">${esc(x.name)}</a></li>`).join('')}</ul>` : ''}
+    <h2>Other topics</h2>
+    <ul>${SIMULATIONS.filter((x) => x.id !== s.id).map((x) => `<li><a href="${simPath(x)}">${esc(x.name)}</a></li>`).join('')}</ul>
+  </main>
+</div></div>`
+}
+
+const viewUrls = []
+for (const s of SIMULATIONS) {
+  for (const v of viewsOf(s)) {
+    const path = viewPath(s, v)
+    viewUrls.push(path)
+    write(path, render({
+      path,
+      title: v.title,
+      description: v.description,
+      body: viewBody(s, v),
+      jsonld: { '@context': 'https://schema.org', '@graph': [ORG, WEBSITE,
+        crumbs([['Umbra', '/'], ['Simulations', '/simulations'], [s.name, simPath(s)], [v.name, path]]), {
+          '@type': 'LearningResource',
+          name: v.h1,
+          headline: v.title,
+          description: v.description,
+          url: SITE.url + path,
+          learningResourceType: 'Interactive simulation',
+          interactivityType: 'active',
+          educationalLevel: 'Secondary and undergraduate (A-level, IB)',
+          isAccessibleForFree: true,
+          inLanguage: 'en',
+          isPartOf: { '@type': 'LearningResource', name: s.name, url: SITE.url + simPath(s) },
+          provider: { '@id': `${SITE.url}/#org` },
+        }] },
+    }))
+  }
+}
+
 // sitemap.xml
-const urls = ['/', '/simulations', ...SIMULATIONS.map(simPath)]
+const urls = ['/', '/simulations', ...SIMULATIONS.map(simPath), ...viewUrls]
 writeFileSync(new URL('sitemap.xml', DIST), `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map((u) => `  <url><loc>${SITE.url}${u === '/' ? '/' : u}</loc><lastmod>${today}</lastmod></url>`).join('\n')}
@@ -199,7 +266,8 @@ ${SITE.intro}
 
 ## Simulations
 
-${SIMULATIONS.map((s) => `- [${s.name}](${SITE.url}${simPath(s)}): ${s.description}`).join('\n')}
+${SIMULATIONS.map((s) => [`- [${s.name}](${SITE.url}${simPath(s)}): ${s.description}`,
+  ...viewsOf(s).map((v) => `  - [${v.name}](${SITE.url}${viewPath(s, v)}): ${v.description}`)].join('\n')).join('\n')}
 
 ## Notes
 

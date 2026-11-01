@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import useModuleStore from '../store/useModuleStore'
+import { viewPageFor } from '../content/simulationPages'
+import { bySimId } from '../content/simulations'
 
 // Shared frame for every module screen: one top bar (back · title · view tabs ·
 // live readout · panel toggles), a lesson panel on the left, the simulation in
@@ -88,6 +90,34 @@ export default function ModuleShell({
   controls = null,
   children,
 }) {
+  // ── Deep links into a view, and the address bar following view changes ──
+  const activeModule = useModuleStore((s) => s.activeModule)
+  useEffect(() => {
+    const { pendingView, setPendingView } = useModuleStore.getState()
+    if (pendingView && pendingView.module === activeModule) {
+      if (views.some((v) => v.id === pendingView.view)) onViewChange?.(pendingView.view)
+      setPendingView(null)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeModule])
+
+  // Switching views moves the URL to that view's page (replace, not push, so
+  // Back still leaves the module). The page that was loaded keeps its URL.
+  const lastView = useRef(activeView)
+  useEffect(() => {
+    if (activeView === lastView.current) return
+    lastView.current = activeView
+    const base = `/simulations/${activeModule}`
+    const { pathname, search } = window.location
+    if (!pathname.startsWith(base)) return
+    const page = viewPageFor(activeModule, activeView)
+    window.history.replaceState(null, '', (page ? `${base}/${page.slug}` : base) + search)
+    const meta = page ?? bySimId[activeModule]
+    if (meta) {
+      document.title = meta.title
+      document.querySelector('meta[name="description"]')?.setAttribute('content', meta.description)
+    }
+  }, [activeView, activeModule])
   const setActiveModule = useModuleStore((s) => s.setActiveModule)
   const wide = useIsWide()
   const [lessonOpen, setLessonOpen] = useState(wide)

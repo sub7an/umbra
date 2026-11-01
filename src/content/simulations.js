@@ -120,7 +120,9 @@ export const SIMULATIONS = [
     equations: ['dx/dt = σ(y − x)', 'dy/dt = x(ρ − z) − y', 'dz/dt = xy − βz', 'ẍ − μ(1 − x²)ẋ + x = 0'],
     views: [
       { name: 'Lorenz attractor', text: 'The famous butterfly, traced by 1,800 particles integrated with RK4. Adjust σ, ρ and β and watch the attractor reshape, with its two wing-centre equilibria marked. Above ρ ≈ 24.74 the motion turns chaotic.' },
-      { name: 'Rössler, Thomas and Aizawa', text: 'Three more strange attractors, each with its own geometry: Rössler’s folded band, Thomas’s cyclically symmetric tangle and Aizawa’s sphere with a tube through its axis.' },
+      { name: 'Rössler attractor', text: 'A flat spiral that periodically lifts into a spike and folds back: the stretch-and-fold mechanism of chaos in its simplest form. Raise c to follow the period-doubling route into chaos.' },
+      { name: 'Thomas attractor', text: 'A cyclically symmetric tangle built from sine functions. One damping parameter, b, walks it from orderly loops into a chaotic three-dimensional lattice.' },
+      { name: 'Aizawa attractor', text: 'Trajectories wrap around a sphere-like surface, then escape up a narrow tube along its axis and fall back over the top.' },
       { name: 'Phase space', text: 'The Van der Pol oscillator’s phase portrait. Thousands of trajectories stream across the plane and converge on a glowing limit cycle that turns into fast relaxation jumps as the nonlinearity μ grows.' },
       { name: 'Double pendulum', text: 'Eight double pendulums start 0.00001 radians apart. A live graph shows their separation growing exponentially until they disagree completely, with a running estimate of the Lyapunov exponent.' },
     ],
@@ -157,7 +159,7 @@ export const SIMULATIONS = [
     syllabus: 'AQA A-level physics 3.6.2, IB Physics B.1–B.4',
     equations: ['pV = NkT', 'S = k_B ln Ω', 'η = 1 − T_C / T_H', '½m⟨c²⟩ = (3/2)kT'],
     views: [
-      { name: 'Gas', text: 'Hundreds of particles collide elastically in a box while a live histogram of their speeds settles onto the Maxwell–Boltzmann curve. Raise the temperature and the distribution broadens and shifts.' },
+      { name: 'Gas', text: 'Gas particles collide elastically in a box while a live histogram of their speeds settles onto the Maxwell–Boltzmann curve. Raise the temperature and the distribution broadens and shifts.' },
       { name: 'Entropy', text: 'Start with an ordered arrangement and watch it spread out. The entropy, computed from the number of accessible arrangements, rises and does not come back down.' },
       { name: 'Heat engine', text: 'A Carnot cycle traced on a p–V diagram: two isotherms and two adiabats. The enclosed area is the work done, and the efficiency follows 1 − T_C/T_H.' },
       { name: 'Ising model', text: 'A grid of magnetic spins that align with their neighbours. Cool it through the critical temperature and domains grow until the whole lattice magnetises.' },
@@ -179,7 +181,7 @@ export const SIMULATIONS = [
     views: [
       { name: 'Streamlines', text: 'Flow around an obstacle, coloured by the pressure coefficient. Streamlines crowd together where the fluid speeds up and pressure drops, as Bernoulli’s principle predicts.' },
       { name: 'Vortex shedding', text: 'Behind a cylinder, vortices peel off alternately from each side and form a Kármán vortex street. Raise the Reynolds number and the shedding grows stronger.' },
-      { name: 'SPH dam break', text: 'A column of water modelled as thousands of particles collapses, surges across the tank and splashes back, computed with smoothed-particle hydrodynamics.' },
+      { name: 'SPH dam break', text: 'A column of water modelled as hundreds of particles collapses, surges across the tank and splashes back, computed with smoothed-particle hydrodynamics.' },
     ],
     faq: [
       { q: 'What is the Reynolds number?', a: 'The ratio of inertial to viscous forces in a flow. Low values give smooth, laminar flow; high values lead to vortex shedding and eventually turbulence.' },
@@ -211,14 +213,14 @@ export const SIMULATIONS = [
     title: 'Black Hole & Galaxy Simulator: Dark Matter, Expansion',
     description: 'Interactive astrophysics: a ray-traced black hole, galaxy rotation curves and dark matter, Hubble expansion of the universe and an N-body simulation.',
     h1: 'Frontier physics: black holes, galaxies and the universe',
-    intro: 'Open questions at the edge of physics, shown with real calculations. A black hole is ray-traced along curved light paths, a living galaxy shows why rotation curves point to dark matter, the universe expands under Hubble’s law, and an N-body simulation builds structure from gravity alone.',
+    intro: 'Open questions at the edge of physics, shown with real calculations. A black hole is ray-traced along curved light paths, a living galaxy shows why rotation curves point to dark matter, the universe expands under Hubble’s law, and an N-body simulation shows how quickly a few gravitating bodies turn chaotic.',
     syllabus: 'IB Physics E.5, enrichment: astrophysics and cosmology',
     equations: ['v = H₀ d', 'v_kep = √(GM(r)/r)', 'r_s = 2GM / c²'],
     views: [
       { name: 'Black hole', text: 'Every pixel’s light ray is traced backwards through Schwarzschild spacetime, so the accretion disc bends over and under the shadow and Doppler beaming brightens the side moving towards you.' },
       { name: 'Rotation curves', text: 'Stars in a spiral galaxy orbit at speeds that stay flat far from the centre, instead of falling off as the visible mass predicts. The gap between the two curves is the evidence for dark matter.' },
       { name: 'Hubble expansion', text: 'Galaxies recede with a speed proportional to their distance. The expansion looks the same from every galaxy, so there is no centre.' },
-      { name: 'N-body', text: 'Hundreds of bodies attract each other under gravity. Start from presets and watch clusters, binaries and slingshots form.' },
+      { name: 'N-body', text: 'Three or four bodies pulling on each other: a stable figure-of-eight orbit, a binary with a passing probe, and a chaotic four-body system with no closed-form solution.' },
     ],
     faq: [
       { q: 'What is the evidence for dark matter from rotation curves?', a: 'Stars far from a galaxy’s centre orbit much faster than the visible matter could hold them. Extra unseen mass is needed to supply that gravity.' },
