@@ -79,12 +79,17 @@ describe('fluid dynamics validation', () => {
 
   it('[streamlines] analytic: no flow through the surface', () => {
     const R = 1.2, U = 1.7
+    const rp = R * (1 + 1e-9) // exactly r=R counts as inside, so probe just outside
+    let maxVr = 0
     for (let k = 0; k < 12; k++) {
       const th = (k * 2 * Math.PI) / 12 + 0.1
-      const [vx, vy] = cylinderFlowVelocity(R * Math.cos(th), R * Math.sin(th), U, R)
-      const vr = vx * Math.cos(th) + vy * Math.sin(th)
-      expect(Math.abs(vr)).toBeLessThan(1e-12)
+      const [vx, vy] = cylinderFlowVelocity(rp * Math.cos(th), rp * Math.sin(th), U, R)
+      maxVr = Math.max(maxVr, Math.abs(vx * Math.cos(th) + vy * Math.sin(th)))
     }
+    expect(maxVr).toBeLessThan(1e-8)
+    // non-vacuity: the flow is not zero away from the surface
+    const [wx, wy] = cylinderFlowVelocity(2 * R * Math.cos(Math.PI / 4), 2 * R * Math.sin(Math.PI / 4), U, R)
+    expect(Math.hypot(wx, wy)).toBeGreaterThan(0.1 * U)
   })
 
   it('[streamlines] analytic: far field', () => {
