@@ -33,3 +33,7 @@ graphify-out/
 # Private marketing notes (kept out of the public repo)
 .agents/
 marketing/
+
+# Playwright
+test-results/
+playwright-report/

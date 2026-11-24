@@ -40,3 +40,9 @@ export function formatRoute(route) {
       return `/${search}`
   }
 }
+
+// Client-side navigation: push (or replace) the route, then tell subscribers.
+export function navigate(route, { replace = false } = {}) {
+  window.history[replace ? 'replaceState' : 'pushState'](null, '', formatRoute(route))
+  window.dispatchEvent(new PopStateEvent('popstate'))
+}
