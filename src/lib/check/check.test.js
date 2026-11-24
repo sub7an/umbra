@@ -115,3 +115,42 @@ describe('choice / order / dispatch / wrong answers', () => {
     expect(matchWrongAnswer('1', null)).toBeNull()
   })
 })
+
+describe('fix round 1', () => {
+  const K = { expr: 'm*v', vars: { m: [1, 5], v: [1, 10] } }
+  it('engine cannot be mutated by student input', () => {
+    for (const r of ['config({number:"BigNumber"})', 'config({relTol:1, absTol:1})', 'import({f: 1})', 'createUnit("foo")',
+      'evaluate("1")', 'parse("1")', 'm = 5', 'm[1]', '[1,2]', 'x ? 1 : 2', '{a:1}', '1:3', 'f(x)=x', '"s"', 'sqrt(m).foo', 'cbrt(m)', 'm; v']) {
+      expect(checkExpression(r, K)).toMatchObject({ correct: false, reason: 'format' })
+    }
+    expect(checkExpression('m*v', K).correct).toBe(true)
+    expect(checkExpression('v*sqrt(m)^2', K).correct).toBe(true)
+    expect(checkExpression('exp(ln(m*v))', K).correct).toBe(true)
+    expect(checkNumeric('2 km', key).correct).toBe(true)
+  })
+  it('absolute floor scales with magnitude', () =>
+    expect(checkExpression('m-m+1e-15', { expr: '0', vars: { m: [1, 5] } }).correct).toBe(true))
+  it('celsius tolerance is relative to key in its own unit', () => {
+    const k = { value: 100, unit: '°C', rel_tol: 0.01 }
+    expect(checkNumeric('97 °C', k)).toMatchObject({ correct: false, reason: 'value' })
+    expect(checkNumeric('100.5 °C', k).correct).toBe(true)
+    expect(checkNumeric('373.15 K', k).correct).toBe(true)
+    expect(checkNumeric('25 °C', { value: 27, unit: '°C' }).correct).toBe(false)
+  })
+  it.each(['2.0×10^3 m', '2.0 x 10^3 m', '2·10³ m', '2*10^3 m', '2.0 X 10**3 m', '2×10^+3 m'])('sci notation %s', (r) =>
+    expect(checkNumeric(r, key).correct).toBe(true))
+  it('sci notation negative exponent and sig figs from mantissa', () => {
+    expect(checkNumeric('2×10⁻³ m', { value: 0.002, unit: 'm' }).correct).toBe(true)
+    expect(checkNumeric('2.0×10^3 m', { ...key, sig_figs: 2 }).correct).toBe(true)
+    expect(checkNumeric('2.00×10^3 m', { ...key, sig_figs: 2 }).reason).toBe('sig_figs')
+  })
+  it('slash makes the rest the denominator', () => {
+    const k = { value: 5, unit: 'J/(kg K)' }
+    for (const r of ['5 J/kg K', '5 J/kg·K', '5 J/kg/K', '5 J/(kg K)', '5 J kg^-1 K^-1']) expect(checkNumeric(r, k).correct).toBe(true)
+  })
+  it('sig_figs coercion', () => {
+    expect(checkNumeric('2000.0 m', { ...key, sig_figs: '2' }).reason).toBe('sig_figs')
+    expect(checkNumeric('2000.0 m', { ...key, sig_figs: 2.5 }).correct).toBe(true)
+    expect(checkNumeric('2000.0 m', { ...key, sig_figs: 'abc' }).correct).toBe(true)
+  })
+})

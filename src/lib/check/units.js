@@ -67,6 +67,13 @@ function tokenize(s) {
   return toks
 }
 
+// SI factor of a unit (no offset), or null if invalid.
+export function unitScale(unit) {
+  if (unit === null || unit === undefined) return 1
+  const u = parseUnit(unit)
+  return u ? u.factor : null
+}
+
 // Returns { factor, exp, offset, single } or null.
 function parseUnit(str) {
   if (typeof str !== 'string' || str.length > 60) return null
@@ -104,16 +111,29 @@ function parseUnit(str) {
       offset: 0, single: false, bad: false,
     }
   }
-  function product() {
+  // Convention: everything after a '/' is the denominator, and whitespace / '*' / '·'
+  // bind tighter than '/': J/kg K = J/kg·K = J/(kg K). J/kg/K still works.
+  function sequence() {
     let acc = term()
     if (!acc) return null
-    while (pos < toks.length && !op(')')) {
-      let sign = 1
+    while (pos < toks.length && !op(')') && !op('/')) {
       if (op('*') || op('·')) pos++
-      else if (op('/')) { sign = -1; pos++ }
       const t = term()
       if (!t) return null
-      const merged = mul(acc, t, sign)
+      const merged = mul(acc, t, 1)
+      merged.bad = acc.bad || t.bad || acc.offset !== 0 || t.offset !== 0
+      acc = merged
+    }
+    return acc
+  }
+  function product() {
+    let acc = sequence()
+    if (!acc) return null
+    while (op('/')) {
+      pos++
+      const t = sequence()
+      if (!t) return null
+      const merged = mul(acc, t, -1)
       merged.bad = acc.bad || t.bad || acc.offset !== 0 || t.offset !== 0
       acc = merged
     }
@@ -151,10 +171,20 @@ function splitNumber(input) {
   const tok = m[1]
   // a leftover that is a malformed exponent ("1e", "1e+") is a format error, not a unit
   // (a leftover starting with a digit/comma/dot, e.g. "1,00 m", is ambiguous: reject)
-  if (/^[eE][+-]?$/.test(m[2]) || /^[,.\d]/.test(m[2])) return null
-  const value = Number(tok.replace(/,/g, ''))
+  let value = Number(tok.replace(/,/g, ''))
+  let rest = m[2]
+  // scientific notation: 2.0×10^3, 2 x 10^3, 2*10**3, 2·10³, 2×10⁻³
+  const sci = /^[×xX*·]\s*10\s*(?:(?:\^|\*\*)\s*([+\-]?\d+)|([⁺⁻⁰¹²³⁴⁵⁶⁷⁸⁹]+))\s*(.*)$/s.exec(rest)
+  if (sci) {
+    const e = sci[1] !== undefined ? sci[1] : [...sci[2]].map((c) => (c === '⁻' ? '-' : c === '⁺' ? '+' : '⁰¹²³⁴⁵⁶⁷⁸⁹'.indexOf(c))).join('')
+    const n = parseInt(e, 10)
+    if (!Number.isFinite(n) || Math.abs(n) > 400) return null
+    value *= Math.pow(10, n)
+    rest = sci[3]
+  }
   if (!Number.isFinite(value)) return null
-  return { tok, value, unit: m[2] === '' ? null : m[2] }
+  if (/^[eE][+-]?$/.test(rest) || /^[,.\d]/.test(rest)) return null
+  return { tok, value, unit: rest === '' ? null : rest }
 }
 
 export function parseQuantity(input) {
@@ -165,7 +195,7 @@ export function parseQuantity(input) {
 // Significant figures in the number as the student wrote it:
 //  - with a decimal point, every digit after leading zeros counts ('2000.0' -> 5, '2.0' -> 2, '0.0050' -> 2)
 //  - without one, trailing zeros are not significant ('2000' -> 1, '2,000' -> 1, '2e3' -> 1)
-//  - exponent part is ignored; minimum 1
+//  - exponent part (e3, ×10^3) is ignored: sig figs come from the mantissa; minimum 1
 export function countSigFigs(input) {
   const q = splitNumber(input)
   if (!q) return null
