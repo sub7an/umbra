@@ -2,10 +2,12 @@ import { useRef, useMemo, useCallback, useState, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { WATER_FRAG } from './waterShader'
+import { waveStep } from './waveMath'
 
 const W     = 128
 const H     = 128
 const C2    = 0.30
+const CFL   = Math.sqrt(C2)   // c·dt/dx in grid units (dx = dt = 1)
 const DAMP  = 0.993
 const SPONGE = 14
 const AMP   = 0.45
@@ -172,15 +174,8 @@ export default function RippleTank({ onSourceCount, slitMode = 0, clearCount = 0
       cur[s.y * W + s.x] = Math.sin(s.t * s.freq * Math.PI * 2) * 1.3
     }
 
-    // FDTD wave step — skip barrier cells (Dirichlet boundary)
-    for (let j = 1; j < H - 1; j++) {
-      for (let i = 1; i < W - 1; i++) {
-        const idx = j * W + i
-        if (barrier[idx]) { nxt[idx] = 0; continue }
-        nxt[idx] = DAMP * (2 * cur[idx] - prv[idx] +
-          C2 * (cur[idx - 1] + cur[idx + 1] + cur[idx - W] + cur[idx + W] - 4 * cur[idx]))
-      }
-    }
+    // FDTD wave step — barrier cells are a Dirichlet boundary
+    waveStep(cur, prv, nxt, W, H, CFL, 1, 1, { damp: DAMP, barrier })
 
     // Absorbing sponge at edges
     for (let s = 0; s < SPONGE; s++) {
