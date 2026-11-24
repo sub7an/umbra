@@ -6,6 +6,7 @@ import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import SceneCard from '../../components/SceneCard'
+import { cylinderFlowVelocity } from './fluidMath'
 
 const U_BASE  = 1.5
 const R       = 1.2
@@ -16,16 +17,7 @@ const DYE_BOT = new THREE.Color('#fbbf24')
 const EMIT_PER_FRAME = 12
 const N_TRACE = 4200 // dye particles (≈6 s of travel before recycling)
 
-// Potential flow velocity around cylinder
-function potentialFlow(x, y, U) {
-  const r2 = x * x + y * y
-  if (r2 <= R * R) return [0, 0]
-  const r4 = r2 * r2
-  return [
-    U * (1 - R * R * (x * x - y * y) / r4),
-    -U * R * R * 2 * x * y / r4,
-  ]
-}
+const potentialFlow = (x, y, U) => cylinderFlowVelocity(x, y, U, R)
 
 // Biot-Savart velocity from vortex array at a point
 function bsVel(px, py, vxA, vyA, gA, count) {

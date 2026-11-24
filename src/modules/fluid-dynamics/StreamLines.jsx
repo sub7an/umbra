@@ -6,21 +6,14 @@ import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import SceneCard from '../../components/SceneCard'
+import { cylinderFlowVelocity } from './fluidMath'
 
 const R = 1.2
 const N_TRACERS = 520
 const DX = 9.0
 const DY = 5.0
 
-function flowVel(x, y, U) {
-  const r2 = x * x + y * y
-  if (r2 <= R * R) return [0, 0]
-  const r4 = r2 * r2
-  return [
-    U * (1 - R * R * (x * x - y * y) / r4),
-    -U * R * R * 2 * x * y / r4,
-  ]
-}
+const flowVel = (x, y, U) => cylinderFlowVelocity(x, y, U, R)
 
 function buildStreamlines(U) {
   const starts = []
