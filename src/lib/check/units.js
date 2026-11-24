@@ -174,7 +174,7 @@ function splitNumber(input) {
   let value = Number(tok.replace(/,/g, ''))
   let rest = m[2]
   // scientific notation: 2.0×10^3, 2 x 10^3, 2*10**3, 2·10³, 2×10⁻³
-  const sci = /^[×xX*·]\s*10\s*(?:(?:\^|\*\*)\s*([+\-]?\d+)|([⁺⁻⁰¹²³⁴⁵⁶⁷⁸⁹]+))\s*(.*)$/s.exec(rest)
+  const sci = /^[×xX*·]\s*10\s*(?:(?:\^|\*\*)\s*([+-]?\d+)|([⁺⁻⁰¹²³⁴⁵⁶⁷⁸⁹]+))\s*(.*)$/s.exec(rest)
   if (sci) {
     const e = sci[1] !== undefined ? sci[1] : [...sci[2]].map((c) => (c === '⁻' ? '-' : c === '⁺' ? '+' : '⁰¹²³⁴⁵⁶⁷⁸⁹'.indexOf(c))).join('')
     const n = parseInt(e, 10)
