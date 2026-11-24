@@ -5,6 +5,7 @@ import SceneWrapper from '../../components/SceneWrapper'
 import InfoPanel from '../../components/InfoPanel'
 import ModuleShell from '../../components/ModuleShell'
 import useModuleStore from '../../store/useModuleStore'
+import { stringHarmonics, harmonicDisplacement, chladniAmplitude, chladniGradient, lissajous } from './acousticMath.js'
 
 const ACCENT = '#a855f7'
 
@@ -37,6 +38,7 @@ const CHLADNI_MODES = [
 
 // Harmonics of C3 (130.8 Hz)
 const C3 = 130.8
+const HARMONIC_FREQS = stringHarmonics(C3, 8)
 const HARMONIC_COLORS = ['#FF6B6B','#FFB347','#FFD166','#A8E063','#00D4FF','#6677FF','#BB66FF','#FF77BB']
 const HARMONIC_NOTES  = ['C3','C4','G4','C5','E5','G5','Bb5','C6']
 
@@ -118,11 +120,9 @@ function CymaticsScene({ modeIdx, scatterToken }) {
       // Chladni plate (free edges): u = cos(nπX)cos(mπY) − cos(mπX)cos(nπY),
       // X,Y ∈ [0,1]. Sand is pushed down |u| onto the curved nodal lines.
       const X = (x + 1) * 0.5, Y = (y + 1) * 0.5
-      const kn = n * Math.PI, km = m * Math.PI
-      const cnX = Math.cos(kn * X), cmY = Math.cos(km * Y), cmX = Math.cos(km * X), cnY = Math.cos(kn * Y)
-      const u    = cnX * cmY - cmX * cnY
-      const dudx = 0.5 * (-kn * Math.sin(kn * X) * cmY + km * Math.sin(km * X) * cnY)
-      const dudy = 0.5 * (-km * cnX * Math.sin(km * Y) + kn * cmX * Math.sin(kn * Y))
+      const u = chladniAmplitude(m, n, X, Y)
+      const [gX, gY] = chladniGradient(m, n, X, Y)
+      const dudx = 0.5 * gX, dudy = 0.5 * gY   // chain rule: dX/dx = 0.5
       // Smooth descent of u²/2 (force −u∇u): fades to zero on the nodal line, so sand
       // settles all along it instead of jittering across and piling up at crossings
       vx = (vx - u * dudx * FORCE * dt + (Math.random()-0.5)*NOISE) * DAMP
@@ -280,7 +280,7 @@ function HarmonicsScene({ focusN, onPluck }) {
       const isActive  = focusN === null || focusN === n
       const amp = (isActive ? 0.22 : 0.05) + pluckGain * 0.55
       const u = m.uniforms
-      u.uDisp.value = amp * Math.cos(n * 1.8 * t)
+      u.uDisp.value = harmonicDisplacement(n, amp, t)
       u.uEnv.value = amp
       u.uActive.value += ((isActive ? 1 : 0) - u.uActive.value) * 0.15
       u.uHover.value  += ((hoverRef.current === n ? 1 : 0) - u.uHover.value) * 0.2
@@ -403,7 +403,8 @@ function LissajousScene({ presetIdx, phase }) {
     const pts = []
     for (let i = 0; i <= 1600; i++) {
       const s = (i / 1600) * Math.PI * 2
-      pts.push(Math.sin(a * s) * LIS_R, Math.sin(b * s + phase) * LIS_R, 0)
+      const [gx, gy] = lissajous(s, a, b, phase, LIS_R)
+      pts.push(gx, gy, 0)
     }
     const g = new THREE.BufferGeometry()
     g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3))
@@ -429,12 +430,12 @@ function LissajousScene({ presetIdx, phase }) {
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime() * 0.55
     const arr = trailGeo.attributes.position.array
-    const px = Math.sin(a * t) * LIS_R
-    const py = Math.sin(b * t + phase) * LIS_R
+    const [px, py] = lissajous(t, a, b, phase, LIS_R)
     // Sample the trail analytically at fixed time steps, so it stays smooth at any frame rate
     for (let i = 0; i < LIS_TRAIL; i++) {
       const ti = t - i * 0.003
-      arr[i*3] = Math.sin(a * ti) * LIS_R; arr[i*3+1] = Math.sin(b * ti + phase) * LIS_R; arr[i*3+2] = 0
+      const [lx, ly] = lissajous(ti, a, b, phase, LIS_R)
+      arr[i*3] = lx; arr[i*3+1] = ly; arr[i*3+2] = 0
     }
     trailGeo.attributes.position.needsUpdate = true
     if (dotRef.current) dotRef.current.position.set(px, py, 0.01)
@@ -446,8 +447,9 @@ function LissajousScene({ presetIdx, phase }) {
       const tk = t - k * 0.012
       const f = Math.exp(-k / (STRIP_K * 0.45))
       const o = k * 3, o2 = (STRIP_K + k) * 3
-      sp[o]  = Math.sin(a * tk) * LIS_R;  sp[o+1]  = -SCREEN - 0.25 - k * STRIP_DY; sp[o+2]  = 0
-      sp[o2] = -SCREEN - 0.25 - k * STRIP_DY; sp[o2+1] = Math.sin(b * tk + phase) * LIS_R; sp[o2+2] = 0
+      const [sx, sy] = lissajous(tk, a, b, phase, LIS_R)
+      sp[o]  = sx;  sp[o+1]  = -SCREEN - 0.25 - k * STRIP_DY; sp[o+2]  = 0
+      sp[o2] = -SCREEN - 0.25 - k * STRIP_DY; sp[o2+1] = sy; sp[o2+2] = 0
       sc[o] = sc[o2] = c.r * f; sc[o+1] = sc[o2+1] = c.g * f; sc[o+2] = sc[o2+2] = c.b * f
     }
     stripGeo.attributes.position.needsUpdate = true
@@ -648,12 +650,12 @@ export default function AcousticModule() {
 
   // ── Harmonics: pluck ────────────────────────────────────────────────────────
   const handlePluck = useCallback((n) => {
-    playTone(C3 * n, 2.2, 'triangle', 0.18)
+    playTone(HARMONIC_FREQS[n - 1], 2.2, 'triangle', 0.18)
   }, [])
 
   const handleStrum = useCallback(() => {
     for (let n = 1; n <= 8; n++) {
-      setTimeout(() => playTone(C3 * n, 1.8, 'triangle', 0.14), (n - 1) * 120)
+      setTimeout(() => playTone(HARMONIC_FREQS[n - 1], 1.8, 'triangle', 0.14), (n - 1) * 120)
     }
   }, [])
 
