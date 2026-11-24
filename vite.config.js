@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+import { configDefaults } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import { existsSync, readFileSync } from 'node:fs'
 import { parseEnv } from 'node:util'
@@ -39,5 +40,7 @@ function localAiApi() {
 export default defineConfig(() => {
   return {
     plugins: [react(), localAiApi()],
+    // Playwright specs live in tests/e2e and run via `npm run test:e2e`
+    test: { exclude: [...configDefaults.exclude, 'tests/e2e/**'] },
   }
 })

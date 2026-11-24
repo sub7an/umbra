@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { parseRoute } from './routes'
+import { parseRoute, ROUTE_CHANGE_EVENT } from './routes'
 
 const current = () => parseRoute(window.location.pathname, window.location.search)
 
@@ -8,7 +8,11 @@ export function useRoute() {
   useEffect(() => {
     const onPop = () => setRoute(current())
     window.addEventListener('popstate', onPop)
-    return () => window.removeEventListener('popstate', onPop)
+    window.addEventListener(ROUTE_CHANGE_EVENT, onPop)
+    return () => {
+      window.removeEventListener('popstate', onPop)
+      window.removeEventListener(ROUTE_CHANGE_EVENT, onPop)
+    }
   }, [])
   return route
 }

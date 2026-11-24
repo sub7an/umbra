@@ -46,3 +46,8 @@ export function navigate(route, { replace = false } = {}) {
   window.history[replace ? 'replaceState' : 'pushState'](null, '', formatRoute(route))
   window.dispatchEvent(new PopStateEvent('popstate'))
 }
+
+// For code that writes history itself (replaceState/pushState fire no event):
+// tell useRoute subscribers the URL changed, without a fake popstate.
+export const ROUTE_CHANGE_EVENT = 'umbra:routechange'
+export const notifyRouteChange = () => window.dispatchEvent(new Event(ROUTE_CHANGE_EVENT))

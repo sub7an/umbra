@@ -8,7 +8,7 @@
     "build": "vite build && node scripts/prerender.mjs",
     "lint": "oxlint",
     "preview": "vite preview",
-    "test": "vitest run --exclude '**/node_modules/**' --exclude 'tests/e2e/**'",
+    "test": "vitest run",
     "test:watch": "vitest",
     "indexnow": "node scripts/indexnow.mjs",
     "test:e2e": "playwright test"

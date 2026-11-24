@@ -16,7 +16,7 @@ import { warp, startDrone, stopDrone } from './lib/sound'
 import { prefersReducedMotion } from './lib/motion'
 import { SITE, bySimId } from './content/simulations'
 import { viewIdForSlug } from './content/simulationPages'
-import { parseRoute } from './lib/routes'
+import { parseRoute, notifyRouteChange } from './lib/routes'
 import { useRoute } from './lib/useRoute'
 
 // Overlay panels, fetched after first paint (each renders nothing until opened)
@@ -188,6 +188,7 @@ const locationRoute = () => parseRoute(window.location.pathname, window.location
 function moduleFromLocation() {
   const r = locationRoute()
   if (r.area === 'sim' && ROUTABLE.includes(r.module)) return r.module
+  if (r.area !== 'home' && r.area !== 'sim') return null
   const hash = window.location.hash.slice(1)
   return ROUTABLE.includes(hash) ? hash : null
 }
@@ -279,6 +280,7 @@ export default function App() {
         params.delete('s')
         const qs = params.toString()
         window.history.replaceState(null, '', (ROUTABLE.includes(decoded.m) ? modulePath(decoded.m) : '/') + (qs ? `?${qs}` : ''))
+        notifyRouteChange()
         return
       }
     }
@@ -301,10 +303,11 @@ export default function App() {
     const inSync = ROUTABLE.includes(activeModule) && onModulePath && here.module === activeModule
     let target = null
     if (ROUTABLE.includes(activeModule)) target = inSync ? null : modulePath(activeModule)
-    else if (!activeModule && (onModulePath || window.location.hash)) target = '/'
+    else if (!activeModule && (onModulePath || (here.area === 'home' && window.location.hash))) target = '/'
     if (target && (target !== pathname || window.location.hash)) {
       const replace = firstSync.current || !activeModule
       window.history[replace ? 'replaceState' : 'pushState'](null, '', target + search)
+      notifyRouteChange()
     }
     firstSync.current = false
   }, [activeModule])

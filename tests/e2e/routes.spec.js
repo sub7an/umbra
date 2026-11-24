@@ -51,3 +51,16 @@ test('unknown module falls back to the picker', async ({ page }) => {
   await expect(page.getByText(/optics/i).first()).toBeVisible()
   await expect(page.getByRole('tab', { name: /lens/i })).toHaveCount(0)
 })
+
+test('?s= on an area URL opens the shared module, not the area', async ({ page }) => {
+  await page.goto(`/teach?s=${encodeURIComponent(share('optics'))}`)
+  await expect(page).toHaveURL(/\/simulations\/optics$/)
+  await expect(page.getByRole('heading', { name: 'Teacher dashboard' })).toHaveCount(0)
+  await expect(page.getByRole('tab', { name: /lens/i }).first()).toBeVisible()
+})
+
+test('legacy #optics hash is ignored on an area URL', async ({ page }) => {
+  await page.goto('/teach#optics')
+  await expect(page.getByRole('heading', { name: 'Teacher dashboard' })).toBeVisible()
+  await expect(page).toHaveURL(/\/teach#optics$/)
+})
