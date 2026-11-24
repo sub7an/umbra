@@ -5,6 +5,7 @@ import * as THREE from 'three'
 import useModuleStore from '../../store/useModuleStore'
 import { RT_VERT, RT_FRAG } from './blackHoleRaytrace'
 import SceneCard from '../../components/SceneCard'
+import { photonSphereRadius, iscoRadius } from './frontierMath'
 
 // Detect low-end devices at module load time (used to set default quality)
 export const isMobile =
@@ -74,9 +75,9 @@ export default function BlackHole({ hiRes }) {
           <dl style={{ display: 'grid', gridTemplateColumns: '1fr auto', rowGap: 4 }}>
             {[
               ['Event horizon Rₛ', Rs],
-              ['Photon sphere 1.5 Rₛ', Rs * 1.5],
+              ['Photon sphere 1.5 Rₛ', photonSphereRadius(Rs / 2)],
               ['Shadow edge 2.6 Rₛ', Rs * 2.598],
-              ['Disc inner edge 3 Rₛ', Rs * 3],
+              ['Disc inner edge 3 Rₛ', iscoRadius(Rs / 2)],
             ].map(([k, v]) => (
               <Fragment key={k}>
                 <dt style={{ color: 'rgb(var(--c-text-muted))' }}>{k}</dt>
