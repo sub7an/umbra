@@ -4,7 +4,7 @@ import { Fragment, useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Html, Line } from '@react-three/drei'
 import * as THREE from 'three'
-import { hotReservoirT } from './carnot'
+import { hotReservoirT, carnotEfficiency, idealGasPressure } from './thermoMath'
 import SceneCard from '../../components/SceneCard'
 
 const STEPS = 200
@@ -34,11 +34,11 @@ function carnotCycle(T) {
   // Adiabats obey T·V^(γ−1) = const, so V_C = V_B·(T_H/T_C)^(1/(γ−1)).
   const gamma = 5 / 3
   const VA = 0.5, VB = 2.0
-  const PA = TH / VA, PB = TH / VB
+  const PA = idealGasPressure(1, TH, VA), PB = idealGasPressure(1, TH, VB)
   const VC = VB * Math.pow(TH / TC, 1 / (gamma - 1))
-  const PC = TC / VC
+  const PC = idealGasPressure(1, TC, VC)
   const VD = VA * Math.pow(TH / TC, 1 / (gamma - 1))
-  const PD = TC / VD
+  const PD = idealGasPressure(1, TC, VD)
   const pts = []
   const addPts = (phase, V0, V1, Pfn) => {
     for (let i = 0; i <= STEPS; i++) {
@@ -47,9 +47,9 @@ function carnotCycle(T) {
       if (P > 0) pts.push({ V, P, phase })
     }
   }
-  addPts(0, VA, VB, (V) => TH / V)
+  addPts(0, VA, VB, (V) => idealGasPressure(1, TH, V))
   addPts(1, VB, VC,  (V) => PB * Math.pow(VB / V, gamma))
-  addPts(2, VC, VD,  (V) => TC / V)
+  addPts(2, VC, VD,  (V) => idealGasPressure(1, TC, V))
   addPts(3, VD, VA,  (V) => PD * Math.pow(VD / V, gamma))
   const states = [
     { id: 'A', V: VA, P: PA }, { id: 'B', V: VB, P: PB },
@@ -58,7 +58,7 @@ function carnotCycle(T) {
   // nR = 1: heat in on the hot isotherm, heat out on the cold one
   const Qin  = TH * Math.log(VB / VA)
   const Qout = TC * Math.log(VC / VD)
-  return { pts, states, TH, TC, Qin, Qout, efficiency: 1 - TC / TH, VA, Vmax: Math.max(VB, VC, VD) }
+  return { pts, states, TH, TC, Qin, Qout, efficiency: carnotEfficiency(TC, TH), VA, Vmax: Math.max(VB, VC, VD) }
 }
 
 function buildGeometry(pts) {

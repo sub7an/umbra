@@ -6,6 +6,7 @@ import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import SceneCard from '../../components/SceneCard'
+import { maxwellBoltzmannPdf, meanSpeed } from './thermoMath'
 
 const N     = 150
 const BOX   = 4.5   // half-side → box spans ±4.5
@@ -33,11 +34,8 @@ function speedColor(t, out) {
   return u < 0.5 ? out.copy(C_SLOW).lerp(C_MID, u * 2) : out.copy(C_MID).lerp(C_FAST, (u - 0.5) * 2)
 }
 
-// 3D Maxwell–Boltzmann speed pdf with σ² = kT/m = T
-function mbPdf(v, T) {
-  const s2 = T
-  return Math.sqrt(2 / Math.PI) * (v * v) / Math.pow(s2, 1.5) * Math.exp(-(v * v) / (2 * s2))
-}
+// Reduced units: m = k = 1, so σ² = kT/m = T
+const mbPdf = (v, T) => maxwellBoltzmannPdf(v, 1, T)
 
 // Speed markers on the histogram: [class, label, colour]
 const MARKERS = [['m-vp', 'Peak vₚ', '#93c5fd'], ['m-vm', 'Mean v̄', '#fcd34d'], ['m-vr', 'v_rms', '#fda4af']]
@@ -225,7 +223,7 @@ export default function GasSimulation({ temperature }) {
         curve.setAttribute('points', pts.join(' '))
       }
       const sigma = Math.sqrt(T)
-      const marks = { '.m-vp': sigma * Math.SQRT2, '.m-vm': sigma * Math.sqrt(8 / Math.PI), '.m-vr': sigma * Math.sqrt(3) }
+      const marks = { '.m-vp': sigma * Math.SQRT2, '.m-vm': meanSpeed(1, T), '.m-vr': sigma * Math.sqrt(3) }
       for (const [sel, v] of Object.entries(marks)) {
         const el = h.querySelector(sel)
         if (el) el.style.left = `${Math.min(100, (v / V_AXIS) * 100).toFixed(1)}%`
