@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { roleFromQueries } from '../lib/role'
+import { migrateProgress } from '../lib/progressMerge'
 
 const AuthContext = createContext(null)
 
@@ -30,6 +31,8 @@ export function AuthProvider({ children }) {
     await supabase.from('profiles').upsert({ id: uid }, { onConflict: 'id', ignoreDuplicates: true })
     const { data } = await supabase.from('profiles').select('*').eq('id', uid).single()
     setProfile(data ?? null)
+    // Once per device: fold local progress into the account (never throws, not awaited)
+    if (data) migrateProgress(supabase, u)
   }, [])
 
   const loadRole = useCallback(async (u) => {
