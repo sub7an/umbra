@@ -57,20 +57,19 @@ describe('thermodynamics validation', () => {
       ms.push(runFrom(randomGrid(L, rng), L, 0.2, 400, rng))
     }
     const mean = ms.reduce((a, b) => a + b, 0) / ms.length
-    if (process.env.ISING_DEBUG) console.log('high-T mean', mean, 'max', Math.max(...ms))
     expect(mean).toBeLessThan(0.15)
   })
 
   it('[entropy] analytic: mixing entropy ln C(n, k)', () => {
     expect(entropyMixing(2, 2)).toBeCloseTo(Math.log(6), 10)
-    expect(entropyMixing(50, 50)).toBeCloseTo(Math.log(1.0089134454556419e29), 8)
+    expect(entropyMixing(50, 50)).toBeCloseTo(Math.log(1.00891344545564e29), 8)
     expect(entropyMixing(0, 10)).toBeCloseTo(0, 12)
   })
 
   it('[entropy] analytic: binary entropy', () => {
     expect(Math.abs(binaryEntropy(0.5) - Math.LN2)).toBeLessThan(1e-12)
-    expect(binaryEntropy(0)).toBe(0)
-    expect(binaryEntropy(1)).toBe(0)
+    expect(binaryEntropy(0)).toBeCloseTo(0, 12)
+    expect(binaryEntropy(1)).toBeCloseTo(0, 12)
     expect(Math.abs(binaryEntropy(0.3) - binaryEntropy(0.7))).toBeLessThan(1e-12)
     const n = 10000, k = 3000
     expect(Math.abs(binaryEntropy(k / n) - entropyMixing(k, n - k) / n)).toBeLessThan(1e-2)

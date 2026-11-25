@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  leapfrogStep, totalEnergy, rk4Step, totalEnergy3D,
+  leapfrogStep, totalEnergy, rk4Step,
   photonSphereRadius, iscoRadius,
   keplerianVelocity, observedRotationVelocity, rotationDiscrepancy, darkMatterFraction,
   hubbleExpansion, toHubbleUnits, scaleFactor,
