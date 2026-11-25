@@ -37,6 +37,10 @@
     {
       "source": "/simulations/:id",
       "destination": "/simulations/:id/index.html"
+    },
+    {
+      "source": "/(teach|learn|join|validation)(/.*)?",
+      "destination": "/index.html"
     }
   ]
 }
