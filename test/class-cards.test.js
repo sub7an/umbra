@@ -31,13 +31,18 @@ function fakeAdmin({
   createErrors = [],          // error per createUser call, in order (undefined = ok)
   enrolError = null,
   enrolFailOnCall = 0,        // 1-based; 0 = always (when enrolError set)
-  studentSchools = [SCHOOL],
+  studentCardSchool = SCHOOL,   // students.card_school_id of the PATCH target (null = Google)
+  studentRow = true,            // false: the PATCH target has no students row
   studentMeta = { umbra_card: true },
   studentUsername = 'amira-1234',
+  seats = 150,
+  usedSeats = 0,
+  revokeError = null,
 } = {}) {
   const log = []
   let created = 0
   let enrolCalls = 0
+  const rpcCalls = []
   const resolve = (st) => {
     if (st.table === 'classes') return { data: cls && st.filters.id === cls.id ? cls : null, error: null }
     if (st.table === 'staff') {
@@ -47,20 +52,23 @@ function fakeAdmin({
       }
       return { data: schools.map((school_id) => ({ school_id })), error: null }
     }
-    if (st.table === 'students' && st.op === 'update') return { data: null, error: null }
+    if (st.table === 'schools') return { data: { seats }, error: null }
     if (st.table === 'students' && 'username' in st.filters) {
       return { data: takenUsernames.includes(st.filters.username) ? { user_id: 'x' } : null, error: null }
     }
-    if (st.table === 'students') return { data: { username: studentUsername }, error: null }
-    if (st.table === 'enrolments') {
-      return { data: studentSchools.map((school_id) => ({ classes: { school_id } })), error: null }
+    if (st.table === 'students' && 'card_school_id' in st.filters) return { data: null, count: usedSeats, error: null }
+    if (st.table === 'students') {
+      return { data: studentRow ? { username: studentUsername, card_school_id: studentCardSchool } : null, error: null }
     }
     throw new Error(`unexpected table ${st.table}`)
   }
   const admin = {
     log,
     from: (table) => builder(table, resolve, log),
-    rpc: vi.fn(async () => {
+    rpcCalls,
+    rpc: vi.fn(async (name, args) => {
+      rpcCalls.push([name, args])
+      if (name === 'revoke_user_sessions') return { data: null, error: revokeError }
       enrolCalls += 1
       if (enrolError && (!enrolFailOnCall || enrolCalls === enrolFailOnCall)) return { data: null, error: enrolError }
       return { data: null, error: null }
@@ -209,9 +217,11 @@ describe('POST /api/class-cards', () => {
     expect(createCalls[0].email).toBe(`${card.username}@students.umbra.invalid`)
     expect(createCalls[0].password).toBe(card.passphrase)
     expect(card.student_id).toBe('u-1')
-    expect(admin.rpc).toHaveBeenCalledWith('enrol_student', { p_class: CLASS, p_user: 'u-1', p_name: 'Amira Khan' })
-    const usernameUpdate = admin.log.find((s) => s.table === 'students' && s.op === 'update' && s.filters.user_id === 'u-1')
-    expect(usernameUpdate.payload).toEqual({ username: card.username })
+    // One RPC records username and the issuing school (card_school_id = the class's
+    // school, derived in the database) and enrols, in one transaction.
+    expect(admin.rpc).toHaveBeenCalledWith('enrol_card_student',
+      { p_class: CLASS, p_user: 'u-1', p_name: 'Amira Khan', p_username: card.username })
+    expect(admin.rpc.mock.calls.some(([n]) => n === 'enrol_student')).toBe(false)
 
     const out = logged(spies)
     for (const c of res.body.cards) expect(out).not.toContain(c.passphrase)
@@ -260,6 +270,28 @@ describe('POST /api/class-cards', () => {
   })
 })
 
+describe('POST seat cap (R16)', () => {
+  it('409 seat_limit when existing card students + names exceed the school\'s seats', async () => {
+    const admin = fakeAdmin({ seats: 30, usedSeats: 29 })
+    const res = await call(admin, { body: { class_id: CLASS, names: ['A', 'B'] } })
+    expect(res.statusCode).toBe(409)
+    expect(res.body).toEqual({ error: 'seat_limit' })
+    expect(admin.auth.admin.createUser).not.toHaveBeenCalled()
+  })
+  it('allows a batch that exactly fills the seats', async () => {
+    const res = await call(fakeAdmin({ seats: 30, usedSeats: 28 }), { body: { class_id: CLASS, names: ['A', 'B'] } })
+    expect(res.statusCode).toBe(201)
+  })
+  it('409 seat_limit when the database cap trips mid-batch (concurrent POSTs), and rolls back', async () => {
+    spyConsole()
+    const admin = fakeAdmin({ enrolError: { code: 'P0001', message: 'seat_limit' }, enrolFailOnCall: 2 })
+    const res = await call(admin, { body: { class_id: CLASS, names: ['A', 'B'] } })
+    expect(res.statusCode).toBe(409)
+    expect(res.body).toEqual({ error: 'seat_limit' })
+    expect(admin.auth.admin.deleteUser.mock.calls.map((c) => c[0]).sort()).toEqual(['u-1', 'u-2'])
+  })
+})
+
 describe('PATCH /api/class-cards (reset)', () => {
   it('calls updateUserById with a new passphrase and returns it once', async () => {
     const spies = spyConsole()
@@ -271,17 +303,37 @@ describe('PATCH /api/class-cards (reset)', () => {
     expect(admin.auth.admin.updateUserById).toHaveBeenCalledWith(STUDENT, { password: res.body.passphrase })
     expect(logged(spies)).not.toContain(res.body.passphrase)
   })
-  it('403 when the caller is not staff of a school the student is enrolled in', async () => {
-    const admin = fakeAdmin({ studentSchools: ['bbbbbbbb-0000-0000-0000-000000000000'] })
+  it('revokes the student\'s sessions after changing the passphrase', async () => {
+    const admin = fakeAdmin()
+    await call(admin, { method: 'PATCH', body: { student_id: STUDENT } })
+    expect(admin.rpc).toHaveBeenCalledWith('revoke_user_sessions', { p_user: STUDENT })
+    const updOrder = admin.auth.admin.updateUserById.mock.invocationCallOrder[0]
+    const revokeOrder = admin.rpc.mock.invocationCallOrder[admin.rpc.mock.calls.findIndex(([n]) => n === 'revoke_user_sessions')]
+    expect(revokeOrder).toBeGreaterThan(updOrder)
+  })
+  it('500 when revoking sessions fails, without logging the new passphrase', async () => {
+    const spies = spyConsole()
+    const admin = fakeAdmin({ revokeError: { code: 'XX000', message: 'boom' } })
+    const res = await call(admin, { method: 'PATCH', body: { student_id: STUDENT } })
+    expect(res.statusCode).toBe(500)
+    expect(res.body).toEqual({ error: 'session_revoke_failed' })
+    expect(logged(spies)).not.toContain(admin.auth.admin.updateUserById.mock.calls[0][1].password)
+  })
+  it('403 for staff of another school where the student is enrolled but which did not issue the card', async () => {
+    // OTHER is staff of school B; the student joined a B class, but card_school_id is A.
+    const admin = fakeAdmin({ caller: OTHER, staffSchools: { [OTHER]: ['bbbbbbbb-0000-0000-0000-000000000000'] } })
     const res = await call(admin, { method: 'PATCH', body: { student_id: STUDENT } })
     expect(res.statusCode).toBe(403)
     expect(admin.auth.admin.updateUserById).not.toHaveBeenCalled()
+    expect(admin.rpc).not.toHaveBeenCalled()
   })
-  it('403 for a student enrolled nowhere', async () => {
-    const res = await call(fakeAdmin({ studentSchools: [] }), { method: 'PATCH', body: { student_id: STUDENT } })
-    expect(res.statusCode).toBe(403)
+  it('403 for an unknown student and for a Google student (no card_school_id)', async () => {
+    expect((await call(fakeAdmin({ studentRow: false }), { method: 'PATCH', body: { student_id: STUDENT } })).statusCode).toBe(403)
+    const admin = fakeAdmin({ studentCardSchool: null })
+    expect((await call(admin, { method: 'PATCH', body: { student_id: STUDENT } })).statusCode).toBe(403)
+    expect(admin.auth.admin.updateUserById).not.toHaveBeenCalled()
   })
-  it('400 for a student who is not a card student', async () => {
+  it('400 when the auth user lacks the card flag (defence in depth)', async () => {
     const admin = fakeAdmin({ studentMeta: { provider: 'google' } })
     const res = await call(admin, { method: 'PATCH', body: { student_id: STUDENT } })
     expect(res.statusCode).toBe(400)

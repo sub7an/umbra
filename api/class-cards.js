@@ -11,7 +11,12 @@
 // without the flag). The passphrase is returned once and never stored or logged.
 //
 // Caller: a signed-in member of staff (Authorization: Bearer <access token>) of the
-// class's school (POST) or of a school where the student is enrolled (PATCH).
+// class's school (POST), or of the school that issued the card (PATCH): a card
+// student belongs to its issuing school (students.card_school_id), so staff of some
+// other school whose class the student joined cannot reset the passphrase.
+//
+// Caps: card students per school ≤ schools.seats (409 seat_limit), checked here for
+// the whole batch and again per card in the database (enrol_card_student).
 //
 // Env vars: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (server only, never VITE_).
 
@@ -101,8 +106,9 @@ async function isStaffOf(admin, userId, schoolId) {
   return !!data
 }
 
-// Creates one card: auth user, enrolment, username. On any failure after createUser
-// the new auth user is deleted (students/enrolments rows cascade with it).
+// Creates one card: auth user, then enrol_card_student (students row with username and
+// card_school_id, and the enrolment, in one transaction). On any failure after
+// createUser the new auth user is deleted (students/enrolments rows cascade with it).
 async function createCard(admin, classId, name, reserved) {
   const taken = async (u) => {
     if (reserved.has(u)) return true
@@ -126,12 +132,12 @@ async function createCard(admin, classId, name, reserved) {
     }
     const userId = data.user.id
     try {
-      const enrol = await admin.rpc('enrol_student', { p_class: classId, p_user: userId, p_name: name })
-      if (enrol.error) throw enrol.error
-      const upd = await admin.from('students').update({ username }).eq('user_id', userId)
-      if (upd.error) {
-        if (upd.error.code === '23505') { await deleteQuietly(admin, userId); continue }
-        throw upd.error
+      const enrol = await admin.rpc('enrol_card_student',
+        { p_class: classId, p_user: userId, p_name: name, p_username: username })
+      if (enrol.error) {
+        // students.username unique: someone took it between the check and the insert.
+        if (enrol.error.code === '23505') { await deleteQuietly(admin, userId); continue }
+        throw enrol.error
       }
     } catch (e) {
       await deleteQuietly(admin, userId)
@@ -160,6 +166,16 @@ async function handlePost(admin, user, body, res) {
   }
   if (cls.archived_at) return res.status(409).json({ error: 'class_archived' })
 
+  const [school, used] = await Promise.all([
+    admin.from('schools').select('seats').eq('id', cls.school_id).maybeSingle(),
+    admin.from('students').select('user_id', { count: 'exact', head: true }).eq('card_school_id', cls.school_id),
+  ])
+  if (school.error) throw school.error
+  if (used.error) throw used.error
+  if (!school.data || (used.count ?? 0) + input.names.length > school.data.seats) {
+    return res.status(409).json({ error: 'seat_limit' })
+  }
+
   // All or nothing: if any card fails, every card made by this request is removed.
   const reserved = new Set()
   const cards = new Array(input.names.length)
@@ -179,6 +195,7 @@ async function handlePost(admin, user, body, res) {
   if (failed) {
     logFailure('card creation failed', failed)
     await Promise.all(cards.filter(Boolean).map((c) => deleteQuietly(admin, c.student_id)))
+    if (failed.message === 'seat_limit') return res.status(409).json({ error: 'seat_limit' })
     return res.status(500).json({ error: 'card_creation_failed' })
   }
   res.setHeader('Cache-Control', 'no-store')
@@ -191,14 +208,12 @@ async function handlePatch(admin, user, body, res) {
     return res.status(400).json({ error: 'invalid_body' })
   }
 
-  const [enrolled, staff] = await Promise.all([
-    admin.from('enrolments').select('classes!inner(school_id)').eq('student_id', studentId),
-    admin.from('staff').select('school_id').eq('user_id', user.id),
-  ])
-  if (enrolled.error) throw enrolled.error
-  if (staff.error) throw staff.error
-  const mySchools = new Set((staff.data || []).map((r) => r.school_id))
-  if (!(enrolled.data || []).some((r) => mySchools.has(r.classes?.school_id))) {
+  // Only staff of the issuing school may reset. Unknown students and Google
+  // students (no card_school_id) look the same as someone else's: 403.
+  const { data: row, error: rowErr } = await admin.from('students').select('username, card_school_id')
+    .eq('user_id', studentId).maybeSingle()
+  if (rowErr) throw rowErr
+  if (!row?.card_school_id || !(await isStaffOf(admin, user.id, row.card_school_id))) {
     return res.status(403).json({ error: 'forbidden' })
   }
 
@@ -208,15 +223,20 @@ async function handlePatch(admin, user, body, res) {
     return res.status(400).json({ error: 'not_a_card_student' })
   }
 
-  const { data: row, error: rowErr } = await admin.from('students').select('username')
-    .eq('user_id', studentId).maybeSingle()
-  if (rowErr) throw rowErr
-
   const passphrase = makePassphrase()
   const { error: updErr } = await admin.auth.admin.updateUserById(studentId, { password: passphrase })
   if (updErr) throw updErr
+  // Sign the student out everywhere: deleting auth.sessions cascades to refresh tokens.
+  // Access tokens already issued stay valid until they expire (JWT lifetime).
+  // If this fails the passphrase has already changed; the teacher sees an error, gets
+  // no new passphrase, and can simply reset again.
+  const { error: revokeErr } = await admin.rpc('revoke_user_sessions', { p_user: studentId })
+  if (revokeErr) {
+    logFailure('session revoke failed', revokeErr)
+    return res.status(500).json({ error: 'session_revoke_failed' })
+  }
   res.setHeader('Cache-Control', 'no-store')
-  return res.status(200).json({ username: row?.username ?? null, passphrase })
+  return res.status(200).json({ username: row.username, passphrase })
 }
 
 export function createHandler(getAdminClient = getAdmin) {
