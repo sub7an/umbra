@@ -4,7 +4,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(36);
+select plan(43);
 
 -- ---------------------------------------------------------------- fixtures
 -- users: tA (teacher, school A), tB (teacher, school B),
@@ -48,7 +48,8 @@ insert into public.item_keys (item_id, version, private)
 
 insert into public.assignments (id, class_id, title, item_ids) values
   ('d0000000-0000-0000-0000-0000000000a1', 'c0000000-0000-0000-0000-0000000000a1', 'A homework', array['i.test']),
-  ('d0000000-0000-0000-0000-0000000000b1', 'c0000000-0000-0000-0000-0000000000b1', 'B homework', array['i.test']);
+  ('d0000000-0000-0000-0000-0000000000b1', 'c0000000-0000-0000-0000-0000000000b1', 'B homework', array['i.test']),
+  ('d0000000-0000-0000-0000-0000000000b2', 'c0000000-0000-0000-0000-0000000000b1', 'B unused', array['i.test']);
 
 -- attempts:
 --   e1: s1 on A assignment      e2: s1 free practice (null assignment)
@@ -122,6 +123,33 @@ select is((select count(*)::int from public.attempts where student_id = '5000000
 select is_empty(
   $$update public.classes set name = 'pwned' where id = 'c0000000-0000-0000-0000-0000000000a1' returning id$$,
   'tB cannot update a school A class');
+-- Fix round 1: deleting an assignment must not turn its attempts into free practice.
+select throws_ok(
+  $$delete from public.assignments where id = 'd0000000-0000-0000-0000-0000000000b1'$$,
+  '23503', null, 'tB cannot delete a B assignment that has attempts (restrict)');
+select results_eq(
+  $$delete from public.assignments where id = 'd0000000-0000-0000-0000-0000000000b2' returning id$$,
+  $$values ('d0000000-0000-0000-0000-0000000000b2'::uuid)$$,
+  'tB can delete a B assignment with no attempts');
+
+set local request.jwt.claims = '{"sub":"a0000000-0000-0000-0000-0000000000a1","role":"authenticated"}';
+select is((select count(*)::int from public.attempts where id = 'e0000000-0000-0000-0000-000000000004'),
+  0, 'after tB delete attempt, tA still sees 0 of s2''s B attempts');
+
+-- Fix round 1 (R8): billing columns on profiles are not client-writable.
+select throws_ok(
+  $$update public.profiles set is_pro = true where id = 'a0000000-0000-0000-0000-0000000000a1'$$,
+  '42501', null, 'user cannot set own is_pro');
+select throws_ok(
+  $$update public.profiles set stripe_customer_id = 'cus_x' where id = 'a0000000-0000-0000-0000-0000000000a1'$$,
+  '42501', null, 'user cannot set own stripe_customer_id');
+select results_eq(
+  $$update public.profiles set progress = '{"t":1}'::jsonb where id = 'a0000000-0000-0000-0000-0000000000a1' returning progress$$,
+  $$values ('{"t":1}'::jsonb)$$,
+  'user can update own progress');
+select throws_ok(
+  $$insert into public.profiles (id, is_pro) values ('a0000000-0000-0000-0000-0000000000a1', true) on conflict (id) do nothing$$,
+  '42501', null, 'user cannot insert a profile with is_pro');
 
 -- ------------------------------------------------------------ student s1
 set local request.jwt.claims = '{"sub":"50000000-0000-0000-0000-000000000001","role":"authenticated"}';
