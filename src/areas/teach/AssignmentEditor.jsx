@@ -135,7 +135,7 @@ function AssignmentRow({ a, attempts, itemsById, onChange }) {
         </span>
       )}
       {attempts > 0 && mode === 'idle' && (
-        <p className="cr-hint ae-row__note">Students have answered this, so it stays on record. Change the due date to close it.</p>
+        <p className="cr-hint ae-row__note">Students have answered this, so it stays on record. Due dates are shown to students; late answers are still accepted and marked late.</p>
       )}
       {error && <p className="cr-error ae-row__note" role="alert">{error}</p>}
     </li>

@@ -186,7 +186,7 @@ reset role;
 set local role anon;
 set local request.jwt.claims = '{"role":"anon"}';
 
-select is((select count(*)::int from public.items), 1, 'anon can read items');
+select is((select count(*)::int from public.items where id = 'i.test'), 1, 'anon can read items');
 select throws_ok($$select * from public.item_keys$$, '42501', null, 'item_keys not readable by anon');
 select throws_ok($$select * from public.attempts$$, '42501', null, 'attempts not readable by anon');
 

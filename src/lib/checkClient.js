@@ -3,11 +3,13 @@
 // Idempotency: the caller makes ONE attempt id per submission (crypto.randomUUID())
 // and every retry of that submission reuses it, so a request whose response was lost
 // is recorded once; the retry gets the stored verdict back.
-// Only network failures (fetch rejects) are retried, up to MAX_RETRIES times.
-// An HTTP error is an answer from the server and is never retried.
+// Network failures (fetch rejects) and gateway errors (502/503/504: the function may
+// have recorded the attempt before the proxy lost the reply) are retried, up to
+// MAX_RETRIES times, with the same id. Other HTTP errors are answers and are final.
 import { supabase } from './supabase'
 
 export const MAX_RETRIES = 3
+const GATEWAY = new Set([502, 503, 504])
 
 const MESSAGES = {
   network: "We couldn't reach Umbra, so your answer wasn't checked. Check your connection and try again.",
@@ -62,8 +64,9 @@ export function makeCheckClient({
         await backoff(n)
         continue
       }
+      if (GATEWAY.has(res.status) && n < MAX_RETRIES) { await backoff(n); continue }
       const json = await res.json().catch(() => ({}))
-      if (!res.ok) throw new CheckError(res.status === 401 ? 'not_authenticated' : json.error, res.status)
+      if (!res.ok) throw new CheckError(res.status === 401 ? 'not_authenticated' : (json.error ?? 'server_error'), res.status)
       return json
     }
   }
@@ -76,6 +79,17 @@ export const submitAnswer = makeCheckClient({
     return data?.session?.access_token ?? null
   },
 })
+
+// After a failed submission, may the attempt have been recorded? Then a resubmission
+// of the same response must reuse its attempt id (network loss, or any 5xx: the
+// server may have inserted the row before failing or before the reply was lost).
+export const mayHaveBeenRecorded = (err) => err?.code === 'network' || (Number(err?.status) >= 500)
+
+// The attempt id for a submission of `text`: the pending one if it is the same
+// response, else a fresh one.
+export function attemptIdFor(pending, text, makeId = () => crypto.randomUUID()) {
+  return pending && pending.text === text ? pending.id : makeId()
+}
 
 // Hint under a numeric input. The key is private, so this reads the part's stem:
 // stems that want a bare number say "Give a number only"; a few quantities have no

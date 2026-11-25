@@ -4,7 +4,7 @@ import { navigate } from '../../lib/routes'
 import { getClass, listRoster } from '../../lib/classroomApi'
 import {
   listAssignments, listAssignmentAttempts, listMastery, listClassItemStats, listTopics, getItems,
-  assignmentParts, latestByPart, partKey,
+  assignmentParts, firstByPart, partKey, isLate,
 } from '../../lib/assignmentsApi'
 import { heatmapColour, MASTERY_LEVELS, MASTERY_ORDER } from './heatmapColour'
 import { plainMath } from '../../lib/mathText'
@@ -188,7 +188,7 @@ function Completion({ data }) {
     const m = {}
     for (const a of assignments) {
       for (const s of roster) {
-        m[`${a.id}:${s.id}`] = latestByPart(attempts.filter((t) => t.assignment_id === a.id && t.student_id === s.id))
+        m[`${a.id}:${s.id}`] = firstByPart(attempts.filter((t) => t.assignment_id === a.id && t.student_id === s.id))
       }
     }
     return m
@@ -202,7 +202,7 @@ function Completion({ data }) {
       ) : (
         <div className="db-scroll" tabIndex={0} role="region" aria-labelledby="done-title">
           <table className="cr-table db-done">
-            <caption className="cr-sr">Parts answered and parts correct per student and assignment</caption>
+            <caption className="cr-sr">Parts answered, and parts right at the first attempt, per student and assignment. Late means answered after the due date.</caption>
             <thead>
               <tr>
                 <th scope="col">Student</th>
@@ -216,12 +216,15 @@ function Completion({ data }) {
                   {assignments.map((a) => {
                     const parts = assignmentParts(a, itemsById)
                     const l = latest[`${a.id}:${s.id}`]
-                    const done = parts.filter((p) => l[partKey(p.itemId, p.partId)]).length
-                    const right = parts.filter((p) => l[partKey(p.itemId, p.partId)]?.correct).length
+                    const firsts = parts.map((p) => l[partKey(p.itemId, p.partId)]).filter(Boolean)
+                    const done = firsts.length
+                    const right = firsts.filter((t) => t.correct).length
+                    const late = firsts.filter((t) => isLate(t, a)).length
                     return (
                       <td key={a.id} data-assignment={a.id}>
                         <span className="db-done__n">{done}/{parts.length}</span>
-                        <span className="db-done__r"> answered · {right} right</span>
+                        <span className="db-done__r"> answered · {right} right first time</span>
+                        {late > 0 && <span className="cr-tag db-late">{late} late</span>}
                         <span className="db-meter" aria-hidden="true">
                           <span className="db-meter__right" style={{ width: `${parts.length ? (right / parts.length) * 100 : 0}%` }} />
                           <span className="db-meter__wrong" style={{ width: `${parts.length ? ((done - right) / parts.length) * 100 : 0}%` }} />

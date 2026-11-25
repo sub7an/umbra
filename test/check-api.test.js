@@ -83,6 +83,9 @@ function fakeDb({
         const count = db.attempts.filter((a) => a.student_id === f.student_id && (!since || a.created_at > since)).length
         return { data: null, count, error: null }
       }
+      if (st.table === 'attempts' && 'item_id' in f && !st.opts?.head) {
+        return { data: db.attempts.filter((x) => x.student_id === f.student_id && x.item_id === f.item_id), error: null }
+      }
       if (st.table === 'attempts' && 'id' in f) {
         return { data: db.attempts.find((a) => a.id === f.id) || null, error: null }
       }
@@ -151,9 +154,49 @@ describe('POST /api/check', () => {
     expect(res.body.feedback).toBeUndefined()
   })
 
-  it('includes the solution once an attempt exists (this one included)', async () => {
-    const res = await check(fakeDb(), { response: '7 m' })
+  // A two-part item: the solution covers both parts, so it waits for both.
+  const TWO_PART = { ...FAKE_ITEM, public: { ...FAKE_ITEM.public, parts: FAKE_ITEM.public.parts.slice(0, 2) } }
+
+  it('withholds the solution after attempting 1 of 2 parts', async () => {
+    const res = await check(fakeDb({ item: TWO_PART }), { response: '7 m' })
+    expect(res.statusCode).toBe(200)
+    expect(res.body.solution).toBeUndefined()
+  })
+
+  it('includes the solution once every part has an attempt (this one included)', async () => {
+    const admin = fakeDb({ item: TWO_PART })
+    await check(admin, { response: '7 m' })
+    const res = await check(admin, { part_id: 'b', response: ['x', 'z', 'y'] })
     expect(res.body.solution).toEqual(FAKE_PRIVATE.solution)
+  })
+
+  it('never unlocks the solution while a part is unanswerable', async () => {
+    const admin = fakeDb() // part c has no key, so it can never be attempted
+    await check(admin, { response: '7 m' })
+    const res = await check(admin, { part_id: 'b', response: ['x', 'y', 'z'] })
+    expect(res.body.solution).toBeUndefined()
+  })
+
+  it('stores attempts made after the solution was unlocked as assisted (hints_used >= 1)', async () => {
+    const admin = fakeDb({ item: TWO_PART })
+    await check(admin, { response: '7 m' })
+    await check(admin, { part_id: 'b', response: ['x', 'z', 'y'] })
+    // both parts attempted: the unlocking attempt itself was unaided
+    expect(inserts(admin).map((s) => s.payload.hints_used)).toEqual([0, 0])
+    const res = await check(admin, { response: '42 m' })
+    expect(res.body).toMatchObject({ correct: true, solution: FAKE_PRIVATE.solution })
+    expect(inserts(admin)[2].payload.hints_used).toBe(1)
+    await check(admin, { part_id: 'b', response: ['x', 'y', 'z'], hints_used: 3 })
+    expect(inserts(admin)[3].payload.hints_used).toBe(3)
+  })
+
+  it('a replay is answered from the stored row and inserts nothing new', async () => {
+    const admin = fakeDb({ item: TWO_PART })
+    const body = { attempt_id: nextUuid(), item_id: ITEM, part_id: 'a', response: '7 m' }
+    const first = await call(admin, { body })
+    const again = await call(admin, { body })
+    expect(again.body).toEqual(first.body)
+    expect(inserts(admin)).toHaveLength(1)
   })
 
   it('the same attempt_id twice inserts once and answers the same', async () => {

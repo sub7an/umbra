@@ -6,8 +6,13 @@
 //
 // The answer key (item_keys.private) is read with the service role and never leaves
 // this function: the body carries only the verdict, the matched wrong-answer feedback
-// (when incorrect) and the worked solution (once an attempt for this student, item and
-// part exists, which is true as soon as this one is recorded).
+// (when incorrect) and the worked solution, but only once this student has an attempt on
+// EVERY part of the item (this one included). The solution covers all parts, so one
+// guess on part (a) must not unlock the working for (b) and (c).
+//
+// After the solution has been unlocked (every part attempted BEFORE this attempt), a new
+// attempt is stored with hints_used >= 1, so the mastery trigger treats it as assisted
+// (guess 0.5) rather than as unaided evidence.
 //
 // Idempotent: the client picks attempt_id. The attempt is inserted with
 // `on conflict (id) do nothing`; a replay of an existing id returns the stored verdict,
@@ -98,8 +103,19 @@ async function loadPart(admin, itemId, partId) {
   const priv = keys.data.private
   const key = priv?.key && typeof priv.key === 'object' ? priv.key[partId] : undefined
   if (!part || key === undefined || key === null) return null
-  return { answerType: part.answer_type, key, priv }
+  const partIds = parts.filter((p) => p && typeof p.id === 'string').map((p) => p.id)
+  return { answerType: part.answer_type, key, priv, partIds }
 }
+
+// Parts of this item the student has at least one recorded attempt on.
+async function attemptedParts(admin, studentId, itemId) {
+  const { data, error } = await admin.from('attempts').select('part_id')
+    .eq('student_id', studentId).eq('item_id', itemId)
+  if (error) throw error
+  return new Set((data ?? []).map((r) => r.part_id))
+}
+
+const allAttempted = (partIds, attempted) => partIds.length > 0 && partIds.every((p) => attempted.has(p))
 
 async function mayUseAssignment(admin, studentId, assignmentId, itemId) {
   const { data: a, error } = await admin.from('assignments').select('id, class_id, item_ids, opens_at')
@@ -125,7 +141,8 @@ const sameOwner = (row, userId, input) =>
   row.student_id === userId && row.item_id === input.itemId && row.part_id === input.partId
 
 // Builds the reply from a verdict. `response` is what was graded (string or string[]).
-function verdictBody(verdict, response, partId, priv) {
+// `unlocked`: every part of the item has an attempt, so the solution may be shown.
+function verdictBody(verdict, response, partId, priv, unlocked) {
   const body = { correct: verdict.correct === true, reason: String(verdict.reason) }
   if (!body.correct) {
     const wrong = priv?.wrong_answers?.[partId]
@@ -133,7 +150,7 @@ function verdictBody(verdict, response, partId, priv) {
     const hit = id != null && Array.isArray(wrong) ? wrong.find((w) => w?.feedback_id === id) : null
     if (hit && typeof hit.feedback === 'string') body.feedback = hit.feedback
   }
-  if (Array.isArray(priv?.solution) && priv.solution.every((s) => typeof s === 'string')) {
+  if (unlocked && Array.isArray(priv?.solution) && priv.solution.every((s) => typeof s === 'string')) {
     body.solution = priv.solution
   }
   return body
@@ -145,7 +162,8 @@ async function replay(admin, row, userId, input, res) {
   if (!sameOwner(row, userId, input)) return res.status(409).json({ error: 'attempt_id_conflict' })
   const part = await loadPart(admin, input.itemId, input.partId)
   const graded = row.response === input.text ? input.response : row.response
-  return res.status(200).json(verdictBody(row, graded, input.partId, part?.priv))
+  const unlocked = part ? allAttempted(part.partIds, await attemptedParts(admin, userId, input.itemId)) : false
+  return res.status(200).json(verdictBody(row, graded, input.partId, part?.priv, unlocked))
 }
 
 async function handlePost(admin, user, body, res) {
@@ -174,6 +192,11 @@ async function handlePost(admin, user, body, res) {
     return res.status(403).json({ error: 'not_assigned' })
   }
 
+  // Was the worked solution already unlocked before this attempt?
+  const before = await attemptedParts(admin, user.id, input.itemId)
+  const assisted = allAttempted(part.partIds, before)
+  const after = new Set(before).add(input.partId)
+
   const result = checkResponse(part.answerType, part.key, input.response)
   const verdict = { correct: result.correct === true, reason: result.reason || 'format' }
 
@@ -186,7 +209,7 @@ async function handlePost(admin, user, body, res) {
     response: input.text,
     correct: verdict.correct,
     reason: verdict.reason,
-    hints_used: input.hintsUsed,
+    hints_used: assisted ? Math.max(input.hintsUsed, 1) : input.hintsUsed,
     time_ms: input.timeMs,
   }, { onConflict: 'id', ignoreDuplicates: true }).select('id')
   if (insErr) throw insErr
@@ -197,7 +220,7 @@ async function handlePost(admin, user, body, res) {
     if (!row) throw new Error('attempt_vanished')
     return replay(admin, row, user.id, input, res)
   }
-  return res.status(200).json(verdictBody(verdict, input.response, input.partId, part.priv))
+  return res.status(200).json(verdictBody(verdict, input.response, input.partId, part.priv, allAttempted(part.partIds, after)))
 }
 
 export function createHandler(getAdminClient = getAdmin) {

@@ -48,6 +48,21 @@ export function assignmentParts(assignment, itemsById) {
     (itemsById[id]?.public?.parts ?? []).map((p) => ({ itemId: id, partId: p.id })))
 }
 
+// First attempt per part: what counts as the student's own work on the dashboard
+// (later attempts may follow feedback or the worked solution).
+export function firstByPart(attempts) {
+  const out = {}
+  for (const a of [...attempts].sort((x, y) => String(x.created_at).localeCompare(String(y.created_at)))) {
+    const k = partKey(a.item_id, a.part_id)
+    if (!out[k]) out[k] = a
+  }
+  return out
+}
+
+// Attempted after the assignment's due date (due dates are not enforced).
+export const isLate = (attempt, assignment) =>
+  Boolean(assignment?.due_at && attempt?.created_at && Date.parse(attempt.created_at) > Date.parse(assignment.due_at))
+
 // Latest attempt per part: { "item:part": attemptRow }. Rows newest first.
 export function latestByPart(attempts) {
   const out = {}

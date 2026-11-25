@@ -115,6 +115,8 @@ test('teacher assigns, student answers, dashboard updates; a lost response is re
   await sp.getByRole('textbox', { name: 'Your answer to part a' }).fill(await correctNumeric(ITEM_1, 'a'))
   await sp.getByRole('button', { name: 'Check part a' }).click()
   await expect(sp.getByRole('status').filter({ hasText: 'Correct' })).toBeVisible()
+  // One part of three attempted: the worked solution (all parts) stays locked
+  await expect(sp.getByText('Show the worked solution')).toHaveCount(0)
   await shot(sp, '3-item-player-correct')
 
   // Item 2, part a: wrong
@@ -166,10 +168,37 @@ test('teacher assigns, student answers, dashboard updates; a lost response is re
     .eq('student_id', amira.user_id)
   expect(all).toBe(3)
 
-  // The dashboard agrees: Amira has 3 of the assignment's parts answered, 2 right
+  // ---- A gateway error after the insert (502 from the proxy): retried with the same
+  // id, recorded once.
+  bodies.length = 0
+  let gateway = false
+  await sp.unroute('**/api/check')
+  await sp.route('**/api/check', async (route) => {
+    bodies.push(JSON.parse(route.request().postData()))
+    if (!gateway) {
+      gateway = true
+      await route.fetch()
+      return route.fulfill({ status: 502, contentType: 'application/json', body: '{"error":"bad_gateway"}' })
+    }
+    return route.continue()
+  })
+  await sp.getByRole('button', { name: 'Question 3' }).click()
+  await expect(sp.getByRole('heading', { name: 'Question 3 of 3' })).toBeVisible()
+  await sp.getByRole('textbox', { name: 'Your answer to part a' }).fill('1 J')
+  await sp.getByRole('button', { name: 'Check part a' }).click()
+  await expect(sp.getByRole('button', { name: 'Try part a again' })).toBeVisible()
+  expect(gateway).toBe(true)
+  expect(new Set(bodies.map((b) => b.attempt_id)).size).toBe(1)
+  const { count: kettle } = await admin().from('attempts').select('id', { count: 'exact', head: true })
+    .eq('student_id', amira.user_id).eq('item_id', ITEM_3)
+  expect(kettle).toBe(1)
+
+  // The dashboard agrees: 4 of the assignment's 9 parts answered, 2 right first time
   await page.getByRole('button', { name: 'Refresh' }).click()
   await expect(page.locator('section[aria-labelledby="done-title"]').getByRole('row', { name: /Amira Khan/ }))
-    .toContainText('3/9')
+    .toContainText('4/9')
+  await expect(page.locator('section[aria-labelledby="done-title"]').getByRole('row', { name: /Amira Khan/ }))
+    .toContainText('2 right first time')
   await shot(page, '5-dashboard')
 
   // ---- Answered assignments can't be deleted: the editor no longer offers it

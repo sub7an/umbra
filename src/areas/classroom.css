@@ -448,6 +448,7 @@
 .db-done td { min-width: 150px; text-align: left !important; }
 .db-done__n { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .db-done__r { font-size: 14px; color: rgb(var(--c-text-muted)); }
+.db-late { margin-left: 8px; font-size: 13px; color: rgb(var(--cr-amber-text)); border-color: rgb(var(--cr-amber) / 0.5); }
 .db-meter { display: flex; height: 6px; margin-top: 6px; border-radius: 999px; background: rgb(var(--c-border)); overflow: hidden; gap: 2px; }
 .db-meter__right { background: #6da7ec; }
 .db-meter__wrong { background: repeating-linear-gradient(135deg, rgb(var(--cr-danger) / 0.8) 0 2px, transparent 2px 4px); }

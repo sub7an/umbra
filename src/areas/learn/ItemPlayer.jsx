@@ -1,6 +1,6 @@
 import { useId, useRef, useState } from 'react'
 import MathText from '../MathText'
-import { submitAnswer, reasonText, numericHint, CheckError } from '../../lib/checkClient'
+import { submitAnswer, reasonText, numericHint, mayHaveBeenRecorded, attemptIdFor } from '../../lib/checkClient'
 import { simLink } from '../../lib/assignmentsApi'
 
 // One item: the shared stem, then each part with an input for its answer_type.
@@ -75,8 +75,8 @@ function Part({ item, part, assignmentId, prior, onVerdict }) {
     if (busy || locked) return
     if (empty) { setError(part.answer_type === 'choice' ? 'Choose an answer first.' : 'Type an answer first.'); return }
     const text = Array.isArray(response) ? JSON.stringify(response) : response.trim()
-    // Same response after a network failure: same attempt id, so it is recorded once
-    const id = pending.current?.text === text ? pending.current.id : crypto.randomUUID()
+    // Same response after a failure that may have been recorded: same attempt id
+    const id = attemptIdFor(pending.current, text)
     pending.current = { id, text }
     setBusy(true); setError('')
     try {
@@ -93,7 +93,8 @@ function Part({ item, part, assignmentId, prior, onVerdict }) {
       onVerdict(v, { id, item_id: item.id, part_id: part.id, correct: v.correct, reason: v.reason, response: text, created_at: new Date().toISOString() })
       requestAnimationFrame(() => verdictRef.current?.focus())
     } catch (err) {
-      if (!(err instanceof CheckError && err.code === 'network')) pending.current = null
+      // Keep the id while the attempt may already be recorded, so a resubmit isn't counted twice
+      if (!mayHaveBeenRecorded(err)) pending.current = null
       setError(err.message)
     } finally {
       setBusy(false)

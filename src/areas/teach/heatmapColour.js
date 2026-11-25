@@ -3,13 +3,15 @@
 // <0.95 secure, >=0.95 mastered. No row yet → 'none'.
 //
 // Colour is a single-hue blue ordinal ramp (validated colour-blind safe on the dark
-// panel with the dataviz validator: monotone lightness, visible step gaps). Colour is
+// panel with the dataviz validator: monotone lightness, visible step gaps).
+// Label contrast (WCAG): low 8.1:1, developing 5.4:1 (white), secure 7.8:1,
+// mastered 12.6:1 (dark ink). Colour is
 // never the only cue: every cell also prints its percentage and band label, and the
 // bands carry a pattern (hatch for none / low) for print and forced-colours.
 export const MASTERY_LEVELS = {
   none: { label: 'Not started', short: '–', bg: 'transparent', ink: 'rgb(var(--c-text-muted))' },
   low: { label: 'Low', short: 'Low', bg: '#184f95', ink: '#ffffff' },
-  developing: { label: 'Developing', short: 'Dev', bg: '#2a78d6', ink: '#ffffff' },
+  developing: { label: 'Developing', short: 'Dev', bg: '#256abf', ink: '#ffffff' },
   secure: { label: 'Secure', short: 'Sec', bg: '#6da7ec', ink: '#0b0d12' },
   mastered: { label: 'Mastered', short: 'Mst', bg: '#b7d3f6', ink: '#0b0d12' },
 }
