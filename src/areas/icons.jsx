@@ -25,3 +25,4 @@ export function GoogleMark() {
     </svg>
   )
 }
+export const ChartIcon = (p) => <Icon {...p}><path d="M3 3v18h18" /><path d="M7 15h3v3H7zM12 9h3v9h-3zM17 5h3v13h-3z" /></Icon>

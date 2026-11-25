@@ -6,7 +6,8 @@ import {
   parseNames, namesProblem, MAX_CARD_NAMES,
 } from '../../lib/classroomApi'
 import TeacherSignIn from './TeacherSignIn'
-import { AlertIcon, ArrowLeftIcon, KeyIcon, PrinterIcon, ProjectorIcon, RefreshIcon } from '../icons'
+import Assignments from './AssignmentEditor'
+import { AlertIcon, ArrowLeftIcon, ChartIcon, KeyIcon, PrinterIcon, ProjectorIcon, RefreshIcon } from '../icons'
 
 // One class: join code, roster, issuing login cards, and the printable card sheet.
 //
@@ -98,6 +99,10 @@ export default function ClassPage({ classId }) {
             </div>
           )}
         </div>
+        <a className="cr-btn cr-btn--primary" style={{ marginTop: 20 }} href={`/teach/classes/${cls.id}/progress`}
+          onClick={(e) => { if (sheet.length && !window.confirm('Leave this page? The passphrases on these cards will not be shown again.')) { e.preventDefault(); return } e.preventDefault(); navigate({ area: 'teach', rest: ['classes', cls.id, 'progress'], search: '' }) }}>
+          <ChartIcon /> Class progress
+        </a>
       </div>
 
       {sheet.length > 0 && (
@@ -115,6 +120,10 @@ export default function ClassPage({ classId }) {
           <IssueCards classId={cls.id} onIssued={(cards) => { addToSheet(cards); load() }} />
         )}
         <Roster roster={roster} archived={archived} onReset={addToSheet} />
+      </div>
+
+      <div className="cr-noprint">
+        <Assignments classId={cls.id} archived={archived} />
       </div>
 
       {!archived && (
