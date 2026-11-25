@@ -1,0 +1,7 @@
+-- Local seed data (loaded by `supabase db reset`).
+--
+-- The local teacher, school and class need an auth user with a password, which
+-- belongs outside SQL: run `node scripts/seed-local.mjs` after `supabase start`
+-- (Playwright's global setup runs it too). It creates teacher@example.test with
+-- SEED_TEACHER_PASSWORD from .env.local, the school "Example Sixth Form" with that
+-- teacher as admin, and class 13Q, against the local stack only.
