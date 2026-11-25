@@ -15,5 +15,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: node scripts/check-no-answers.mjs
       - run: npm test
       - run: npm run build
