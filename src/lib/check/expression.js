@@ -24,7 +24,8 @@ const math = create({
 
 const POINTS = 6
 const REL = 1e-6
-const ABS = 1e-9 // near-zero floor, relative to the magnitude of cancelling terms (never an absolute constant)
+const MAX_DRAWS = 12
+const MIN_USABLE = 4
 const MAX_LEN = 200
 const FUNCS = new Set(['sqrt', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'exp', 'log', 'ln', 'abs'])
 const OPS = new Set(['+', '-', '*', '/', '^'])
@@ -48,17 +49,74 @@ function allowed(node, vars) {
   }
 }
 
-// Round-off only matters where terms can cancel: operands of binary + and -.
-// Their magnitude is the scale S for the near-zero floor. Expressions with no
-// sums/differences get S = 0, i.e. a purely relative comparison.
-function cancelOperands(tree) {
-  const out = []
-  tree.traverse((n) => {
-    if (n.type === 'OperatorNode' && (n.op === '+' || n.op === '-') && n.args.length === 2) {
-      for (const a of n.args) out.push(a.compile())
+// Floating-point round-off bound for the KEY expression only (the student tree never
+// contributes to the tolerance). Each node returns { v: value, e: error bound, c: is-constant }.
+const EPS = 1e-15
+const DERIV = {
+  sqrt: (x) => 1 / (2 * Math.sqrt(x)),
+  sin: (x) => Math.cos(x),
+  cos: (x) => -Math.sin(x),
+  tan: (x) => 1 / (Math.cos(x) ** 2),
+  asin: (x) => 1 / Math.sqrt(1 - x * x),
+  acos: (x) => -1 / Math.sqrt(1 - x * x),
+  atan: (x) => 1 / (1 + x * x),
+  exp: (x) => Math.exp(x),
+  log: (x) => 1 / x,
+  ln: (x) => 1 / x,
+  abs: () => 1,
+}
+const FN = {
+  sqrt: Math.sqrt, sin: Math.sin, cos: Math.cos, tan: Math.tan, asin: Math.asin, acos: Math.acos,
+  atan: Math.atan, exp: Math.exp, log: Math.log, ln: Math.log, abs: Math.abs,
+}
+
+function keyEval(n, scope) {
+  switch (n.type) {
+    case 'ConstantNode': return { v: n.value, e: 0, c: true }
+    case 'SymbolNode':
+      if (n.name === 'pi') return { v: Math.PI, e: 0, c: true }
+      if (n.name === 'e') return { v: Math.E, e: 0, c: true }
+      if (!(n.name in scope)) throw new Error('unknown symbol')
+      return { v: scope[n.name], e: 0, c: false }
+    case 'ParenthesisNode': return keyEval(n.content, scope)
+    case 'OperatorNode': {
+      const args = n.args.map((a) => keyEval(a, scope))
+      const c = args.every((x) => x.c)
+      if (args.length === 1) {
+        if (n.fn === 'unaryMinus') return { v: -args[0].v, e: args[0].e, c }
+        if (n.fn === 'unaryPlus') return args[0]
+        throw new Error('bad op')
+      }
+      const [A, B] = args
+      const a = A.v, b = B.v
+      switch (n.op) {
+        case '+': return { v: a + b, e: A.e + B.e + EPS * (Math.abs(a) + Math.abs(b)), c }
+        case '-': return { v: a - b, e: A.e + B.e + EPS * (Math.abs(a) + Math.abs(b)), c }
+        case '*': return { v: a * b, e: Math.abs(b) * A.e + Math.abs(a) * B.e + EPS * Math.abs(a * b), c }
+        case '/': return {
+          v: a / b,
+          e: (A.e + Math.abs(a / b) * B.e) / Math.abs(b) + EPS * Math.abs(a / b),
+          c,
+        }
+        case '^': {
+          const v = Math.pow(a, b)
+          const e = B.c
+            ? Math.abs(b) * Math.pow(Math.abs(a), b - 1) * A.e + EPS * Math.abs(v)
+            : EPS * Math.abs(v) * (1 + Math.abs(b * Math.log(a)))
+          return { v, e, c }
+        }
+        default: throw new Error('bad op')
+      }
     }
-  })
-  return out
+    case 'FunctionNode': {
+      const name = n.fn.name
+      if (!FN[name] || n.args.length !== 1) throw new Error('bad fn')
+      const x = keyEval(n.args[0], scope)
+      const v = FN[name](x.v)
+      return { v, e: Math.abs(DERIV[name](x.v)) * x.e + EPS * Math.abs(v), c: x.c }
+    }
+    default: throw new Error('bad node')
+  }
 }
 
 function run(code, scope) {
@@ -77,24 +135,24 @@ export function checkExpression(response, key) {
     if (!allowed(tree, new Set(names))) return { correct: false, reason: 'format' }
     const got = tree.compile()
     const wantTree = math.parse(key.expr)
-    const want = wantTree.compile()
-    const sums = [...cancelOperands(tree), ...cancelOperands(wantTree)]
     const rng = mulberry32(42)
-    for (let i = 0; i < POINTS; i++) {
+    let usable = 0
+    for (let i = 0; i < MAX_DRAWS && usable < POINTS; i++) {
       const scope = {}
       for (const n of names) {
         const [lo, hi] = key.vars[n]
         scope[n] = lo + rng() * (hi - lo)
       }
-      let S = 0
-      for (const c of sums) { try { const x = Math.abs(run(c, scope)); if (Number.isFinite(x)) S = Math.max(S, x) } catch { /* ignore */ } }
       const g = run(got, scope) // throws on unknown symbol etc. -> format
-      const w = run(want, scope)
-      if (!Number.isFinite(g) || !Number.isFinite(w)) return { correct: false, reason: 'value' }
-      if (Math.abs(g - w) > Math.max(REL * Math.max(Math.abs(g), Math.abs(w)), ABS * S)) {
-        return { correct: false, reason: 'value' }
-      }
+      const k = keyEval(wantTree, scope)
+      const w = k.v
+      if (!Number.isFinite(w) || !Number.isFinite(k.e) || Math.abs(w) <= k.e) continue // degenerate point
+      usable++
+      if (!Number.isFinite(g)) return { correct: false, reason: 'value' }
+      if (Math.abs(g - w) > REL * Math.max(Math.abs(g), Math.abs(w)) + k.e) return { correct: false, reason: 'value' }
     }
+    // identically-zero / always-cancelling key is an authoring error
+    if (usable < MIN_USABLE) return { correct: false, reason: 'format' }
     return { correct: true, reason: 'ok' }
   } catch {
     return { correct: false, reason: 'format' }

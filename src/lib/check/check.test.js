@@ -128,8 +128,6 @@ describe('fix round 1', () => {
     expect(checkExpression('exp(ln(m*v))', K).correct).toBe(true)
     expect(checkNumeric('2 km', key).correct).toBe(true)
   })
-  it('absolute floor scales with magnitude', () =>
-    expect(checkExpression('m-m+1e-15', { expr: '0', vars: { m: [1, 5] } }).correct).toBe(true))
   it('celsius tolerance is relative to key in its own unit', () => {
     const k = { value: 100, unit: '°C', rel_tol: 0.01 }
     expect(checkNumeric('97 °C', k)).toMatchObject({ correct: false, reason: 'value' })
@@ -166,6 +164,38 @@ describe('fix round 2: small-magnitude keys', () => {
     for (const r of ['0', 'q', 'q*E*E']) expect(checkExpression(r, K)).toMatchObject({ correct: false, reason: 'value' })
     expect(checkExpression('E*q', K).correct).toBe(true)
   })
-  it('near-zero vs 0 still passes at unit scale', () =>
-    expect(checkExpression('m-m+1e-15', { expr: '0', vars: { m: [1, 5] } }).correct).toBe(true))
+  it('identically-zero keys are authoring errors', () => {
+    expect(checkExpression('0', { expr: '0', vars: { m: [1, 5] } })).toMatchObject({ correct: false, reason: 'format' })
+    expect(checkExpression('0', { expr: 'x-x', vars: { x: [1, 5] } })).toMatchObject({ correct: false, reason: 'format' })
+  })
+})
+
+describe('fix round 3: key-only round-off bound', () => {
+  const wrong = (K, list) => list.forEach((r) => expect(checkExpression(r, K), r).toMatchObject({ correct: false, reason: 'value' }))
+  const right = (K, list) => list.forEach((r) => expect(checkExpression(r, K).correct, r).toBe(true))
+  it('q*(V1+V2)', () => {
+    const K = { expr: 'q*(V1+V2)', vars: { q: [1.6e-19, 3.2e-19], V1: [1, 10], V2: [1, 10] } }
+    wrong(K, ['0', 'q*V1', 'q*V2', 'q*(V1-V2)'])
+    right(K, ['q*V1 + q*V2', '(V2+V1)*q'])
+  })
+  it('m*(v2-v1)', () => {
+    const K = { expr: 'm*(v2-v1)', vars: { m: [1e-27, 2e-27], v2: [5, 10], v1: [1, 4] } }
+    wrong(K, ['m*v2', 'm*v1'])
+    right(K, ['m*v2 - m*v1'])
+  })
+  it('student cannot widen own tolerance', () => {
+    const K = { expr: 'q*E', vars: { q: [1.6e-19, 3.2e-19], E: [1, 100] } }
+    wrong(K, ['0+1-1', 'q+1-1', 'E-E', '0*(E+1)', 'E*(E-E)', '(q+E)-E', 'q*E+1e5-1e5'])
+    right(K, ['E*q', 'q*E + 0'])
+  })
+  it('a*(b+c)', () => {
+    const K = { expr: 'a*(b+c)', vars: { a: [1e-19, 2e-19], b: [0.5, 1.5], c: [0.5, 1.5] } }
+    right(K, ['a*b + a*c'])
+    wrong(K, ['a*b', 'a*b - a*c'])
+  })
+  it('legitimate cancellation in the key', () => {
+    const K = { expr: '(x+y)^2-(x-y)^2', vars: { x: [1e6, 2e6], y: [1e-3, 2e-3] } }
+    right(K, ['4*x*y'])
+    wrong(K, ['0', '8*x*y'])
+  })
 })
