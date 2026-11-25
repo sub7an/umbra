@@ -154,3 +154,18 @@ describe('fix round 1', () => {
     expect(checkNumeric('2000.0 m', { ...key, sig_figs: 'abc' }).correct).toBe(true)
   })
 })
+
+describe('fix round 2: small-magnitude keys', () => {
+  it('m*v with tiny values', () => {
+    const K = { expr: 'm*v', vars: { m: [1e-6, 2e-6], v: [1e-6, 2e-6] } }
+    for (const r of ['0', '2*m*v', 'm+v-m-v']) expect(checkExpression(r, K)).toMatchObject({ correct: false, reason: 'value' })
+    expect(checkExpression('v*m', K).correct).toBe(true)
+  })
+  it('q*E with charge-sized values', () => {
+    const K = { expr: 'q*E', vars: { q: [1.6e-19, 3.2e-19], E: [1, 100] } }
+    for (const r of ['0', 'q', 'q*E*E']) expect(checkExpression(r, K)).toMatchObject({ correct: false, reason: 'value' })
+    expect(checkExpression('E*q', K).correct).toBe(true)
+  })
+  it('near-zero vs 0 still passes at unit scale', () =>
+    expect(checkExpression('m-m+1e-15', { expr: '0', vars: { m: [1, 5] } }).correct).toBe(true))
+})

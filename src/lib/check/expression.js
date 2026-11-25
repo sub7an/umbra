@@ -24,7 +24,7 @@ const math = create({
 
 const POINTS = 6
 const REL = 1e-6
-const ABS = 1e-9 // absolute floor, scaled by operand magnitude (>= 1)
+const ABS = 1e-9 // near-zero floor, relative to the magnitude of cancelling terms (never an absolute constant)
 const MAX_LEN = 200
 const FUNCS = new Set(['sqrt', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'exp', 'log', 'ln', 'abs'])
 const OPS = new Set(['+', '-', '*', '/', '^'])
@@ -48,6 +48,19 @@ function allowed(node, vars) {
   }
 }
 
+// Round-off only matters where terms can cancel: operands of binary + and -.
+// Their magnitude is the scale S for the near-zero floor. Expressions with no
+// sums/differences get S = 0, i.e. a purely relative comparison.
+function cancelOperands(tree) {
+  const out = []
+  tree.traverse((n) => {
+    if (n.type === 'OperatorNode' && (n.op === '+' || n.op === '-') && n.args.length === 2) {
+      for (const a of n.args) out.push(a.compile())
+    }
+  })
+  return out
+}
+
 function run(code, scope) {
   const r = code.evaluate({ ...scope, ...SHADOW })
   if (typeof r !== 'number') throw new Error('not a number')
@@ -63,7 +76,9 @@ export function checkExpression(response, key) {
     const tree = math.parse(response)
     if (!allowed(tree, new Set(names))) return { correct: false, reason: 'format' }
     const got = tree.compile()
-    const want = math.parse(key.expr).compile()
+    const wantTree = math.parse(key.expr)
+    const want = wantTree.compile()
+    const sums = [...cancelOperands(tree), ...cancelOperands(wantTree)]
     const rng = mulberry32(42)
     for (let i = 0; i < POINTS; i++) {
       const scope = {}
@@ -71,10 +86,12 @@ export function checkExpression(response, key) {
         const [lo, hi] = key.vars[n]
         scope[n] = lo + rng() * (hi - lo)
       }
+      let S = 0
+      for (const c of sums) { try { const x = Math.abs(run(c, scope)); if (Number.isFinite(x)) S = Math.max(S, x) } catch { /* ignore */ } }
       const g = run(got, scope) // throws on unknown symbol etc. -> format
       const w = run(want, scope)
       if (!Number.isFinite(g) || !Number.isFinite(w)) return { correct: false, reason: 'value' }
-      if (Math.abs(g - w) > Math.max(REL * Math.abs(w), ABS * Math.max(1, Math.abs(g), Math.abs(w)))) {
+      if (Math.abs(g - w) > Math.max(REL * Math.max(Math.abs(g), Math.abs(w)), ABS * S)) {
         return { correct: false, reason: 'value' }
       }
     }
