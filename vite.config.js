@@ -36,7 +36,7 @@ function localApi() {
             res.end(JSON.stringify(obj))
             return res
           }
-          // /api/check arrives in a later task: 404 until its file exists.
+          // A route whose handler file is missing answers 404.
           const file = `${server.config.root}${route}.js`
           if (!existsSync(file)) return res.status(404).json({ error: 'not_found' })
           const { default: handler } = await server.ssrLoadModule(`${route}.js`)
