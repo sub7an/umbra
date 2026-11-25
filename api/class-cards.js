@@ -17,6 +17,7 @@
 //
 // Caps: card students per school ≤ schools.seats (409 seat_limit), checked here for
 // the whole batch and again per card in the database (enrol_card_student).
+// A school still awaiting approval (schools.plan = 'pending') gets 409 school_pending.
 //
 // Env vars: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (server only, never VITE_).
 
@@ -167,11 +168,12 @@ async function handlePost(admin, user, body, res) {
   if (cls.archived_at) return res.status(409).json({ error: 'class_archived' })
 
   const [school, used] = await Promise.all([
-    admin.from('schools').select('seats').eq('id', cls.school_id).maybeSingle(),
+    admin.from('schools').select('seats, plan').eq('id', cls.school_id).maybeSingle(),
     admin.from('students').select('user_id', { count: 'exact', head: true }).eq('card_school_id', cls.school_id),
   ])
   if (school.error) throw school.error
   if (used.error) throw used.error
+  if (school.data?.plan === 'pending') return res.status(409).json({ error: 'school_pending' })
   if (!school.data || (used.count ?? 0) + input.names.length > school.data.seats) {
     return res.status(409).json({ error: 'seat_limit' })
   }
@@ -196,6 +198,7 @@ async function handlePost(admin, user, body, res) {
     logFailure('card creation failed', failed)
     await Promise.all(cards.filter(Boolean).map((c) => deleteQuietly(admin, c.student_id)))
     if (failed.message === 'seat_limit') return res.status(409).json({ error: 'seat_limit' })
+    if (failed.message === 'school_pending') return res.status(409).json({ error: 'school_pending' })
     return res.status(500).json({ error: 'card_creation_failed' })
   }
   res.setHeader('Cache-Control', 'no-store')

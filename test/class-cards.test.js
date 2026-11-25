@@ -36,6 +36,7 @@ function fakeAdmin({
   studentMeta = { umbra_card: true },
   studentUsername = 'amira-1234',
   seats = 150,
+  plan = 'pilot',
   usedSeats = 0,
   revokeError = null,
 } = {}) {
@@ -52,7 +53,7 @@ function fakeAdmin({
       }
       return { data: schools.map((school_id) => ({ school_id })), error: null }
     }
-    if (st.table === 'schools') return { data: { seats }, error: null }
+    if (st.table === 'schools') return { data: { seats, plan }, error: null }
     if (st.table === 'students' && 'username' in st.filters) {
       return { data: takenUsernames.includes(st.filters.username) ? { user_id: 'x' } : null, error: null }
     }
@@ -289,6 +290,24 @@ describe('POST seat cap (R16)', () => {
     expect(res.statusCode).toBe(409)
     expect(res.body).toEqual({ error: 'seat_limit' })
     expect(admin.auth.admin.deleteUser.mock.calls.map((c) => c[0]).sort()).toEqual(['u-1', 'u-2'])
+  })
+})
+
+describe('POST school approval (R32)', () => {
+  it('409 school_pending for a school awaiting approval, before any user is created', async () => {
+    const admin = fakeAdmin({ plan: 'pending' })
+    const res = await call(admin, { body: { class_id: CLASS, names: ['A'] } })
+    expect(res.statusCode).toBe(409)
+    expect(res.body).toEqual({ error: 'school_pending' })
+    expect(admin.auth.admin.createUser).not.toHaveBeenCalled()
+  })
+  it('409 school_pending when the database refuses mid-batch, and rolls back', async () => {
+    spyConsole()
+    const admin = fakeAdmin({ enrolError: { code: 'P0001', message: 'school_pending' } })
+    const res = await call(admin, { body: { class_id: CLASS, names: ['A'] } })
+    expect(res.statusCode).toBe(409)
+    expect(res.body).toEqual({ error: 'school_pending' })
+    expect(admin.auth.admin.deleteUser).toHaveBeenCalledWith('u-1')
   })
 })
 

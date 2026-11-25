@@ -115,8 +115,11 @@ export async function seed() {
   const staffRows = must(await admin.from('staff').select('school_id, schools(name)').eq('user_id', user.id))
   let schoolId = staffRows.find((r) => r.schools?.name === SEED_SCHOOL)?.school_id
   if (!schoolId) {
-    schoolId = must(await admin.from('schools').insert({ name: SEED_SCHOOL, country: 'GB' }).select('id').single()).id
+    // An approved school (R32): schools made through create_school start 'pending'.
+    schoolId = must(await admin.from('schools').insert({ name: SEED_SCHOOL, country: 'GB', plan: 'pilot' }).select('id').single()).id
     must(await admin.from('staff').insert({ user_id: user.id, school_id: schoolId, role: 'admin' }))
+  } else {
+    must(await admin.from('schools').update({ plan: 'pilot' }).eq('id', schoolId))
   }
 
   // Reset: card students issued by the seed school, then its classes.

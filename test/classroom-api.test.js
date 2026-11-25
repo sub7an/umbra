@@ -54,8 +54,9 @@ describe('names and card sign-in input', () => {
   })
 })
 
-function fakeClient({ rpc, signIn } = {}) {
+function fakeClient({ rpc, signIn, from } = {}) {
   return {
+    from,
     auth: {
       getSession: async () => ({ data: { session: { access_token: 'tok' } } }),
       signInWithPassword: signIn ?? (async () => ({ data: {}, error: null })),
@@ -77,6 +78,18 @@ describe('makeClassroomApi', () => {
     await expect(api.signInWithCard('a', 'b')).rejects.toMatchObject({ code: 'invalid_card' })
   })
 
+  it('signInWithCard turns a GoTrue 429 into rate_limited, not invalid_card', async () => {
+    const api = makeClassroomApi(fakeClient({ signIn: async () => ({ data: null, error: { status: 429, code: 'over_request_rate_limit', message: 'Request rate limit reached' } }) }))
+    const err = await api.signInWithCard('a', 'b').catch((e) => e)
+    expect(err.code).toBe('rate_limited')
+    expect(err.message).toBe('Too many sign-ins from this network — wait a minute and try again.')
+  })
+
+  it('signInWithCard maps a bare over_request_rate_limit code to rate_limited', async () => {
+    const api = makeClassroomApi(fakeClient({ signIn: async () => ({ data: null, error: { code: 'over_request_rate_limit', message: '' } }) }))
+    await expect(api.signInWithCard('a', 'b')).rejects.toMatchObject({ code: 'rate_limited' })
+  })
+
   it('joinClass sends the normalised code and maps RPC errors', async () => {
     const rpc = vi.fn(async () => ({ data: null, error: { message: 'class_archived' } }))
     const api = makeClassroomApi(fakeClient({ rpc }))
@@ -84,6 +97,33 @@ describe('makeClassroomApi', () => {
     expect(rpc).toHaveBeenCalledWith('join_class', { p_code: 'K7M2PQ', p_display_name: 'Amira' })
     expect(err).toBeInstanceOf(ClassroomError)
     expect(err.code).toBe('class_archived')
+  })
+
+  it('joinClass maps school_pending to the student wording', async () => {
+    const api = makeClassroomApi(fakeClient({ rpc: async () => ({ data: null, error: { message: 'school_pending' } }) }))
+    const err = await api.joinClass('K7M2PQ', 'Amira').catch((e) => e)
+    expect(err.code).toBe('school_pending')
+    expect(err.message).toBe("This class isn't open yet — ask your teacher.")
+  })
+
+  it('issueCards maps school_pending to the staff "awaiting approval" wording', async () => {
+    const fetchImpl = vi.fn(async () => ({ ok: false, json: async () => ({ error: 'school_pending' }) }))
+    const api = makeClassroomApi(fakeClient(), fetchImpl)
+    const err = await api.issueCards('c1', ['Amira']).catch((e) => e)
+    expect(err.code).toBe('school_awaiting_approval')
+    expect(err.message).toMatch(/awaiting approval/)
+  })
+
+  it('getClass flattens the school plan into school_pending', async () => {
+    const row = (plan) => ({ id: 'c1', name: '12P', schools: { plan } })
+    const from = (plan) => () => {
+      const q = { select: () => q, eq: () => q, maybeSingle: async () => ({ data: row(plan), error: null }) }
+      return q
+    }
+    expect(await makeClassroomApi(fakeClient({ from: from('pending') })).getClass('c1'))
+      .toEqual({ id: 'c1', name: '12P', school_pending: true })
+    expect(await makeClassroomApi(fakeClient({ from: from('pilot') })).getClass('c1'))
+      .toEqual({ id: 'c1', name: '12P', school_pending: false })
   })
 
   it('createClass returns the first row of create_class', async () => {

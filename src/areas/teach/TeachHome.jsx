@@ -6,6 +6,7 @@ import {
 } from '../../lib/classroomApi'
 import TeacherSignIn from './TeacherSignIn'
 import { PlusIcon } from '../icons'
+import SchoolPending from './SchoolPending'
 
 const COUNTRIES = [
   ['GB', 'United Kingdom'], ['IE', 'Ireland'], ['AE', 'United Arab Emirates'], ['HK', 'Hong Kong'],
@@ -198,6 +199,8 @@ function ClassList() {
       </div>
 
       {error && <p className="cr-error" role="alert">{error}</p>}
+
+      {school?.plan === 'pending' && <SchoolPending />}
 
       {creating && schoolId && (
         <NewClassForm schoolId={schoolId} onCancel={() => setCreating(false)} />

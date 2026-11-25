@@ -3,7 +3,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(30);
+select plan(32);
 
 -- ---------------------------------------------------------------- fixtures
 -- t1: teacher (Google), g1: student signing in with Google (real email),
@@ -85,6 +85,16 @@ select is(public.normalise_code('o0il1'), 'O0IL1', 'normalise_code maps no chara
 
 -- ----------------------------------------------------------- join_class
 -- Google student
+set local request.jwt.claims = '{"sub":"72000000-0000-0000-0000-000000000001","role":"authenticated"}';
+
+-- R32: a school made by create_school is pending; nobody joins until it is approved.
+select throws_ok($$select public.join_class(current_setting('test.code'), 'Amira')$$, 'P0001', 'school_pending',
+  'joining a class of a pending school throws school_pending');
+reset role;
+select is((select plan from public.schools where id = current_setting('test.school')::uuid),
+  'pending', 'create_school makes a pending school');
+update public.schools set plan = 'pilot' where id = current_setting('test.school')::uuid;
+set local role authenticated;
 set local request.jwt.claims = '{"sub":"72000000-0000-0000-0000-000000000001","role":"authenticated"}';
 select is(
   public.join_class(lower(' ' || current_setting('test.code') || ' '), 'Amira'),

@@ -47,6 +47,9 @@ const MESSAGES = {
   forbidden: "You don't have access to that class.",
   invalid_card: "That username and passphrase don't match. Check the card and try again.",
   network: "We couldn't reach Umbra. Check your connection and try again.",
+  rate_limited: 'Too many sign-ins from this network — wait a minute and try again.',
+  school_pending: "This class isn't open yet — ask your teacher.",
+  school_awaiting_approval: "Your school is awaiting approval — we'll email you when it's ready. You can set up classes meanwhile, but students can't join and cards can't be issued yet.",
   not_configured: 'Accounts are not set up on this copy of Umbra.',
 }
 
@@ -68,6 +71,8 @@ export function errorCode(err) {
   if (MESSAGES[raw]) return raw
   if (err?.code === 'invalid_credentials' || /invalid login credentials/i.test(raw)) return 'invalid_card'
   if (/failed to fetch|network/i.test(raw)) return 'network'
+  // GoTrue answers 429 with code over_request_rate_limit when a network signs in too often.
+  if (err?.status === 429 || /^over_.*rate_limit$/.test(String(err?.code ?? '')) || /rate limit/i.test(raw)) return 'rate_limited'
   return 'unknown'
 }
 
@@ -132,7 +137,9 @@ export function makeClassroomApi(client, fetchImpl = (...a) => globalThis.fetch(
       throw new ClassroomError('network', e)
     }
     const json = await res.json().catch(() => ({}))
-    if (!res.ok) throw new ClassroomError(MESSAGES[json.error] ? json.error : 'unknown')
+    // Only staff call the cards API, so a pending school gets the staff wording.
+    const code = json.error === 'school_pending' ? 'school_awaiting_approval' : json.error
+    if (!res.ok) throw new ClassroomError(MESSAGES[code] ? code : 'unknown')
     return json
   }
 
@@ -141,7 +148,7 @@ export function makeClassroomApi(client, fetchImpl = (...a) => globalThis.fetch(
       const { data: auth } = await db().auth.getUser()
       if (!auth?.user) return []
       const rows = unwrap(await db().from('staff')
-        .select('role, schools(id, name, country, seats)').eq('user_id', auth.user.id))
+        .select('role, schools(id, name, country, seats, plan)').eq('user_id', auth.user.id))
       return rows.filter((r) => r.schools).map((r) => ({ ...r.schools, role: r.role }))
         .sort((a, b) => a.name.localeCompare(b.name))
     },
@@ -165,10 +172,14 @@ export function makeClassroomApi(client, fetchImpl = (...a) => globalThis.fetch(
       return rows.map(({ enrolments, ...c }) => ({ ...c, students: enrolments?.[0]?.count ?? 0 }))
     },
 
+    // → class row plus school_pending (true while its school awaits approval), or null.
     async getClass(classId) {
-      return unwrap(await db().from('classes')
-        .select('id, school_id, name, syllabus, year_group, code, archived_at')
+      const row = unwrap(await db().from('classes')
+        .select('id, school_id, name, syllabus, year_group, code, archived_at, schools(plan)')
         .eq('id', classId).maybeSingle())
+      if (!row) return row
+      const { schools, ...cls } = row
+      return { ...cls, school_pending: schools?.plan === 'pending' }
     },
 
     async updateClass(classId, patch) {
@@ -212,7 +223,10 @@ export function makeClassroomApi(client, fetchImpl = (...a) => globalThis.fetch(
         email: `${normaliseUsername(username)}@${CARD_EMAIL_DOMAIN}`,
         password: normalisePassphrase(passphrase),
       })
-      if (error) throw new ClassroomError(errorCode(error) === 'network' ? 'network' : 'invalid_card', error)
+      if (error) {
+        const code = errorCode(error)
+        throw new ClassroomError(code === 'network' || code === 'rate_limited' ? code : 'invalid_card', error)
+      }
       return data
     },
   }

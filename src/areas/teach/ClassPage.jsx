@@ -8,6 +8,7 @@ import {
 import TeacherSignIn from './TeacherSignIn'
 import Assignments from './AssignmentEditor'
 import { AlertIcon, ArrowLeftIcon, ChartIcon, KeyIcon, PrinterIcon, ProjectorIcon, RefreshIcon } from '../icons'
+import SchoolPending from './SchoolPending'
 
 // One class: join code, roster, issuing login cards, and the printable card sheet.
 //
@@ -104,6 +105,8 @@ export default function ClassPage({ classId }) {
           <ChartIcon /> Class progress
         </a>
       </div>
+
+      {cls.school_pending && <div className="cr-noprint"><SchoolPending /></div>}
 
       {sheet.length > 0 && (
         <CardSheet cls={cls} cards={sheet} onDone={() => setSheet([])} />
