@@ -87,7 +87,7 @@ what to review.
 |---|---|---|---|
 | Supabase | Database and authentication | EU (region set in the Supabase project) | All account and classroom data above |
 | Vercel | Hosting, serverless functions (`api/check`, `api/class-cards`, `api/ai`), cookieless page-view analytics | Vercel's network; function region set in the Vercel project | Requests in transit, including IP addresses; nothing stored by Umbra in Vercel |
-| Anthropic | AI tutor only (`api/ai.js`) | United States | The typed question, chat so far, simulation settings and, for "explain", a JPEG of the simulation canvas. The request carries no user ID, name, email, class or attempt data (`api/ai.js:109-114` forwards only `system`, `messages`, `max_tokens`). |
+| Anthropic | AI features only (`api/ai.js`) | United States | Anything typed into an AI box (the tutor, the scene description box, telescope questions), the tutor chat so far, simulation settings and, for "explain", a JPEG of the simulation canvas. The request carries no user ID, name, email, class or attempt data (`api/ai.js:109-114` forwards only `system`, `messages`, `max_tokens`). |
 | Stripe | Billing for paying teachers (Pro) | Stripe's processing locations | Teacher email and Umbra user ID. Not used for students. |
 
 Services the browser contacts directly (they see the visitor's IP address but receive no
@@ -129,7 +129,7 @@ Stripe; Umbra does not restate them here.
 |---|---|---|---|---|
 | R1 | A teacher sees data of students in another school | Remote | Significant | Low |
 | R2 | Account takeover of a card student by another school's staff | Remote | Significant | Low |
-| R3 | Student types personal details into the AI tutor, which reach Anthropic | Possible | Minimal | Low |
+| R3 | Student types personal details into an AI box (tutor, scene description, telescope questions), which reach Anthropic | Possible | Minimal | Low |
 | R4 | Data kept longer than needed (class never archived, or un-archived) | Possible | Minimal | Medium |
 | R5 | Answer keys or student data leak through the public code repository | Remote | Significant | Low |
 | R6 | Deleted data persists in Supabase backups | Probable | Minimal | Low |
@@ -141,7 +141,7 @@ Stripe; Umbra does not restate them here.
 |---|---|---|---|
 | R1 | RLS on every classroom table, pgTAP tests for cross-school isolation | Reduced | Low |
 | R2 | Card students tied to the issuing school (`students.card_school_id`); only that school's staff can reset a card; sessions revoked on reset (`20261201000460_card_school.sql`) | Reduced | Low |
-| R3 | Tutor requests carry no identity; privacy notice tells students not to type personal details | Reduced | Low |
+| R3 | AI requests carry no identity; privacy notice tells students not to type personal details into any AI box | Reduced | Low |
 | R4 | Daily purge 12 months after archive; end-of-contract purge on instruction; schools told to archive classes at year end | Reduced | Low |
 | R5 | Keys and solutions live in a private repo; CI check `scripts/check-no-answers.mjs`; no student data in the repo | Eliminated | Low |
 | R6 | Backups roll off under Supabase's backup retention for the plan; restored data would be re-purged by the daily job | Accepted | Low |
@@ -165,7 +165,8 @@ Stripe; Umbra does not restate them here.
 Run in the Supabase SQL editor as `postgres` (the functions are not callable by `anon`,
 `authenticated` or `service_role`). Record each request and confirm to the school in writing.
 
-**1. Automatic: classes archived more than 12 months ago.** pg_cron job
+**1. Automatic: classes archived more than 12 months ago.** The archive time is always set by
+the database (`set_archived_at` trigger), so it cannot be backdated by a client. pg_cron job
 `purge-archived-classes` runs `select public.purge_archived_classes()` daily at 03:17 UTC.
 For each class it deletes the attempts on the class's assignments (needed because
 `attempts.assignment_id` is `on delete restrict`), then the class (cascading to
@@ -200,6 +201,7 @@ Every retention or deletion claim in the DPA template, this DPIA, `/privacy` and
 
 | Claim | Mechanism |
 |---|---|
+| Archive time is set by the server (cannot be backdated) | `supabase/migrations/20261201000610_archive_time.sql` (`set_archived_at` trigger); test `supabase/tests/archive_time_test.sql` |
 | Archived classes deleted after 12 months | `supabase/migrations/20261201000600_retention.sql:75-86` (`purge_archived_classes`, `interval '12 months'` at :83); daily schedule :93-104 |
 | Attempts on the class's work deleted with it | `20261201000600_retention.sql:45-47`; needed by the RESTRICT FK at `20261201000250_rls_fixes.sql:8-9` |
 | Assignments and enrolments deleted with the class | `20261201000600_retention.sql:50`; cascades at `20261201000100_classroom.sql:39,75` |
@@ -207,5 +209,6 @@ Every retention or deletion claim in the DPA template, this DPIA, `/privacy` and
 | Google student with no class left: classroom record deleted, sign-in kept | `20261201000600_retention.sql:63-66` |
 | Deleting a student removes enrolments, attempts, mastery | `20261201000100_classroom.sql:40,86,99` (`on delete cascade`) |
 | No student email in classroom tables | no profiles row for card users `20261201000450_card_identity.sql:26-28`; Google email nulled on joining `20261201000460_card_school.sql:70` |
-| AI tutor gets no account data | `api/ai.js:109-114` |
-| Tested | `supabase/tests/retention_test.sql` |
+| AI features get no account data | `api/ai.js:109-114`; client `src/lib/ai.js` sends no auth header |
+| Purge never deletes a student who joins another class mid-run | `20261201000610_archive_time.sql` (`purge_classes` locks candidate `students` rows FOR UPDATE) |
+| Tested | `supabase/tests/retention_test.sql`, `supabase/tests/archive_time_test.sql` |

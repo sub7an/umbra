@@ -53,7 +53,7 @@ function PrivacyNotice() {
         <ul>
           <li><strong>Your display name.</strong> This is the name you or your teacher typed. It is 1 to 40 characters long.</li>
           <li><strong>Your classes.</strong> Which classes you are in, and when you joined.</li>
-          <li><strong>Your answers to set work.</strong> What you typed, whether it was right, why, how many hints you used, and how long it took.</li>
+          <li><strong>Your answers in Umbra Classroom.</strong> What you typed, whether it was right, why, how many hints you used, and how long it took.</li>
           <li><strong>How well you know each topic.</strong> Umbra works this out from your answers, so it can suggest what to practise next.</li>
         </ul>
         <h3>If you use a login card</h3>
@@ -91,13 +91,14 @@ function PrivacyNotice() {
       </section>
 
       <section aria-labelledby="pn-ai">
-        <h2 id="pn-ai">The AI tutor</h2>
+        <h2 id="pn-ai">AI features</h2>
         <p>
-          If you ask the AI tutor something, we send your question and the chat so far to Anthropic,
-          the company that makes the AI. We also send the settings of the simulation you are using.
-          If you click "explain" on a simulation, we send a picture of the simulation on screen.
+          Anything you type into an AI box goes to Anthropic, the company that makes the AI. That means
+          the tutor, the box where you describe a scene, and questions on the telescope page. For the tutor
+          we also send the chat so far and the settings of the simulation you are using. If you click
+          "explain" on a simulation, we send a picture of the simulation on screen.
         </p>
-        <p>We do not send your name, email, class or answers to set work. Do not type personal details into the tutor.</p>
+        <p>We do not send your name, email, class or your answers in Umbra Classroom. Do not type personal details into an AI box.</p>
       </section>
 
       <section aria-labelledby="pn-device">
@@ -141,7 +142,8 @@ function PrivacyNotice() {
       <section aria-labelledby="pn-outside">
         <h2 id="pn-outside">Using Umbra outside a class</h2>
         <p>
-          You can use the simulations without an account. Your progress is then kept in your browser only.
+          Your browser keeps your sign-in session and your Umbra settings and progress, so you stay signed
+          in and keep your place. You can use the simulations without an account. Your progress is then kept in your browser only.
           If you make an account, we keep your email address and your progress with it. Paid Pro plans
           are for adults; Stripe handles the payment.
         </p>
@@ -164,7 +166,7 @@ const DATA = [
 const SUBPROCESSORS = [
   ['Supabase', 'Database and sign-in (all account and classroom data)', 'EU (region set in the Supabase project)'],
   ['Vercel', 'Website hosting, server functions (answer checking, AI proxy, login cards), cookieless page-view analytics', "Vercel's network; function region set in the Vercel project"],
-  ['Anthropic', 'AI tutor only: the typed question, the chat so far, simulation settings, and (for "explain") a picture of the simulation. No names, emails, class data or answers to set work.', 'United States'],
+  ['Anthropic', 'AI features only: anything typed into an AI box (the tutor, the scene description box, telescope questions), the tutor chat so far, simulation settings, and (for "explain") a picture of the simulation. No names, emails, class data or answers in Umbra Classroom.', 'United States'],
   ['Stripe', 'Billing for paying teachers (Pro). Not used for students.', "Stripe's processing locations"],
 ]
 
