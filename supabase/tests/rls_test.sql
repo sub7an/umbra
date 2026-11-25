@@ -64,7 +64,8 @@ insert into public.attempts (id, student_id, item_id, part_id, assignment_id, re
 
 insert into public.mastery (student_id, topic_id, p_known, last_seen) values
   ('50000000-0000-0000-0000-000000000001', 't.test', 0.5, now()),
-  ('50000000-0000-0000-0000-000000000002', 't.test', 0.5, now());
+  ('50000000-0000-0000-0000-000000000002', 't.test', 0.5, now())
+  on conflict do nothing; -- the attempts trigger has already created these rows
 
 -- ------------------------------------------------------- structural checks
 select is(
