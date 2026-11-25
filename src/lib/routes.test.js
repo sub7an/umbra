@@ -8,11 +8,13 @@ describe('parseRoute', () => {
   it('join reads and normalises ?code', () => expect(parseRoute('/join', '?code= ab3 k9x ')).toMatchObject({ area: 'join', code: 'AB3K9X' }))
   it('keeps search for shared state', () => expect(parseRoute('/simulations/optics', '?s=xyz').search).toBe('?s=xyz'))
   it('unknown path falls back home', () => expect(parseRoute('/teachx')).toMatchObject({ area: 'home' }))
+  it('privacy notice', () => expect(parseRoute('/privacy')).toMatchObject({ area: 'legal', page: 'privacy' }))
+  it('schools data protection', () => expect(parseRoute('/schools/data-protection')).toMatchObject({ area: 'legal', page: 'schools' }))
   it('module ids are validated by the caller, not here', () => expect(parseRoute('/simulations/nope')).toMatchObject({ area: 'sim', module: 'nope' }))
 })
 
 describe('formatRoute', () => {
-  it.each(['/simulations/optics/lens', '/simulations/optics', '/teach/classes/abc', '/validation', '/'])('round-trips %s', (p) =>
+  it.each(['/simulations/optics/lens', '/simulations/optics', '/teach/classes/abc', '/validation', '/privacy', '/schools/data-protection', '/'])('round-trips %s', (p) =>
     expect(formatRoute(parseRoute(p))).toBe(p))
   it('join with code', () => expect(formatRoute({ area: 'join', code: 'AB3K9X', search: '' })).toBe('/join?code=AB3K9X'))
 })

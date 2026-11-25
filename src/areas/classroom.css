@@ -464,3 +464,17 @@
 .db-missed__stem { margin: 4px 0 6px !important; font-size: 16px; }
 .db-missed__wrong { margin: 0 !important; font-size: 16px; }
 .db-missed__resp { background: rgb(var(--cr-danger) / 0.12); color: rgb(var(--cr-danger)); padding: 1px 8px; border-radius: 6px; font-weight: 600; }
+
+/* Legal pages (/privacy, /schools/data-protection): long-form reading width. */
+.lg { max-width: 760px; }
+.lg section > :last-child { margin-bottom: 0; }
+.lg ul { list-style: disc; margin: 0 0 12px; padding-left: 1.25em; display: grid; gap: 6px; }
+.lg a { color: rgb(var(--cr-amber-text)); text-decoration: underline; text-underline-offset: 3px; }
+.lg a:focus-visible { outline: 2px solid rgb(var(--c-brand)); outline-offset: 2px; border-radius: 2px; }
+.lg-template { font-size: 17px; }
+.lg-table-wrap { overflow-x: auto; margin: 0 0 12px; }
+.lg-table { width: 100%; border-collapse: collapse; font-size: 16px; }
+.lg-table th, .lg-table td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid rgb(var(--c-border)); }
+.lg-table thead th { font-size: 14px; color: rgb(var(--c-text-muted)); font-weight: 600; }
+.lg-table tbody th { font-weight: 600; white-space: nowrap; }
+@media (max-width: 560px) { .lg-table tbody th { white-space: normal; } }

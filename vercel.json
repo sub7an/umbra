@@ -39,7 +39,7 @@
       "destination": "/simulations/:id/index.html"
     },
     {
-      "source": "/(teach|learn|join|validation)(/.*)?",
+      "source": "/(teach|learn|join|validation|privacy|schools)(/.*)?",
       "destination": "/index.html"
     }
   ]

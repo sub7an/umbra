@@ -39,6 +39,7 @@ const AREA_COMPONENTS = {
   learn: lazy(() => import('./areas/LearnArea')),
   join: lazy(() => import('./areas/JoinArea')),
   validation: lazy(() => import('./areas/ValidationArea')),
+  legal: lazy(() => import('./areas/LegalPages')),
 }
 
 // Ambient drone base frequency per module — each world has its own tone
