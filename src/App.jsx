@@ -16,6 +16,8 @@ import { warp, startDrone, stopDrone } from './lib/sound'
 import { prefersReducedMotion } from './lib/motion'
 import { SITE, bySimId } from './content/simulations'
 import { viewIdForSlug } from './content/simulationPages'
+import { parseRoute, notifyRouteChange } from './lib/routes'
+import { useRoute } from './lib/useRoute'
 
 // Overlay panels, fetched after first paint (each renders nothing until opened)
 const Challenges = lazy(() => import('./components/Challenges'))
@@ -30,6 +32,14 @@ const AboutPanel = lazy(() => import('./components/AboutPanel'))
 const AuthPanel = lazy(() => import('./components/AuthPanel'))
 const TelescopeLive = lazy(() => import('./components/TelescopeLive'))
 const TelescopeContextBanner = lazy(() => import('./components/TelescopeContextBanner'))
+
+// Non-simulation areas of the platform, each its own lazy chunk
+const AREA_COMPONENTS = {
+  teach: lazy(() => import('./areas/TeachArea')),
+  learn: lazy(() => import('./areas/LearnArea')),
+  join: lazy(() => import('./areas/JoinArea')),
+  validation: lazy(() => import('./areas/ValidationArea')),
+}
 
 // Ambient drone base frequency per module — each world has its own tone
 const MOD_DRONE = {
@@ -172,20 +182,21 @@ const ROUTABLE = [
 
 const modulePath = (id) => `/simulations/${id}`
 
-const SIM_PATH = /^\/simulations\/([a-z-]+)(?:\/([a-z0-9-]+))?\/?$/
+const locationRoute = () => parseRoute(window.location.pathname, window.location.search)
 
 // Module named by the URL: /simulations/<id>[/<view>], or a legacy #<id> link
 function moduleFromLocation() {
-  const m = window.location.pathname.match(SIM_PATH)
-  if (m && ROUTABLE.includes(m[1])) return m[1]
+  const r = locationRoute()
+  if (r.area === 'sim' && ROUTABLE.includes(r.module)) return r.module
+  if (r.area !== 'home' && r.area !== 'sim') return null
   const hash = window.location.hash.slice(1)
   return ROUTABLE.includes(hash) ? hash : null
 }
 
 // View named by /simulations/<id>/<view>, as the module's internal view id
 function viewFromLocation(id) {
-  const m = window.location.pathname.match(SIM_PATH)
-  return m && m[1] === id && m[2] ? viewIdForSlug(id, m[2]) : null
+  const r = locationRoute()
+  return r.area === 'sim' && r.module === id && r.view ? viewIdForSlug(id, r.view) : null
 }
 
 // Open a module (and the view its URL names, if any)
@@ -232,6 +243,7 @@ function renderModule(id) {
 }
 
 export default function App() {
+  const route         = useRoute()
   const activeModule  = useModuleStore((s) => s.activeModule)
   const setModule     = useModuleStore((s) => s.setActiveModule)
 
@@ -268,6 +280,7 @@ export default function App() {
         params.delete('s')
         const qs = params.toString()
         window.history.replaceState(null, '', (ROUTABLE.includes(decoded.m) ? modulePath(decoded.m) : '/') + (qs ? `?${qs}` : ''))
+        notifyRouteChange()
         return
       }
     }
@@ -284,15 +297,17 @@ export default function App() {
     if (!firstSync.current) applyPageMeta(activeModule)
     if (popRef.current) { popRef.current = false; return }
     const { pathname, search } = window.location
-    const onModulePath = SIM_PATH.test(pathname)
+    const here = locationRoute()
+    const onModulePath = here.area === 'sim'
     // Already on this module's page or one of its view pages
-    const inSync = ROUTABLE.includes(activeModule) && pathname.match(SIM_PATH)?.[1] === activeModule
+    const inSync = ROUTABLE.includes(activeModule) && onModulePath && here.module === activeModule
     let target = null
     if (ROUTABLE.includes(activeModule)) target = inSync ? null : modulePath(activeModule)
-    else if (!activeModule && (onModulePath || window.location.hash)) target = '/'
+    else if (!activeModule && (onModulePath || (here.area === 'home' && window.location.hash))) target = '/'
     if (target && (target !== pathname || window.location.hash)) {
       const replace = firstSync.current || !activeModule
       window.history[replace ? 'replaceState' : 'pushState'](null, '', target + search)
+      notifyRouteChange()
     }
     firstSync.current = false
   }, [activeModule])
@@ -387,6 +402,16 @@ export default function App() {
     const t2 = setTimeout(() => { setPhase('idle') }, OUT_MS + IN_MS)
     return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [activeModule])
+
+  // ── Platform areas (/teach, /learn, /join, /validation) replace the module UI ──
+  const Area = AREA_COMPONENTS[route.area]
+  if (Area) {
+    return (
+      <Suspense fallback={<ModuleFallback />}>
+        <Area route={route} />
+      </Suspense>
+    )
+  }
 
   // ── Embed mode: bare simulation + attribution badge, no app chrome ────────
   if (IS_EMBED) {

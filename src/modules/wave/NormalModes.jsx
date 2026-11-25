@@ -3,6 +3,7 @@ import { useRef, useMemo, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import SceneCard from '../../components/SceneCard'
+import { membraneModeOmega, membraneModeShape } from './waveMath'
 
 const W   = 96
 const H   = 96
@@ -88,8 +89,8 @@ export default function NormalModes({ modeIdx = 0 }) {
     const t   = tRef.current
     const [m1, n1] = MODES[modeRef.current]
     const [m2, n2] = MODES[mode2Ref.current]
-    const ω1  = Math.PI * Math.sqrt(m1 * m1 + n1 * n1) * 0.85
-    const ω2  = Math.PI * Math.sqrt(m2 * m2 + n2 * n2) * 0.85
+    const ω1  = membraneModeOmega(m1, n1, 0.85)
+    const ω2  = membraneModeOmega(m2, n2, 0.85)
     const sup  = supRef.current
 
     if (!meshRef.current) return
@@ -98,13 +99,11 @@ export default function NormalModes({ modeIdx = 0 }) {
 
     for (let j = 0; j < H; j++) {
       for (let i = 0; i < W; i++) {
-        const u1 = Math.sin(m1 * Math.PI * i / (W - 1))
-                 * Math.sin(n1 * Math.PI * j / (H - 1))
+        const u1 = membraneModeShape(m1, n1, i / (W - 1), j / (H - 1))
                  * Math.cos(ω1 * t)
         let u = u1
         if (sup) {
-          const u2 = Math.sin(m2 * Math.PI * i / (W - 1))
-                   * Math.sin(n2 * Math.PI * j / (H - 1))
+          const u2 = membraneModeShape(m2, n2, i / (W - 1), j / (H - 1))
                    * Math.cos(ω2 * t)
           u = (u1 + u2) * 0.65
         }

@@ -4,6 +4,7 @@ import { useRef, useMemo, useState, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import SceneCard from '../../components/SceneCard'
+import { rk4Step, totalEnergy3D } from './frontierMath'
 
 const TRAIL    = 600   // history points per body
 const SUBSTEPS = 4     // RK4 sub-steps per frame
@@ -41,59 +42,6 @@ const PRESETS = {
       { pos: [ 0.8, 0, -1.8], vel: [ 0.28, 0, -0.10], mass: 1.1, color: '#fbbf24' },
     ],
   },
-}
-
-// ── Physics ───────────────────────────────────────────────────────────────────
-function accel(pos, masses, G, eps) {
-  return pos.map((pi, i) => {
-    let ax = 0, ay = 0, az = 0
-    for (let j = 0; j < pos.length; j++) {
-      if (i === j) continue
-      const dx = pos[j][0]-pi[0], dy = pos[j][1]-pi[1], dz = pos[j][2]-pi[2]
-      const f  = G * masses[j] / Math.pow(dx*dx + dy*dy + dz*dz + eps*eps, 1.5)
-      ax += f*dx; ay += f*dy; az += f*dz
-    }
-    return [ax, ay, az]
-  })
-}
-
-function vadd(a, b, s) {
-  return a.map((ai, i) => [ai[0]+b[i][0]*s, ai[1]+b[i][1]*s, ai[2]+b[i][2]*s])
-}
-
-function rk4Step(pos, vel, masses, G, eps, dt) {
-  const a1 = accel(pos, masses, G, eps)
-  const p2 = vadd(pos, vel, dt/2), v2 = vadd(vel, a1, dt/2)
-  const a2 = accel(p2, masses, G, eps)
-  const p3 = vadd(pos, v2, dt/2), v3 = vadd(vel, a2, dt/2)
-  const a3 = accel(p3, masses, G, eps)
-  const p4 = vadd(pos, v3, dt),   v4 = vadd(vel, a3, dt)
-  const a4 = accel(p4, masses, G, eps)
-  return {
-    pos: pos.map((p, i) => [
-      p[0] + dt/6*(vel[i][0]+2*v2[i][0]+2*v3[i][0]+v4[i][0]),
-      p[1] + dt/6*(vel[i][1]+2*v2[i][1]+2*v3[i][1]+v4[i][1]),
-      p[2] + dt/6*(vel[i][2]+2*v2[i][2]+2*v3[i][2]+v4[i][2]),
-    ]),
-    vel: vel.map((v, i) => [
-      v[0] + dt/6*(a1[i][0]+2*a2[i][0]+2*a3[i][0]+a4[i][0]),
-      v[1] + dt/6*(a1[i][1]+2*a2[i][1]+2*a3[i][1]+a4[i][1]),
-      v[2] + dt/6*(a1[i][2]+2*a2[i][2]+2*a3[i][2]+a4[i][2]),
-    ]),
-  }
-}
-
-function totalEnergy(pos, vel, masses, G, eps) {
-  let KE = 0, PE = 0
-  for (let i = 0; i < pos.length; i++) {
-    const [vx, vy, vz] = vel[i]
-    KE += 0.5 * masses[i] * (vx*vx + vy*vy + vz*vz)
-    for (let j = i+1; j < pos.length; j++) {
-      const dx=pos[j][0]-pos[i][0], dy=pos[j][1]-pos[i][1], dz=pos[j][2]-pos[i][2]
-      PE -= G * masses[i] * masses[j] / Math.sqrt(dx*dx+dy*dy+dz*dz+eps*eps)
-    }
-  }
-  return KE + PE
 }
 
 // ── Build trail geometry for one body ─────────────────────────────────────────
@@ -149,7 +97,7 @@ export default function NBody() {
     const trails = Array.from({length: p.bodies.length}, () => ({
       buf: new Float32Array(TRAIL * 3), idx: 0, fill: 0
     }))
-    e0Ref.current = totalEnergy(pos, vel, ms, p.G, p.eps)
+    e0Ref.current = totalEnergy3D(pos, vel, ms, p.G, p.eps)
     return { pos, vel, trails }
   }
 
@@ -208,7 +156,7 @@ export default function NBody() {
     }
 
     // Energy drift readout
-    const E  = totalEnergy(sim.pos, sim.vel, masses, p.G, p.eps)
+    const E  = totalEnergy3D(sim.pos, sim.vel, masses, p.G, p.eps)
     const E0 = e0Ref.current ?? E
     const drift = Math.abs((E - E0) / (Math.abs(E0) + 1e-12)) * 100
     if (eRef.current)     eRef.current.textContent     = E.toFixed(4)

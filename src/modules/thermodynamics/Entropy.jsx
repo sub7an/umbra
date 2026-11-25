@@ -8,6 +8,7 @@ import { useFrame } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 import SceneCard from '../../components/SceneCard'
+import { binaryEntropy as H } from './thermoMath'
 
 const N      = 400
 const HALF_W = 4.05   // box half-width
@@ -39,12 +40,6 @@ function initState(temperature) {
     vel[i*3+2] = 0
   }
   return { pos, vel, side }
-}
-
-// Binary entropy (nats): positional entropy of one species split f : 1 − f
-function H(f) {
-  if (f <= 0 || f >= 1) return 0
-  return -(f * Math.log(f) + (1 - f) * Math.log(1 - f))
 }
 
 export default function Entropy({ temperature }) {

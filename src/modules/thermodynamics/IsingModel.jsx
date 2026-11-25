@@ -5,6 +5,7 @@ import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import SceneCard from '../../components/SceneCard'
+import { isingSweep, isingEnergy, isingMagnetisation } from './thermoMath'
 
 const L       = 40     // lattice side
 const N       = L * L
@@ -21,19 +22,6 @@ function randomLattice() {
   const s = new Int8Array(N)
   for (let i = 0; i < N; i++) s[i] = Math.random() < 0.5 ? 1 : -1
   return s
-}
-
-// Single spin-flip Metropolis step (J = k_B = 1)
-function metropolis(spins, T) {
-  const i   = (Math.random() * N) | 0
-  const row = (i / L) | 0
-  const col = i % L
-  const sum = spins[((row > 0 ? row-1 : L-1)*L + col)] +
-              spins[((row < L-1 ? row+1 : 0)*L + col)] +
-              spins[(row*L + (col > 0 ? col-1 : L-1))] +
-              spins[(row*L + (col < L-1 ? col+1 : 0))]
-  const dE = 2 * spins[i] * sum
-  if (dE < 0 || Math.random() < Math.exp(-dE / T)) spins[i] *= -1
 }
 
 export default function IsingModel({ temperature }) {
@@ -77,33 +65,23 @@ export default function IsingModel({ temperature }) {
     const T = Math.max(0.05, temperature)
 
     // Metropolis sweeps
-    for (let s = 0; s < SWEEPS; s++) {
-      for (let k = 0; k < N; k++) metropolis(spins, T)
-    }
+    for (let s = 0; s < SWEEPS; s++) isingSweep(spins, L, 1 / T, Math.random)
 
     const mesh = meshRef.current
     if (!mesh) return
 
-    let sumM = 0, sumE = 0
     for (let i = 0; i < N; i++) {
       const x = positions[i * 2], z = positions[i * 2 + 1]
       dummy.position.set(x, 0, z)
       dummy.updateMatrix()
       mesh.setMatrixAt(i, dummy.matrix)
       mesh.setColorAt(i, spins[i] > 0 ? UP_CLR : DOWN_CLR)
-      sumM += spins[i]
-
-      // Energy contribution from right and bottom neighbors (avoid double-count)
-      const row = (i / L) | 0, col = i % L
-      const right = row * L + (col < L - 1 ? col + 1 : 0)
-      const down  = (row < L - 1 ? row + 1 : 0) * L + col
-      sumE += -spins[i] * (spins[right] + spins[down])
     }
     mesh.instanceMatrix.needsUpdate = true
     if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true
 
-    const M = Math.abs(sumM / N)
-    const E = sumE / N
+    const M = Math.abs(isingMagnetisation(spins, L))
+    const E = isingEnergy(spins, L) / N
     if (mDom.current) mDom.current.textContent = M.toFixed(3)
     if (eDom.current) eDom.current.textContent = E.toFixed(3)
 
