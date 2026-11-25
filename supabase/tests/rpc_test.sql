@@ -8,11 +8,12 @@ select plan(30);
 -- ---------------------------------------------------------------- fixtures
 -- t1: teacher (Google), g1: student signing in with Google (real email),
 -- c1: card student (synthetic email), nobody: authenticated user with no school.
-insert into auth.users (id, email, aud, role) values
-  ('71000000-0000-0000-0000-000000000001', 't1@example.test', 'authenticated', 'authenticated'),
-  ('72000000-0000-0000-0000-000000000001', 'g1@example.test', 'authenticated', 'authenticated'),
-  ('73000000-0000-0000-0000-000000000001', 'ab12cd@students.umbra.invalid', 'authenticated', 'authenticated'),
-  ('79000000-0000-0000-0000-000000000001', 'nobody@example.test', 'authenticated', 'authenticated');
+-- c1 carries app_metadata umbra_card = true, as POST /api/class-cards sets it (R10).
+insert into auth.users (id, email, aud, role, raw_app_meta_data) values
+  ('71000000-0000-0000-0000-000000000001', 't1@example.test', 'authenticated', 'authenticated', '{}'),
+  ('72000000-0000-0000-0000-000000000001', 'g1@example.test', 'authenticated', 'authenticated', '{}'),
+  ('73000000-0000-0000-0000-000000000001', 'ab12cd@students.umbra.invalid', 'authenticated', 'authenticated', '{"umbra_card":true}'),
+  ('79000000-0000-0000-0000-000000000001', 'nobody@example.test', 'authenticated', 'authenticated', '{}');
 
 -- ------------------------------------------------- handle_new_user changes
 select is(

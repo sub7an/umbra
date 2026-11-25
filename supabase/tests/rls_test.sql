@@ -4,7 +4,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(43);
+select plan(44);
 
 -- ---------------------------------------------------------------- fixtures
 -- users: tA (teacher, school A), tB (teacher, school B),
@@ -102,12 +102,16 @@ select is((select count(*)::int from public.students), 2, 'tA sees only students
 select is((select count(*)::int from public.enrolments), 2, 'tA sees only enrolments of A classes');
 select is((select count(*)::int from public.assignments), 1, 'tA sees only A assignments');
 select is((select count(*)::int from public.mastery), 2, 'tA sees mastery of taught students');
+-- R11: classes are created only through create_class; a direct insert fails at grant level.
 select lives_ok(
-  $$insert into public.classes (school_id, name, syllabus, code) values ('aaaaaaaa-0000-0000-0000-000000000000', 'A2', 'aqa', 'AAAAA2')$$,
-  'tA can create a class in own school');
+  $$select * from public.create_class('aaaaaaaa-0000-0000-0000-000000000000', 'A2', 'aqa', null)$$,
+  'tA can create a class in own school (create_class)');
 select throws_ok(
   $$insert into public.classes (school_id, name, syllabus, code) values ('bbbbbbbb-0000-0000-0000-000000000000', 'X', 'aqa', 'XXXXXX')$$,
-  '42501', null, 'tA cannot create a class in school B');
+  '42501', 'permission denied for table classes', 'tA cannot insert a class in school B (no insert grant)');
+select throws_ok(
+  $$select * from public.create_class('bbbbbbbb-0000-0000-0000-000000000000', 'X', 'aqa', null)$$,
+  'P0001', 'not_staff', 'tA cannot create a class in school B through create_class');
 select throws_ok(
   $$insert into public.assignments (class_id, title, item_ids) values ('c0000000-0000-0000-0000-0000000000b1', 'evil', array['i.test'])$$,
   '42501', null, 'tA cannot create an assignment in a B class');
