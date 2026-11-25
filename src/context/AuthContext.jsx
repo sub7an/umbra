@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { roleFromQueries } from '../lib/role'
 
 const AuthContext = createContext(null)
 
@@ -10,6 +11,8 @@ export function AuthProvider({ children }) {
   // 'teacher' (has a staff row) | 'student' (has a students row) | 'public'
   const [role, setRole] = useState('public')
   const [roleLoading, setRoleLoading] = useState(isSupabaseConfigured)
+  // True when the last role check failed; `role` then keeps its previous value
+  const [roleError, setRoleError] = useState(false)
   const pollRef = useRef(null)
   const roleReq = useRef(0)
   const lastUid = useRef(undefined)
@@ -31,14 +34,21 @@ export function AuthProvider({ children }) {
 
   const loadRole = useCallback(async (u) => {
     const req = ++roleReq.current
-    if (!supabase || !u) { setRole('public'); setRoleLoading(false); return }
+    if (!supabase || !u) { setRole('public'); setRoleError(false); setRoleLoading(false); return }
     setRoleLoading(true)
-    const [staff, student] = await Promise.all([
-      supabase.from('staff').select('school_id').eq('user_id', u.id).limit(1),
-      supabase.from('students').select('user_id').eq('user_id', u.id).limit(1),
-    ])
+    let result
+    try {
+      const [staff, student] = await Promise.all([
+        supabase.from('staff').select('school_id').eq('user_id', u.id).limit(1),
+        supabase.from('students').select('user_id').eq('user_id', u.id).limit(1),
+      ])
+      result = roleFromQueries(staff, student)
+    } catch (error) {
+      result = { error }
+    }
     if (req !== roleReq.current) return // a newer sign-in / sign-out won
-    setRole(staff.data?.length ? 'teacher' : student.data?.length ? 'student' : 'public')
+    if (result.error) setRoleError(true) // keep the previous role
+    else { setRole(result.role); setRoleError(false) }
     setRoleLoading(false)
   }, [])
 
@@ -81,13 +91,13 @@ export function AuthProvider({ children }) {
     if (supabase) await supabase.auth.signOut()
     roleReq.current++
     lastUid.current = null
-    setSession(null); setProfile(null); setRole('public'); setRoleLoading(false)
+    setSession(null); setProfile(null); setRole('public'); setRoleError(false); setRoleLoading(false)
   }, [])
 
   const value = {
     configured: isSupabaseConfigured,
     loading, session, user, profile, isPro,
-    role, roleLoading,
+    role, roleLoading, roleError,
     signOut, refreshUntilPro,
     reloadProfile: () => loadProfile(user),
     reloadRole: () => loadRole(user),

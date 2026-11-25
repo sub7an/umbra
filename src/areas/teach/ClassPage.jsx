@@ -317,25 +317,48 @@ function ArchiveButton({ cls, onChange }) {
 }
 
 // ---------------------------------------------------- project the code
+// Full-screen join code for the projector: a native modal <dialog>, so the rest of
+// the page is inert and Tab cannot reach it. Esc closes; focus returns to the opener.
 function ProjectCode({ code, name, onClose }) {
-  const closeRef = useRef(null)
+  const dialogRef = useRef(null)
+  const onCloseRef = useRef(onClose)
+  useEffect(() => { onCloseRef.current = onClose })
+
   useEffect(() => {
+    const dialog = dialogRef.current
     const prev = document.activeElement
-    closeRef.current?.focus()
-    const h = (e) => { if (e.key === 'Escape') onClose() }
-    window.addEventListener('keydown', h)
-    return () => { window.removeEventListener('keydown', h); prev?.focus?.() }
-  }, [onClose])
+    if (!dialog.open) dialog.showModal()
+    // Esc fires `cancel`; let React own the open state instead of the browser
+    const onCancel = (e) => { e.preventDefault(); onCloseRef.current() }
+    // Keep Tab cycling inside the dialog rather than escaping to the browser UI
+    const onKey = (e) => {
+      if (e.key !== 'Tab') return
+      const items = [...dialog.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
+      if (!items.length) return
+      const first = items[0], last = items[items.length - 1]
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
+    }
+    dialog.addEventListener('cancel', onCancel)
+    dialog.addEventListener('keydown', onKey)
+    return () => {
+      dialog.removeEventListener('cancel', onCancel)
+      dialog.removeEventListener('keydown', onKey)
+      if (dialog.open) dialog.close()
+      prev?.focus?.()
+    }
+  }, [])
+
   return (
-    <div className="cr-project cr-noprint" role="dialog" aria-modal="true" aria-label={`Join code for ${name}`}>
+    <dialog ref={dialogRef} className="cr-project cr-noprint" aria-label={`Join code for ${name}`}>
       <div>
         <p style={{ fontSize: 'clamp(22px, 3vw, 36px)', fontWeight: 700, margin: '0 0 24px' }}>Join {name}</p>
         <div className="cr-project__code">{code}</div>
         <p className="cr-project__url">Go to <strong>{window.location.host}/join</strong> and type this code</p>
-        <button ref={closeRef} type="button" className="cr-btn" style={{ marginTop: 32 }} onClick={onClose}>
+        <button type="button" className="cr-btn" style={{ marginTop: 32 }} onClick={() => onCloseRef.current()} autoFocus>
           Close (Esc)
         </button>
       </div>
-    </div>
+    </dialog>
   )
 }

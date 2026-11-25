@@ -243,15 +243,19 @@
 
 /* ---------------------------------------------------- projector overlay */
 .cr-project {
-  position: fixed;
-  inset: 0;
-  z-index: 10200;
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  border: 0;
   background: rgb(var(--c-ground));
-  display: grid;
-  place-items: center;
+  color: rgb(var(--c-text));
   text-align: center;
   padding: 32px;
 }
+.cr-project[open] { display: grid; place-items: center; }
+.cr-project::backdrop { background: rgb(var(--c-ground)); }
 .cr-project__code { font-family: var(--font-mono); font-weight: 700; font-size: clamp(64px, 14vw, 200px); letter-spacing: 0.12em; color: rgb(var(--cr-amber-text)); line-height: 1; }
 .cr-project__url { font-size: clamp(22px, 3vw, 40px); margin-top: 24px; }
 .cr-project__url strong { color: rgb(var(--c-brand-text)); }

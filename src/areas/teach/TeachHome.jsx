@@ -30,7 +30,7 @@ function Loading({ label = 'Loading' }) {
 }
 
 export default function TeachHome() {
-  const { configured, loading, roleLoading, user, role } = useAuth()
+  const { configured, loading, roleLoading, roleError, reloadRole, user, role } = useAuth()
 
   if (configured && (loading || (user && roleLoading))) return <div className="cr"><Loading /></div>
 
@@ -49,6 +49,9 @@ export default function TeachHome() {
     )
   }
 
+  // Only a successful check that found no staff row may lead to onboarding
+  if (roleError && role !== 'teacher') return <RoleRetry onRetry={reloadRole} />
+
   if (role === 'student') {
     return (
       <div className="cr cr-stack">
@@ -66,6 +69,24 @@ export default function TeachHome() {
 
   if (role !== 'teacher') return <SchoolSetup />
   return <ClassList />
+}
+
+function RoleRetry({ onRetry }) {
+  const [busy, setBusy] = useState(false)
+  return (
+    <div className="cr cr-stack">
+      <div>
+        <h1>Teacher dashboard</h1>
+        <p className="cr-lede" role="alert">
+          We couldn't check your account just now. Check your connection, then try again.
+        </p>
+      </div>
+      <button type="button" className="cr-btn cr-btn--primary" disabled={busy}
+        onClick={async () => { setBusy(true); await onRetry(); setBusy(false) }}>
+        {busy ? 'Checking…' : 'Try again'}
+      </button>
+    </div>
+  )
 }
 
 // ----------------------------------------------------------- onboarding
