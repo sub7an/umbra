@@ -304,6 +304,7 @@ describe('POST /api/check', () => {
       fakeDb({ assignment: { ...base, class_id: OTHER_CLASS } }),          // not enrolled
       fakeDb({ assignment: { ...base, item_ids: ['other-item'] } }),        // item not in it
       fakeDb({ assignment: { ...base, opens_at: new Date(Date.now() + 3600e3).toISOString() } }), // not open
+      fakeDb({ assignment: { ...base, classes: { archived_at: new Date(Date.now() - 1000).toISOString() } } }), // class archived
     ]
     for (const admin of cases) {
       const res = await check(admin, { assignment_id: ASSIGNMENT })
@@ -311,6 +312,13 @@ describe('POST /api/check', () => {
       expect(res.body).toEqual({ error: 'not_assigned' })
       expect(admin.db.attempts).toHaveLength(0)
     }
+  })
+
+  it('an assignment of a live class (archived_at null) is still allowed', async () => {
+    const base = { id: ASSIGNMENT, class_id: CLASS, item_ids: [ITEM], opens_at: new Date(Date.now() - 1000).toISOString() }
+    const admin = fakeDb({ assignment: { ...base, classes: { archived_at: null } } })
+    const res = await check(admin, { assignment_id: ASSIGNMENT })
+    expect(res.statusCode).toBe(200)
   })
 
   it('rejects bad bodies with 400', async () => {

@@ -6,16 +6,7 @@ import {
   normaliseCode, codeProblem, errorMessage, joinClass, signInWithCard, CODE_LENGTH, MAX_NAME_CHARS,
 } from '../../lib/classroomApi'
 import { GoogleMark, KeyIcon } from '../icons'
-
-// A Google student's pending join survives the OAuth round trip in sessionStorage:
-// the class code and the name they typed (their own name, in their own browser).
-// Card passphrases are never stored anywhere.
-const PENDING_KEY = 'umbra.join.pending'
-const pending = {
-  get: () => { try { return JSON.parse(sessionStorage.getItem(PENDING_KEY) || 'null') } catch { return null } },
-  set: (v) => { try { sessionStorage.setItem(PENDING_KEY, JSON.stringify(v)) } catch { /* private mode */ } },
-  clear: () => { try { sessionStorage.removeItem(PENDING_KEY) } catch { /* private mode */ } },
-}
+import { pending } from './pendingJoin'
 
 const toLearn = () => navigate({ area: 'learn', rest: [], search: '' }, { replace: true })
 
@@ -95,11 +86,11 @@ function CodeJoin({ initialCode, user, reloadRole }) {
         <p id="join-code-msg" className="cr-error" role="alert" style={{ minHeight: 24 }}>{codeMsg}</p>
       </div>
       <div className="cr-field">
-        <label htmlFor="join-name">Your name</label>
+        <label htmlFor="join-name">Your name (first name is enough)</label>
         <input id="join-name" className="cr-input" value={name} maxLength={MAX_NAME_CHARS} autoComplete="name"
           onChange={(e) => setName(e.target.value)} aria-invalid={!!nameMsg}
           aria-describedby={`join-name-hint${nameMsg ? ' join-name-msg' : ''}`} />
-        <span id="join-name-hint" className="cr-hint">Your first name and surname, as your teacher knows you.</span>
+        <span id="join-name-hint" className="cr-hint">As your teacher knows you, so they can find you in the class list.</span>
         {nameMsg && <p id="join-name-msg" className="cr-error">{nameMsg}</p>}
       </div>
       <div role="alert">{error && <p className="cr-error" style={{ marginBottom: 14 }}>{error}</p>}</div>

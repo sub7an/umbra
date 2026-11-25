@@ -18,3 +18,9 @@ describe('vercel.json SPA rewrite for app areas', () => {
     expect(re.test(p)).toBe(false)
   })
 })
+
+describe('vercel.json function limits', () => {
+  it('gives class-cards 60 s, enough for a 60-name batch', () => {
+    expect(config.functions?.['api/class-cards.js']?.maxDuration).toBe(60)
+  })
+})

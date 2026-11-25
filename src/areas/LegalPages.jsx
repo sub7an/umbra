@@ -208,7 +208,7 @@ function SchoolsPage() {
             </tbody>
           </table>
         </div>
-        <p className="cr-small cr-muted">No student real names are required, and no student email is stored in the classroom tables.</p>
+        <p className="cr-small cr-muted">Students only need a display name (a first name is enough), and no student email is stored in the classroom tables.</p>
       </section>
 
       <section aria-labelledby="dp-sub">

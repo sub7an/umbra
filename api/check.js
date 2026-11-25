@@ -20,7 +20,8 @@
 //
 // Caller: a signed-in student (a students row; 403 not_student otherwise).
 // assignment_id, if given, must be an open assignment of a class the student is
-// enrolled in and must list item_id (403 not_assigned otherwise).
+// enrolled in, the class must not be archived, and it must list item_id (403
+// not_assigned otherwise).
 // Rate limit: 30 recorded attempts per student per minute, counted in the database so
 // it holds across serverless instances (429 rate_limited). Replays are not counted.
 //
@@ -118,10 +119,13 @@ async function attemptedParts(admin, studentId, itemId) {
 const allAttempted = (partIds, attempted) => partIds.length > 0 && partIds.every((p) => attempted.has(p))
 
 async function mayUseAssignment(admin, studentId, assignmentId, itemId) {
-  const { data: a, error } = await admin.from('assignments').select('id, class_id, item_ids, opens_at')
+  const { data: a, error } = await admin.from('assignments')
+    .select('id, class_id, item_ids, opens_at, classes(archived_at)')
     .eq('id', assignmentId).maybeSingle()
   if (error) throw error
   if (!a || !Array.isArray(a.item_ids) || !a.item_ids.includes(itemId)) return false
+  // An archived class's work is closed: its attempts are due to be purged with it.
+  if (a.classes?.archived_at) return false
   if (a.opens_at && Date.parse(a.opens_at) > Date.now()) return false
   const { data: enr, error: enrErr } = await admin.from('enrolments').select('class_id')
     .eq('class_id', a.class_id).eq('student_id', studentId).maybeSingle()

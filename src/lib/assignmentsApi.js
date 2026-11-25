@@ -34,7 +34,7 @@ const unwrap = ({ data, error }) => {
 
 export class AssignmentHasAnswersError extends Error {
   constructor() {
-    super('Students have already answered this assignment, so it can’t be deleted. Change its due date instead.')
+    super('Students have already answered this assignment, so it can’t be deleted. Its due date is shown to students; late answers are still accepted and marked late.')
     this.code = 'has_attempts'
   }
 }

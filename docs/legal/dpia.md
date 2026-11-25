@@ -41,7 +41,7 @@ automatically: teachers decide what to do with the estimates.
 
 | Data | Subjects | Where | Notes |
 |---|---|---|---|
-| Display name (1–40 characters) | Students | `public.students.display_name` | Typed by the student or teacher. A real name is not required. |
+| Display name (1–40 characters) | Students | `public.students.display_name` | Typed by the student or teacher. Only a display name is needed (a first name is enough). |
 | Class memberships and join date | Students | `public.enrolments` | |
 | Attempts: response text, correct, reason, hints used, time taken, assignment, timestamp | Students | `public.attempts` | Written only by the server (service role). |
 | Mastery per topic, review schedule | Students | `public.mastery` | Derived from attempts by a trigger. |

@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(11);
+select plan(12);
 
 insert into auth.users (id, email, aud, role) values
   ('60000000-0000-0000-0000-000000000001', null, 'authenticated', 'authenticated');
@@ -65,6 +65,10 @@ insert into public.attempts (id, student_id, item_id, part_id, response, correct
 select is((select round(p_known::numeric, 4) from public.mastery
   where student_id = '60000000-0000-0000-0000-000000000001' and topic_id = 't.bkt2'),
   0.9452::numeric, 'unknown part: default guess 0.2, wrong answer');
+
+-- R33: topics are locked in a fixed order (topic id) so concurrent attempts can't deadlock.
+select ok(pg_get_functiondef('public.update_mastery()'::regprocedure) ~ 'order by t\.id',
+  'update_mastery walks topics in topic-id order');
 
 select * from finish();
 rollback;
