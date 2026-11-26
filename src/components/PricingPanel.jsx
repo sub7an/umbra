@@ -1,5 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { track } from '@vercel/analytics'
+import { CONTACT_EMAIL } from '../lib/contact'
+import { navigate } from '../lib/routes'
 import { useAuth } from '../context/AuthContext'
 
 const TIERS = [
@@ -54,7 +56,6 @@ const TIERS = [
   },
 ]
 
-const CONTACT_EMAIL = 'hamzahatef09@gmail.com'
 
 export default function PricingPanel() {
   const [open, setOpen] = useState(false)
@@ -198,6 +199,19 @@ export default function PricingPanel() {
               >
                 {t.id === 'pro' && proLoading ? 'STARTING CHECKOUT…' : copiedTier === t.id ? '✓ EMAIL COPIED' : t.cta}
               </button>
+              {t.id === 'school' && (
+                <a
+                  href="/schools/data-protection"
+                  onClick={(e) => { e.preventDefault(); setOpen(false); navigate({ area: 'legal', page: 'schools', search: '' }) }}
+                  style={{
+                    marginTop: 10, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13,
+                    color: t.accent, textDecoration: 'underline', textUnderlineOffset: 3,
+                  }}
+                >
+                  Data protection
+                </a>
+              )}
               {copiedTier === t.id && (
                 <div style={{
                   marginTop: 8, textAlign: 'center',

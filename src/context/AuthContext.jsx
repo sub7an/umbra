@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { roleFromQueries } from '../lib/role'
+import { migrateProgress } from '../lib/progressMerge'
 
 const AuthContext = createContext(null)
 
@@ -7,32 +9,72 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(isSupabaseConfigured)
+  // 'teacher' (has a staff row) | 'student' (has a students row) | 'public'
+  const [role, setRole] = useState('public')
+  const [roleLoading, setRoleLoading] = useState(isSupabaseConfigured)
+  // True when the last role check failed; `role` then keeps its previous value
+  const [roleError, setRoleError] = useState(false)
   const pollRef = useRef(null)
+  const roleReq = useRef(0)
+  const lastUid = useRef(undefined)
 
   const user = session?.user ?? null
   const isPro = Boolean(profile?.is_pro)
 
-  const loadProfile = useCallback(async (uid) => {
+  const loadProfile = useCallback(async (u) => {
+    const uid = u?.id
     if (!supabase || !uid) { setProfile(null); return }
+    // Login-card students have no profiles row by design (no email is stored for
+    // them): never create one from the client.
+    if (u.app_metadata?.umbra_card) { setProfile(null); return }
     // Ensure a row exists, then read it (upsert keeps this idempotent)
     await supabase.from('profiles').upsert({ id: uid }, { onConflict: 'id', ignoreDuplicates: true })
     const { data } = await supabase.from('profiles').select('*').eq('id', uid).single()
     setProfile(data ?? null)
+    // Once per device: fold local progress into the account (never throws, not awaited)
+    if (data) migrateProgress(supabase, u)
+  }, [])
+
+  const loadRole = useCallback(async (u) => {
+    const req = ++roleReq.current
+    if (!supabase || !u) { setRole('public'); setRoleError(false); setRoleLoading(false); return }
+    setRoleLoading(true)
+    let result
+    try {
+      const [staff, student] = await Promise.all([
+        supabase.from('staff').select('school_id').eq('user_id', u.id).limit(1),
+        supabase.from('students').select('user_id').eq('user_id', u.id).limit(1),
+      ])
+      result = roleFromQueries(staff, student)
+    } catch (error) {
+      result = { error }
+    }
+    if (req !== roleReq.current) return // a newer sign-in / sign-out won
+    if (result.error) setRoleError(true) // keep the previous role
+    else { setRole(result.role); setRoleError(false) }
+    setRoleLoading(false)
   }, [])
 
   useEffect(() => {
-    if (!isSupabaseConfigured) { setLoading(false); return }
+    if (!isSupabaseConfigured) { setLoading(false); setRoleLoading(false); return }
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session)
-      loadProfile(data.session?.user?.id)
+      lastUid.current = data.session?.user?.id ?? null
+      loadProfile(data.session?.user)
+      loadRole(data.session?.user)
       setLoading(false)
     })
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(s)
-      loadProfile(s?.user?.id)
+      // Same user (e.g. token refresh): nothing to reload
+      if ((s?.user?.id ?? null) === lastUid.current) return
+      lastUid.current = s?.user?.id ?? null
+      if (s?.user) setRoleLoading(true)
+      // Deferred: awaiting Supabase calls inside this callback can deadlock the client
+      setTimeout(() => { loadProfile(s?.user); loadRole(s?.user) }, 0)
     })
     return () => sub.subscription.unsubscribe()
-  }, [loadProfile])
+  }, [loadProfile, loadRole])
 
   // After a successful checkout the webhook flips is_pro server-side; poll
   // briefly so the UI reflects Pro without requiring a manual refresh.
@@ -50,14 +92,18 @@ export function AuthProvider({ children }) {
 
   const signOut = useCallback(async () => {
     if (supabase) await supabase.auth.signOut()
-    setSession(null); setProfile(null)
+    roleReq.current++
+    lastUid.current = null
+    setSession(null); setProfile(null); setRole('public'); setRoleError(false); setRoleLoading(false)
   }, [])
 
   const value = {
     configured: isSupabaseConfigured,
     loading, session, user, profile, isPro,
+    role, roleLoading, roleError,
     signOut, refreshUntilPro,
-    reloadProfile: () => loadProfile(user?.id),
+    reloadProfile: () => loadProfile(user),
+    reloadRole: () => loadRole(user),
   }
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

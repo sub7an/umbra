@@ -11,10 +11,16 @@ describe('vercel.json SPA rewrite for app areas', () => {
     expect(rule).toBeTruthy()
     expect(config.rewrites.indexOf(rule)).toBe(config.rewrites.length - 1)
   })
-  it.each(['/teach', '/teach/classes/abc', '/join', '/learn', '/validation'])('matches %s', (p) => {
+  it.each(['/teach', '/teach/classes/abc', '/join', '/learn', '/validation', '/privacy', '/schools/data-protection'])('matches %s', (p) => {
     expect(re.test(p)).toBe(true)
   })
-  it.each(['/simulations/optics/lens-ray-diagram', '/simulations', '/teachx', '/'])('does not match %s', (p) => {
+  it.each(['/simulations/optics/lens-ray-diagram', '/simulations', '/teachx', '/privacyx', '/legal/umbra-dpa-template.docx', '/'])('does not match %s', (p) => {
     expect(re.test(p)).toBe(false)
+  })
+})
+
+describe('vercel.json function limits', () => {
+  it('gives class-cards 60 s, enough for a 60-name batch', () => {
+    expect(config.functions?.['api/class-cards.js']?.maxDuration).toBe(60)
   })
 })

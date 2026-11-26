@@ -16,6 +16,8 @@ for (const [path, name] of [
   ['/teach', 'Teacher dashboard'],
   ['/learn', 'Your learning'],
   ['/join', 'Join a class'],
+  ['/privacy', 'Privacy notice'],
+  ['/schools/data-protection', 'Data protection for schools'],
 ]) {
   test(`${path} shows its heading`, async ({ page }) => {
     await page.goto(path)
